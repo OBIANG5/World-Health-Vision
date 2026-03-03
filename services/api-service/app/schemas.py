@@ -42,3 +42,8 @@ class SeriesResponse(BaseModel):
 
     # ✅ Ajout: tendance (optionnelle)
     trend: Optional[TrendResponse] = None
+
+
+class CompareResponse(BaseModel):
+    indicator: str
+    countries: Dict[str, List[Point]]

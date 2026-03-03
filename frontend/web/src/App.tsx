@@ -8,6 +8,7 @@ Ce fichier est responsable de:
 - gerer les etats React (selection, chargement, erreurs, donnees)
 - gerer les interactions utilisateur sur la carte et dans le panneau
 - lancer les requetes API et afficher tendance + serie temporelle
+- afficher une comparaison multi-pays dans la fiche (courbe multi-lignes)
 */
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
@@ -52,6 +53,12 @@ type SeriesResponse = {
 // Contrat de la route /indicators.
 type IndicatorsResponse = { count: number; indicators: string[] };
 
+// Contrat de la route /compare.
+type CompareResponse = {
+  indicator: string;
+  countries: Record<string, Point[]>;
+};
+
 // URL de base du backend local.
 const API_BASE = "http://127.0.0.1:8000";
 
@@ -73,6 +80,15 @@ const INDICATOR_LABELS: Record<string, string> = {
   "SL.UEM.TOTL.ZS": "ChÃ´mage (%)",
   "SP.DYN.LE00.IN": "EspÃ©rance de vie (ans)",
 };
+
+const COMPARE_LINE_COLORS = [
+  "#2aa7d6",
+  "#5adc9f",
+  "#f5b642",
+  "#ff7a7a",
+  "#b286ff",
+  "#58c4dd",
+];
 
 // Sous-composant Leaflet: impose une vue monde stable au rendu et au resize.
 function FitToWorld() {
@@ -108,6 +124,33 @@ function clampYear(v: string, fallback: number) {
   return Math.max(1960, Math.min(2024, Math.trunc(n)));
 }
 
+function normalizeCountriesCsv(csv: string, primaryIso?: string) {
+  const parts = csv
+    .split(",")
+    .map((p) => p.trim().toUpperCase())
+    .filter((p) => p.length > 0);
+
+  const unique = [...new Set(parts)];
+  if (primaryIso && !unique.includes(primaryIso)) {
+    unique.unshift(primaryIso);
+  }
+  return unique.join(",");
+}
+
+function buildCompareChartRows(countries: Record<string, Point[]>) {
+  const byYear = new Map<number, Record<string, number | string>>();
+
+  for (const [iso, points] of Object.entries(countries)) {
+    for (const p of points) {
+      const current = byYear.get(p.year) ?? { year: p.year };
+      current[iso] = p.value;
+      byYear.set(p.year, current);
+    }
+  }
+
+  return Array.from(byYear.values()).sort((a, b) => Number(a.year) - Number(b.year));
+}
+
 export default function App() {
   // Etat d interface: panneau lateral ouvert/ferme.
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -131,6 +174,12 @@ export default function App() {
   const [data, setData] = useState<SeriesResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  // Donnees de comparaison multi-pays.
+  const [compareCountriesInput, setCompareCountriesInput] = useState("FRA,DEU,USA");
+  const [compareData, setCompareData] = useState<CompareResponse | null>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+  const [compareErr, setCompareErr] = useState<string | null>(null);
 
   // Palette partagee pour la carte, le panneau et la courbe.
   const theme = useMemo(
@@ -212,6 +261,47 @@ export default function App() {
     }
   }
 
+  async function fetchCompareFor(
+    countriesCsv: string,
+    ind: string,
+    fy: number,
+    ty: number,
+    primaryIso: string = countryIso3
+  ) {
+    const normalized = normalizeCountriesCsv(countriesCsv, primaryIso);
+    if (!normalized) {
+      setCompareData(null);
+      setCompareErr("Veuillez saisir au moins un code ISO3");
+      return;
+    }
+
+    setCompareCountriesInput(normalized);
+    setCompareLoading(true);
+    setCompareErr(null);
+
+    try {
+      const params = new URLSearchParams({
+        countries: normalized,
+        indicator: ind,
+        from_year: String(fy),
+        to_year: String(ty),
+      });
+
+      const r = await fetch(`${API_BASE}/compare?${params.toString()}`);
+      if (!r.ok) {
+        const t = await r.text();
+        throw new Error(`API ${r.status}: ${t}`);
+      }
+      const j = (await r.json()) as CompareResponse;
+      setCompareData(j);
+    } catch (e: any) {
+      setCompareData(null);
+      setCompareErr(String(e?.message || e));
+    } finally {
+      setCompareLoading(false);
+    }
+  }
+
   // Charge une premiere serie avec la selection par defaut.
   useEffect(() => {
     fetchSeriesFor(countryIso3, indicator, fromYear, toYear);
@@ -248,6 +338,9 @@ export default function App() {
 
         // Appel immediat avec les valeurs locales, sans attendre les setState asynchrones.
         fetchSeriesFor(iso, indicator, fromYear, toYear);
+        const nextCompare = normalizeCountriesCsv(compareCountriesInput, iso);
+        setCompareCountriesInput(nextCompare);
+        fetchCompareFor(nextCompare, indicator, fromYear, toYear, iso);
       },
       mouseover: () => {
         layer.setStyle({
@@ -264,6 +357,17 @@ export default function App() {
 
   // Recharts attend un tableau: fallback [] pour eviter un rendu nul.
   const chartData = useMemo(() => data?.series || [], [data?.series]);
+  const compareChartData = useMemo(
+    () => (compareData ? buildCompareChartRows(compareData.countries) : []),
+    [compareData]
+  );
+  const compareIsos = useMemo(
+    () =>
+      compareData
+        ? Object.keys(compareData.countries).filter((iso) => (compareData.countries[iso] ?? []).length > 0)
+        : [],
+    [compareData]
+  );
 
   // Transforme la tendance backend en modele d affichage (texte + couleur).
   const trendPill = useMemo(() => {
@@ -367,7 +471,10 @@ export default function App() {
               const v = e.target.value;
               setIndicator(v);
               // Si le panneau est deja ouvert, on recharge immediatement.
-              if (drawerOpen) fetchSeriesFor(countryIso3, v, fromYear, toYear);
+              if (drawerOpen) {
+                fetchSeriesFor(countryIso3, v, fromYear, toYear);
+                fetchCompareFor(compareCountriesInput, v, fromYear, toYear);
+              }
             }}
           >
             {indicators.map((k) => (
@@ -386,7 +493,10 @@ export default function App() {
                 onChange={(e) => {
                   const v = clampYear(e.target.value, 2000);
                   setFromYear(v);
-                  if (drawerOpen) fetchSeriesFor(countryIso3, indicator, v, toYear);
+                  if (drawerOpen) {
+                    fetchSeriesFor(countryIso3, indicator, v, toYear);
+                    fetchCompareFor(compareCountriesInput, indicator, v, toYear);
+                  }
                 }}
               />
             </div>
@@ -398,7 +508,10 @@ export default function App() {
                 onChange={(e) => {
                   const v = clampYear(e.target.value, 2024);
                   setToYear(v);
-                  if (drawerOpen) fetchSeriesFor(countryIso3, indicator, fromYear, v);
+                  if (drawerOpen) {
+                    fetchSeriesFor(countryIso3, indicator, fromYear, v);
+                    fetchCompareFor(compareCountriesInput, indicator, fromYear, v);
+                  }
                 }}
               />
             </div>
@@ -406,7 +519,10 @@ export default function App() {
 
           <button
             className="whv-btn"
-            onClick={() => fetchSeriesFor(countryIso3, indicator, fromYear, toYear)}
+            onClick={() => {
+              fetchSeriesFor(countryIso3, indicator, fromYear, toYear);
+              fetchCompareFor(compareCountriesInput, indicator, fromYear, toYear);
+            }}
             disabled={loading}
           >
             {loading ? "Chargement..." : "RafraÃ®chir"}
@@ -423,6 +539,59 @@ export default function App() {
                 {trendPill.label}
               </span>
             )}
+          </div>
+        </div>
+
+        <div className="whv-section">
+          <div className="whv-section-title">Comparaison multi-pays</div>
+          <div className="whv-label">Codes ISO3 separes par virgule</div>
+          <input
+            className="whv-input"
+            placeholder="FRA,DEU,USA"
+            value={compareCountriesInput}
+            onChange={(e) => setCompareCountriesInput(e.target.value.toUpperCase())}
+          />
+          <button
+            className="whv-btn whv-btn-compact"
+            onClick={() => fetchCompareFor(compareCountriesInput, indicator, fromYear, toYear)}
+            disabled={compareLoading}
+          >
+            {compareLoading ? "Comparaison..." : "Comparer"}
+          </button>
+
+          {compareErr && <div className="whv-error">Erreur: {compareErr}</div>}
+
+          <div className="whv-chart whv-chart-compare">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={compareChartData}>
+                <XAxis dataKey="year" tick={{ fill: "rgba(240,248,255,0.7)", fontSize: 12 }} />
+                <YAxis tick={{ fill: "rgba(240,248,255,0.7)", fontSize: 12 }} />
+                <Tooltip />
+                {compareIsos.map((iso, idx) => (
+                  <Line
+                    key={iso}
+                    type="monotone"
+                    dataKey={iso}
+                    stroke={COMPARE_LINE_COLORS[idx % COMPARE_LINE_COLORS.length]}
+                    dot={false}
+                    strokeWidth={2}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="whv-legend">
+            {compareIsos.map((iso, idx) => (
+              <span className="whv-legend-item" key={iso}>
+                <span
+                  className="whv-legend-dot"
+                  style={{ background: COMPARE_LINE_COLORS[idx % COMPARE_LINE_COLORS.length] }}
+                />
+                {iso}
+              </span>
+            ))}
+            {!compareIsos.length && <span className="whv-muted">Aucune serie comparable</span>}
           </div>
         </div>
 
