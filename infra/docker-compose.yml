@@ -1,0 +1,32 @@
+name: world-health-vision-v0
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: services/api-service/Dockerfile
+    container_name: whv_api
+    working_dir: /app/services/api-service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../services/api-service:/app/services/api-service
+      - ../data/silver:/app/data/silver
+
+  web:
+    build:
+      context: ..
+      dockerfile: frontend/web/Dockerfile
+    container_name: whv_web
+    working_dir: /app/frontend/web
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ../frontend/web:/app/frontend/web
+      - /app/frontend/web/node_modules
+    depends_on:
+      - api

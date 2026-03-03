@@ -1,3 +1,9 @@
+<!--
+Ce fichier est responsable de:
+- documenter la base technique du frontend
+- decrire les commandes de dev/build/lint a utiliser
+- expliquer les choix de configuration outillage (Vite/ESLint)
+-->
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

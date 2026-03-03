@@ -1,12 +1,22 @@
+/*
+Ce fichier est responsable de:
+- definir le style global de l ecran principal du front
+- positionner les couches visuelles (carte, arcs de l oeil, header, drawer)
+- controler la hierarchie z-index et la lisibilite de l interface
+- styliser les controles du panneau lateral (select, input, bouton, badge)
+- styliser les etats visuels (toast chargement, erreur, courbe)
+*/
 .whv-root{
+  /* Scene principale en plein ecran */
   height: 100vh;
   width: 100%;
   overflow: hidden;
   position: relative;
 }
 
-/* Header */
+/* Bloc d en-tete */
 .whv-header{
+  /* L en-tete reste au-dessus de la carte */
   position:absolute;
   left: 18px;
   top: 14px;
@@ -16,6 +26,7 @@
   gap: 12px;
 }
 .whv-logo{
+  /* Carte visuelle du logo */
   width: 54px;
   height: 54px;
   border-radius: 16px;
@@ -24,40 +35,46 @@
   object-fit: cover;
 }
 .whv-title{
-  font-size: 42px;
+  /* Titre principal du projet */
+  font-size: 70px;
   font-weight: 800;
   letter-spacing: 0.4px;
   text-shadow: 0 18px 40px rgba(0,0,0,0.55);
 }
 
-/* Overlay arcs (œil) - très grand */
+/* Overlay des arcs (forme oeil) */
 .whv-eye-overlay{
+  /* Couche decorative uniquement, sans interaction souris */
   position:absolute;
-  inset: -40vh -25vw; /* ✅ sort de l’écran => arcs énormes */
+  inset: -40vh -25vw; /* sort de l ecran pour former un grand oeil */
   pointer-events:none;
   z-index: 12;
 }
+
 .whv-eye-overlay svg{
   width:100%;
   height:100%;
   filter: drop-shadow(0 18px 40px rgba(0,0,0,0.55));
 }
 
-/* Map plein écran */
+/* Zone carte plein ecran */
 .whv-map-shell{
+  /* Conteneur Leaflet principal */
   position:absolute;
   inset: 0;
   z-index: 1;
 }
 
 .leaflet-container{
-  height: 100vh;
-  width: 100vw;
+  /* Taille de la carte Leaflet */
+  height: 100%;
+  width: 100%;
   background: #050B12;
 }
 
-/* Drawer */
+/* Panneau lateral */
 .whv-drawer{
+  /* Panneau hors-cadre a droite quand il est ferme */
   position:absolute;
   top: 0;
   right: 0;
@@ -70,23 +87,24 @@
   backdrop-filter: blur(10px);
   border-left: 1px solid rgba(120,190,230,0.22);
   box-shadow: -30px 0 60px rgba(0,0,0,0.55);
-  padding: 16px 16px 14px 16px;
+  padding: 16px 700px 60px 89px;
   display:flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 100px;
 }
 .whv-drawer.open{ transform: translateX(0%); }
 
 .whv-drawer-header{
+  /* Ligne titre pays + bouton fermer */
   display:flex;
   align-items:center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 8px;
+  padding-bottom: 20px;
   border-bottom: 1px solid rgba(120,190,230,0.18);
 }
 .whv-drawer-title{
-  font-size: 18px;
+  font-size: 30px;
   font-weight: 700;
 }
 .whv-close{
@@ -99,6 +117,7 @@
 }
 
 .whv-section{
+  /* Carte reutilisable a l interieur du panneau */
   background: rgba(7, 16, 28, 0.62);
   border: 1px solid rgba(120,190,230,0.18);
   border-radius: 18px;
@@ -123,6 +142,7 @@
   margin-top: 10px;
 }
 .whv-input, .whv-select{
+  /* Style commun aux champs formulaire */
   width:100%;
   border-radius: 14px;
   border: 1px solid rgba(120,190,230,0.20);
@@ -132,6 +152,7 @@
   outline: none;
 }
 .whv-btn{
+  /* Action principale du panneau */
   width:100%;
   margin-top: 10px;
   border-radius: 16px;
@@ -145,6 +166,7 @@
 .whv-btn:disabled{ opacity: 0.6; cursor:not-allowed; }
 
 .whv-pill{
+  /* Badge de tendance (UP/DOWN/STABLE) */
   display:inline-flex;
   align-items:center;
   padding: 6px 10px;
@@ -154,6 +176,7 @@
   font-size: 12px;
 }
 .whv-chart{
+  /* Conteneur de la courbe Recharts */
   height: 260px;
   border-radius: 16px;
   overflow:hidden;
@@ -166,6 +189,7 @@
 .whv-footer{ margin-top: auto; font-size: 12px; opacity: 0.75; padding: 8px 2px; }
 
 .whv-toast{
+  /* Message compact de chargement/erreur carte */
   position:absolute;
   left: 18px;
   top: 86px;

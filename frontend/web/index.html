@@ -1,13 +1,25 @@
 <!doctype html>
+<!--
+Ce fichier est responsable de:
+- definir le document HTML racine du front
+- declarer les metadonnees du navigateur (charset, viewport, favicon)
+- fournir le point de montage #root pour React
+- charger le module d entree Vite (src/main.tsx)
+-->
 <html lang="en">
   <head>
+    <!-- Metadonnees de base du document -->
     <meta charset="UTF-8" />
+    <!-- Favicon affiche dans l onglet -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Indispensable pour le responsive mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>web</title>
   </head>
   <body>
+    <!-- Point de montage de l application React -->
     <div id="root"></div>
+    <!-- Module d entree charge par Vite en dev/build -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

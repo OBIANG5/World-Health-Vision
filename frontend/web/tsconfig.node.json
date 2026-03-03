@@ -1,4 +1,8 @@
 {
+  // Ce fichier est responsable de:
+  // - definir les options TypeScript pour les fichiers executes cote Node
+  // - typer et verifier la configuration Vite
+  // - separer le contexte tooling du contexte application web
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2023",
@@ -7,14 +11,14 @@
     "types": ["node"],
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* Mode bundler */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* Linting */
+    /* Regles de qualite */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -22,5 +26,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
+  // Scope volontairement limite aux fichiers de configuration build.
   "include": ["vite.config.ts"]
 }

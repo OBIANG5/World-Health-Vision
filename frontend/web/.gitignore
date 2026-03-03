@@ -1,4 +1,10 @@
-# Logs
+﻿# Ce fichier est responsable de:
+# - exclure du git les fichiers locaux/generes du frontend
+# - eviter de versionner les dependances installees localement
+# - eviter de versionner les artefacts de build et les logs
+# - garder le depot propre et reproductible
+
+# Journaux
 logs
 *.log
 npm-debug.log*
@@ -12,7 +18,7 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Dossiers/fichiers d editeurs
 .vscode/*
 !.vscode/extensions.json
 .idea

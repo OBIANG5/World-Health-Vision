@@ -1,4 +1,9 @@
 {
+  // Ce fichier est responsable de:
+  // - definir les options TypeScript pour le code frontend navigateur
+  // - activer les regles strictes de typage et de qualite
+  // - configurer la resolution en mode bundler (Vite)
+  // - limiter le scope de verification au dossier src
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2022",
@@ -8,7 +13,7 @@
     "types": ["vite/client"],
     "skipLibCheck": true,
 
-    /* Bundler mode */
+    /* Mode bundler */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
@@ -16,7 +21,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Regles de qualite */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -24,5 +29,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
+  // Seul le code source frontend est verifie par cette config.
   "include": ["src"]
 }

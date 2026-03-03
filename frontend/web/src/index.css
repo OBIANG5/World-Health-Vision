@@ -1,4 +1,11 @@
-/* IMPORTANT : on enlève le centrage “Vite template” */
+/*
+Ce fichier est responsable de:
+- appliquer les styles globaux partages du front
+- supprimer les marges/paddings navigateur qui cassent le plein ecran
+- garantir que html/body/#root occupent 100% de la hauteur
+- definir la police et la couleur de fond par defaut
+*/
+/* Reset global: retire le centrage par defaut du template Vite. */
 html, body, #root{
   height: 100%;
   margin: 0;
@@ -6,6 +13,7 @@ html, body, #root{
 }
 
 body{
+  /* Typographie et fond global de l application */
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   background: #07111e;
 }
