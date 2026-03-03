@@ -98,6 +98,10 @@ const COMPARE_LINE_COLORS = [
   "#58c4dd",
 ];
 
+const ISO3_FALLBACK_BY_NAME: Record<string, string> = {
+  FRANCE: "FRA",
+};
+
 // Sous-composant Leaflet: impose une vue monde stable au rendu et au resize.
 function FitToWorld() {
   const map = useMap();
@@ -330,18 +334,32 @@ export default function App() {
   // Le clic est critique: il ouvre le panneau et lance la requete de suite.
   function onEachCountry(feature: Feature, layer: any) {
     const props = (feature.properties || {}) as any;
+    const name = String(props.ADMIN || props.NAME || props.NAME_EN || props.name || "").trim();
+
     // Accepte plusieurs noms de champ ISO selon la source GeoJSON.
-    const iso = String(
-      props.ISO_A3 || props["ISO3166-1-Alpha-3"] || props.ADM0_A3 || props.iso_a3 || ""
-    ).toUpperCase();
-    const name = String(props.ADMIN || props.NAME || props.NAME_EN || props.name || iso);
+    const isoCandidates = [
+      props.ISO_A3,
+      props["ISO3166-1-Alpha-3"],
+      props.ADM0_A3,
+      props.iso_a3,
+    ]
+      .map((v: unknown) => String(v ?? "").toUpperCase().trim())
+      .filter(Boolean);
+
+    let iso = isoCandidates.find((v) => /^[A-Z]{3}$/.test(v) && v !== "-99") || "";
+    if (!iso) {
+      const fallback = ISO3_FALLBACK_BY_NAME[name.toUpperCase()];
+      if (fallback) iso = fallback;
+    }
+
+    const displayName = name || iso;
 
     layer.on({
       click: () => {
         if (!iso || iso === "-99") return;
 
         setCountryIso3(iso);
-        setCountryName(name);
+        setCountryName(displayName);
         setDrawerOpen(true);
 
         // Appel immediat avec les valeurs locales, sans attendre les setState asynchrones.
