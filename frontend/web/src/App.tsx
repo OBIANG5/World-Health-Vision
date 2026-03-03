@@ -1,4 +1,4 @@
-/*
+﻿/*
 Ce fichier est responsable de:
 - afficher l ecran principal du front (carte, panneau lateral, courbe)
 - definir les contrats de donnees entre front et backend
@@ -77,8 +77,8 @@ const INDICATOR_LABELS: Record<string, string> = {
   "NY.GDP.MKTP.KD.ZG": "Croissance PIB (%)",
   "FP.CPI.TOTL.ZG": "Inflation CPI (%)",
   "SP.POP.TOTL": "Population",
-  "SL.UEM.TOTL.ZS": "ChÃ´mage (%)",
-  "SP.DYN.LE00.IN": "EspÃ©rance de vie (ans)",
+  "SL.UEM.TOTL.ZS": "Chomage (%)",
+  "SP.DYN.LE00.IN": "Esperance de vie (ans)",
 };
 
 const COMPARE_LINE_COLORS = [
@@ -389,7 +389,7 @@ export default function App() {
       <div className="whv-header">
         {/* Logo charge depuis src/assets/logo.png */}
         <img className="whv-logo" src="/src/assets/logo.png" alt="WorldHealth Vision" />
-        <div className="whv-title">WorldHealth Vision â€” V0</div>
+        <div className="whv-title">WorldHealth Vision - V0</div>
       </div>
 
       {/* Arcs decoratifs de l oeil, uniquement visuels */}
@@ -416,7 +416,7 @@ export default function App() {
 
       {/* Zone carte plein ecran (tuiles + pays GeoJSON) */}
       <div className="whv-map-shell">
-        {worldLoading && <div className="whv-toast">Chargement carteâ€¦</div>}
+        {worldLoading && <div className="whv-toast">Chargement carte...</div>}
         {worldError && <div className="whv-toast whv-toast-error">Erreur carte: {worldError}</div>}
 
         <MapContainer
@@ -458,7 +458,7 @@ export default function App() {
             {countryName} <span className="whv-muted">({countryIso3})</span>
           </div>
           <button className="whv-close" onClick={() => setDrawerOpen(false)} aria-label="Fermer">
-            âœ•
+            X
           </button>
         </div>
 
@@ -479,7 +479,7 @@ export default function App() {
           >
             {indicators.map((k) => (
               <option key={k} value={k}>
-                {(INDICATOR_LABELS[k] ? `${INDICATOR_LABELS[k]} â€” ` : "") + k}
+                {(INDICATOR_LABELS[k] ? `${INDICATOR_LABELS[k]} - ` : "") + k}
               </option>
             ))}
           </select>
@@ -525,10 +525,10 @@ export default function App() {
             }}
             disabled={loading}
           >
-            {loading ? "Chargement..." : "RafraÃ®chir"}
+            {loading ? "Chargement..." : "Rafraichir"}
           </button>
 
-          {err && <div className="whv-error">âŒ {err}</div>}
+          {err && <div className="whv-error">Erreur: {err}</div>}
         </div>
 
         <div className="whv-section">
@@ -619,9 +619,10 @@ export default function App() {
         </div>
 
         <div className="whv-footer">
-          Clique un pays â†’ la fiche se met Ã  jour automatiquement.
+          Clique un pays pour mettre a jour automatiquement la fiche.
         </div>
       </div>
     </div>
   );
 }
+
