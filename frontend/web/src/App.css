@@ -195,6 +195,27 @@
   height: 9px;
   border-radius: 999px;
 }
+.whv-stats-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.whv-stat-card{
+  border: 1px solid rgba(120,190,230,0.18);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(0,0,0,0.2);
+}
+.whv-stat-label{
+  font-size: 12px;
+  color: rgba(240,248,255,0.72);
+}
+.whv-stat-value{
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(240,248,255,0.95);
+}
 
 .whv-muted{ opacity: 0.75; }
 .whv-error{ margin-top: 10px; color: rgba(255, 110, 110, 0.92); font-size: 13px; }

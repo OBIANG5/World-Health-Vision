@@ -1,4 +1,5 @@
 from functools import lru_cache
+from statistics import mean, median
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
@@ -41,6 +42,18 @@ def parse_countries_csv(countries: str) -> list[str]:
     return list(dict.fromkeys(raw))
 
 
+def compute_descriptive_stats(series: list[Point]) -> dict[str, float] | None:
+    if not series:
+        return None
+    values = [float(p.value) for p in series]
+    return {
+        "mean": float(mean(values)),
+        "median": float(median(values)),
+        "min": float(min(values)),
+        "max": float(max(values)),
+    }
+
+
 @router.get("/countries", response_model=CountriesResponse)
 def list_countries():
     countries = sorted(DF["country_iso3"].dropna().unique().tolist())
@@ -61,6 +74,7 @@ def get_country_indicator_series(
     to_year: Optional[int] = None,
     include_trend: bool = True,
     trend_window: int = 10,
+    include_stats: bool = True,
 ):
     iso3 = iso3.upper()
 
@@ -77,6 +91,8 @@ def get_country_indicator_series(
             df_subset = df_subset[df_subset["year"] <= to_year]
         trend_info = compute_trend_from_df(df_subset, window=trend_window)
 
+    stats_info = compute_descriptive_stats(series) if include_stats else None
+
     return SeriesResponse(
         country_iso3=iso3,
         indicator=code,
@@ -85,6 +101,7 @@ def get_country_indicator_series(
         points=len(series),
         series=series,
         trend=trend_info,
+        stats=stats_info,
     )
 
 

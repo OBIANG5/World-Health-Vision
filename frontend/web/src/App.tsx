@@ -39,6 +39,13 @@ type TrendInfo = {
   method?: string;
 };
 
+type DescriptiveStats = {
+  mean: number;
+  median: number;
+  min: number;
+  max: number;
+};
+
 // Contrat de la route /country/{iso3}/indicator/{indicator}.
 type SeriesResponse = {
   country_iso3: string;
@@ -48,6 +55,7 @@ type SeriesResponse = {
   points: number;
   series: Point[];
   trend?: TrendInfo;
+  stats?: DescriptiveStats;
 };
 
 // Contrat de la route /indicators.
@@ -244,7 +252,7 @@ export default function App() {
       // include_trend active le calcul de tendance affiche dans le badge.
       const url =
         `${API_BASE}/country/${iso3}/indicator/${ind}` +
-        `?from_year=${fy}&to_year=${ty}&include_trend=true&trend_window=10`;
+        `?from_year=${fy}&to_year=${ty}&include_trend=true&trend_window=10&include_stats=true`;
 
       const r = await fetch(url);
       if (!r.ok) {
@@ -383,13 +391,25 @@ export default function App() {
     return { label, color };
   }, [data?.trend, theme.danger, theme.muted, theme.ok]);
 
+  function formatStatValue(value?: number) {
+    if (value === undefined || value === null || !Number.isFinite(value)) return "-";
+    const abs = Math.abs(value);
+    if (abs >= 1_000_000) {
+      return new Intl.NumberFormat("fr-FR", {
+        notation: "compact",
+        maximumFractionDigits: 2,
+      }).format(value);
+    }
+    return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 2 }).format(value);
+  }
+
   return (
     <div className="whv-root" style={{ background: theme.bg, color: theme.text }}>
       {/* En-tete fixe: logo + titre du projet */}
       <div className="whv-header">
         {/* Logo charge depuis src/assets/logo.png */}
         <img className="whv-logo" src="/src/assets/logo.png" alt="WorldHealth Vision" />
-        <div className="whv-title">WorldHealth Vision - V0</div>
+        <div className="whv-title">WorldHealth Vision - V1</div>
       </div>
 
       {/* Arcs decoratifs de l oeil, uniquement visuels */}
@@ -486,7 +506,7 @@ export default function App() {
 
           <div className="whv-row">
             <div style={{ flex: 1 }}>
-              <div className="whv-label">from_year</div>
+              <div className="whv-label">De l'année</div>
               <input
                 className="whv-input"
                 value={fromYear}
@@ -501,7 +521,7 @@ export default function App() {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <div className="whv-label">to_year</div>
+              <div className="whv-label">à l'année</div>
               <input
                 className="whv-input"
                 value={toYear}
@@ -540,6 +560,32 @@ export default function App() {
               </span>
             )}
           </div>
+        </div>
+
+        <div className="whv-section">
+          <div className="whv-section-title">Statistiques descriptives</div>
+          {data?.stats ? (
+            <div className="whv-stats-grid">
+              <div className="whv-stat-card">
+                <div className="whv-stat-label">Moyenne</div>
+                <div className="whv-stat-value">{formatStatValue(data.stats.mean)}</div>
+              </div>
+              <div className="whv-stat-card">
+                <div className="whv-stat-label">Mediane</div>
+                <div className="whv-stat-value">{formatStatValue(data.stats.median)}</div>
+              </div>
+              <div className="whv-stat-card">
+                <div className="whv-stat-label">Minimum</div>
+                <div className="whv-stat-value">{formatStatValue(data.stats.min)}</div>
+              </div>
+              <div className="whv-stat-card">
+                <div className="whv-stat-label">Maximum</div>
+                <div className="whv-stat-value">{formatStatValue(data.stats.max)}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="whv-muted">Aucune statistique disponible</div>
+          )}
         </div>
 
         <div className="whv-section">
@@ -625,4 +671,3 @@ export default function App() {
     </div>
   );
 }
-

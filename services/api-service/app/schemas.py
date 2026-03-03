@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional, List, Literal, Dict, Any
+﻿from pydantic import BaseModel
+from typing import Dict, List, Literal, Optional
 
 
 class HealthResponse(BaseModel):
@@ -32,6 +32,13 @@ class TrendResponse(BaseModel):
     method: str
 
 
+class DescriptiveStatsResponse(BaseModel):
+    mean: float
+    median: float
+    min: float
+    max: float
+
+
 class SeriesResponse(BaseModel):
     country_iso3: str
     indicator: str
@@ -39,9 +46,8 @@ class SeriesResponse(BaseModel):
     to_year: Optional[int] = None
     points: int
     series: List[Point]
-
-    # ✅ Ajout: tendance (optionnelle)
     trend: Optional[TrendResponse] = None
+    stats: Optional[DescriptiveStatsResponse] = None
 
 
 class CompareResponse(BaseModel):
