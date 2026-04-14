@@ -2,6 +2,7 @@
 .DS_Store
 Thumbs.db
 .vscode/
+desktop.ini
 
 ## Archives
 *.zip
@@ -18,12 +19,17 @@ build/
 ## Python
 __pycache__/
 *.pyc
+.pytest_cache/
+*.egg-info/
+**/*.egg-info/
 .venv/
 .venv-*/
 venv/
 
 ## Java / Maven / Gradle
 target/
+.m2/
+**/.m2/
 .m2-build/
 .gradle/
 
@@ -38,11 +44,7 @@ data/silver/
 
 ## Local prototype folder (kept in other branches)
 V0/
-data/
-__pycache__/
-*.pyc
-.venv/
-node_modules/
+
+## Env / logs
 .env
 *.log
-desktop.ini
