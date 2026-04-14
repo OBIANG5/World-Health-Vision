@@ -1,0 +1,337 @@
+
+----------------------------
+
+gateway-service/pom.xml
+
+
+<!--
+==============================================================================
+FICHIER : services/gateway-service/pom.xml
+
+À QUOI SERT CE FICHIER ?
+------------------------------------------------------------------------------
+Ce fichier est le plan Maven du microservice gateway-service.
+
+Maven est l’outil qui aide Java à :
+- télécharger les bibliothèques nécessaires
+- compiler le projet
+- lancer les tests
+- construire l’application
+
+Image mentale :
+ce fichier est comme la fiche technique officielle du service.
+
+RESPONSABILITÉS DE CE FICHIER
+------------------------------------------------------------------------------
+- définir l’identité du projet
+- définir la version de Java
+- définir les dépendances nécessaires
+- définir comment Maven construit l’application
+
+CE FICHIER N’EST PAS RESPONSABLE DE
+------------------------------------------------------------------------------
+- la logique métier
+- les routes HTTP
+- la sécurité détaillée
+- le comportement applicatif interne
+
+ORDRE CHRONOLOGIQUE
+------------------------------------------------------------------------------
+Ce fichier doit exister dès le début du service.
+Sans lui, Maven ne sait pas construire le projet.
+
+FICHIERS LIÉS
+------------------------------------------------------------------------------
+- utilisé par Maven
+- lié à GatewayServiceApplication.java
+- lié à application.yml
+==============================================================================
+-->
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------
+
+Parfait. Je reprends le contenu de mon avant-dernier message (stack V2 pro + microservices + sécurité + RGPD + CI/CD) et je l’adapte intelligemment à tes choix :
+
+✅ Java Spring Boot 3 + Maven comme base “banque/entreprise”
+
+✅ Python FastAPI pour analytics/ML
+
+✅ C++ Option A = microservice “compute engine” (latence/perf), intégré proprement
+
+✅ On garde Keycloak, Gateway, TimescaleDB/Postgres, Redis, observabilité, DevSecOps, RGPD by design
+
+1) Stack & architecture V2 “pro” (proche version finale) — version mise à jour
+Langages
+
+Java (Spring Boot 3, Maven) : microservices métiers + API + Gateway + audit + RGPD
+
+Python (FastAPI) : analytics/ML/pipelines
+
+C++ (Compute Engine service) : calculs lourds / latence faible (score/volatilité/anomalies/simulations/backtesting)
+
+Communication
+
+V2 : REST entre services (simple)
+
+C++ engine : gRPC recommandé (pro, rapide, typé), REST possible si tu veux démarrer plus simple
+
+Data
+
+PostgreSQL : référentiels (users, consentements, métadonnées, audit)
+
+TimescaleDB : séries temporelles (macro, FX, crypto)
+
+Redis : cache (réponses lourdes, rate-limiting, sessions)
+
+(V2+) MinIO/S3 + Parquet : bronze/silver/gold si tu veux industrialiser
+
+Sécurité
+
+Keycloak (OIDC/OAuth2) : identité, SSO, MFA plus tard
+
+Spring Security : validation JWT, RBAC/ABAC
+
+API Gateway (Spring Cloud Gateway) : point d’entrée unique + rate-limit + CORS + routing
+
+Observabilité
+
+OpenTelemetry (traces)
+
+Prometheus + Grafana (metrics)
+
+Loki (logs) ou ELK plus tard
+
+Sentry (erreurs applicatives) — excellent ajout
+
+Déploiement
+
+V2 : Docker Compose
+
+V3 : Kubernetes (si besoin réel)
+
+2) Squelette microservices prêt à coder (arborescence mise à jour avec C++ engine)
+worldhealth-vision-v2/
+  docs/
+    architecture/
+    security/
+    rgpd/
+    adr/
+  infra/
+    docker-compose.yml
+    postgres-timescale/
+    redis/
+    keycloak/
+    prometheus/
+    grafana/
+    loki/
+  libs/
+    whv-common-java/               # DTOs, exceptions, security utils, OTel config
+    whv-common-proto/              # fichiers .proto gRPC (contrats C++ engine)
+    whv-common-python/             # pydantic schemas + clients utils
+  services/
+    gateway-service/               # Java (Spring Cloud Gateway)
+    user-service/                  # Java (RGPD: consent, export, delete)
+    catalog-service/               # Java (pays, indicateurs, metadata)
+    timeseries-service/            # Java (lecture TimescaleDB)
+    analytics-service/             # Python FastAPI (stats, trend, scoring baseline)
+    ingestion-service/             # Python (WB/IMF/FX/Crypto -> DB/Lake)
+    audit-service/                 # Java (audit logs, accès, conformité)
+    compute-engine-service/        # C++ (gRPC) calculs perf: volat, anomalies, backtest
+    jobs-service/                  # (option V2.1) workers async (recalc, batch)
+  .github/
+    workflows/
+      ci.yml
+      security.yml
+      release.yml
+  README.md
+Rôle de compute-engine-service (C++)
+
+Un seul job : être un moteur math/perf.
+Exemples de fonctions :
+
+volatilité, drawdown, sharpe
+
+anomalies (z-score, rolling, change point simple)
+
+score composite rapide
+
+backtesting basique
+
+simulation Monte Carlo (plus tard)
+
+Appelé par :
+
+analytics-service (Python) ou timeseries-service (Java)
+
+via gRPC (recommandé)
+
+3) Sécurité “niveau banque” — step-by-step (adapté V2 + C++)
+S1 — Keycloak + JWT partout
+
+Keycloak tourne dans Docker Compose
+
+Gateway valide JWT
+
+Chaque microservice Java/Python valide JWT (resource server)
+
+S2 — API Gateway (contrôle central)
+
+TLS en prod (HTTPS)
+
+Rate limiting (Redis)
+
+CORS strict
+
+routes /api/* vers services internes
+
+S3 — Secrets
+
+.env local
+
+GitHub Secrets pour CI
+
+Plus tard : Vault/KMS
+
+S4 — Sécurité du service C++ (très important)
+
+Le compute-engine ne doit pas être exposé publiquement
+
+accessible uniquement depuis le réseau interne Docker
+
+auth interne : mTLS plus tard, ou token interne simple en V2
+
+gRPC avec contrat .proto versionné
+
+S5 — Audit & traçabilité
+
+audit-service reçoit événements d’accès (user, endpoint, timestamp)
+
+pas de PII en clair dans logs
+
+4) RGPD by design — step-by-step (V2)
+G1 — Data map (docs/rgpd)
+
+quelles données user : email, préférences, consentements, historique minimal
+
+finalités, durées, base légale
+
+G2 — Consentement & preuve
+
+table consents (type, version, timestamp, ip hash)
+
+endpoints user-service :
+
+POST /consents
+
+GET /me/consents
+
+G3 — Droits RGPD (V2 réaliste)
+
+GET /me/export
+
+DELETE /me (soft delete + purge job)
+
+logs d’audit associés
+
+G4 — Minimisation
+
+pas de stockage inutile
+
+historisation facultative et anonymisée
+
+5) CI/CD + DevSecOps — step-by-step (avec Java Maven + Python + C++)
+CI (ci.yml)
+
+Java Maven :
+
+mvn -q -DskipTests=false test
+
+build jar
+
+Python :
+
+lint + pytest
+
+C++ :
+
+build (CMake) + tests (ctest) si tu en mets
+
+Docker build de chaque service
+
+Security pipeline (security.yml)
+
+secret scanning (gitleaks)
+
+dependency scan :
+
+Java : OWASP Dependency Check / Snyk
+
+Python : pip-audit
+
+SAST (Semgrep)
+
+container scan (Trivy)
+
+SBOM CycloneDX
+
+Release (release.yml)
+
+tag -> build -> push images
+
+deploy docker-compose “demo env”
+
+6) Maven (validé) — comment l’appliquer partout
+
+Chaque service Java = un module Maven indépendant (microservice autonome)
+
+whv-common-java = lib partagée (DTO + OTel + helpers sécurité)
+
+On évite un “gros monorepo Maven multi-module” au début si ça te bloque.
+
+Tu peux faire : services séparés + une lib common publiée localement
+
+7) Ordre de construction V2 (sans te perdre)
+
+infra/docker-compose.yml : timescale + redis + keycloak + observabilité
+
+gateway-service (Java) : routing + JWT validation + rate limiting
+
+catalog-service (Java) : /countries, /indicators, metadata
+
+timeseries-service (Java) : /series?iso3=&indicator=&from=&to=
+
+analytics-service (Python) : trend + stats + scoring baseline
+
+compute-engine-service (C++) : gRPC “compute” (volatility, anomalies)
+
+user-service (Java) : RGPD (consent/export/delete)
+
+audit-service (Java) : audit logs + conformité
+
+CI/CD + security scans
+
+Si tu veux, prochaine étape : je te fournis le template prêt à coder :
+
+docker-compose.yml V2 complet (Keycloak + Timescale + Redis + Grafana/Prometheus/Loki)
+
+un gateway-service Spring Boot 3 Maven minimal
+
+un catalog-service Spring Boot 3 Maven minimal
+
+un analytics-service FastAPI minimal
+
+un compute-engine-service C++ minimal (gRPC) + .proto
+
+les variables d’environnement standardisées
+
+Dis-moi juste : tu veux commencer par infra/docker-compose.yml (recommandé) ou par le squelette des services Java Maven ?

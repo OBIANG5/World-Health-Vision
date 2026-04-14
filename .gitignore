@@ -1,3 +1,43 @@
+## OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+## Archives
+*.zip
+
+## Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+
+## Python
+__pycache__/
+*.pyc
+.venv/
+.venv-*/
+venv/
+
+## Java / Maven / Gradle
+target/
+.m2-build/
+.gradle/
+
+## Local app data
+AppData/
+
+## Data lake / generated data (keep sources in code, not outputs)
+data/bronze/
+data/silver/
+**/data/bronze/
+**/data/silver/
+
+## Local prototype folder (kept in other branches)
+V0/
 data/
 __pycache__/
 *.pyc

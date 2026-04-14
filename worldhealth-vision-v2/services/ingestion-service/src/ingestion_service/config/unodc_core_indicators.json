@@ -1,0 +1,41 @@
+[
+  {
+    "indicator_code": "WHV.SAFETY.HOMICIDE.RATE.P100K",
+    "dataset_code": "UNODC_HOMICIDE",
+    "dataset_label": "UNODC Homicide Data",
+    "display_name": "Intentional homicide victims (per 100,000 people)",
+    "period_granularity": "ANNUAL",
+    "country_code_aliases": [
+      "ISO3",
+      "ISO 3",
+      "Country code",
+      "Country Code",
+      "REF_AREA",
+      "Reference Area"
+    ],
+    "country_name_aliases": [
+      "Country",
+      "Country name",
+      "Country Name",
+      "REF_AREA_LABEL",
+      "Geographic area"
+    ],
+    "period_aliases": [
+      "Year",
+      "YEAR",
+      "TIME_PERIOD",
+      "Time period"
+    ],
+    "value_aliases": [
+      "Rate",
+      "Homicide rate",
+      "Intentional homicide rate",
+      "Intentional homicide victims per 100,000 population",
+      "Victims of intentional homicide per 100,000 population",
+      "OBS_VALUE",
+      "Value"
+    ],
+    "scale_multiplier": 1.0,
+    "filters": {}
+  }
+]

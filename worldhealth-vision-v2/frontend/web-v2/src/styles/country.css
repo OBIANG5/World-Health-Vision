@@ -1,0 +1,110 @@
+.country-drawer {
+  position: absolute;
+  top: 0;
+  right: -100%;
+  z-index: 40;
+  width: min(480px, 42vw);
+  height: 100%;
+  padding: 18px;
+  transition: right 0.32s ease, width 0.32s ease;
+}
+
+.country-drawer.open {
+  right: 0;
+}
+
+.country-drawer.fullscreen {
+  width: 100%;
+}
+
+.country-drawer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-left: 1px solid rgba(110, 188, 239, 0.14);
+  background: linear-gradient(
+    180deg,
+    rgba(6, 20, 31, 0.97) 0%,
+    rgba(9, 29, 44, 0.98) 100%
+  );
+  backdrop-filter: blur(14px);
+  box-shadow: -24px 0 40px rgba(0, 0, 0, 0.24);
+  border-top-left-radius: 24px;
+  border-bottom-left-radius: 24px;
+}
+
+.country-drawer-header,
+.country-drawer-content {
+  position: relative;
+  z-index: 2;
+}
+
+.country-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.country-drawer-title {
+  margin: 0;
+  font-size: 28px;
+  color: #eef8ff;
+}
+
+.country-drawer-subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: rgba(217, 237, 249, 0.72);
+}
+
+.country-drawer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.drawer-btn {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(125, 190, 235, 0.20);
+  border-radius: 12px;
+  background: rgba(11, 33, 49, 0.88);
+  color: #eef8ff;
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.drawer-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(17, 46, 67, 0.98);
+}
+
+.country-drawer-content {
+  display: grid;
+  gap: 14px;
+  height: calc(100% - 86px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.info-card {
+  padding: 18px;
+  border: 1px solid rgba(110, 188, 239, 0.14);
+  border-radius: 18px;
+  background: rgba(12, 37, 55, 0.82);
+  color: #dcefff;
+}
+
+.info-card h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #f3fbff;
+}
+
+.info-card p {
+  margin: 0;
+  line-height: 1.5;
+  color: rgba(220, 239, 255, 0.82);
+}

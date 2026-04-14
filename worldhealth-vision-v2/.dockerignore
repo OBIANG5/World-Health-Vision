@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+.m2
+**/target
+**/.pytest_cache
+**/__pycache__
+**/.mypy_cache
+**/.ruff_cache
+**/.venv
+**/node_modules
+README.md
+notesperso.txt

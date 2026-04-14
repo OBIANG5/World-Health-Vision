@@ -1,0 +1,16 @@
+[
+  {
+    "indicator_code": "WHV.SAFETY.HOMICIDE.RATE.P100K",
+    "dataset_code": "UNSD_SDG_GLOBAL_DATA",
+    "dataset_label": "UNSD SDG API",
+    "series_code": "VC_IHR_PSRC",
+    "display_name": "Intentional homicide victims (per 100,000 people)",
+    "time_period_start": 2015,
+    "dimension_filters": {
+      "Sex": "BOTHSEX"
+    },
+    "attribute_filters": {
+      "Units": "PER_100000_POP"
+    }
+  }
+]

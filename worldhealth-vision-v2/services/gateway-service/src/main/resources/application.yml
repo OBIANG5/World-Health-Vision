@@ -1,0 +1,231 @@
+﻿# =============================================================================
+# FICHIER : services/gateway-service/src/main/resources/application.yml
+# =============================================================================
+#
+# A QUOI SERT CE FICHIER ?
+# -----------------------------------------------------------------------------
+# Ce fichier configure le comportement du microservice gateway-service.
+#
+# Il permet notamment de definir :
+# - le port HTTP du service
+# - le nom logique du service
+# - les routes gerees par le gateway
+# - les endpoints techniques utiles au monitoring
+#
+# Image mentale :
+# si le code Java est le moteur,
+# ce fichier est une partie du tableau de bord de reglage.
+#
+# RESPONSABILITES DE CE FICHIER
+# -----------------------------------------------------------------------------
+# - configurer Spring Boot
+# - configurer Spring Cloud Gateway
+# - exposer les endpoints techniques (health, prometheus, etc.)
+#
+# CE FICHIER N'EST PAS RESPONSABLE DE
+# -----------------------------------------------------------------------------
+# - ecrire du code Java
+# - contenir la logique metier profonde
+# - remplacer la securite applicative
+#
+# ORDRE CHRONOLOGIQUE
+# -----------------------------------------------------------------------------
+# Ce fichier est cree tres tot, des le demarrage du service.
+#
+# FICHIERS LIES
+# -----------------------------------------------------------------------------
+# - utilise par GatewayServiceApplication.java
+# - utilise par Spring Boot au demarrage
+# - connecte plus tard a catalog-service
+# - connecte plus tard a timeseries-service
+# - surveille plus tard par Prometheus via /actuator/prometheus
+# =============================================================================
+
+server:
+  port: ${WHV_GATEWAY_PORT:8080}
+  shutdown: graceful
+
+spring:
+  application:
+    name: gateway-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${WHV_SECURITY_ISSUER_URI:http://localhost:8081/realms/worldhealth-vision}
+
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 3000
+        response-timeout: 10s
+      default-filters:
+        - RemoveRequestHeader=Cookie
+        - RemoveResponseHeader=Set-Cookie
+      routes:
+        - id: catalog-service-read-route
+          uri: ${WHV_CATALOG_BASE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/catalog/**
+            - Method=GET
+
+        - id: timeseries-service-read-route
+          uri: ${WHV_TIMESERIES_BASE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/timeseries/**
+            - Method=GET
+
+        - id: analytics-service-read-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/analytics/**
+            - Method=GET
+
+        - id: product-country-indicator-overview-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/countries/*/indicators/*/overview
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/indicators/(?<indicatorCode>[^/]+)/overview, /api/analytics/countries/$\{countryIso3}/indicators/$\{indicatorCode}/overview
+
+        - id: product-country-indicator-source-audit-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/countries/*/indicators/*/source-audit
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/indicators/(?<indicatorCode>[^/]+)/source-audit, /api/analytics/countries/$\{countryIso3}/indicators/$\{indicatorCode}/source-audit
+
+        - id: product-country-overview-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/countries/*/overview
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/overview, /api/analytics/countries/$\{countryIso3}/overview
+
+        - id: product-country-economic-snapshot-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/countries/*/economic-snapshot
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/economic-snapshot, /api/analytics/countries/$\{countryIso3}/economic-snapshot
+
+        - id: product-country-relative-cost-snapshot-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/countries/*/relative-cost-snapshot
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/relative-cost-snapshot, /api/analytics/countries/$\{countryIso3}/relative-cost-snapshot
+
+        - id: product-country-compare-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/compare/countries/latest
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/compare/countries/latest, /api/analytics/compare/countries/latest
+
+        - id: product-region-overview-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/regions/*/overview
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/regions/(?<regionCode>[^/]+)/overview, /api/analytics/regions/$\{regionCode}/overview
+
+        - id: product-region-economic-snapshot-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/regions/*/economic-snapshot
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/regions/(?<regionCode>[^/]+)/economic-snapshot, /api/analytics/regions/$\{regionCode}/economic-snapshot
+
+        - id: product-region-relative-cost-snapshot-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/regions/*/relative-cost-snapshot
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/regions/(?<regionCode>[^/]+)/relative-cost-snapshot, /api/analytics/regions/$\{regionCode}/relative-cost-snapshot
+
+        - id: product-region-indicator-overview-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/regions/*/indicators/*/overview
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/regions/(?<regionCode>[^/]+)/indicators/(?<indicatorCode>[^/]+)/overview, /api/analytics/regions/$\{regionCode}/indicators/$\{indicatorCode}/overview
+
+        - id: product-region-indicator-source-audit-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/regions/*/indicators/*/source-audit
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/regions/(?<regionCode>[^/]+)/indicators/(?<indicatorCode>[^/]+)/source-audit, /api/analytics/regions/$\{regionCode}/indicators/$\{indicatorCode}/source-audit
+
+        - id: product-continent-overview-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/continents/*/overview
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/continents/(?<continentCode>[^/]+)/overview, /api/analytics/continents/$\{continentCode}/overview
+
+        - id: product-continent-economic-snapshot-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/continents/*/economic-snapshot
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/continents/(?<continentCode>[^/]+)/economic-snapshot, /api/analytics/continents/$\{continentCode}/economic-snapshot
+
+        - id: product-continent-relative-cost-snapshot-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/continents/*/relative-cost-snapshot
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/continents/(?<continentCode>[^/]+)/relative-cost-snapshot, /api/analytics/continents/$\{continentCode}/relative-cost-snapshot
+
+        - id: product-continent-indicator-overview-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/continents/*/indicators/*/overview
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/continents/(?<continentCode>[^/]+)/indicators/(?<indicatorCode>[^/]+)/overview, /api/analytics/continents/$\{continentCode}/indicators/$\{indicatorCode}/overview
+
+        - id: product-continent-indicator-source-audit-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/continents/*/indicators/*/source-audit
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/continents/(?<continentCode>[^/]+)/indicators/(?<indicatorCode>[^/]+)/source-audit, /api/analytics/continents/$\{continentCode}/indicators/$\{indicatorCode}/source-audit
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+  endpoint:
+    health:
+      show-details: always
+
+info:
+  app:
+    name: gateway-service
+    role: api-entrypoint
+
+whv:
+  security:
+    enabled: ${WHV_SECURITY_ENABLED:false}
+

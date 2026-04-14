@@ -1,0 +1,38 @@
+[
+  {
+    "indicator_code": "NY.GDP.MKTP.CD",
+    "imf_indicator_id": "NGDPD",
+    "display_name": "Gross domestic product (GDP), Current prices, US dollar",
+    "scale_multiplier": 1000000000.0
+  },
+  {
+    "indicator_code": "NY.GDP.PCAP.CD",
+    "imf_indicator_id": "NGDPDPC",
+    "display_name": "Gross domestic product (GDP), Current prices, Per capita, US dollar",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "NY.GDP.MKTP.KD.ZG",
+    "imf_indicator_id": "NGDP_RPCH",
+    "display_name": "Gross domestic product (GDP), Constant prices, Percent change",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "FP.CPI.TOTL.ZG",
+    "imf_indicator_id": "PCPIPCH",
+    "display_name": "All Items, Consumer price index (CPI), Period average, percent change",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "SL.UEM.TOTL.ZS",
+    "imf_indicator_id": "LUR",
+    "display_name": "Unemployment rate",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "BN.CAB.XOKA.GD.ZS",
+    "imf_indicator_id": "BCA_NGDPD",
+    "display_name": "Current account balance (credit less debit), Percent of GDP",
+    "scale_multiplier": 1.0
+  }
+]

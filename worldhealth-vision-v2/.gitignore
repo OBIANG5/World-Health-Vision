@@ -1,0 +1,188 @@
+# =============================================================================
+# FICHIER : .gitignore
+# =============================================================================
+#
+# À QUOI SERT CE FICHIER ?
+# -----------------------------------------------------------------------------
+# Ce fichier dit à Git quels fichiers et dossiers il doit ignorer.
+#
+# Git sert à versionner le projet, c’est-à-dire à suivre les vrais fichiers
+# importants du code source.
+#
+# Mais un projet génère aussi beaucoup de fichiers techniques inutiles à versionner :
+# - fichiers compilés
+# - caches temporaires
+# - artefacts de build
+# - logs
+# - secrets locaux
+# - fichiers propres à l’éditeur
+#
+# Ce fichier sert donc à empêcher Git de “polluer” l’historique du projet
+# avec des fichiers générés automatiquement ou sensibles.
+#
+# Image mentale :
+# si ton dépôt Git est une valise professionnelle,
+# le .gitignore sert à dire :
+# "ces objets-là restent à la maison, on ne les met pas dans la valise."
+#
+#
+# RESPONSABILITÉS DE CE FICHIER
+# -----------------------------------------------------------------------------
+# - exclure les fichiers temporaires
+# - exclure les fichiers générés automatiquement
+# - exclure certains fichiers locaux/sensibles
+# - garder le dépôt propre et professionnel
+#
+#
+# CE FICHIER N’EST PAS RESPONSABLE DE
+# -----------------------------------------------------------------------------
+# - sécuriser à lui seul les secrets
+# - remplacer une vraie gestion de secrets
+# - corriger le code
+# - configurer GitHub ou GitLab
+#
+#
+# ORDRE CHRONOLOGIQUE
+# -----------------------------------------------------------------------------
+# Ce fichier doit être créé très tôt, avant les premiers commits sérieux,
+# afin d’éviter d’ajouter de mauvais fichiers dans le dépôt.
+#
+#
+# FICHIERS LIÉS / CONNEXIONS
+# -----------------------------------------------------------------------------
+# 1) CONNECTÉ À :
+#    - tous les dossiers du projet
+#    - Git, qui lit ce fichier automatiquement
+#
+# 2) IMPACTE DIRECTEMENT :
+#    - services/*/target/
+#    - fichiers locaux .env
+#    - logs
+#    - dossiers IDE/cache
+#
+# 3) COMPLÉMENTAIRE DE :
+#    - une future stratégie de secrets
+#    - les bonnes pratiques DevSecOps
+#
+#
+# QUAND MODIFIER CE FICHIER ?
+# -----------------------------------------------------------------------------
+# - quand un nouvel outil génère des fichiers temporaires
+# - quand un nouveau langage/framework ajoute des artefacts
+# - quand on veut ignorer de nouveaux fichiers locaux
+#
+#
+# QUAND NE PAS MODIFIER CE FICHIER ?
+# -----------------------------------------------------------------------------
+# - pour changer la logique métier
+# - pour corriger un bug applicatif
+# - pour configurer un service métier
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# SYSTÈME / OS
+# -----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# -----------------------------------------------------------------------------
+# LOGS
+# -----------------------------------------------------------------------------
+*.log
+logs/
+*.out
+*.err
+
+# -----------------------------------------------------------------------------
+# FICHIERS LOCAUX / VARIABLES D’ENVIRONNEMENT
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------------------------------------------------------------
+# JAVA / MAVEN / SPRING BOOT
+# -----------------------------------------------------------------------------
+**/target/
+**/.mvn/timing.properties
+
+# -----------------------------------------------------------------------------
+# FICHIERS COMPILES GENERIQUES
+# -----------------------------------------------------------------------------
+*.class
+*.jar
+*.war
+*.ear
+
+# -----------------------------------------------------------------------------
+# PYTHON
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# -----------------------------------------------------------------------------
+# C / C++ / CMAKE
+# -----------------------------------------------------------------------------
+**/build/
+**/cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+Makefile
+
+# -----------------------------------------------------------------------------
+# NODE / FRONTEND
+# -----------------------------------------------------------------------------
+node_modules/
+dist/
+coverage/
+.next/
+.npm/
+.pnpm-store/
+
+# -----------------------------------------------------------------------------
+# VS CODE / IDE
+# -----------------------------------------------------------------------------
+.vscode/
+.idea/
+*.iml
+
+# -----------------------------------------------------------------------------
+# DOCKER / CONTAINERS
+# -----------------------------------------------------------------------------
+*.pid
+*.seed
+
+# -----------------------------------------------------------------------------
+# DATA LAKE LOCAL
+# -----------------------------------------------------------------------------
+data/bronze/
+data/silver/
+data/gold/
+!data/.gitkeep
+
+# -----------------------------------------------------------------------------
+# TESTS / RAPPORTS
+# -----------------------------------------------------------------------------
+test-results/
+reports/
+surefire-reports/
+failsafe-reports/
+
+# -----------------------------------------------------------------------------
+# GRAFANA / DONNÉES LOCALES EVENTUELLES
+# -----------------------------------------------------------------------------
+**/grafana-data/
+**/prometheus-data/
+**/loki-data/

@@ -1,0 +1,38 @@
+[
+  {
+    "indicator_code": "WHV.PRICE.LEVEL.GDP.OECD100",
+    "dataset_code": "OECD_PRICE_LEVELS",
+    "dataset_label": "OECD Price Level Indices",
+    "dataflow_agency": "OECD.SDD.TPS",
+    "dataflow_id": "DSD_PPP@DF_PPP",
+    "data_query": ".A.PL.A0.IX.OECD",
+    "display_name": "Price level indices, GDP level (OECD = 100)",
+    "period_granularity": "ANNUAL",
+    "scale_multiplier": 1.0,
+    "filters": {
+      "FREQ": "A",
+      "MEASURE": "PL",
+      "ANALYTICAL_CATEGORIES": "A0",
+      "UNIT_MEASURE": "IX",
+      "BASE_REF_AREA": "OECD"
+    }
+  },
+  {
+    "indicator_code": "WHV.HOUSING.PRICE.REAL.INDEX2015",
+    "dataset_code": "OECD_HOUSING_PRICES",
+    "dataset_label": "OECD Housing Prices",
+    "dataflow_agency": "OECD.ECO.MPD",
+    "dataflow_id": "DSD_AN_HOUSE_PRICES@DF_HOUSE_PRICES",
+    "data_query": ".Q.RHP.IX",
+    "display_name": "Real house price index (2015 = 100)",
+    "period_granularity": "QUARTERLY",
+    "scale_multiplier": 1.0,
+    "filters": {
+      "FREQ": "Q",
+      "MEASURE": "RHP",
+      "UNIT_MEASURE": "IX",
+      "ADJUSTMENT": "S",
+      "BASE_PER": "2015"
+    }
+  }
+]

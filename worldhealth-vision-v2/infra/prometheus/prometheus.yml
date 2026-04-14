@@ -1,0 +1,137 @@
+﻿# ============================================================
+# FICHIER : infra/prometheus/prometheus.yml
+# ============================================================
+#
+# CE FICHIER SERT A QUOI ?
+# ------------------------------------------------------------
+# Ce fichier configure Prometheus.
+# Prometheus collecte des metriques techniques sur les services.
+#
+# Il lui dit :
+# - a quelle frequence collecter
+# - quels services surveiller
+# - sur quelle route recuperer les metriques
+#
+# RESPONSABILITES DE CE FICHIER
+# ------------------------------------------------------------
+# - definir la configuration de scraping de Prometheus
+# - declarer les services surveilles
+# - preparer la surveillance des services presents et futurs
+#
+# CE FICHIER N'EST PAS RESPONSABLE DE :
+# ------------------------------------------------------------
+# - demarrer Prometheus lui-meme
+# - creer les microservices
+# - rendre un service monitorable a lui seul
+#
+# FICHIERS LIES / CONNEXIONS
+# ------------------------------------------------------------
+# 1) UTILISE PAR :
+#    - infra/docker-compose.yml
+#      qui monte ce fichier dans le conteneur Prometheus
+#
+# 2) CONNECTE A :
+#    - postgres-exporter
+#    - redis-exporter
+#    - keycloak
+#    - futurs services Java
+#    - futurs services Python
+#    - futur service C++
+#
+# 3) CONNECTE INDIRECTEMENT A :
+#    - infra/grafana/provisioning/datasources/datasources.yml
+#      car Grafana utilisera Prometheus comme source de metriques
+#
+# QUAND MODIFIER CE FICHIER ?
+# ------------------------------------------------------------
+# - quand on ajoute un nouveau service a surveiller
+# - quand on change le chemin des metriques
+# - quand on change l'intervalle de collecte
+#
+# ============================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+  external_labels:
+    project: worldhealth-vision-v2
+    environment: local
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - prometheus:9090
+
+  - job_name: keycloak
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - keycloak:8080
+
+  - job_name: postgres-exporter
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - postgres-exporter:9187
+
+  - job_name: redis-exporter
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - redis-exporter:9121
+
+  - job_name: gateway-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - gateway-service:8080
+
+  - job_name: user-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - user-service:8080
+
+  - job_name: catalog-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - catalog-service:8080
+
+  - job_name: timeseries-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - timeseries-service:8080
+
+  - job_name: audit-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - audit-service:8080
+
+  - job_name: analytics-service
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - analytics-service:8000
+
+  - job_name: ingestion-service
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - ingestion-service:8000
+
+  - job_name: jobs-service
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - jobs-service:8000
+
+  - job_name: compute-engine-service
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - compute-engine-service:9100

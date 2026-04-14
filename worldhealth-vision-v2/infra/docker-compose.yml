@@ -1,0 +1,334 @@
+﻿#
+# WorldHealth Vision V2 local infrastructure and service composition.
+# This file wires the shared platform services and the first V2
+# application services we are actively building:
+# - gateway-service
+# - catalog-service
+# - analytics-service
+# - ingestion-service
+#
+name: worldhealth-vision-v2
+
+services:
+  gateway-service:
+    container_name: whv-gateway
+    build:
+      context: ..
+      dockerfile: infra/docker/java-service.Dockerfile
+      args:
+        SERVICE_MODULE: services/gateway-service
+    image: whv/gateway-service:local
+    restart: unless-stopped
+    environment:
+      WHV_GATEWAY_PORT: 8080
+      WHV_CATALOG_BASE_URL: http://catalog-service:8080
+      WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
+      WHV_ANALYTICS_BASE_URL: http://analytics-service:8000
+    ports:
+      - "8080:8080"
+    depends_on:
+      catalog-service:
+        condition: service_started
+      timeseries-service:
+        condition: service_started
+      analytics-service:
+        condition: service_started
+    networks:
+      - whv-private
+      - whv-public
+
+  catalog-service:
+    container_name: whv-catalog
+    build:
+      context: ..
+      dockerfile: infra/docker/java-service.Dockerfile
+      args:
+        SERVICE_MODULE: services/catalog-service
+    image: whv/catalog-service:local
+    restart: unless-stopped
+    environment:
+      WHV_CATALOG_PORT: 8080
+      WHV_DB_URL: jdbc:postgresql://whv-timescaledb:5432/whv
+      WHV_DB_USERNAME: whv_user
+      WHV_DB_PASSWORD: whv_password
+    depends_on:
+      whv-timescaledb:
+        condition: service_healthy
+    networks:
+      - whv-private
+
+  timeseries-service:
+    container_name: whv-timeseries
+    build:
+      context: ..
+      dockerfile: infra/docker/java-service.Dockerfile
+      args:
+        SERVICE_MODULE: services/timeseries-service
+    image: whv/timeseries-service:local
+    restart: unless-stopped
+    environment:
+      WHV_TIMESERIES_PORT: 8080
+      WHV_DB_URL: jdbc:postgresql://whv-timescaledb:5432/whv
+      WHV_DB_USERNAME: whv_user
+      WHV_DB_PASSWORD: whv_password
+    depends_on:
+      whv-timescaledb:
+        condition: service_healthy
+    networks:
+      - whv-private
+
+  ingestion-service:
+    container_name: whv-ingestion
+    build:
+      context: ..
+      dockerfile: services/ingestion-service/Dockerfile
+    image: whv/ingestion-service:local
+    restart: unless-stopped
+    environment:
+      WHV_INGEST_SERVICE_PORT: 8000
+      WHV_INGEST_BRONZE_ROOT: /app/data/bronze
+      WHV_INGEST_PUBLISH_TO_TIMESERIES: "true"
+      WHV_INGEST_TIMESERIES_BASE_URL: http://timeseries-service:8080
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    volumes:
+      - whv_data_lake:/app/data
+    depends_on:
+      timeseries-service:
+        condition: service_started
+    networks:
+      - whv-private
+      - whv-public
+
+  analytics-service:
+    container_name: whv-analytics
+    build:
+      context: ..
+      dockerfile: services/analytics-service/Dockerfile
+    image: whv/analytics-service:local
+    restart: unless-stopped
+    environment:
+      WHV_ANALYTICS_SERVICE_PORT: 8000
+      WHV_ANALYTICS_CATALOG_BASE_URL: http://catalog-service:8080
+      WHV_ANALYTICS_TIMESERIES_BASE_URL: http://timeseries-service:8080
+    depends_on:
+      catalog-service:
+        condition: service_started
+      timeseries-service:
+        condition: service_started
+    networks:
+      - whv-private
+
+  whv-timescaledb:
+    image: timescale/timescaledb:2.15.3-pg16
+    container_name: whv-timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: whv
+      POSTGRES_USER: whv_user
+      POSTGRES_PASSWORD: whv_password
+      TZ: Europe/Paris
+    ports:
+      - "5432:5432"
+    volumes:
+      - whv_timescaledb_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U whv_user -d whv"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - whv-private
+
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: whv-keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak_user
+      POSTGRES_PASSWORD: keycloak_password
+      TZ: Europe/Paris
+    ports:
+      - "5433:5432"
+    volumes:
+      - whv_keycloak_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak_user -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - whv-private
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: whv-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --save 60 1000
+      --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - whv_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - whv-private
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: whv-keycloak
+    restart: unless-stopped
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_PORT: 5432
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak_user
+      KC_DB_PASSWORD: keycloak_password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin_admin_change_me
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: "true"
+      TZ: Europe/Paris
+    command:
+      - start-dev
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q 'UP'"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 300s
+    networks:
+      - whv-private
+      - whv-public
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: whv-postgres-exporter
+    restart: unless-stopped
+    depends_on:
+      whv-timescaledb:
+        condition: service_healthy
+    environment:
+      DATA_SOURCE_NAME: "postgresql://whv_user:whv_password@whv-timescaledb:5432/whv?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - whv-private
+      - whv-public
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    container_name: whv-redis-exporter
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_ADDR: "redis://redis:6379"
+    ports:
+      - "9121:9121"
+    networks:
+      - whv-private
+      - whv-public
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: whv-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - whv_prometheus_data:/prometheus
+    depends_on:
+      whv-timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      postgres-exporter:
+        condition: service_started
+      redis-exporter:
+        condition: service_started
+    networks:
+      - whv-private
+      - whv-public
+
+  loki:
+    image: grafana/loki:3.1.1
+    container_name: whv-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - whv_loki_data:/loki
+    networks:
+      - whv-private
+      - whv-public
+
+  grafana:
+    image: grafana/grafana:11.1.4
+    container_name: whv-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin_admin_change_me
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      TZ: Europe/Paris
+    ports:
+      - "3000:3000"
+    volumes:
+      - whv_grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ./grafana/provisioning/dashboards/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - whv-private
+      - whv-public
+
+networks:
+  whv-private:
+    driver: bridge
+    internal: true
+
+  whv-public:
+    driver: bridge
+
+volumes:
+  whv_timescaledb_data:
+  whv_keycloak_db_data:
+  whv_redis_data:
+  whv_prometheus_data:
+  whv_loki_data:
+  whv_grafana_data:
+  whv_data_lake:

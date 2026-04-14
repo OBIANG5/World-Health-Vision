@@ -1,0 +1,94 @@
+# ============================================================
+# FICHIER : infra/grafana/provisioning/datasources/datasources.yml
+# ============================================================
+#
+# CE FICHIER SERT À QUOI ?
+# ------------------------------------------------------------
+# Ce fichier configure les "sources de données" de Grafana.
+#
+# Une source de données est un système dans lequel Grafana va
+# lire des informations.
+#
+# Dans notre projet :
+# - Prometheus = source de métriques
+# - Loki       = source de logs
+#
+# Grâce à ce fichier, Grafana n’a pas besoin qu’on ajoute
+# manuellement ces sources dans l’interface web.
+# Elles seront déjà enregistrées automatiquement au démarrage.
+#
+#
+# RESPONSABILITÉS DE CE FICHIER
+# ------------------------------------------------------------
+# - déclarer les sources de données de Grafana
+# - donner leur type
+# - donner leur URL dans le réseau Docker
+# - définir une source par défaut si besoin
+#
+#
+# CE FICHIER N’EST PAS RESPONSABLE DE :
+# ------------------------------------------------------------
+# - lancer Grafana (docker-compose.yml le fait)
+# - lancer Prometheus ou Loki
+# - créer les dashboards eux-mêmes
+#
+#
+# ORDRE CHRONOLOGIQUE DANS LE PROJET
+# ------------------------------------------------------------
+# Ce fichier est créé tôt, après la configuration de Prometheus
+# et Loki, car Grafana dépend d’eux pour afficher les métriques
+# et les logs.
+#
+#
+# FICHIERS LIÉS / CONNEXIONS
+# ------------------------------------------------------------
+# 1) UTILISÉ PAR :
+#    - infra/docker-compose.yml
+#      Ce fichier sera monté dans le conteneur Grafana
+#      via un volume Docker.
+#
+# 2) CONNECTÉ À :
+#    - infra/prometheus/prometheus.yml
+#      car Grafana utilisera le service Prometheus défini
+#      dans l’infrastructure
+#
+#    - infra/loki/loki-config.yml
+#      car Grafana utilisera Loki comme source de logs
+#
+# 3) DÉPEND LOGIQUEMENT DE :
+#    - service "prometheus" dans docker-compose.yml
+#    - service "loki" dans docker-compose.yml
+#
+#
+# QUAND MODIFIER CE FICHIER ?
+# ------------------------------------------------------------
+# - quand on ajoute une nouvelle source de données Grafana
+# - quand on change l’adresse ou le port de Prometheus/Loki
+# - quand on veut changer la source par défaut
+#
+#
+# QUAND NE PAS MODIFIER CE FICHIER ?
+# ------------------------------------------------------------
+# - pour changer les dashboards
+# - pour changer la logique métier
+# - pour corriger les services applicatifs
+#
+# ============================================================
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    uid: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: true

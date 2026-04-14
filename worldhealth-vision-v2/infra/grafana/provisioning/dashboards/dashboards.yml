@@ -1,0 +1,79 @@
+# ============================================================
+# FICHIER : infra/grafana/provisioning/dashboards/dashboards.yml
+# ============================================================
+#
+# CE FICHIER SERT À QUOI ?
+# ------------------------------------------------------------
+# Ce fichier configure le chargement automatique des dashboards
+# dans Grafana.
+#
+# Un dashboard est un tableau de bord visuel contenant des
+# graphes, indicateurs, logs, courbes, etc.
+#
+# Grâce à ce fichier, Grafana sait dans quel dossier il doit
+# chercher les dashboards à importer automatiquement.
+#
+#
+# RESPONSABILITÉS DE CE FICHIER
+# ------------------------------------------------------------
+# - déclarer un provider de dashboards
+# - indiquer le dossier où sont stockés les dashboards
+# - permettre un chargement automatique
+#
+#
+# CE FICHIER N’EST PAS RESPONSABLE DE :
+# ------------------------------------------------------------
+# - définir le contenu des dashboards eux-mêmes
+# - lancer Grafana
+# - configurer les sources de données
+#
+#
+# ORDRE CHRONOLOGIQUE DANS LE PROJET
+# ------------------------------------------------------------
+# Ce fichier est créé au moment où l’on prépare Grafana,
+# même si les dashboards complets arriveront un peu plus tard.
+#
+#
+# FICHIERS LIÉS / CONNEXIONS
+# ------------------------------------------------------------
+# 1) UTILISÉ PAR :
+#    - infra/docker-compose.yml
+#      Ce fichier sera monté dans le conteneur Grafana.
+#
+# 2) CONNECTÉ À :
+#    - infra/grafana/dashboards/
+#      C’est le dossier dans lequel Grafana ira chercher
+#      les futurs dashboards JSON.
+#
+# 3) COMPLÉMENTAIRE DE :
+#    - infra/grafana/provisioning/datasources/datasources.yml
+#      car un dashboard a besoin de sources de données
+#      comme Prometheus ou Loki
+#
+#
+# QUAND MODIFIER CE FICHIER ?
+# ------------------------------------------------------------
+# - quand on change le dossier des dashboards
+# - quand on ajoute d’autres providers
+#
+#
+# QUAND NE PAS MODIFIER CE FICHIER ?
+# ------------------------------------------------------------
+# - pour modifier le contenu d’un dashboard
+# - pour changer Prometheus ou Loki
+# - pour modifier une logique applicative
+#
+# ============================================================
+
+apiVersion: 1
+
+providers:
+  - name: worldhealth-vision-dashboards
+    orgId: 1
+    folder: WorldHealth Vision
+    type: file
+    disableDeletion: false
+    editable: true
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

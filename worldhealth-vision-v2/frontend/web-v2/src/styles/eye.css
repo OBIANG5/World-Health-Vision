@@ -1,0 +1,233 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  background: #071a29;
+}
+
+.whv-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  color: #eef8ff;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(58, 160, 224, 0.11), transparent 26%),
+    linear-gradient(180deg, #051524 0%, #082033 52%, #051524 100%);
+}
+
+.whv-header {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  z-index: 50;
+}
+
+.whv-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border: 1px solid rgba(115, 192, 242, 0.16);
+  border-radius: 22px;
+  background: rgba(6, 22, 35, 0.68);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+}
+
+.whv-brand-logo {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+}
+
+.whv-brand-logo-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.whv-brand-eye-stroke {
+  fill: none;
+  stroke: #0f6aa1;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.whv-brand-globe {
+  fill: #4db8ff;
+}
+
+.whv-brand-pupil {
+  fill: #08263a;
+  stroke: #d4f1ff;
+  stroke-width: 1.5;
+}
+
+.whv-brand-text h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.05;
+  font-weight: 800;
+  color: #f2fbff;
+}
+
+.whv-brand-text p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba(221, 240, 255, 0.82);
+}
+
+.whv-main {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Zone centrale contenant l'œil */
+.eye-stage {
+  position: absolute;
+  inset: 88px 20px 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: padding-right 0.32s ease;
+}
+
+.eye-stage.drawer-open {
+  padding-right: calc(min(480px, 42vw) + 18px);
+}
+
+.eye-scene {
+  position: relative;
+  width: min(98vw, 1800px);
+  height: min(82vh, 860px);
+  min-height: 430px;
+}
+
+.eye-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.eye-map-foreign {
+  pointer-events: all;
+}
+
+.eye-map-surface {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #061725;
+}
+
+/* Carte Leaflet dans l'œil */
+.eye-map-surface .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #061725;
+  filter: saturate(1.02) brightness(0.92);
+}
+
+.eye-map-surface .leaflet-control-container {
+  opacity: 0.84;
+}
+
+.eye-map-surface .leaflet-bottom.leaflet-right {
+  margin-right: 18px;
+  margin-bottom: 10px;
+}
+
+.eye-outline-main {
+  fill: none;
+  stroke: url(#whv-eye-stroke-gradient);
+  stroke-width: 22;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.eye-outline-highlight {
+  fill: none;
+  stroke: rgba(130, 208, 255, 0.16);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Bouton réouverture de la fiche pays */
+.open-sheet-btn {
+  position: absolute;
+  top: 92px;
+  right: 24px;
+  z-index: 45;
+  padding: 12px 18px;
+  border: 1px solid rgba(120, 196, 244, 0.18);
+  border-radius: 14px;
+  background: rgba(9, 29, 44, 0.92);
+  color: #eef8ff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.open-sheet-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(12, 39, 58, 0.98);
+  border-color: rgba(120, 196, 244, 0.28);
+}
+
+@media (max-width: 1200px) {
+  .eye-stage.drawer-open {
+    padding-right: 20px;
+  }
+
+  .eye-scene {
+    width: 98vw;
+    height: min(72vh, 720px);
+  }
+
+  .whv-brand-text h1 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 860px) {
+  .whv-header {
+    top: 14px;
+    left: 14px;
+    right: 14px;
+  }
+
+  .whv-brand {
+    width: fit-content;
+    max-width: calc(100vw - 28px);
+  }
+
+  .eye-stage {
+    inset: 84px 10px 10px 10px;
+  }
+
+  .eye-scene {
+    min-height: 320px;
+    height: 56vh;
+  }
+
+  .open-sheet-btn {
+    right: 14px;
+    top: 86px;
+  }
+}

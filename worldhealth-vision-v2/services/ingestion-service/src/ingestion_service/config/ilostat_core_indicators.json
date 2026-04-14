@@ -1,0 +1,24 @@
+[
+  {
+    "indicator_code": "SL.UEM.TOTL.ZS",
+    "ilostat_download_id": "UNE_DEAP_SEX_AGE_RT_A",
+    "ilostat_series_code": "UNE_DEAP_SEX_AGE_RT",
+    "display_name": "Unemployment rate by sex and age (%)",
+    "scale_multiplier": 1.0,
+    "filters": {
+      "sex": "SEX_T",
+      "classif1": "AGE_YTHADULT_YGE15"
+    }
+  },
+  {
+    "indicator_code": "SL.TLF.CACT.ZS",
+    "ilostat_download_id": "EAP_DWAP_SEX_AGE_RT_A",
+    "ilostat_series_code": "EAP_DWAP_SEX_AGE_RT",
+    "display_name": "Labor force participation rate by sex and age (%)",
+    "scale_multiplier": 1.0,
+    "filters": {
+      "sex": "SEX_T",
+      "classif1": "AGE_YTHADULT_YGE15"
+    }
+  }
+]

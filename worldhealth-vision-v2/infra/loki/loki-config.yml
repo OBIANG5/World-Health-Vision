@@ -1,0 +1,117 @@
+# ============================================================
+# FICHIER : infra/loki/loki-config.yml
+# ============================================================
+#
+# CE FICHIER SERT À QUOI ?
+# ------------------------------------------------------------
+# Ce fichier configure Loki.
+# Loki est l’outil chargé de recevoir, stocker et organiser
+# les logs techniques du système.
+#
+# Un log est un message produit par un programme, par exemple :
+# - "service démarré"
+# - "connexion réussie"
+# - "erreur SQL"
+# - "appel API reçu"
+#
+# Loki ne sert pas à stocker les données métier du projet.
+# Il sert uniquement à centraliser les journaux techniques.
+#
+#
+# RESPONSABILITÉS DE CE FICHIER
+# ------------------------------------------------------------
+# - définir comment Loki démarre
+# - définir sur quel port il écoute
+# - définir où il stocke ses données
+# - définir son schéma de stockage local
+#
+#
+# CE FICHIER N’EST PAS RESPONSABLE DE :
+# ------------------------------------------------------------
+# - lancer Loki (docker-compose.yml le fait)
+# - produire les logs des applications
+# - afficher les logs (Grafana s’en chargera)
+#
+#
+# ORDRE CHRONOLOGIQUE DANS LE PROJET
+# ------------------------------------------------------------
+# Ce fichier est créé très tôt dans la phase infrastructure,
+# en même temps que Prometheus et Grafana.
+#
+#
+# FICHIERS LIÉS / CONNEXIONS
+# ------------------------------------------------------------
+# 1) UTILISÉ PAR :
+#    - infra/docker-compose.yml
+#      qui monte ce fichier dans le conteneur Loki
+#
+# 2) CONNECTÉ À :
+#    - Grafana, qui lira les logs stockés par Loki
+#    - les futurs microservices, dont les logs seront centralisés
+#
+# 3) POINT DE CONNEXION TECHNIQUE :
+#    - docker-compose.yml monte ce fichier vers :
+#      /etc/loki/loki-config.yml
+#    - le conteneur Loki le charge au démarrage avec :
+#      -config.file=/etc/loki/loki-config.yml
+#
+#
+# QUAND MODIFIER CE FICHIER ?
+# ------------------------------------------------------------
+# - si on change le mode de stockage de Loki
+# - si on change les ports
+# - si on passe à une architecture logs plus avancée
+#
+#
+# QUAND NE PAS MODIFIER CE FICHIER ?
+# ------------------------------------------------------------
+# - pour changer la logique métier des microservices
+# - pour modifier Grafana directement
+# - pour corriger une route API
+#
+# ============================================================
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+
+common:
+  path_prefix: /loki
+  replication_factor: 1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  filesystem:
+    directory: /loki/chunks
+
+limits_config:
+  retention_period: 168h
+  allow_structured_metadata: true
+  volume_enabled: true
+
+compactor:
+  working_directory: /loki/compactor
+  retention_enabled: true
+  delete_request_store: filesystem
+
+analytics:
+  reporting_enabled: false
