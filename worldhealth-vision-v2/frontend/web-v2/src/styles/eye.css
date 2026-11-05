@@ -12,8 +12,25 @@ body,
 }
 
 body {
-  font-family: Inter, Arial, Helvetica, sans-serif;
+  /* system-ui = Segoe UI Variable (Windows 11), SF Pro (macOS), sans-serif Linux */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background: #071a29;
+}
+
+h1 { font-size: 2rem;   font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.015em; }
+h3 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+h4 { font-size: 1.15rem; font-weight: 600; }
+h5 { font-size: 1rem;   font-weight: 600; }
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .whv-page {
@@ -31,7 +48,12 @@ body {
   position: absolute;
   top: 18px;
   left: 22px;
+  right: 22px;
   z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  pointer-events: none;
 }
 
 .whv-brand {
@@ -44,6 +66,159 @@ body {
   background: rgba(6, 22, 35, 0.68);
   backdrop-filter: blur(10px);
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+
+/* Navigation principale — même ligne que le logo */
+.whv-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(115, 192, 242, 0.13);
+  border-radius: 18px;
+  background: rgba(6, 22, 35, 0.62);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+
+/* Popover sélecteur de pays */
+.country-selector-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 100;
+  min-width: 220px;
+  max-width: 280px;
+  border: 1px solid rgba(115, 192, 242, 0.22);
+  border-radius: 14px;
+  background: rgba(5, 18, 32, 0.98);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.country-selector-search {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(9, 29, 44, 0.85);
+  border: none;
+  border-bottom: 1px solid rgba(115, 192, 242, 0.1);
+  color: #eef8ff;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+.country-selector-search::placeholder {
+  color: rgba(183, 220, 245, 0.38);
+}
+
+.country-selector-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(77, 184, 255, 0.2) transparent;
+}
+
+.country-selector-item {
+  display: block;
+  width: 100%;
+  padding: 9px 14px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: rgba(220, 240, 255, 0.82);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  font-family: inherit;
+}
+
+.country-selector-item:hover {
+  background: rgba(77, 184, 255, 0.09);
+  color: #eef8ff;
+}
+
+.country-selector-item.selected {
+  background: rgba(77, 184, 255, 0.14);
+  color: #4db8ff;
+  font-weight: 600;
+}
+
+.whv-nav-btn {
+  padding: 9px 17px;
+  border: 1px solid rgba(120, 196, 244, 0.16);
+  border-radius: 12px;
+  background: rgba(9, 29, 44, 0.85);
+  color: #eef8ff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.whv-nav-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(12, 39, 58, 0.98);
+  border-color: rgba(120, 196, 244, 0.28);
+}
+
+.whv-nav-btn.active {
+  border-color: rgba(74, 184, 255, 0.35);
+  background: rgba(14, 48, 72, 0.95);
+  color: #4db8ff;
+}
+
+.whv-nav-btn--regions {
+  border-color: rgba(120, 244, 196, 0.16);
+  color: rgba(180, 240, 220, 0.9);
+}
+
+.whv-nav-btn--regions:hover {
+  border-color: rgba(120, 244, 196, 0.30);
+  background: rgba(9, 38, 30, 0.92);
+}
+
+.whv-nav-btn--regions.active {
+  border-color: rgba(74, 255, 184, 0.35);
+  background: rgba(9, 46, 34, 0.95);
+  color: #4dffb8;
+}
+
+.whv-nav-btn--sources {
+  border-color: rgba(180, 244, 200, 0.14);
+  color: rgba(180, 240, 200, 0.82);
+  font-size: 14px;
+  padding: 6px 11px;
+}
+
+.whv-nav-btn--sources:hover {
+  border-color: rgba(180, 244, 200, 0.26);
+  background: rgba(9, 36, 18, 0.9);
+}
+
+.whv-nav-btn--sources.active {
+  border-color: rgba(100, 255, 160, 0.32);
+  background: rgba(9, 40, 20, 0.94);
+  color: #64ffa0;
+}
+
+.whv-nav-btn--lang {
+  border-color: rgba(200, 180, 244, 0.16);
+  color: rgba(210, 190, 255, 0.85);
+  font-size: 14px;
+  padding: 6px 10px;
+}
+
+.whv-nav-btn--lang:hover {
+  border-color: rgba(200, 180, 244, 0.28);
+  background: rgba(20, 12, 44, 0.92);
 }
 
 .whv-brand-logo {
@@ -86,7 +261,7 @@ body {
 
 .whv-brand-text p {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(221, 240, 255, 0.82);
 }
 
@@ -96,51 +271,119 @@ body {
   height: 100%;
 }
 
-/* Zone centrale contenant l'œil */
+/* Zone centrale contenant l'œil — déborde latéralement pour que les pointes sortent de l'écran */
 .eye-stage {
   position: absolute;
-  inset: 88px 20px 20px 20px;
+  inset: 82px -150px 0 -150px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: padding-right 0.32s ease;
+  transition: right 0.32s ease;
 }
 
 .eye-stage.drawer-open {
-  padding-right: calc(min(480px, 42vw) + 18px);
+  right: calc(min(520px, 46vw) - 60px);
+}
+
+/* Animation de chargement — l'œil est DÉJÀ OUVERT, puis cligne deux fois à
+   vitesse humaine (fermeture ~95 ms, réouverture ~145 ms, pause ~290 ms).
+   Per-keyframe easing : ease-in à la fermeture (la paupière accélère en
+   descendant), ease-out à la réouverture (elle décélère en remontant).
+   Pas de fill "forwards" : l'état final = état naturel (ouvert), ce qui laisse
+   intact le pincement scaleY(0.97) du drawer. */
+@keyframes whvEyeBlink {
+  0%, 25%   { transform: scaleY(1);    animation-timing-function: ease-in; }  /* déjà ouvert (pose) */
+  31%       { transform: scaleY(0.04); animation-timing-function: ease-out; } /* clignement 1 — fermé */
+  40%, 58%  { transform: scaleY(1);    animation-timing-function: ease-in; }  /* rouvert, courte pause */
+  64%       { transform: scaleY(0.04); animation-timing-function: ease-out; } /* clignement 2 — fermé */
+  73%, 100% { transform: scaleY(1); }                                          /* reste ouvert */
 }
 
 .eye-scene {
   position: relative;
-  width: min(98vw, 1800px);
-  height: min(82vh, 860px);
-  min-height: 430px;
+  width: 100%;
+  /* Pas de max-width — l'œil remplit la totalité de la zone, pointes incluses */
+  height: calc(100vh - 82px);
+  min-height: 460px;
+  transform-origin: center center;
+  animation: whvEyeBlink 1.6s ease-in-out;
+  transition: transform 0.38s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
+/* Légère fermeture quand un panneau est ouvert — réduite pour ne pas trop compresser */
+.eye-stage.drawer-open .eye-scene {
+  transform: scaleY(0.97);
+}
+
+.eye-defs-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Sclère — blanc de l'œil, bien visible dans les coins */
+.eye-sclera {
+  position: absolute;
+  inset: 0;
+  clip-path: url(#whv-eye-clip);
+  background: radial-gradient(
+    ellipse 55% 82% at 50% 50%,
+    #f4faff 0%,
+    #eaf4fc 35%,
+    #d8ecf8 65%,
+    #c8e2f4 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Carte map — iris CIRCULAIRE centré, comme le globe du logo.
+   Container ~2.22:1 (insets -150px → 2220px de large à 1920px de viewport).
+   Pour un cercle visuel : rx% = ry% × (H/W) = 44% × (998/2220) ≈ 20%.
+   ry=44% donne un globe de ~880px de diamètre, bien visible et grand. */
+.eye-map-surface {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #061725;
+  clip-path: url(#whv-eye-clip);
+  z-index: 2;
+  mask-image: radial-gradient(
+    ellipse 20% 44% at 50% 50%,
+    black 0%,
+    black 80%,
+    rgba(0, 0, 0, 0.6) 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 20% 44% at 50% 50%,
+    black 0%,
+    black 80%,
+    rgba(0, 0, 0, 0.6) 90%,
+    transparent 100%
+  );
+}
+
+/* Decorative eye SVG — never intercepts clicks */
 .eye-svg {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
   width: 100%;
   height: 100%;
   display: block;
   overflow: visible;
+  pointer-events: none;
 }
 
-.eye-map-foreign {
-  pointer-events: all;
-}
-
-.eye-map-surface {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #061725;
-}
-
-/* Carte Leaflet dans l'œil */
+/* Carte Leaflet dans l'œil — plus lumineuse et contrastée */
 .eye-map-surface .leaflet-container {
   width: 100%;
   height: 100%;
   background: #061725;
-  filter: saturate(1.02) brightness(0.92);
+  filter: saturate(1.15) brightness(1.05) contrast(1.08);
 }
 
 .eye-map-surface .leaflet-control-container {
@@ -152,82 +395,997 @@ body {
   margin-bottom: 10px;
 }
 
+/* Classes legacy conservées au cas où — remplacées par les couches inline dans EyeMapFrame */
 .eye-outline-main {
   fill: none;
-  stroke: url(#whv-eye-stroke-gradient);
-  stroke-width: 22;
+  stroke: #0c3959;
+  stroke-width: 92;
   stroke-linecap: round;
   stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .eye-outline-highlight {
   fill: none;
-  stroke: rgba(130, 208, 255, 0.16);
+  stroke: rgba(77, 184, 255, 0.18);
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+  pointer-events: none;
 }
 
-/* Bouton réouverture de la fiche pays */
-.open-sheet-btn {
-  position: absolute;
-  top: 92px;
-  right: 24px;
-  z-index: 45;
-  padding: 12px 18px;
-  border: 1px solid rgba(120, 196, 244, 0.18);
-  border-radius: 14px;
-  background: rgba(9, 29, 44, 0.92);
-  color: #eef8ff;
+/* =========================================================
+   Tooltip riche au survol des pays — WorldMap
+   ========================================================= */
+
+/* Conteneur Leaflet override pour supprimer le style par défaut */
+.leaflet-tooltip.whv-tooltip-rich {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  white-space: normal;
+}
+
+.whv-tooltip-card {
+  min-width: 160px;
+  max-width: 240px;
+  background: rgba(5, 18, 32, 0.97);
+  border: 1px solid rgba(77, 184, 255, 0.28);
+  border-radius: 11px;
+  padding: 10px 13px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px);
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  pointer-events: none;
+}
+
+.wtc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.wtc-flag {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.wtc-name {
   font-size: 14px;
-  cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  font-weight: 700;
+  color: #eef8ff;
+  line-height: 1.2;
 }
 
-.open-sheet-btn:hover {
-  transform: translateY(-1px);
-  background: rgba(12, 39, 58, 0.98);
-  border-color: rgba(120, 196, 244, 0.28);
+.wtc-row {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.72);
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.4;
 }
+
+.wtc-row:last-child {
+  margin-bottom: 0;
+}
+
+/* Couleur accent pour la devise */
+.wtc-currency {
+  color: rgba(157, 240, 197, 0.82);
+}
+
+/* =========================================================
+   Panel focus (legacy)
+   ========================================================= */
+
+.eye-focus-panel {
+  position: absolute;
+  left: 28px;
+  bottom: 26px;
+  z-index: 8;
+  max-width: 320px;
+  padding: 16px 18px;
+  border: 1px solid rgba(115, 192, 242, 0.14);
+  border-radius: 18px;
+  background: rgba(6, 22, 35, 0.76);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+}
+
+.eye-focus-panel h2 {
+  margin: 6px 0 4px;
+  font-size: 28px;
+  color: #f4fbff;
+}
+
+.eye-focus-label {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(179, 220, 245, 0.72);
+}
+
+.eye-focus-context {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(221, 240, 255, 0.82);
+}
+
 
 @media (max-width: 1200px) {
   .eye-stage.drawer-open {
-    padding-right: 20px;
+    right: calc(min(580px, 100vw) - 40px);
   }
 
   .eye-scene {
-    width: 98vw;
-    height: min(72vh, 720px);
+    height: calc(100vh - 82px);
   }
 
   .whv-brand-text h1 {
     font-size: 20px;
   }
+
+  .whv-nav-btn {
+    font-size: 14px;
+    padding: 7px 12px;
+  }
+}
+
+/* =========================================================
+   Modal Sources & Méthodologie
+   ========================================================= */
+
+.whv-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(3, 10, 18, 0.84);
+  backdrop-filter: blur(7px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 36px 16px 40px;
+  overflow-y: auto;
+}
+
+.whv-modal {
+  width: 100%;
+  max-width: 980px;
+  background: linear-gradient(180deg, #0b2033 0%, #071828 100%);
+  border: 1px solid rgba(100, 180, 242, 0.14);
+  border-radius: 20px;
+  box-shadow: 0 8px 56px rgba(0, 0, 0, 0.65);
+}
+
+.whv-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 26px 16px;
+  border-bottom: 1px solid rgba(100, 180, 242, 0.09);
+}
+
+.whv-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #b7dcf5;
+  margin: 0 0 5px;
+  letter-spacing: 0.01em;
+}
+
+.whv-modal-subtitle {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.48);
+  margin: 0;
+  line-height: 1.55;
+  max-width: 680px;
+}
+
+.whv-modal-close {
+  flex-shrink: 0;
+  background: rgba(100, 180, 242, 0.07);
+  border: 1px solid rgba(100, 180, 242, 0.14);
+  border-radius: 8px;
+  color: rgba(183, 220, 245, 0.65);
+  font-size: 14px;
+  font-family: inherit;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.whv-modal-close:hover {
+  background: rgba(100, 180, 242, 0.16);
+  color: #b7dcf5;
+}
+
+.whv-modal-body {
+  padding: 20px 26px 28px;
+}
+
+.whv-modal-message {
+  text-align: center;
+  color: rgba(183, 220, 245, 0.4);
+  font-size: 14px;
+  padding: 24px 0;
+  margin: 0;
+}
+
+.whv-modal-message--error {
+  color: rgba(255, 140, 100, 0.75);
+}
+
+/* Grille des sources */
+.whv-source-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 12px;
+}
+
+.whv-source-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(100, 180, 242, 0.09);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.whv-source-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.whv-source-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #d4edff;
+}
+
+.whv-source-type-badge {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.whv-source-meta {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.5);
+  margin: 0;
+}
+
+.whv-source-pills {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.whv-pill {
+  font-size: 14px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.whv-pill--scope {
+  background: rgba(74, 184, 255, 0.09);
+  color: #4ab8ff;
+  border: 1px solid rgba(74, 184, 255, 0.18);
+}
+
+.whv-pill--cadence {
+  background: rgba(183, 220, 245, 0.06);
+  color: rgba(183, 220, 245, 0.55);
+  border: 1px solid rgba(183, 220, 245, 0.1);
+}
+
+.whv-pill--access {
+  background: rgba(100, 200, 120, 0.08);
+  color: #7bcb8e;
+  border: 1px solid rgba(100, 200, 120, 0.16);
+}
+
+.whv-source-box {
+  font-size: 14px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  line-height: 1.55;
+}
+
+.whv-source-box--bias {
+  background: rgba(217, 119, 6, 0.07);
+  border-left: 2px solid rgba(217, 119, 6, 0.38);
+  color: rgba(251, 191, 36, 0.82);
+}
+
+.whv-source-box--quality {
+  background: rgba(16, 185, 129, 0.06);
+  border-left: 2px solid rgba(16, 185, 129, 0.32);
+  color: rgba(52, 211, 153, 0.82);
+}
+
+.whv-source-box--license {
+  background: rgba(100, 180, 242, 0.04);
+  border-left: 2px solid rgba(100, 180, 242, 0.18);
+  color: rgba(183, 220, 245, 0.55);
+}
+
+.whv-source-box-label {
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.72;
+  display: block;
+}
+
+.whv-source-links {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+
+.whv-source-link {
+  font-size: 14px;
+  color: rgba(74, 184, 255, 0.85);
+  text-decoration: none;
+  padding: 3px 8px;
+  border: 1px solid rgba(74, 184, 255, 0.18);
+  border-radius: 4px;
+  transition: background 0.14s, color 0.14s;
+}
+
+.whv-source-link:hover {
+  background: rgba(74, 184, 255, 0.1);
+  color: #74c8ff;
+}
+
+/* ========================================================= */
+
+/* =========================================================
+   Indicateur de statut des services
+   ========================================================= */
+
+.whv-service-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  cursor: default;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.whv-service-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.whv-service-status--online {
+  color: rgba(74, 222, 128, 0.85);
+  border-color: rgba(74, 222, 128, 0.18);
+  background: rgba(74, 222, 128, 0.06);
+}
+.whv-service-status--online .whv-service-status-dot {
+  background: #4ade80;
+  box-shadow: 0 0 5px rgba(74, 222, 128, 0.7);
+}
+
+.whv-service-status--offline {
+  color: rgba(248, 113, 113, 0.90);
+  border-color: rgba(248, 113, 113, 0.22);
+  background: rgba(248, 113, 113, 0.07);
+}
+.whv-service-status--offline .whv-service-status-dot {
+  background: #f87171;
+  box-shadow: 0 0 5px rgba(248, 113, 113, 0.6);
+  animation: whvPulseRed 1.8s ease-in-out infinite;
+}
+
+.whv-service-status--loading {
+  color: rgba(183, 220, 245, 0.55);
+  border-color: rgba(183, 220, 245, 0.12);
+  background: transparent;
+}
+.whv-service-status--loading .whv-service-status-dot {
+  background: rgba(183, 220, 245, 0.45);
+  animation: whvPulseBlue 1.2s ease-in-out infinite;
+}
+
+@keyframes whvPulseRed {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes whvPulseBlue {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* =========================================================
+   Bandeau hors-ligne
+   ========================================================= */
+
+.whv-offline-banner {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  border-radius: 14px;
+  background: rgba(20, 8, 8, 0.92);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  max-width: 560px;
+  width: calc(100% - 48px);
+  animation: slideUpIn 0.28s ease;
+  pointer-events: none;
+}
+
+@keyframes slideUpIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.whv-offline-banner-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  color: #f87171;
+}
+
+.whv-offline-banner strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fca5a5;
+  margin-bottom: 2px;
+}
+
+.whv-offline-banner span {
+  display: block;
+  font-size: 14px;
+  color: rgba(252, 165, 165, 0.65);
+  line-height: 1.4;
 }
 
 @media (max-width: 860px) {
   .whv-header {
-    top: 14px;
+    top: 12px;
     left: 14px;
     right: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .whv-brand {
-    width: fit-content;
-    max-width: calc(100vw - 28px);
+    flex-shrink: 0;
+  }
+
+  .whv-nav {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .whv-nav-btn {
+    font-size: 14px;
+    padding: 6px 10px;
   }
 
   .eye-stage {
-    inset: 84px 10px 10px 10px;
+    inset: 80px -20px 0 -20px;
+  }
+
+  .eye-stage.drawer-open {
+    right: -20px;
   }
 
   .eye-scene {
-    min-height: 320px;
-    height: 56vh;
+    min-height: 340px;
+    height: calc(100vh - 80px);
+  }
+}
+
+/* =========================================================
+   Watchlist Panel
+   ========================================================= */
+
+.watchlist-panel {
+  position: absolute;
+  top: 56px;
+  right: 10px;
+  z-index: 110;
+  width: min(380px, 94vw);
+  max-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(7, 24, 42, 0.97);
+  border: 1px solid rgba(110, 188, 239, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+  animation: slideInRight 0.22s ease;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.watchlist-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(110, 188, 239, 0.1);
+  flex-shrink: 0;
+}
+
+.watchlist-panel-title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #d6eefc;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.watchlist-star-icon {
+  color: #f7c948;
+  font-size: 14px;
+}
+
+.watchlist-panel-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.5);
+}
+
+.watchlist-panel-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: rgba(183, 220, 245, 0.55);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.watchlist-panel-close:hover {
+  color: #d6eefc;
+  background: rgba(110, 188, 239, 0.1);
+}
+
+.watchlist-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.watchlist-empty {
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.watchlist-empty-text {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.65);
+}
+
+.watchlist-empty-hint {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.38);
+  line-height: 1.5;
+}
+
+.watchlist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(110, 188, 239, 0.07);
+  transition: background 0.12s;
+}
+
+.watchlist-item:last-child {
+  border-bottom: none;
+}
+
+.watchlist-item:hover {
+  background: rgba(110, 188, 239, 0.06);
+}
+
+.watchlist-item-flag {
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.watchlist-item-name {
+  flex: 1;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.88);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.watchlist-item-currency {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.45);
+  background: rgba(110, 188, 239, 0.09);
+  border-radius: 4px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+
+.watchlist-item-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.watchlist-item-btn {
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.watchlist-item-btn--open {
+  background: rgba(37, 99, 235, 0.22);
+  color: #7bbff7;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.watchlist-item-btn--open:hover {
+  background: rgba(37, 99, 235, 0.38);
+  color: #d6eefc;
+}
+
+.watchlist-item-btn--remove {
+  background: transparent;
+  color: rgba(183, 220, 245, 0.35);
+  border: 1px solid rgba(183, 220, 245, 0.12);
+}
+
+.watchlist-item-btn--remove:hover {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+/* Bouton nav watchlist */
+.whv-nav-btn--watchlist {
+  color: #f7c948;
+  border-color: rgba(247, 201, 72, 0.2);
+}
+
+.whv-nav-btn--watchlist:hover,
+.whv-nav-btn--watchlist.active {
+  background: rgba(247, 201, 72, 0.12);
+  border-color: rgba(247, 201, 72, 0.35);
+  color: #fde68a;
+}
+
+/* Bouton nav pouvoir d'achat */
+.whv-nav-btn--pp {
+  color: rgba(250, 225, 100, 0.82);
+  border-color: rgba(250, 225, 100, 0.2);
+}
+.whv-nav-btn--pp:hover,
+.whv-nav-btn--pp.active {
+  background: rgba(250, 225, 100, 0.1);
+  border-color: rgba(250, 225, 100, 0.38);
+  color: #fde68a;
+}
+
+/* Bouton nav conseiller IA */
+.whv-nav-btn--advisor {
+  color: rgba(192, 212, 255, 0.85);
+  border-color: rgba(99, 155, 255, 0.22);
+}
+.whv-nav-btn--advisor:hover,
+.whv-nav-btn--advisor.active {
+  background: rgba(99, 155, 255, 0.1);
+  border-color: rgba(99, 155, 255, 0.4);
+  color: #93c5fd;
+}
+
+/* Bouton nav alertes */
+.whv-nav-btn--alerts {
+  color: rgba(248, 165, 120, 0.85);
+  border-color: rgba(249, 115, 22, 0.2);
+}
+.whv-nav-btn--alerts:hover,
+.whv-nav-btn--alerts.active {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.38);
+  color: #fb923c;
+}
+
+/* Bouton nav immobilier */
+.whv-nav-btn--realestate {
+  color: rgba(196, 181, 253, 0.85);
+  border-color: rgba(167, 139, 250, 0.2);
+}
+.whv-nav-btn--realestate:hover,
+.whv-nav-btn--realestate.active {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.38);
+  color: #c4b5fd;
+}
+
+/* ── Bouton Outils (dropdown trigger) ── */
+.whv-nav-btn--tools {
+  color: rgba(148, 200, 255, 0.85);
+  border-color: rgba(74, 184, 255, 0.2);
+}
+.whv-nav-btn--tools:hover,
+.whv-nav-btn--tools.active {
+  background: rgba(74, 184, 255, 0.1);
+  border-color: rgba(74, 184, 255, 0.38);
+  color: #7ec8f5;
+}
+
+/* ── Menu déroulant Outils ── */
+.whv-tools-dropdown {
+  position: relative;
+}
+
+.whv-tools-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  min-width: 200px;
+  background: rgba(5, 18, 30, 0.97);
+  border: 1px solid rgba(74, 184, 255, 0.18);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(14px);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: toolsMenuIn 0.18s ease;
+}
+
+@keyframes toolsMenuIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.whv-tools-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(183, 220, 245, 0.75);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: left;
+  white-space: nowrap;
+}
+.whv-tools-item:hover {
+  background: rgba(74, 184, 255, 0.08);
+  color: #b7dcf5;
+  border-color: rgba(74, 184, 255, 0.15);
+}
+.whv-tools-item.active {
+  background: rgba(74, 184, 255, 0.1);
+  border-color: rgba(74, 184, 255, 0.28);
+  color: #7ec8f5;
+}
+
+.whv-tools-divider {
+  height: 1px;
+  background: rgba(74, 184, 255, 0.1);
+  margin: 4px 6px;
+}
+
+/* Bouton nav retraite / expat */
+.whv-nav-btn--retirement {
+  color: rgba(167, 234, 180, 0.85);
+  border-color: rgba(100, 200, 130, 0.2);
+}
+
+.whv-nav-btn--retirement:hover,
+.whv-nav-btn--retirement.active {
+  background: rgba(100, 200, 130, 0.1);
+  border-color: rgba(100, 200, 130, 0.38);
+  color: #86efac;
+}
+
+/* Bouton nav score destination */
+.whv-nav-btn--score {
+  color: rgba(250, 165, 90, 0.85);
+  border-color: rgba(250, 140, 50, 0.22);
+}
+
+.whv-nav-btn--score:hover,
+.whv-nav-btn--score.active {
+  background: rgba(250, 140, 50, 0.1);
+  border-color: rgba(250, 140, 50, 0.4);
+  color: #fdba74;
+}
+
+/* Bouton nav voyage */
+.whv-nav-btn--travel {
+  color: rgba(134, 218, 255, 0.85);
+  border-color: rgba(74, 184, 255, 0.2);
+}
+
+.whv-nav-btn--travel:hover,
+.whv-nav-btn--travel.active {
+  background: rgba(74, 184, 255, 0.1);
+  border-color: rgba(74, 184, 255, 0.38);
+  color: #7bbff7;
+}
+
+/* =========================================================
+   Mobile (≤ 640px) — layout compact, nav scrollable
+   ========================================================= */
+
+@media (max-width: 640px) {
+  /* Header : compact, défilement horizontal pour les boutons */
+  .whv-header {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    gap: 6px;
   }
 
-  .open-sheet-btn {
-    right: 14px;
-    top: 86px;
+  .whv-brand {
+    gap: 8px;
+  }
+
+  .whv-brand-logo {
+    width: 44px;
+    height: 28px;
+  }
+
+  .whv-brand-text h1 {
+    font-size: 16px;
+  }
+
+  .whv-brand-text p {
+    display: none;
+  }
+
+  /* Nav défile en horizontal plutôt que de wrapper */
+  .whv-nav {
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 4px 8px;
+    gap: 5px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .whv-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .whv-nav-btn {
+    font-size: 14px;
+    padding: 5px 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Indicateur statut : point seulement (pas de texte) */
+  .whv-service-status {
+    padding: 5px 7px;
+  }
+
+  /* Masquer le texte dans le status (conserver le dot) */
+  .whv-service-status > *:not(.whv-service-status-dot) {
+    display: none;
+  }
+
+  /* Eye stage : couvre tout l'écran, pas de décalage quand drawer ouvert */
+  .eye-stage {
+    inset: 72px -10px 0 -10px;
+  }
+
+  .eye-stage.drawer-open {
+    right: -10px;
+  }
+
+  .eye-scene {
+    min-height: 280px;
+    height: calc(100vh - 72px);
+  }
+
+  /* Bandeau offline : pleine largeur, ancré en bas */
+  .whv-offline-banner {
+    bottom: 8px;
+    width: calc(100% - 16px);
+    left: 8px;
+    transform: none;
+    max-width: none;
+  }
+
+  @keyframes slideUpIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Watchlist panel : plein écran sur mobile */
+  .watchlist-panel {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-height: 72vh;
+    border-radius: 22px 22px 0 0;
+    animation: slideUpIn 0.24s ease;
+  }
+
+  /* Modal sources : plein écran */
+  .whv-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .whv-modal {
+    border-radius: 22px 22px 0 0;
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+
+  /* Source grid : 1 colonne */
+  .whv-source-grid {
+    grid-template-columns: 1fr;
   }
 }
