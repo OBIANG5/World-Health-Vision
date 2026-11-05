@@ -47,6 +47,8 @@ public interface CatalogRepository {
 
     List<SourceSummaryResponse> listSources(boolean enabledOnly);
 
+    List<SourceDetailResponse> listSourceDetails(boolean enabledOnly);
+
     Optional<SourceDetailResponse> findSourceByCode(String code);
 
     List<SourceDatasetSummaryResponse> listSourceDatasets(boolean enabledOnly, String sourceCode);

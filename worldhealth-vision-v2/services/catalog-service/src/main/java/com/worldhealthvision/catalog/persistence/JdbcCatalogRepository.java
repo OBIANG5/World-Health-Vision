@@ -158,6 +158,7 @@ public class JdbcCatalogRepository implements CatalogRepository {
                     curr.code as currency_code,
                     curr.display_name as currency_name,
                     curr.symbol as currency_symbol,
+                    c.capital_city,
                     c.is_aggregate,
                     c.is_active
                 from catalog.country c
@@ -200,6 +201,7 @@ public class JdbcCatalogRepository implements CatalogRepository {
                         rs.getString("currency_code"),
                         rs.getString("currency_name"),
                         rs.getString("currency_symbol"),
+                        rs.getString("capital_city"),
                         rs.getBoolean("is_aggregate"),
                         rs.getBoolean("is_active")
                 ))
@@ -433,6 +435,58 @@ public class JdbcCatalogRepository implements CatalogRepository {
                         rs.getString("display_name"),
                         rs.getString("type"),
                         rs.getString("organization_name"),
+                        rs.getBoolean("is_enabled")
+                ))
+                .list();
+    }
+
+    @Override
+    public List<SourceDetailResponse> listSourceDetails(boolean enabledOnly) {
+        String sql = """
+                select
+                    code,
+                    display_name,
+                    type,
+                    organization_name,
+                    homepage_url,
+                    documentation_url,
+                    access_model,
+                    license_summary,
+                    geographic_scope,
+                    temporal_granularity,
+                    update_cadence,
+                    bias_notes,
+                    quality_notes,
+                    is_enabled
+                from catalog.source
+                where (:enabledOnly = false or is_enabled = true)
+                order by
+                    case type
+                        when 'OFFICIAL'   then 1
+                        when 'RESEARCH'   then 2
+                        when 'COMMUNITY'  then 3
+                        when 'MARKET'     then 4
+                        else 9
+                    end,
+                    display_name
+                """;
+
+        return jdbcClient.sql(sql)
+                .param("enabledOnly", enabledOnly)
+                .query((rs, rowNum) -> new SourceDetailResponse(
+                        rs.getString("code"),
+                        rs.getString("display_name"),
+                        rs.getString("type"),
+                        rs.getString("organization_name"),
+                        rs.getString("homepage_url"),
+                        rs.getString("documentation_url"),
+                        rs.getString("access_model"),
+                        rs.getString("license_summary"),
+                        rs.getString("geographic_scope"),
+                        rs.getString("temporal_granularity"),
+                        rs.getString("update_cadence"),
+                        rs.getString("bias_notes"),
+                        rs.getString("quality_notes"),
                         rs.getBoolean("is_enabled")
                 ))
                 .list();

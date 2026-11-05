@@ -107,10 +107,10 @@ public class CatalogController {
     }
 
     @GetMapping("/sources")
-    public CatalogListResponse<SourceSummaryResponse> listSources(
+    public CatalogListResponse<SourceDetailResponse> listSources(
             @RequestParam(defaultValue = "true") boolean enabledOnly
     ) {
-        return catalogQueryService.listSources(enabledOnly);
+        return catalogQueryService.listSourceDetails(enabledOnly);
     }
 
     @GetMapping("/sources/{code}")
