@@ -1,0 +1,542 @@
+/* WorldHealthVision V2 — travel.css
+   Styles du module voyage (TravelPanel). */
+
+/* ---------- Panneau principal ---------- */
+
+.tv-panel {
+  position: absolute;
+  top: 56px;
+  right: 10px;
+  z-index: 120;
+  width: min(460px, calc(100vw - 20px));
+  max-height: calc(100vh - 76px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(6, 20, 32, 0.98);
+  border: 1px solid rgba(74, 184, 255, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+  animation: tvSlideIn 0.22s ease;
+}
+
+@keyframes tvSlideIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* ---------- En-tête ---------- */
+
+.tv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(74, 184, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.tv-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tv-header-icon {
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.tv-header-title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #d6eefc;
+}
+
+.tv-header-sub {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.48);
+}
+
+.tv-close-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid rgba(183, 220, 245, 0.14);
+  border-radius: 7px;
+  color: rgba(183, 220, 245, 0.5);
+  font-size: 14px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.14s, color 0.14s;
+}
+
+.tv-close-btn:hover {
+  background: rgba(74, 184, 255, 0.1);
+  color: #b7dcf5;
+}
+
+/* ---------- Corps ---------- */
+
+.tv-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 184, 255, 0.14) transparent;
+}
+
+/* ---------- Ligne de route Départ → Destination ---------- */
+
+.tv-route-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(110, 188, 239, 0.1);
+  border-radius: 12px;
+}
+
+.tv-route-point {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tv-route-point--dest {
+  align-items: flex-start;
+}
+
+.tv-route-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(183, 220, 245, 0.4);
+  font-weight: 600;
+}
+
+.tv-route-country {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #d6eefc;
+  font-weight: 600;
+}
+
+.tv-route-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tv-route-placeholder {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.28);
+  font-style: italic;
+}
+
+.tv-route-arrow {
+  font-size: 18px;
+  color: rgba(74, 184, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.tv-clear-dest {
+  background: transparent;
+  border: none;
+  color: rgba(183, 220, 245, 0.4);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+  transition: color 0.12s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tv-clear-dest:hover { color: #f87171; }
+
+/* ---------- Sélecteur de destination ---------- */
+
+.tv-dest-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tv-dest-search {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid rgba(74, 184, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(9, 27, 40, 0.9);
+  color: #f3fbff;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.tv-dest-search:focus {
+  outline: none;
+  border-color: rgba(74, 184, 255, 0.4);
+}
+
+.tv-dest-search::placeholder {
+  color: rgba(183, 220, 245, 0.3);
+}
+
+.tv-dest-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid rgba(110, 188, 239, 0.1);
+  border-radius: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 184, 255, 0.14) transparent;
+}
+
+.tv-dest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(110, 188, 239, 0.06);
+  color: rgba(183, 220, 245, 0.82);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.tv-dest-item:last-child { border-bottom: none; }
+
+.tv-dest-item:hover {
+  background: rgba(74, 184, 255, 0.07);
+  color: #d6eefc;
+}
+
+.tv-dest-currency {
+  margin-left: auto;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.38);
+  background: rgba(110, 188, 239, 0.08);
+  border-radius: 4px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+}
+
+/* ---------- Durée du séjour ---------- */
+
+.tv-duration-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tv-duration-label {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.55);
+  flex-shrink: 0;
+}
+
+.tv-duration-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.tv-duration-btn {
+  padding: 4px 11px;
+  border-radius: 7px;
+  border: 1px solid rgba(110, 188, 239, 0.16);
+  background: transparent;
+  color: rgba(183, 220, 245, 0.5);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.13s;
+}
+
+.tv-duration-btn:hover {
+  background: rgba(74, 184, 255, 0.07);
+  color: rgba(183, 220, 245, 0.8);
+}
+
+.tv-duration-btn.active {
+  background: rgba(74, 184, 255, 0.15);
+  border-color: rgba(74, 184, 255, 0.38);
+  color: #4db8ff;
+}
+
+/* ---------- Section de données ---------- */
+
+.tv-data-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tv-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.5);
+  padding: 8px 0;
+}
+
+.tv-loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4db8ff;
+  animation: tvPulse 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes tvPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.tv-error {
+  font-size: 14px;
+  color: rgba(248, 113, 113, 0.72);
+  padding: 10px 12px;
+  background: rgba(248, 113, 113, 0.06);
+  border: 1px solid rgba(248, 113, 113, 0.14);
+  border-radius: 10px;
+}
+
+.tv-no-data {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.42);
+  text-align: center;
+  padding: 16px 0;
+}
+
+/* ---------- Signal voyage ---------- */
+
+.tv-signal-card {
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: 12px;
+}
+
+.tv-signal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tv-signal-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(183, 220, 245, 0.75);
+}
+
+.tv-signal-tone {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 20px;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tv-signal-headline {
+  margin: 0 0 5px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #d6eefc;
+  line-height: 1.4;
+}
+
+.tv-signal-narrative {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.65);
+  line-height: 1.5;
+}
+
+.tv-caution-list {
+  margin: 6px 0 0;
+  padding: 0 0 0 16px;
+  list-style: disc;
+}
+
+.tv-caution-list li {
+  font-size: 14px;
+  color: rgba(251, 191, 36, 0.72);
+  line-height: 1.5;
+  margin-bottom: 2px;
+}
+
+/* ---------- Estimation budget ---------- */
+
+.tv-budget-block {
+  padding: 12px 14px;
+  background: rgba(7, 22, 34, 0.7);
+  border: 1px solid rgba(110, 188, 239, 0.12);
+  border-radius: 12px;
+}
+
+.tv-budget-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.tv-budget-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 80px;
+}
+
+.tv-budget-label {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(183, 220, 245, 0.38);
+}
+
+.tv-budget-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #d6eefc;
+  letter-spacing: -0.02em;
+}
+
+.tv-budget-total {
+  font-size: 22px;
+  color: #7bbff7;
+}
+
+.tv-budget-note {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.32);
+  line-height: 1.5;
+  padding-top: 6px;
+  border-top: 1px solid rgba(110, 188, 239, 0.08);
+}
+
+/* ---------- Lentilles de coût ---------- */
+
+.tv-cost-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tv-cost-section-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(183, 220, 245, 0.38);
+}
+
+.tv-cost-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tv-cost-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid;
+  border-radius: 9px;
+}
+
+.tv-cost-pill-name {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.68);
+  flex: 1;
+  min-width: 0;
+}
+
+.tv-cost-pill-right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.tv-cost-pill-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(183, 220, 245, 0.88);
+}
+
+.tv-cost-pill-tone {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+/* ---------- Message d'aide ---------- */
+
+.tv-hint {
+  padding: 14px 10px;
+  text-align: center;
+}
+
+.tv-hint p {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.4);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 640px) {
+  .tv-panel {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-height: 82vh;
+    border-radius: 22px 22px 0 0;
+    animation: tvSlideUp 0.24s ease;
+  }
+
+  @keyframes tvSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
