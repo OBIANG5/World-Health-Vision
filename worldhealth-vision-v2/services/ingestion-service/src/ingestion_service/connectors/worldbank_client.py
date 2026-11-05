@@ -14,14 +14,20 @@ class WorldBankClient:
         payload = self._get_json("/country", {"format": "json", "per_page": 400})
         return payload[1]
 
-    def fetch_indicator_all_countries(self, indicator_code: str) -> list[dict[str, Any]]:
+    def fetch_indicator_all_countries(
+        self, indicator_code: str, source_id: str | None = None
+    ) -> list[dict[str, Any]]:
+        params: dict[str, Any] = {
+            "format": "json",
+            "per_page": self._page_size,
+            "page": 1,
+        }
+        if source_id is not None:
+            params["source"] = source_id
+
         first_page = self._get_json(
             f"/country/all/indicator/{indicator_code}",
-            {
-                "format": "json",
-                "per_page": self._page_size,
-                "page": 1,
-            },
+            params,
         )
 
         metadata = first_page[0]
@@ -29,13 +35,16 @@ class WorldBankClient:
         rows = list(first_page[1])
 
         for page in range(2, pages + 1):
+            page_params: dict[str, Any] = {
+                "format": "json",
+                "per_page": self._page_size,
+                "page": page,
+            }
+            if source_id is not None:
+                page_params["source"] = source_id
             page_payload = self._get_json(
                 f"/country/all/indicator/{indicator_code}",
-                {
-                    "format": "json",
-                    "per_page": self._page_size,
-                    "page": page,
-                },
+                page_params,
             )
             rows.extend(page_payload[1])
 
