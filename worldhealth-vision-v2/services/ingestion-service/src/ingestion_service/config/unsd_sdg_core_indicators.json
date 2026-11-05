@@ -5,7 +5,7 @@
     "dataset_label": "UNSD SDG API",
     "series_code": "VC_IHR_PSRC",
     "display_name": "Intentional homicide victims (per 100,000 people)",
-    "time_period_start": 2015,
+    "time_period_start": null,
     "dimension_filters": {
       "Sex": "BOTHSEX"
     },

@@ -1,0 +1,46 @@
+[
+  {
+    "indicator_code": "SP.DYN.LE00.IN",
+    "gho_indicator_id": "WHOSIS_000001",
+    "dataset_code": "WHO_GHO_LIFE_EXPECTANCY",
+    "dataset_label": "WHO Global Health Observatory — Life Expectancy",
+    "display_name": "Life expectancy at birth (years)",
+    "sex_filter": "SEX_BTSX",
+    "period_granularity": "ANNUAL",
+    "scale_multiplier": 1.0,
+    "methodology_note": "WHO uses model-based estimates reconciling civil registration, surveys and censuses; may diverge from WB for countries with incomplete vital registration"
+  },
+  {
+    "indicator_code": "SH.XPD.CHEX.GD.ZS",
+    "gho_indicator_id": "GHED_CHEGDP_SHA2011",
+    "dataset_code": "WHO_GHO_HEALTH_EXPENDITURE",
+    "dataset_label": "WHO Global Health Expenditure Database",
+    "display_name": "Current health expenditure (% of GDP)",
+    "sex_filter": null,
+    "period_granularity": "ANNUAL",
+    "scale_multiplier": 1.0,
+    "methodology_note": "WHO GHED uses SHA 2011 methodology; WB sources partly from WHO GHED — high agreement expected, minor definitional differences for private spending"
+  },
+  {
+    "indicator_code": "SP.DYN.IMRT.IN",
+    "gho_indicator_id": "MDG_0000000007",
+    "dataset_code": "WHO_GHO_INFANT_MORTALITY",
+    "dataset_label": "WHO Global Health Observatory — Child Mortality",
+    "display_name": "Infant mortality rate (per 1,000 live births)",
+    "sex_filter": "SEX_BTSX",
+    "period_granularity": "ANNUAL",
+    "scale_multiplier": 1.0,
+    "methodology_note": "WHO uses IGME model estimates; WB sources from IGME — typically consistent, small divergences from publication lag"
+  },
+  {
+    "indicator_code": "SH.MED.PHYS.ZS",
+    "gho_indicator_id": "HRH_14",
+    "dataset_code": "WHO_GHO_HEALTH_WORKFORCE",
+    "dataset_label": "WHO Global Health Observatory — Health Workforce",
+    "display_name": "Physicians (per 1,000 people)",
+    "sex_filter": null,
+    "period_granularity": "ANNUAL",
+    "scale_multiplier": 1.0,
+    "methodology_note": "WHO NHWA provides registry-based counts; WB sources also from WHO NHWA — high consistency expected"
+  }
+]
