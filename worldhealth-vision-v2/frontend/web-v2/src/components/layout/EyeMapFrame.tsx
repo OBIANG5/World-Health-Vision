@@ -1,14 +1,71 @@
+// WorldHealthVision V2 — EyeMapFrame
+// Contient la carte interactive clippée en forme d'œil.
+// Design inspiré du logo officiel : bordure épaisse navy, globe en pupille.
+
 import WorldMap from "../map/WorldMap";
+import type { CountrySummary } from "../../api/types";
 import "../../styles/eye.css";
 
 type EyeMapFrameProps = {
   drawerOpen: boolean;
+  countries: CountrySummary[];
+  selectedCountryIso3: string;
+  onCountryClick: (iso3: string) => void;
 };
 
-export default function EyeMapFrame({ drawerOpen }: EyeMapFrameProps) {
+// Chemin SVG de la forme mandorla (œil).
+// Ouverture VERTICALE volontairement très haute : le centre-haut monte à y=-40
+// (au-dessus du viewBox) et le centre-bas descend à y=800 (en-dessous).
+// Les pointes gauche/droite restent à y=380. Résultat : l'espace intérieur
+// de l'œil est assez grand pour contenir tout le cercle du globe, et les arcs
+// encadrent ce cercle par l'extérieur (ils sortent de l'écran en haut/bas,
+// ce qui est voulu). overflow:visible sur .eye-svg autorise ce débordement.
+const EYE_PATH =
+  "M30 380 C210 82, 500 -40, 800 -40 C1100 -40, 1390 82, 1570 380 C1390 678, 1100 800, 800 800 C500 800, 210 678, 30 380 Z";
+
+// Même chemin normalisé 0–1 pour clipPathUnits="objectBoundingBox"
+// (les valeurs <0 et >1 placent le contour hors de la boîte → la sclère/carte
+//  remplissent jusqu'au bord, et les arcs couvrent le reste).
+const EYE_PATH_NORM =
+  "M0.01875 0.5 C0.13125 0.10789,0.3125 -0.05263,0.5 -0.05263 C0.6875 -0.05263,0.86875 0.10789,0.98125 0.5 C0.86875 0.89211,0.6875 1.05263,0.5 1.05263 C0.3125 1.05263,0.13125 0.89211,0.01875 0.5 Z";
+
+export default function EyeMapFrame({
+  drawerOpen,
+  countries,
+  selectedCountryIso3,
+  onCountryClick,
+}: EyeMapFrameProps) {
+  const activeIso3Set = new Set(countries.map((c) => c.iso3));
+
+  // Dictionnaire iso3 → CountrySummary pour les tooltips enrichis de WorldMap
+  const countriesMap = new Map(countries.map((c) => [c.iso3, c]));
+
   return (
     <section className={`eye-stage ${drawerOpen ? "drawer-open" : ""}`}>
       <div className="eye-scene">
+        {/* Définition clipPath invisible */}
+        <svg width="0" height="0" className="eye-defs-svg" aria-hidden="true">
+          <defs>
+            <clipPath id="whv-eye-clip" clipPathUnits="objectBoundingBox">
+              <path d={EYE_PATH_NORM} />
+            </clipPath>
+          </defs>
+        </svg>
+
+        {/* Couche 1 : sclère — le blanc de l'œil, visible entre le globe et la bordure */}
+        <div className="eye-sclera" aria-hidden="true" />
+
+        {/* Couche 2 : carte Leaflet masquée en iris (globe central) */}
+        <div className="eye-map-surface">
+          <WorldMap
+            activeIso3Set={activeIso3Set}
+            selectedCountryIso3={selectedCountryIso3}
+            onCountryClick={onCountryClick}
+            countriesMap={countriesMap}
+          />
+        </div>
+
+        {/* Couche 3 : SVG décoratif — bordure épaisse + bague limbique */}
         <svg
           className="eye-svg"
           viewBox="0 0 1600 760"
@@ -16,47 +73,81 @@ export default function EyeMapFrame({ drawerOpen }: EyeMapFrameProps) {
           aria-hidden="true"
         >
           <defs>
-            <clipPath id="whv-eye-clip" clipPathUnits="userSpaceOnUse">
-              <path d="M30 380 C210 150, 500 56, 800 56 C1100 56, 1390 150, 1570 380 C1390 610, 1100 704, 800 704 C500 704, 210 610, 30 380 Z" />
-            </clipPath>
-
-            <filter id="whv-eye-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="8" result="blur" />
+            <filter id="whv-eye-glow" x="-8%" y="-15%" width="116%" height="130%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-
-            <linearGradient id="whv-eye-stroke-gradient" x1="0%" y1="50%" x2="100%" y2="50%">
-              <stop offset="0%" stopColor="#0f5f93" />
-              <stop offset="50%" stopColor="#0b74b6" />
-              <stop offset="100%" stopColor="#0f5f93" />
-            </linearGradient>
           </defs>
 
-          <foreignObject
-            x="0"
-            y="0"
-            width="1600"
-            height="760"
-            clipPath="url(#whv-eye-clip)"
-            className="eye-map-foreign"
-          >
-            <div className="eye-map-surface">
-              <WorldMap />
-            </div>
-          </foreignObject>
-
+          {/* Halo extérieur diffus — déborde hors de l'écran en haut/bas (voulu) */}
           <path
-            d="M30 380 C210 150, 500 56, 800 56 C1100 56, 1390 150, 1570 380 C1390 610, 1100 704, 800 704 C500 704, 210 610, 30 380 Z"
-            className="eye-outline-main"
+            d={EYE_PATH}
+            fill="none"
+            stroke="rgba(10, 60, 120, 0.30)"
+            strokeWidth={210}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             filter="url(#whv-eye-glow)"
           />
 
+          {/* Bordure solide — épaisseur d'origine (155). C'est l'OUVERTURE de l'œil
+              qui a été agrandie (path plus haut), pas l'épaisseur de l'arc.
+              L'arc encadre désormais le cercle par l'extérieur. */}
           <path
-            d="M30 380 C210 150, 500 56, 800 56 C1100 56, 1390 150, 1570 380 C1390 610, 1100 704, 800 704 C500 704, 210 610, 30 380 Z"
-            className="eye-outline-highlight"
+            d={EYE_PATH}
+            fill="none"
+            stroke="#082843"
+            strokeWidth={155}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Reflet lumineux interne — lisère clair sur l'intérieur de l'arc */}
+          <path
+            d={EYE_PATH}
+            fill="none"
+            stroke="rgba(160, 220, 255, 0.10)"
+            strokeWidth={153}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Filet bleu sur le bord intérieur */}
+          <path
+            d={EYE_PATH}
+            fill="none"
+            stroke="rgba(77, 184, 255, 0.20)"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Anneau limbique — INCHANGÉ : correspond exactement à l'iris mask
+              (ellipse 20% 44%). rx=320 ry=334 → cercle de ~444px de rayon à 1080p.
+              Avec l'œil agrandi, les arcs encadrent maintenant ce cercle par
+              l'extérieur au lieu de le recouvrir. Le cercle reste entier et grand. */}
+          <ellipse
+            cx="800"
+            cy="380"
+            rx="320"
+            ry="334"
+            fill="none"
+            stroke="rgba(6, 28, 50, 0.65)"
+            strokeWidth={4}
+          />
+
+          {/* Ombre interne de l'anneau limbique */}
+          <ellipse
+            cx="800"
+            cy="380"
+            rx="320"
+            ry="334"
+            fill="none"
+            stroke="rgba(0, 8, 18, 0.30)"
+            strokeWidth={30}
           />
         </svg>
       </div>
