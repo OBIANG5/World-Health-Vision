@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # FICHIER : services/gateway-service/src/main/resources/application.yml
 # =============================================================================
 #
@@ -59,7 +59,11 @@ spring:
     gateway:
       httpclient:
         connect-timeout: 3000
-        response-timeout: 10s
+        # Les agrégations régionales/continentales (médiane multi-sources sur des
+        # dizaines d'indicateurs × plusieurs pays) peuvent dépasser 10 s au premier
+        # chargement (à froid). 30 s laisse la marge, le cache applicatif rend les
+        # chargements suivants quasi instantanés.
+        response-timeout: 30s
       default-filters:
         - RemoveRequestHeader=Cookie
         - RemoveResponseHeader=Set-Cookie
@@ -97,6 +101,14 @@ spring:
             - Method=GET
           filters:
             - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/indicators/(?<indicatorCode>[^/]+)/source-audit, /api/analytics/countries/$\{countryIso3}/indicators/$\{indicatorCode}/source-audit
+
+        - id: product-country-indicator-rank-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/product/countries/*/indicators/*/rank
+            - Method=GET
+          filters:
+            - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/indicators/(?<indicatorCode>[^/]+)/rank, /api/analytics/countries/$\{countryIso3}/indicators/$\{indicatorCode}/rank
 
         - id: product-country-overview-route
           uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
@@ -228,4 +240,3 @@ info:
 whv:
   security:
     enabled: ${WHV_SECURITY_ENABLED:false}
-
