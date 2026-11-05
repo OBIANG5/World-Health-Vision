@@ -1,73 +1,38 @@
-# React + TypeScript + Vite
+# web-v2
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+`web-v2` is the active V2 frontend shell for `WorldHealth Vision`.
 
-Currently, two official plugins are available:
+It is designed to consume the V2 product facade exposed by `gateway-service`,
+especially:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `/api/product/countries/{iso3}/economic-snapshot`
+- `/api/product/countries/{iso3}/relative-cost-snapshot`
+- `/api/catalog/countries`
 
-## React Compiler
+## Local development without Docker
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Start the backend stack first in local mode:
 
-## Expanding the ESLint configuration
+- `catalog-service`
+- `timeseries-service`
+- `analytics-service`
+- `gateway-service`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Then from this directory:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```powershell
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Use Node.js `20.19+` or `22.12+` for the cleanest Vite experience.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The Vite dev server proxies `/api/*` to:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+http://localhost:8080
 ```
+
+See the full startup order and the exact backend commands in:
+
+- `../docs/architecture/local-run-without-docker.md`
