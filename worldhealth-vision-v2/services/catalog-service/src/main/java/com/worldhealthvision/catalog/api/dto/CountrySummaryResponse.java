@@ -10,12 +10,14 @@ Representer la version "liste" d’un pays exposee par l’API catalog.
 
 EVOLUTION V5
 ------------------------------------------------------------------------------
-On enrichit maintenant la reponse avec la devise courante du pays.
+Enrichi avec devise (currencyCode, currencyName, currencySymbol) pour
+permettre le filtrage et le convertisseur FX dans le front.
 
-Pourquoi dans la version summary aussi ?
-- parce qu’une liste de pays utile pour le produit V2 doit deja pouvoir
-  afficher ou filtrer par devise
-- cela preparera mieux les comparaisons et le futur front adapte
+EVOLUTION V7 (tooltip riche)
+------------------------------------------------------------------------------
+Ajout de capitalCity dans la summary : permet d’afficher la capitale
+directement dans le tooltip de la carte sans appel supplementaire au
+backend. Charge marginale negligeable (< 20 octets / pays).
 ==============================================================================
 */
 
@@ -30,6 +32,7 @@ public record CountrySummaryResponse(
         String currencyCode,
         String currencyName,
         String currencySymbol,
+        String capitalCity,
         boolean aggregate,
         boolean active
 ) {
