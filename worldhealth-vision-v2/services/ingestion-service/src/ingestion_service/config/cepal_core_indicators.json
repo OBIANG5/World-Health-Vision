@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "WHV.CEPAL.POVERTY.RATE",
+    "dataset_code": "CEPAL_CEPALSTAT",
+    "dataset_label": "CEPAL/ECLAC CEPALSTAT — Poverty",
+    "source_indicator_id": "3170",
+    "display_name": "Poverty headcount ratio (%, CEPAL national methodology)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "WHV.CEPAL.EXTREME.POVERTY",
+    "dataset_code": "CEPAL_CEPALSTAT",
+    "dataset_label": "CEPAL/ECLAC CEPALSTAT — Poverty",
+    "source_indicator_id": "3171",
+    "display_name": "Extreme poverty headcount ratio (%, CEPAL national methodology)",
+    "scale_multiplier": 1.0
+  }
+]

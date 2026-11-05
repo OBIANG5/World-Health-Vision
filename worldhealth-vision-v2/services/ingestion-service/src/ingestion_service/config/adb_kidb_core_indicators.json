@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "NY.GDP.MKTP.KD.ZG",
+    "dataset_code": "ADB_KIDB",
+    "dataset_label": "ADB Key Indicators Database",
+    "source_indicator_id": "GDPGR",
+    "display_name": "Croissance du PIB (% annuel) — ADB",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "WHV.ADB.POVERTY.HEADCOUNT",
+    "dataset_code": "ADB_KIDB",
+    "dataset_label": "ADB Key Indicators Database",
+    "source_indicator_id": "POVHC",
+    "display_name": "Poverty headcount ratio at $2.15/day (% of population)",
+    "scale_multiplier": 1.0
+  }
+]

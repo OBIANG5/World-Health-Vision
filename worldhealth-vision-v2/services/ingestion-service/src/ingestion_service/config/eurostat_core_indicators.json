@@ -1,0 +1,29 @@
+[
+  {
+    "indicator_code": "GC.DOD.TOTL.GD.ZS",
+    "dataset_code": "EUROSTAT_PUBLIC_DATA",
+    "dataset_label": "Eurostat Public Data",
+    "eurostat_dataset_id": "gov_10dd_ggd",
+    "filter_params": {"na_item": "GD", "unit": "PC_GDP", "sector": "S13"},
+    "display_name": "Government gross debt (% of GDP)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "SP.DYN.LE00.IN",
+    "dataset_code": "EUROSTAT_PUBLIC_DATA",
+    "dataset_label": "Eurostat Public Data",
+    "eurostat_dataset_id": "demo_mlexpec",
+    "filter_params": {"sex": "T", "age": "Y_LT1"},
+    "display_name": "Life expectancy at birth (years)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "SH.XPD.CHEX.GD.ZS",
+    "dataset_code": "EUROSTAT_PUBLIC_DATA",
+    "dataset_label": "Eurostat Public Data",
+    "eurostat_dataset_id": "hlth_sha11_hf",
+    "filter_params": {"icha11_hf": "HF", "unit": "PC_CHE"},
+    "display_name": "Current health expenditure (% of GDP, Eurostat)",
+    "scale_multiplier": 1.0
+  }
+]

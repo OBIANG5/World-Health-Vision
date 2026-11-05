@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "WHV.BIS.CBPOL.RATE",
+    "dataset_code": "BIS_STATISTICS",
+    "dataset_label": "BIS Statistics — Central Bank Policy Rates",
+    "fetch_method": "policy_rates",
+    "display_name": "Central bank policy rate (%, annual average)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "WHV.BIS.CREDIT.PRIVATE.GDP",
+    "dataset_code": "BIS_STATISTICS",
+    "dataset_label": "BIS Statistics — Total Credit to Private Non-Financial Sector",
+    "fetch_method": "private_credit_gdp",
+    "display_name": "Credit to private non-financial sector (% of GDP)",
+    "scale_multiplier": 1.0
+  }
+]

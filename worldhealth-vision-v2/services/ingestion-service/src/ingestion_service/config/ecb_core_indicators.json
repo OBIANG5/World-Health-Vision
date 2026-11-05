@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "WHV.ECB.HICP.ANNUAL",
+    "dataset_code": "ECB_STATISTICS",
+    "dataset_label": "ECB Statistical Data Warehouse",
+    "fetch_method": "hicp_annual",
+    "display_name": "HICP inflation (% annual, ECB)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "WHV.ECB.BOND.YIELD.10Y",
+    "dataset_code": "ECB_STATISTICS",
+    "dataset_label": "ECB Statistical Data Warehouse",
+    "fetch_method": "long_term_rates",
+    "display_name": "10-year government bond yield (%, ECB)",
+    "scale_multiplier": 1.0
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "NY.GDP.MKTP.KD.ZG",
+    "dataset_code": "AFDB_ADI",
+    "dataset_label": "AfDB African Development Indicators",
+    "source_indicator_id": "AFDBNAIGEG2019:NGDP_RPCH",
+    "display_name": "Croissance du PIB (% annuel) — AfDB",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "BN.CAB.XOKA.GD.ZS",
+    "dataset_code": "AFDB_ADI",
+    "dataset_label": "AfDB African Development Indicators",
+    "source_indicator_id": "AFDBNAIGEG2019:BCA_NGDPD",
+    "display_name": "Solde du compte courant (% du PIB) — AfDB",
+    "scale_multiplier": 1.0
+  }
+]
