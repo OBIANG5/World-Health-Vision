@@ -123,8 +123,15 @@ class ImfWeoIngestionService:
                     continue
 
                 year = int(year_label)
-                if latest_actual_year is not None and year > latest_actual_year:
+                # Skip years too far in the future (beyond estimate horizon)
+                if latest_actual_year is not None and year > latest_actual_year + 1:
                     continue
+
+                # year == latest_actual_year + 1 → current-year IMF estimate (not yet "actual")
+                if latest_actual_year is not None and year == latest_actual_year + 1:
+                    obs_status = "ESTIMATED"
+                else:
+                    obs_status = "OBSERVED"
 
                 scaled_value = numeric_value * entry.scale_multiplier
                 observations.append(
@@ -133,7 +140,7 @@ class ImfWeoIngestionService:
                         indicator_code=entry.indicator_code,
                         year=year,
                         value=scaled_value,
-                        value_status="OBSERVED",
+                        value_status=obs_status,
                         source_published_at=source_published_at,
                         source_metadata={
                             "sourceIndicatorId": entry.imf_indicator_id,
