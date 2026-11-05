@@ -1,4 +1,5 @@
 import asyncio
+import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from statistics import median
@@ -29,6 +30,7 @@ from analytics_service.models import (
     FreshnessSummary,
     IndicatorDetail,
     IndicatorOverviewResponse,
+    IndicatorRankResponse,
     LatestSourceObservation,
     RegionDetail,
     RegionalEconomicLens,
@@ -84,6 +86,48 @@ class ResolutionCache:
     latest_runs: dict[tuple[str, str], SourceRunSummary | None] = field(default_factory=dict)
 
 
+class _AsyncTTLCache:
+    """Cache mémoire (TTL) avec déduplication des appels concurrents.
+
+    Le calcul d'un rang relance, pour chaque indicateur, un scan IDENTIQUE de
+    tous les pays (liste des pays + comparaison cross-pays). Ce résultat ne
+    dépend pas du pays interrogé : on le calcule donc une seule fois par fenêtre
+    TTL, et les appels simultanés sur la même clé partagent le même calcul grâce
+    à un verrou par clé (les clés différentes restent parallèles).
+    """
+
+    def __init__(self, ttl_seconds: float) -> None:
+        self._ttl = ttl_seconds
+        self._store: dict[str, tuple[float, object]] = {}
+        self._locks: dict[str, asyncio.Lock] = {}
+
+    def _lock_for(self, key: str) -> asyncio.Lock:
+        lock = self._locks.get(key)
+        if lock is None:
+            lock = asyncio.Lock()
+            self._locks[key] = lock
+        return lock
+
+    def _fresh(self, key: str):
+        cached = self._store.get(key)
+        if cached is not None and (time.monotonic() - cached[0]) < self._ttl:
+            return True, cached[1]
+        return False, None
+
+    async def get_or_load(self, key: str, loader):
+        hit, value = self._fresh(key)
+        if hit:
+            return value
+        async with self._lock_for(key):
+            # Re-vérifie : un appel concurrent a pu remplir le cache pendant l'attente.
+            hit, value = self._fresh(key)
+            if hit:
+                return value
+            value = await loader()
+            self._store[key] = (time.monotonic(), value)
+            return value
+
+
 TONE_SEVERITY = {
     "POSITIVE": 0,
     "BALANCED": 1,
@@ -117,6 +161,19 @@ class AnalyticsService:
         self._settings = settings
         self._catalog_client = catalog_client
         self._timeseries_client = timeseries_client
+        # Caches pour les calculs de rang (scans "tout le monde").
+        # Le scan cross-pays coûte ~12 s à froid (requête timeseries) ; les rangs
+        # ne changent qu'après une ingestion (rare). On amortit donc largement :
+        #   - liste des pays : quasi statique → 30 min
+        #   - comparaison cross-pays par indicateur → 15 min
+        self._active_countries_cache = _AsyncTTLCache(ttl_seconds=1800.0)
+        self._cross_country_cache = _AsyncTTLCache(ttl_seconds=900.0)
+        # Les snapshots régionaux lancent ~50 scans cross-pays en parallèle. Le pool
+        # JDBC du timeseries-service est limité (Hikari = 8, connection-timeout 3 s) :
+        # sans bride, les requêtes en file dépassent le délai d'obtention de connexion
+        # et renvoient des 500/502. On plafonne donc la concurrence côté analytics
+        # sous la taille du pool, ce qui garde le débit élevé sans saturer la base.
+        self._region_scan_semaphore = asyncio.Semaphore(16)
 
     async def aclose(self) -> None:
         await asyncio.gather(
@@ -486,6 +543,163 @@ class AnalyticsService:
             items=items,
         )
 
+    async def get_country_indicator_rank(
+        self,
+        country_iso3: str,
+        indicator_code: str,
+        source_code: str | None,
+        dataset_code: str | None,
+        period_granularity: str | None,
+    ) -> IndicatorRankResponse:
+        normalized_iso3 = self._normalize_required_code(country_iso3)
+        normalized_indicator = self._normalize_required_code(indicator_code)
+
+        # Récupère le pays (propre à la requête) + tous les pays actifs en parallèle.
+        # La liste des pays est identique pour tous les rangs → servie par cache.
+        country, all_countries = await asyncio.gather(
+            self._call_catalog(lambda: self._catalog_client.get_country(normalized_iso3)),
+            self._active_countries_cache.get_or_load(
+                "active:limit300",
+                lambda: self._call_catalog(lambda: self._catalog_client.list_countries(
+                    include_aggregates=False,
+                    active_only=True,
+                    region_code=None,
+                    limit=300,
+                )),
+            ),
+        )
+
+        all_iso3s = [c.iso3 for c in all_countries]
+        region_by_iso3: dict[str, str | None] = {c.iso3: c.regionCode for c in all_countries}
+
+        # Scan cross-pays : identique quel que soit le pays interrogé (FRA, DEU…)
+        # → mis en cache par (indicateur, source, dataset, granularité).
+        norm_source = self._normalize_optional_code(source_code)
+        norm_dataset = self._normalize_optional_code(dataset_code)
+        norm_granularity = self._normalize_optional_code(period_granularity)
+        cmp_key = f"{normalized_indicator}|{norm_source}|{norm_dataset}|{norm_granularity}"
+        items = await self._cross_country_cache.get_or_load(
+            cmp_key,
+            lambda: self._call_timeseries(
+                lambda: self._timeseries_client.compare_countries_latest(
+                    country_iso3=all_iso3s,
+                    indicator_code=normalized_indicator,
+                    source_code=norm_source,
+                    dataset_code=norm_dataset,
+                    period_granularity=norm_granularity,
+                    include_missing=False,
+                )
+            ),
+        )
+
+        # Déduplication : une seule valeur représentative par pays.
+        # compare_countries_latest retourne N lignes par pays quand N sources coexistent.
+        # Priorité : OBSERVED > ESTIMATED, puis période la plus récente.
+        # ── Point de changement multi-sources ──────────────────────────────────
+        # Quand on agrégera plusieurs sources (médiane / moyenne / consensus),
+        # remplacer ce bloc par la logique d'agrégation.  Le reste du calcul
+        # de rang (tri, world_rank, region_rank) n'aura pas besoin de changer.
+        # ──────────────────────────────────────────────────────────────────────
+        best_by_country: dict[str, object] = {}
+        for it in items:
+            existing = best_by_country.get(it.countryIso3)
+            if existing is None:
+                best_by_country[it.countryIso3] = it
+            else:
+                # Préférer OBSERVED à ESTIMATED
+                existing_observed = getattr(existing, "valueStatus", "") == "OBSERVED"
+                current_observed = it.valueStatus == "OBSERVED"
+                if current_observed and not existing_observed:
+                    best_by_country[it.countryIso3] = it
+                elif current_observed == existing_observed:
+                    # Même statut → garder la période la plus récente
+                    if getattr(it, "periodStart", None) and getattr(existing, "periodStart", None):
+                        if it.periodStart > existing.periodStart:
+                            best_by_country[it.countryIso3] = it
+
+        # Tri décroissant : valeur la plus haute = rang 1
+        valid = [it for it in best_by_country.values() if it.numericValue is not None]
+        valid.sort(key=lambda x: x.numericValue, reverse=True)
+
+        world_total = len(valid)
+        world_rank = None
+        value = None
+        period_label = None
+        source_code_out = None
+
+        for i, it in enumerate(valid):
+            if it.countryIso3 == normalized_iso3:
+                world_rank = i + 1
+                value = it.numericValue
+                period_label = it.periodLabel
+                source_code_out = it.sourceCode
+                break
+
+        region_code = country.regionCode
+        region_name = country.regionName
+        region_rank = None
+        region_total = 0
+
+        if region_code:
+            region_valid = [it for it in valid if region_by_iso3.get(it.countryIso3) == region_code]
+            region_total = len(region_valid)
+            for i, it in enumerate(region_valid):
+                if it.countryIso3 == normalized_iso3:
+                    region_rank = i + 1
+                    break
+
+        return IndicatorRankResponse(
+            iso3=normalized_iso3,
+            indicatorCode=normalized_indicator,
+            worldRank=world_rank,
+            worldTotal=world_total,
+            regionRank=region_rank,
+            regionTotal=region_total,
+            regionCode=region_code,
+            regionName=region_name,
+            value=value,
+            periodLabel=period_label,
+            sourceCode=source_code_out,
+        )
+
+    async def get_raw_series_for_forecast(
+        self,
+        country_iso3: str,
+        indicator_code: str,
+        source_code: str | None,
+        dataset_code: str | None,
+        series_limit: int,
+    ) -> list[dict]:
+        """Fetch raw annual time series for the forecast engine.
+
+        Returns a list of {year: int, value: float|None} dicts sorted oldest→newest.
+        Uses the median-selected primary source (same as overview) to avoid mixing
+        methodologies across sources in the regression.
+        """
+        normalized_iso3 = self._normalize_required_code(country_iso3)
+        normalized_indicator = self._normalize_required_code(indicator_code)
+
+        observations = await self._call_timeseries(
+            lambda: self._timeseries_client.list_series(
+                country_iso3=normalized_iso3,
+                indicator_code=normalized_indicator,
+                source_code=self._normalize_optional_code(source_code),
+                dataset_code=self._normalize_optional_code(dataset_code),
+                period_granularity="ANNUAL",
+                include_missing=False,
+                sort_direction="DESC",
+                limit=series_limit,
+            )
+        )
+
+        # DESC gives most-recent first → reverse to oldest-first for OLS regression
+        points = [
+            {"year": int(obs.periodLabel) if obs.periodLabel else 0, "value": obs.numericValue}
+            for obs in observations
+            if obs.periodLabel and obs.numericValue is not None
+        ]
+        return list(reversed(points))
+
     async def get_region_economic_snapshot(
         self,
         region_code: str,
@@ -619,7 +833,7 @@ class AnalyticsService:
                     source_code=source_code,
                     dataset_code=dataset_code,
                     period_granularity=period_granularity,
-                    include_missing=include_missing,
+                    include_missing=False,
                 )
             ),
             self._call_timeseries(
@@ -703,16 +917,29 @@ class AnalyticsService:
         include_missing: bool,
         resolution_cache: ResolutionCache,
     ) -> RegionIndicatorOverviewResponse:
-        comparison_items = await self._call_timeseries(
-            lambda: self._timeseries_client.compare_countries_latest(
-                country_iso3=[item.iso3 for item in countries],
-                indicator_code=indicator.code,
-                source_code=source_code,
-                dataset_code=dataset_code,
-                period_granularity=period_granularity,
-                include_missing=include_missing,
-            )
+        # Scan cross-pays mis en cache par (jeu de pays + indicateur + filtres) :
+        # identique d'un chargement à l'autre → recalculé une seule fois par TTL,
+        # et le verrou par clé déduplique les appels concurrents (snapshots
+        # économique et coût-relatif partagent p.ex. FP.CPI.TOTL.ZG).
+        scan_key = (
+            f"rgn:{indicator.code}:{source_code}:{dataset_code}:{period_granularity}"
+            f":{include_missing}:{','.join(sorted(item.iso3 for item in countries))}"
         )
+
+        async def _load_comparison():
+            async with self._region_scan_semaphore:
+                return await self._call_timeseries(
+                    lambda: self._timeseries_client.compare_countries_latest(
+                        country_iso3=[item.iso3 for item in countries],
+                        indicator_code=indicator.code,
+                        source_code=source_code,
+                        dataset_code=dataset_code,
+                        period_granularity=period_granularity,
+                        include_missing=include_missing,
+                    )
+                )
+
+        comparison_items = await self._cross_country_cache.get_or_load(scan_key, _load_comparison)
 
         source_contexts = await self._resolve_source_contexts_from_regional_items(
             comparison_items=comparison_items,
@@ -1641,15 +1868,10 @@ class AnalyticsService:
         housing: RegionalRelativeCostLens | CountryRelativeCostLens | None,
     ) -> tuple[EconomicLensTone, str, str]:
         scope_label = {
-            "COUNTRY": "country",
-            "REGION": "region",
+            "COUNTRY": "pays",
+            "REGION": "région",
             "CONTINENT": "continent",
-        }.get(scope_type, "scope")
-        scope_possessive = {
-            "COUNTRY": "The country's",
-            "REGION": "The region's",
-            "CONTINENT": "The continent's",
-        }.get(scope_type, "This scope's")
+        }.get(scope_type, "périmètre")
 
         general_cost_severity = self._lens_tone_severity(general_cost.signalTone if general_cost else "CONTEXT")
         inflation_severity = self._lens_tone_severity(inflation.signalTone if inflation else "CONTEXT")
@@ -1664,37 +1886,37 @@ class AnalyticsService:
 
             tone = self._tone_from_severity(severity)
             if tone == "POSITIVE":
-                headline = "Travel-cost context looks favorable"
+                headline = "Conditions tarifaires favorables au voyage"
                 narrative = (
-                    f"{scope_possessive} broad cost base looks meaningfully below the main OECD benchmark, and current inflation is not "
-                    "materially intensifying the picture."
+                    f"La base de coûts de ce {scope_label} est nettement sous le benchmark OCDE "
+                    "et l'inflation actuelle n'aggrave pas significativement la situation."
                 )
             elif tone == "BALANCED":
-                headline = "Travel-cost context looks manageable"
+                headline = "Conditions tarifaires gérables"
                 narrative = (
-                    f"{scope_possessive} broad cost base looks near the OECD benchmark rather than clearly cheap, so normal budget discipline "
-                    "still matters for travel planning."
+                    f"La base de coûts de ce {scope_label} est proche du benchmark OCDE sans être clairement avantageuse "
+                    "— la discipline budgétaire reste nécessaire pour planifier un voyage."
                 )
             elif tone == "WATCH":
-                headline = "Travel planning needs budget caution"
+                headline = "Budget voyage à surveiller"
                 narrative = (
-                    f"{scope_possessive} broad cost base or current inflation is high enough to require tighter travel budgeting instead of a "
-                    "casual affordability assumption."
+                    f"La base de coûts ou l'inflation actuelle de ce {scope_label} est suffisamment élevée "
+                    "pour nécessiter une gestion budgétaire serrée plutôt qu'une hypothèse d'accessibilité facile."
                 )
             else:
-                headline = "Travel-cost context looks materially expensive"
+                headline = "Conditions tarifaires significativement chères"
                 narrative = (
-                    f"{scope_possessive} broad cost base is already elevated and current inflation leaves little room for comfort on day-to-day "
-                    f"travel spend across the {scope_label}."
+                    f"La base de coûts de ce {scope_label} est déjà élevée et l'inflation actuelle "
+                    "laisse peu de marge confortable pour les dépenses quotidiennes de voyage."
                 )
 
             if housing_severity >= 2:
                 narrative += (
-                    " Housing-market heat also points to possible accommodation pressure, although this remains only a proxy until live lodging "
-                    "sources are added."
+                    " La surchauffe immobilière indique également une possible pression sur l'hébergement, "
+                    "bien qu'il ne s'agisse que d'un indicateur indirect tant que des sources de tarifs en temps réel ne sont pas intégrées."
                 )
             elif housing is not None and housing.signalTone != "CONTEXT":
-                narrative += " Housing-market heat does not currently add a strong additional warning signal."
+                narrative += " La surchauffe immobilière n'ajoute pas actuellement de signal d'alerte supplémentaire significatif."
 
             return tone, headline, narrative
 
@@ -1704,28 +1926,28 @@ class AnalyticsService:
 
         tone = self._tone_from_severity(severity)
         if tone == "POSITIVE":
-            headline = "Affordability pressure looks contained"
+            headline = "Pression sur le pouvoir d'achat contenue"
             narrative = (
-                f"{scope_possessive} broad cost base, current inflation, and housing signal do not currently point to intense affordability "
-                f"pressure across the {scope_label}."
+                f"La base de coûts, l'inflation actuelle et le signal immobilier de ce {scope_label} "
+                "n'indiquent pas actuellement une pression intensive sur le pouvoir d'achat."
             )
         elif tone == "BALANCED":
-            headline = "Affordability pressure looks present but manageable"
+            headline = "Pression sur le pouvoir d'achat présente mais gérable"
             narrative = (
-                f"{scope_possessive} cost base and current inflation deserve attention, but the combined evidence still points to a manageable "
-                "affordability backdrop rather than acute strain."
+                f"La base de coûts et l'inflation actuelle de ce {scope_label} méritent attention, "
+                "mais l'ensemble des données indique encore un contexte d'accessibilité gérable plutôt qu'une tension aiguë."
             )
         elif tone == "WATCH":
-            headline = "Affordability pressure is building"
+            headline = "Pression sur le pouvoir d'achat en hausse"
             narrative = (
-                f"{scope_possessive} cost base, inflation, or housing heat is strong enough to suggest a meaningful affordability squeeze is "
-                f"building across the {scope_label}."
+                f"La base de coûts, l'inflation ou la tension immobilière de ce {scope_label} est suffisamment forte "
+                "pour suggérer qu'une pression significative sur le pouvoir d'achat se développe."
             )
         else:
-            headline = "Affordability pressure looks high"
+            headline = "Forte pression sur le pouvoir d'achat"
             narrative = (
-                f"{scope_possessive} cost base, inflation, and housing heat combine into a materially stressed affordability picture rather than "
-                "a manageable one."
+                f"La base de coûts, l'inflation et la tension immobilière de ce {scope_label} se combinent "
+                "en une situation d'accessibilité matériellement stressée plutôt que gérable."
             )
 
         return tone, headline, narrative
@@ -1733,12 +1955,12 @@ class AnalyticsService:
     def _relative_cost_cautionary_notes(self, decision_code: str) -> list[str]:
         if decision_code == "TRAVEL_AFFORDABILITY":
             return [
-                "This signal does not yet include live FX, airfare, taxes, or hotel quotes.",
-                "Housing-market heat is used only as a proxy for accommodation pressure, not as a direct traveler lodging price.",
+                "Ce signal n'inclut pas encore les taux de change en temps réel, les tarifs aériens, les taxes ou les devis hôteliers.",
+                "La surchauffe immobilière n'est utilisée que comme indicateur indirect de la pression sur l'hébergement, non comme prix direct d'hébergement.",
             ]
         return [
-            "This signal does not yet combine wages, income distribution, or direct rent series.",
-            "Housing-market heat is based on real house prices, which are not the same as rents or day-to-day housing bills.",
+            "Ce signal ne combine pas encore les salaires, la distribution des revenus ou les séries de loyers directs.",
+            "La surchauffe immobilière est basée sur les prix réels des logements, qui ne correspondent pas aux loyers ou aux factures quotidiennes de logement.",
         ]
 
     def _lens_tone_severity(self, tone: EconomicLensTone) -> int:
