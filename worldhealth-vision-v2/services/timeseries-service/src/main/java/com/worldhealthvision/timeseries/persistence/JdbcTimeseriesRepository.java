@@ -338,6 +338,39 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                     from unnest(string_to_array(:countryIso3Csv, ',')) as value
                     where trim(value) <> ''
                 ),
+                latest_run as (
+                    -- Filtre indicateur + pays POUSSÉ dans le scan de base (utilise
+                    -- idx_timeseries_observation_indicator_country) AVANT le fenêtrage,
+                    -- pour ne dédupliquer que les lignes des pays demandés (clé perf
+                    -- des snapshots régionaux : sinon la vue fenêtre TOUS les pays).
+                    select
+                        o.country_iso3,
+                        o.indicator_code,
+                        o.source_code,
+                        o.dataset_code,
+                        o.period_granularity,
+                        o.period_start,
+                        o.period_end,
+                        o.period_label,
+                        o.numeric_value,
+                        o.text_value,
+                        o.value_status,
+                        o.source_published_at,
+                        sr.fetched_at_utc,
+                        row_number() over (
+                            partition by o.source_code, o.dataset_code, o.indicator_code,
+                                         o.country_iso3, o.period_granularity, o.period_start
+                            order by sr.fetched_at_utc desc, sr.persisted_at_utc desc,
+                                     o.ingested_at desc, o.id desc
+                        ) as run_rn
+                    from timeseries.observation o
+                    join timeseries.source_run sr on sr.id = o.source_run_id
+                    join requested_country rc on rc.country_iso3 = o.country_iso3
+                    where o.indicator_code = :indicatorCode
+                      and (cast(:sourceCode as varchar) is null or o.source_code = :sourceCode)
+                      and (cast(:datasetCode as varchar) is null or o.dataset_code = :datasetCode)
+                      and (cast(:periodGranularity as varchar) is null or o.period_granularity = :periodGranularity)
+                ),
                 ranked as (
                     select
                         lo.country_iso3,
@@ -357,12 +390,8 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                             partition by lo.country_iso3, lo.source_code, lo.dataset_code, lo.period_granularity
                             order by lo.period_start desc, lo.fetched_at_utc desc
                         ) as rn
-                    from timeseries.latest_observation lo
-                    join requested_country rc on rc.country_iso3 = lo.country_iso3
-                    where lo.indicator_code = :indicatorCode
-                      and (cast(:sourceCode as varchar) is null or lo.source_code = :sourceCode)
-                      and (cast(:datasetCode as varchar) is null or lo.dataset_code = :datasetCode)
-                      and (cast(:periodGranularity as varchar) is null or lo.period_granularity = :periodGranularity)
+                    from latest_run lo
+                    where lo.run_rn = 1
                       and (cast(:includeMissing as boolean) = true or lo.value_status <> 'MISSING')
                 )
                 select
