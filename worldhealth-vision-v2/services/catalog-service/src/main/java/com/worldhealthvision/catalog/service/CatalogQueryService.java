@@ -100,6 +100,11 @@ public class CatalogQueryService {
         return new CatalogListResponse<>(items.size(), items);
     }
 
+    public CatalogListResponse<SourceDetailResponse> listSourceDetails(boolean enabledOnly) {
+        List<SourceDetailResponse> items = catalogRepository.listSourceDetails(enabledOnly);
+        return new CatalogListResponse<>(items.size(), items);
+    }
+
     public SourceDetailResponse getSource(String code) {
         String normalizedCode = code.trim().toUpperCase();
         return catalogRepository.findSourceByCode(normalizedCode)
