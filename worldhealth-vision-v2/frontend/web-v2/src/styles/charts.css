@@ -1,0 +1,407 @@
+/* WorldHealthVision V2 — chart and data-visualization styles */
+
+/* ---------- Recharts tooltip ---------- */
+
+.chart-tooltip {
+  padding: 10px 14px;
+  border: 1px solid rgba(110, 188, 239, 0.22);
+  border-radius: 12px;
+  background: rgba(6, 18, 28, 0.96);
+  backdrop-filter: blur(8px);
+  font-size: 14px;
+  color: #dcefff;
+}
+
+.chart-tooltip-label {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(183, 220, 245, 0.7);
+}
+
+.chart-tooltip-row {
+  margin: 3px 0 0;
+}
+
+/* ---------- Empty / error states ---------- */
+
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.5);
+  font-style: italic;
+}
+
+.chart-empty-error {
+  color: #ffb3a0;
+}
+
+/* ---------- Trend section (TrendChartSection wrapper) ---------- */
+
+.trend-section {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(115, 192, 242, 0.08);
+}
+
+.trend-section:last-child {
+  border-bottom: none;
+}
+
+.trend-section-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.trend-section-title {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.9);
+  font-weight: 600;
+}
+
+.trend-dir {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.trend-dir-up    { color: #9df0c5; }
+.trend-dir-down  { color: #ffb3a0; }
+.trend-dir-flat,
+.trend-dir-insufficient_data { color: rgba(183, 220, 245, 0.65); }
+
+.trend-unit {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.55);
+}
+
+/* ---------- Source comparison (SourceComparisonRow) ---------- */
+
+.source-comparison-block {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(115, 192, 242, 0.08);
+}
+
+.source-comparison-block:last-child {
+  border-bottom: none;
+}
+
+.source-comparison-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.source-comparison-header h5 {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.9);
+}
+
+.agreement-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.agreement-CONSISTENT      { background: rgba(55, 175, 120, 0.14); color: #9df0c5; }
+.agreement-MIXED           { background: rgba(214, 170, 53, 0.14); color: #f3d47f; }
+.agreement-DIVERGENT       { background: rgba(220, 104, 78, 0.16); color: #ffb3a0; }
+.agreement-INSUFFICIENT_DATA { background: rgba(121, 142, 162, 0.16); color: #d8e6f1; }
+
+.source-comparison-divergence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.65);
+}
+
+.source-comparison-divergence strong {
+  color: rgba(221, 240, 255, 0.9);
+}
+
+.source-table {
+  display: grid;
+  gap: 6px;
+}
+
+.source-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(8, 24, 36, 0.5);
+}
+
+.source-row-name  { font-weight: 600; font-size: 14px; color: rgba(183, 220, 245, 0.85); }
+.source-row-value { color: #f5fbff; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+.source-row-period { font-size: 14px; color: rgba(183, 220, 245, 0.55); }
+
+.freshness-pill {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.freshness-FRESH   { background: rgba(55, 175, 120, 0.14); color: #9df0c5; }
+.freshness-AGING   { background: rgba(214, 170, 53, 0.14); color: #f3d47f; }
+.freshness-STALE   { background: rgba(220, 104, 78, 0.16); color: #ffb3a0; }
+.freshness-UNKNOWN { background: rgba(121, 142, 162, 0.14); color: #c8d9e6; }
+
+/* ---------- Comparator tab ---------- */
+
+.comparator-controls {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.comparator-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(183, 222, 245, 0.7);
+}
+
+.comparator-select,
+.comparator-countries-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(110, 188, 239, 0.18);
+  border-radius: 12px;
+  background: rgba(9, 27, 40, 0.95);
+  color: #eef8ff;
+  font-size: 14px;
+}
+
+.comparator-countries-select {
+  height: 120px;
+  padding: 8px;
+}
+
+.comparator-run-btn {
+  padding: 10px 20px;
+  border: 1px solid rgba(74, 184, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(16, 46, 68, 0.9);
+  color: #4db8ff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.1s ease;
+}
+
+.comparator-run-btn:hover  { background: rgba(22, 58, 84, 0.98); transform: translateY(-1px); }
+.comparator-run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.comparator-result-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 80px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(8, 24, 36, 0.5);
+  margin-bottom: 6px;
+}
+
+.comparator-country-name {
+  font-size: 14px;
+  color: #eef8ff;
+  font-weight: 600;
+}
+
+.comparator-country-name.is-current { color: #4db8ff; }
+
+.comparator-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f5fbff;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.comparator-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: rgba(115, 192, 242, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.comparator-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1a6ab0 0%, #4db8ff 100%);
+  transition: width 0.5s ease;
+}
+
+/* ---------- Forecast chart ---------- */
+
+.forecast-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 0 4px;
+  border-top: 1px solid rgba(115, 192, 242, 0.1);
+  margin-top: 4px;
+}
+
+.forecast-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.forecast-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(183, 220, 245, 0.75);
+}
+
+.forecast-quality-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.forecast-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.forecast-stat {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.6);
+}
+
+.forecast-stat strong {
+  color: rgba(221, 240, 255, 0.9);
+}
+
+.forecast-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 2px;
+}
+
+.forecast-legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.6);
+}
+
+.forecast-caveats {
+  background: rgba(8, 22, 34, 0.7);
+  border: 1px solid rgba(251, 146, 60, 0.18);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.forecast-caveat-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.forecast-caveat-icon {
+  font-size: 14px;
+  color: #fbbf24;
+  flex-shrink: 0;
+}
+
+.forecast-caveat-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(251, 191, 36, 0.8);
+}
+
+.forecast-caveat-toggle {
+  padding: 2px 8px;
+  font-size: 14px;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(251, 191, 36, 0.7);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.forecast-caveat-toggle:hover {
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.forecast-caveat-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(183, 220, 245, 0.65);
+}
+
+.forecast-insufficient {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(8, 22, 34, 0.6);
+  border: 1px solid rgba(115, 192, 242, 0.12);
+  border-radius: 10px;
+  margin-top: 4px;
+}
+
+.forecast-insufficient-icon {
+  font-size: 14px;
+  color: #fbbf24;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.forecast-insufficient p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.6);
+  line-height: 1.5;
+}

@@ -1,0 +1,514 @@
+/* ============================================================
+   WorldHealthVision V2 — CurrencyPanel
+   Panel "Devises & Convertisseur" : converter + rate table + history
+   ============================================================ */
+
+/* ── Panel principal ── */
+.cur-panel {
+  position: absolute;
+  top: 56px;
+  right: 10px;
+  width: min(580px, calc(100vw - 20px));
+  max-height: calc(100vh - 80px);
+  background: rgba(6, 20, 32, 0.98);
+  border: 1px solid rgba(74, 184, 255, 0.2);
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(74, 184, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 300;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: curSlideIn 0.2s ease;
+}
+
+@keyframes curSlideIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── En-tête ── */
+.cur-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(74, 184, 255, 0.1);
+  background: rgba(74, 184, 255, 0.03);
+  flex-shrink: 0;
+}
+
+.cur-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cur-header-icon {
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(74, 184, 255, 0.5));
+}
+
+.cur-header-title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(183, 220, 245, 0.95);
+  letter-spacing: 0.01em;
+}
+
+.cur-header-sub {
+  margin: 0;
+  font-size: 10px;
+  color: rgba(183, 220, 245, 0.45);
+  letter-spacing: 0.02em;
+}
+
+/* ── Corps scrollable ── */
+.cur-body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  padding: 0 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 184, 255, 0.2) transparent;
+}
+
+.cur-body::-webkit-scrollbar { width: 4px; }
+.cur-body::-webkit-scrollbar-thumb { background: rgba(74, 184, 255, 0.2); border-radius: 2px; }
+
+/* ── Bloc convertisseur ── */
+.cur-converter {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(74, 184, 255, 0.08);
+}
+
+.cur-converter-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.cur-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cur-field-group--wide {
+  flex: 1;
+}
+
+.cur-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(183, 220, 245, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cur-amount-input {
+  width: 110px;
+  padding: 7px 10px;
+  background: rgba(74, 184, 255, 0.06);
+  border: 1px solid rgba(74, 184, 255, 0.18);
+  border-radius: 7px;
+  color: rgba(183, 220, 245, 0.92);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.cur-amount-input:focus {
+  border-color: rgba(74, 184, 255, 0.45);
+  background: rgba(74, 184, 255, 0.09);
+}
+
+.cur-amount-input::-webkit-inner-spin-button,
+.cur-amount-input::-webkit-outer-spin-button {
+  opacity: 0.4;
+}
+
+.cur-base-select {
+  width: 100%;
+  padding: 7px 10px;
+  background: rgba(74, 184, 255, 0.06);
+  border: 1px solid rgba(74, 184, 255, 0.18);
+  border-radius: 7px;
+  color: rgba(183, 220, 245, 0.88);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(74,184,255,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  transition: border-color 0.15s;
+}
+
+.cur-base-select:focus { border-color: rgba(74, 184, 255, 0.4); }
+
+/* ── Info devise source ── */
+.cur-base-info {
+  margin-top: 10px;
+  padding: 9px 12px;
+  background: rgba(74, 184, 255, 0.05);
+  border: 1px solid rgba(74, 184, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.cur-base-full-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(183, 220, 245, 0.85);
+}
+
+.cur-zone-tag {
+  font-size: 10px;
+  padding: 2px 7px;
+  background: rgba(74, 184, 255, 0.1);
+  border: 1px solid rgba(74, 184, 255, 0.2);
+  border-radius: 20px;
+  color: rgba(74, 184, 255, 0.8);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.cur-peg-line {
+  width: 100%;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: rgba(40, 167, 69, 0.9);
+}
+
+.cur-peg-eq {
+  color: rgba(40, 167, 69, 0.7);
+  font-size: 13px;
+  letter-spacing: -1px;
+}
+
+.cur-peg-source {
+  color: rgba(183, 220, 245, 0.35);
+  font-size: 10px;
+}
+
+/* ── Statuts ── */
+.cur-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: rgba(183, 220, 245, 0.55);
+}
+
+.cur-status--error {
+  color: rgba(255, 107, 107, 0.85);
+}
+
+.cur-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(74, 184, 255, 0.2);
+  border-top-color: rgba(74, 184, 255, 0.8);
+  border-radius: 50%;
+  animation: cur-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes cur-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Groupes de devises ── */
+.cur-group {
+  padding: 0 18px 4px;
+}
+
+.cur-group + .cur-group {
+  border-top: 1px solid rgba(74, 184, 255, 0.06);
+}
+
+.cur-group-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(74, 184, 255, 0.55);
+  padding: 10px 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ── Ligne de taux ── */
+.cur-rate-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(74, 184, 255, 0.04);
+  gap: 8px;
+  min-height: 44px;
+}
+
+.cur-rate-row:last-child {
+  border-bottom: none;
+}
+
+.cur-rate-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cur-rate-code {
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(183, 220, 245, 0.85);
+  font-family: "Courier New", monospace;
+  width: 34px;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
+.cur-rate-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cur-rate-name {
+  font-size: 11px;
+  color: rgba(183, 220, 245, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cur-peg-mini {
+  font-size: 10px;
+  color: rgba(40, 167, 69, 0.75);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cur-rate-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cur-rate-values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.cur-rate-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(183, 220, 245, 0.95);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.cur-rate-unit {
+  font-size: 9px;
+  color: rgba(183, 220, 245, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+.cur-rate-na {
+  font-size: 12px;
+  color: rgba(183, 220, 245, 0.25);
+  font-style: italic;
+}
+
+.cur-rate-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+/* ── Badges type de devise ── */
+.cur-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.cur-badge--sm {
+  font-size: 9px;
+  padding: 1px 5px;
+}
+
+.cur-badge--fixed {
+  background: rgba(40, 167, 69, 0.12);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  color: rgba(40, 167, 69, 0.9);
+}
+
+.cur-badge--managed {
+  background: rgba(253, 126, 20, 0.1);
+  border: 1px solid rgba(253, 126, 20, 0.25);
+  color: rgba(253, 126, 20, 0.85);
+}
+
+.cur-badge--floating {
+  background: rgba(74, 184, 255, 0.08);
+  border: 1px solid rgba(74, 184, 255, 0.2);
+  color: rgba(74, 184, 255, 0.8);
+}
+
+/* ── Bouton graphique historique ── */
+.cur-chart-btn {
+  background: none;
+  border: 1px solid rgba(74, 184, 255, 0.15);
+  border-radius: 5px;
+  padding: 3px 5px;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.5;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+  line-height: 1;
+}
+
+.cur-chart-btn:hover,
+.cur-chart-btn.active {
+  opacity: 1;
+  border-color: rgba(74, 184, 255, 0.4);
+  background: rgba(74, 184, 255, 0.08);
+}
+
+/* ── Section historique ── */
+.cur-history {
+  margin: 8px 18px;
+  padding: 12px;
+  background: rgba(74, 184, 255, 0.04);
+  border: 1px solid rgba(74, 184, 255, 0.12);
+  border-radius: 10px;
+}
+
+.cur-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cur-history-close {
+  background: none;
+  border: none;
+  color: rgba(183, 220, 245, 0.4);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.cur-history-close:hover {
+  color: rgba(183, 220, 245, 0.8);
+  background: rgba(74, 184, 255, 0.08);
+}
+
+.cur-chart-wrap {
+  padding: 4px 0;
+}
+
+.cur-hint {
+  font-size: 11px;
+  color: rgba(183, 220, 245, 0.4);
+  text-align: center;
+  margin: 12px 0 4px;
+  font-style: italic;
+}
+
+/* ── Note devises absentes ── */
+.cur-footnote {
+  margin: 8px 18px 0;
+  padding: 9px 12px;
+  background: rgba(253, 126, 20, 0.04);
+  border: 1px solid rgba(253, 126, 20, 0.12);
+  border-radius: 8px;
+}
+
+.cur-footnote p {
+  margin: 0;
+  font-size: 10px;
+  color: rgba(183, 220, 245, 0.45);
+  line-height: 1.5;
+}
+
+/* ── Pied de page sources ── */
+.cur-footer {
+  margin: 12px 18px 6px;
+  padding: 10px 12px;
+  background: rgba(74, 184, 255, 0.03);
+  border-top: 1px solid rgba(74, 184, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cur-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: rgba(183, 220, 245, 0.4);
+}
+
+.cur-footer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .cur-panel {
+    right: 5px;
+    left: 5px;
+    width: auto;
+  }
+
+  .cur-rate-value {
+    font-size: 13px;
+  }
+
+  .cur-converter-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cur-amount-input {
+    width: 100%;
+  }
+}

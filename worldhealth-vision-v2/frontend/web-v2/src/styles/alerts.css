@@ -1,0 +1,446 @@
+/* WorldHealthVision V2 — alerts.css */
+
+.al-panel {
+  position: absolute;
+  top: 56px;
+  right: 10px;
+  z-index: 125;
+  width: min(460px, calc(100vw - 20px));
+  max-height: calc(100vh - 76px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(6, 20, 32, 0.98);
+  border: 1px solid rgba(74, 184, 255, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+  animation: alSlide 0.22s ease;
+}
+
+@keyframes alSlide {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- Header --- */
+
+.al-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(74, 184, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.al-header-left { display: flex; align-items: center; gap: 12px; }
+.al-header-icon { font-size: 22px; line-height: 1; }
+
+.al-title {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #d6eefc;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.al-badge {
+  font-size: 14px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+
+.al-badge--triggered {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.al-subtitle { margin: 0; font-size: 14px; color: rgba(183, 220, 245, 0.45); }
+
+.al-header-actions { display: flex; align-items: center; gap: 6px; }
+
+.al-refresh-btn {
+  background: transparent;
+  border: 1px solid rgba(183, 220, 245, 0.14);
+  border-radius: 7px;
+  color: rgba(183, 220, 245, 0.5);
+  font-size: 16px;
+  width: 28px; height: 28px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.14s;
+}
+.al-refresh-btn:hover { background: rgba(74, 184, 255, 0.1); color: #b7dcf5; }
+.al-refresh-btn:disabled { opacity: 0.4; cursor: default; animation: alSpin 1s linear infinite; }
+@keyframes alSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.al-close-btn {
+  background: transparent;
+  border: 1px solid rgba(183, 220, 245, 0.14);
+  border-radius: 7px;
+  color: rgba(183, 220, 245, 0.5);
+  font-size: 14px;
+  width: 28px; height: 28px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.14s;
+}
+.al-close-btn:hover { background: rgba(74, 184, 255, 0.1); color: #b7dcf5; }
+
+/* --- Body --- */
+
+.al-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 184, 255, 0.14) transparent;
+}
+
+/* --- Status bar --- */
+
+.al-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.al-status-chip {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid;
+}
+
+.al-status-chip--triggered {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.28);
+  color: #f87171;
+}
+
+.al-status-chip--ok {
+  background: rgba(74, 222, 128, 0.07);
+  border-color: rgba(74, 222, 128, 0.24);
+  color: #4ade80;
+}
+
+.al-status-chip--pending {
+  background: rgba(251, 191, 36, 0.07);
+  border-color: rgba(251, 191, 36, 0.24);
+  color: #fbbf24;
+}
+
+.al-status-chip--loading {
+  background: transparent;
+  border-color: rgba(183, 220, 245, 0.14);
+  color: rgba(183, 220, 245, 0.48);
+  animation: alPulse 1.2s infinite;
+}
+
+@keyframes alPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+/* --- Empty state --- */
+
+.al-empty {
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.al-empty-title { font-size: 28px; margin: 0; }
+.al-empty-text { font-size: 14px; color: rgba(183, 220, 245, 0.55); line-height: 1.5; margin: 0; }
+
+/* --- Alert list --- */
+
+.al-list { display: flex; flex-direction: column; gap: 4px; }
+
+/* --- Alert row --- */
+
+.al-row {
+  border: 1px solid rgba(110, 188, 239, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.al-row--triggered { border-color: rgba(248, 113, 113, 0.28); background: rgba(248, 113, 113, 0.04); }
+.al-row--ok        { border-color: rgba(74, 222, 128, 0.18); }
+.al-row--error     { border-color: rgba(248, 113, 113, 0.15); opacity: 0.65; }
+.al-row--pending   { border-color: rgba(251, 191, 36, 0.15); }
+
+.al-row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.12s;
+}
+.al-row-main:hover { background: rgba(74, 184, 255, 0.04); }
+
+.al-row-status { font-size: 14px; flex-shrink: 0; }
+
+.al-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+
+.al-row-country {
+  font-size: 14px;
+  font-weight: 700;
+  color: #d6eefc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.al-row-rule {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.al-row-current { display: flex; align-items: center; flex-shrink: 0; }
+
+.al-row-val {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.al-row-val--na { color: rgba(183, 220, 245, 0.3); font-size: 14px; }
+
+.al-row-chevron { font-size: 8px; color: rgba(183, 220, 245, 0.28); flex-shrink: 0; }
+
+/* --- Alert detail --- */
+
+.al-row-detail {
+  padding: 8px 12px 12px;
+  border-top: 1px solid rgba(110, 188, 239, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.al-row-note { font-size: 14px; color: rgba(183, 220, 245, 0.5); font-style: italic; margin: 0; }
+
+.al-quality-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.al-quality-badge {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.al-quality-src {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.38);
+}
+
+.al-sources-list { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.al-source-chip {
+  font-size: 14px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(74, 184, 255, 0.08);
+  color: rgba(74, 184, 255, 0.72);
+  border: 1px solid rgba(74, 184, 255, 0.16);
+  font-weight: 600;
+}
+
+.al-triggered-msg {
+  font-size: 14px;
+  padding: 7px 10px;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  border-radius: 7px;
+  color: #fca5a5;
+  line-height: 1.45;
+}
+
+.al-triggered-msg strong { color: #f87171; }
+
+.al-delete-btn {
+  align-self: flex-end;
+  padding: 5px 12px;
+  border-radius: 7px;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  background: transparent;
+  color: rgba(248, 113, 113, 0.65);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.13s;
+}
+.al-delete-btn:hover { background: rgba(248, 113, 113, 0.1); color: #fca5a5; }
+
+/* --- Create button --- */
+
+.al-create-btn {
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px dashed rgba(74, 184, 255, 0.3);
+  background: rgba(74, 184, 255, 0.04);
+  color: rgba(74, 184, 255, 0.75);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.14s;
+  text-align: center;
+}
+.al-create-btn:hover { background: rgba(74, 184, 255, 0.1); border-color: rgba(74, 184, 255, 0.5); color: #7bbff7; }
+
+/* --- Create form --- */
+
+.al-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(74, 184, 255, 0.14);
+  border-radius: 12px;
+}
+
+.al-create-title {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d6eefc;
+}
+
+.al-field { display: flex; flex-direction: column; gap: 4px; }
+.al-field--inline { flex-direction: column; }
+
+.al-field-label {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(183, 220, 245, 0.38);
+}
+
+.al-field-hint {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.3);
+  font-style: italic;
+}
+
+.al-select {
+  padding: 7px 10px;
+  border: 1px solid rgba(74, 184, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(9, 27, 40, 0.9);
+  color: #f3fbff;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+.al-select:focus { outline: none; border-color: rgba(74, 184, 255, 0.42); }
+
+.al-select--op {
+  flex-shrink: 0;
+  width: auto;
+}
+
+.al-input {
+  padding: 7px 10px;
+  border: 1px solid rgba(74, 184, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(9, 27, 40, 0.9);
+  color: #f3fbff;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.14s;
+  box-sizing: border-box;
+}
+.al-input:focus { outline: none; border-color: rgba(74, 184, 255, 0.42); }
+
+.al-input--threshold { width: 80px; font-size: 16px; font-weight: 700; text-align: center; }
+
+.al-condition-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.al-field-unit {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.5);
+  flex-shrink: 0;
+}
+
+.al-preview {
+  padding: 8px 10px;
+  background: rgba(74, 184, 255, 0.06);
+  border: 1px solid rgba(74, 184, 255, 0.14);
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.65);
+  line-height: 1.45;
+}
+.al-preview strong { color: #d6eefc; }
+
+.al-submit-btn {
+  padding: 9px 18px;
+  border-radius: 9px;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  background: rgba(74, 222, 128, 0.08);
+  color: #4ade80;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.14s;
+}
+.al-submit-btn:hover { background: rgba(74, 222, 128, 0.16); border-color: rgba(74, 222, 128, 0.5); color: #86efac; }
+
+/* --- Note --- */
+
+.al-note {
+  font-size: 14px;
+  color: rgba(183, 220, 245, 0.3);
+  line-height: 1.55;
+  font-style: italic;
+  margin: 0;
+  padding: 0 2px;
+}
+
+/* --- Mobile --- */
+
+@media (max-width: 640px) {
+  .al-panel {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-height: 88vh;
+    border-radius: 22px 22px 0 0;
+  }
+}
