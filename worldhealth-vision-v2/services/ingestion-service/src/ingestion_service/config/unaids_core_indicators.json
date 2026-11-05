@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "WHV.UNAIDS.HIV.PREVALENCE.ADULT",
+    "dataset_code": "UNAIDS_AIDSINFO",
+    "dataset_label": "UNAIDS AIDSinfo — HIV Estimates",
+    "source_indicator_id": "1",
+    "display_name": "HIV prevalence among adults aged 15-49 (%)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "WHV.UNAIDS.ART.COVERAGE",
+    "dataset_code": "UNAIDS_AIDSINFO",
+    "dataset_label": "UNAIDS AIDSinfo — HIV Treatment",
+    "source_indicator_id": "20",
+    "display_name": "ART coverage among people living with HIV (%)",
+    "scale_multiplier": 1.0
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "indicator_code": "WHV.UNCTAD.FDI.INFLOWS",
+    "dataset_code": "UNCTAD_STATS",
+    "dataset_label": "UNCTAD UNCTADstat",
+    "source_indicator_id": "fdi_inflows",
+    "display_name": "FDI inflows (USD millions, CNUCED)",
+    "scale_multiplier": 1.0
+  }
+]

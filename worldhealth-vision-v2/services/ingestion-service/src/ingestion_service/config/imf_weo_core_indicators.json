@@ -34,5 +34,33 @@
     "imf_indicator_id": "BCA_NGDPD",
     "display_name": "Current account balance (credit less debit), Percent of GDP",
     "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "GC.DOD.TOTL.GD.ZS",
+    "imf_indicator_id": "GGXWDG_NGDP",
+    "display_name": "General government gross debt, Percent of GDP",
+    "scale_multiplier": 1.0,
+    "methodology_note": "IMF uses consolidated general government; WB may include social security funds — minor divergence expected"
+  },
+  {
+    "indicator_code": "GC.REV.TOTL.GD.ZS",
+    "imf_indicator_id": "GGR_NGDP",
+    "display_name": "General government revenue, Percent of GDP",
+    "scale_multiplier": 1.0,
+    "methodology_note": "IMF general government concept; WB central government only — divergence expected for federal states"
+  },
+  {
+    "indicator_code": "NE.GDI.FTOT.ZS",
+    "imf_indicator_id": "NID_NGDP",
+    "display_name": "Total investment (gross capital formation), Percent of GDP",
+    "scale_multiplier": 1.0,
+    "methodology_note": "IMF total investment includes changes in inventories; WB is gross fixed capital formation only — slight upward bias expected in IMF figure"
+  },
+  {
+    "indicator_code": "GC.XPN.TOTL.GD.ZS",
+    "imf_indicator_id": "GGX_NGDP",
+    "display_name": "General government expenditure, Percent of GDP",
+    "scale_multiplier": 1.0,
+    "methodology_note": "IMF general government concept; WB central government — significant divergence for federal/decentralised states"
   }
 ]

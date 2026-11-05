@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "WHV.UNESCO.OOS.PRIMARY",
+    "dataset_code": "UNESCO_UIS_EDUCATION",
+    "dataset_label": "UNESCO Institute for Statistics",
+    "source_indicator_id": "oos_primary",
+    "display_name": "Out-of-school rate, primary (%, UNESCO UIS)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "WHV.UNESCO.LITERACY",
+    "dataset_code": "UNESCO_UIS_EDUCATION",
+    "dataset_label": "UNESCO Institute for Statistics",
+    "source_indicator_id": "literacy_adult",
+    "display_name": "Adult literacy rate (% 15+, UNESCO UIS)",
+    "scale_multiplier": 1.0
+  }
+]

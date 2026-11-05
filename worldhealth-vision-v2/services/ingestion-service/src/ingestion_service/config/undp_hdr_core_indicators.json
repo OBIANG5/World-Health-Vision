@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "WHV.HDR.HDI.INDEX",
+    "dataset_code": "UNDP_HDR_COMPOSITE",
+    "dataset_label": "UNDP Human Development Report — Composite Indices",
+    "hdr_field_prefix": "hdi",
+    "display_name": "Human Development Index (HDI)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "WHV.HDR.GII.INDEX",
+    "dataset_code": "UNDP_HDR_COMPOSITE",
+    "dataset_label": "UNDP Human Development Report — Composite Indices",
+    "hdr_field_prefix": "gii",
+    "display_name": "Gender Inequality Index (GII)",
+    "scale_multiplier": 1.0
+  }
+]

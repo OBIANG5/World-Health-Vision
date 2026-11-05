@@ -1,0 +1,44 @@
+[
+  {
+    "indicator_code": "WHV.NUMBEO.COST_LIVING_INDEX",
+    "dataset_code": "NUMBEO_INDICES",
+    "dataset_label": "Numbeo Cost of Living Indices",
+    "display_name": "Cost of Living Index (Numbeo, NYC=100)",
+    "numbeo_field": "coli"
+  },
+  {
+    "indicator_code": "WHV.NUMBEO.RENT_INDEX",
+    "dataset_code": "NUMBEO_INDICES",
+    "dataset_label": "Numbeo Cost of Living Indices",
+    "display_name": "Rent Index (Numbeo, NYC=100)",
+    "numbeo_field": "ri"
+  },
+  {
+    "indicator_code": "WHV.NUMBEO.CONSUMER_PRICE_RENT_INDEX",
+    "dataset_code": "NUMBEO_INDICES",
+    "dataset_label": "Numbeo Cost of Living Indices",
+    "display_name": "Consumer Price Plus Rent Index (Numbeo, NYC=100)",
+    "numbeo_field": "coli_and_ri"
+  },
+  {
+    "indicator_code": "WHV.NUMBEO.GROCERIES_INDEX",
+    "dataset_code": "NUMBEO_INDICES",
+    "dataset_label": "Numbeo Cost of Living Indices",
+    "display_name": "Groceries Index (Numbeo, NYC=100)",
+    "numbeo_field": "gri"
+  },
+  {
+    "indicator_code": "WHV.NUMBEO.RESTAURANT_PRICE_INDEX",
+    "dataset_code": "NUMBEO_INDICES",
+    "dataset_label": "Numbeo Cost of Living Indices",
+    "display_name": "Restaurant Price Index (Numbeo, NYC=100)",
+    "numbeo_field": "rpi"
+  },
+  {
+    "indicator_code": "WHV.NUMBEO.LOCAL_PURCHASING_POWER_INDEX",
+    "dataset_code": "NUMBEO_INDICES",
+    "dataset_label": "Numbeo Cost of Living Indices",
+    "display_name": "Local Purchasing Power Index (Numbeo, NYC=100)",
+    "numbeo_field": "lppi"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "indicator_code": "WHV.IFS.RESERVES.XAU.USD",
+    "dataset_code": "IMF_IFS",
+    "dataset_label": "IMF International Financial Statistics",
+    "ifs_indicator_code": "RAXG_USD",
+    "display_name": "International reserves excluding gold (USD millions)",
+    "scale_multiplier": 1.0
+  },
+  {
+    "indicator_code": "WHV.IFS.BROAD.MONEY.GDP",
+    "dataset_code": "IMF_IFS",
+    "dataset_label": "IMF International Financial Statistics",
+    "ifs_indicator_code": "FMBM_XDC_R_B",
+    "display_name": "Broad money (M2, % of GDP)",
+    "scale_multiplier": 1.0
+  }
+]
