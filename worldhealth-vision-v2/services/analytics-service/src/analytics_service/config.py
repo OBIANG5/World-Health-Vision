@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="WHV_ANALYTICS_", extra="ignore")
 
     service_port: int = 8000
-    request_timeout_seconds: int = 20
+    request_timeout_seconds: int = 60
     catalog_base_url: str = "http://localhost:8082"
     timeseries_base_url: str = "http://localhost:8083"
     default_country_overview_indicator_limit: int = 5

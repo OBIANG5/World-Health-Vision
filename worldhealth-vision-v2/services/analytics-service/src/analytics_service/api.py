@@ -3,7 +3,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from pydantic import BaseModel
 
+from analytics_service.advisor import build_advisor_response
+from analytics_service.forecast import ForecastPoint, ForecastMetadata, ForecastResult, compute_forecast
 from analytics_service.metrics import observe_request
 from analytics_service.runtime import build_analytics_service
 from analytics_service.service import AnalyticsDependencyError, AnalyticsNotFoundError, AnalyticsService
@@ -184,6 +187,32 @@ async def country_source_audit(
                 period_granularity=periodGranularity,
                 include_missing=includeMissing,
                 series_limit=seriesLimit,
+            )
+        except ValueError as exception:
+            raise HTTPException(status_code=400, detail=str(exception)) from exception
+        except AnalyticsNotFoundError as exception:
+            raise HTTPException(status_code=404, detail=str(exception)) from exception
+        except AnalyticsDependencyError as exception:
+            raise HTTPException(status_code=502, detail=str(exception)) from exception
+
+
+@app.get("/api/analytics/countries/{country_iso3}/indicators/{indicator_code}/rank")
+async def country_indicator_rank(
+    country_iso3: str,
+    indicator_code: str,
+    request: Request,
+    sourceCode: str | None = Query(default=None),
+    datasetCode: str | None = Query(default=None),
+    periodGranularity: str | None = Query(default=None),
+):
+    with observe_request("country_indicator_rank"):
+        try:
+            return await get_service(request).get_country_indicator_rank(
+                country_iso3=country_iso3,
+                indicator_code=indicator_code,
+                source_code=sourceCode,
+                dataset_code=datasetCode,
+                period_granularity=periodGranularity,
             )
         except ValueError as exception:
             raise HTTPException(status_code=400, detail=str(exception)) from exception
@@ -472,6 +501,122 @@ async def continent_source_audit(
             raise HTTPException(status_code=404, detail=str(exception)) from exception
         except AnalyticsDependencyError as exception:
             raise HTTPException(status_code=502, detail=str(exception)) from exception
+
+
+@app.get("/api/analytics/countries/{country_iso3}/indicators/{indicator_code}/forecast")
+async def country_indicator_forecast(
+    country_iso3: str,
+    indicator_code: str,
+    request: Request,
+    lang: str = Query(default="fr"),
+    sourceCode: str | None = Query(default=None),
+    datasetCode: str | None = Query(default=None),
+    seriesLimit: int = Query(default=20, ge=5, le=30),
+):
+    """Return a linear OLS projection for the given indicator series.
+
+    The projection is based on the N most recent non-null observations and
+    includes 80% and 95% prediction intervals.  A quality tier (RELIABLE /
+    INDICATIVE / SPECULATIVE) is returned together with honest caveats about
+    the model's limitations.  See analytics_service.forecast for methodology.
+    """
+    with observe_request("country_indicator_forecast"):
+        service = get_service(request)
+        try:
+            raw_series = await service.get_raw_series_for_forecast(
+                country_iso3=country_iso3,
+                indicator_code=indicator_code,
+                source_code=sourceCode,
+                dataset_code=datasetCode,
+                series_limit=seriesLimit,
+            )
+        except AnalyticsNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except AnalyticsDependencyError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        result = compute_forecast(
+            indicator_code=indicator_code,
+            iso3=country_iso3,
+            series=raw_series,
+            lang=lang,
+        )
+
+        return {
+            "indicatorCode": result.indicator_code,
+            "iso3": result.iso3,
+            "baseYear": result.base_year,
+            "horizonYears": result.horizon_years,
+            "insufficientData": result.insufficient_data,
+            "points": [
+                {
+                    "year": p.year,
+                    "value": p.value,
+                    "ciLow80": p.ci_low_80,
+                    "ciHigh80": p.ci_high_80,
+                    "ciLow95": p.ci_low_95,
+                    "ciHigh95": p.ci_high_95,
+                }
+                for p in result.points
+            ],
+            "metadata": {
+                "method": result.metadata.method,
+                "nObservations": result.metadata.n_observations,
+                "fromYear": result.metadata.from_year,
+                "toYear": result.metadata.to_year,
+                "rSquared": result.metadata.r_squared,
+                "slope": result.metadata.slope,
+                "quality": result.metadata.quality,
+                "horizonYears": result.metadata.horizon_years,
+                "caveats": result.metadata.caveats,
+            },
+        }
+
+
+class AdvisorChatRequest(BaseModel):
+    question: str
+    iso3: str | None = None
+    lang: str = "fr"
+
+
+@app.post("/api/analytics/advisor/chat")
+async def advisor_chat(body: AdvisorChatRequest, request: Request):
+    with observe_request("advisor_chat"):
+        service = get_service(request)
+        eco_snapshot = None
+        cost_snapshot = None
+        if body.iso3:
+            try:
+                eco_snapshot = await service.get_country_economic_snapshot(
+                    country_iso3=body.iso3,
+                    source_code=None,
+                    dataset_code=None,
+                    period_granularity=None,
+                    include_missing=False,
+                    series_limit=None,
+                )
+            except (AnalyticsNotFoundError, AnalyticsDependencyError, ValueError):
+                eco_snapshot = None
+            try:
+                cost_snapshot = await service.get_country_relative_cost_snapshot(
+                    country_iso3=body.iso3,
+                    source_code=None,
+                    dataset_code=None,
+                    period_granularity=None,
+                    include_missing=False,
+                    series_limit=None,
+                )
+            except (AnalyticsNotFoundError, AnalyticsDependencyError, ValueError):
+                cost_snapshot = None
+        return build_advisor_response(
+            question=body.question,
+            iso3=body.iso3,
+            lang=body.lang,
+            eco_snapshot=eco_snapshot,
+            cost_snapshot=cost_snapshot,
+        )
 
 
 @app.get("/api/analytics/compare/countries/latest")

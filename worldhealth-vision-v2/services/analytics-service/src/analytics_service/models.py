@@ -669,6 +669,20 @@ class CountryComparisonAnalyticsResponse(BaseModel):
     items: list[CountryLatestComparisonItem]
 
 
+class IndicatorRankResponse(BaseModel):
+    iso3: str
+    indicatorCode: str
+    worldRank: int | None = None
+    worldTotal: int
+    regionRank: int | None = None
+    regionTotal: int
+    regionCode: str | None = None
+    regionName: str | None = None
+    value: float | None = None
+    periodLabel: str | None = None
+    sourceCode: str | None = None
+
+
 class CatalogListEnvelope(BaseModel):
     count: int
     items: list[dict] = Field(default_factory=list)
