@@ -1,4 +1,4 @@
-﻿#
+#
 # WorldHealth Vision V2 local infrastructure and service composition.
 # This file wires the shared platform services and the first V2
 # application services we are actively building:
