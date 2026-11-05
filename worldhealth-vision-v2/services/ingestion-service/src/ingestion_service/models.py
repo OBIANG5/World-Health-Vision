@@ -54,6 +54,8 @@ class CountryRegistryRecord(BaseModel):
 class IndicatorRegistryEntry(BaseModel):
     code: str
     name: str
+    fetch_code: str | None = None   # API fetch code when different from storage code (e.g. WGI GOV_WGI_ prefix)
+    source_id: str | None = None    # WB source number (e.g. "3" for WGI)
 
 
 class ImfWeoIndicatorRegistryEntry(BaseModel):
@@ -112,6 +114,78 @@ class UnsdSdgIndicatorRegistryEntry(BaseModel):
     scale_multiplier: float = 1.0
     dimension_filters: dict[str, str] = Field(default_factory=dict)
     attribute_filters: dict[str, str] = Field(default_factory=dict)
+
+
+class NumbeoIndicatorRegistryEntry(BaseModel):
+    indicator_code: str
+    dataset_code: str
+    dataset_label: str
+    display_name: str
+    numbeo_field: str
+    scale_multiplier: float = 1.0
+
+
+class WhoGhoIndicatorRegistryEntry(BaseModel):
+    indicator_code: str
+    gho_indicator_id: str
+    dataset_code: str
+    dataset_label: str
+    display_name: str
+    sex_filter: str | None = None
+    period_granularity: Literal["ANNUAL"] = "ANNUAL"
+    scale_multiplier: float = 1.0
+    methodology_note: str | None = None
+
+
+class EurostatIndicatorRegistryEntry(BaseModel):
+    indicator_code: str
+    dataset_code: str
+    dataset_label: str
+    eurostat_dataset_id: str
+    filter_params: dict[str, str] = Field(default_factory=dict)
+    display_name: str
+    scale_multiplier: float = 1.0
+
+
+class UndpHdrIndicatorRegistryEntry(BaseModel):
+    indicator_code: str
+    dataset_code: str
+    dataset_label: str
+    hdr_field_prefix: str
+    display_name: str
+    scale_multiplier: float = 1.0
+
+
+class BisIndicatorRegistryEntry(BaseModel):
+    indicator_code: str
+    dataset_code: str
+    dataset_label: str
+    fetch_method: str
+    display_name: str
+    scale_multiplier: float = 1.0
+
+
+class ImfIfsIndicatorRegistryEntry(BaseModel):
+    indicator_code: str
+    dataset_code: str
+    dataset_label: str
+    ifs_indicator_code: str
+    display_name: str
+    scale_multiplier: float = 1.0
+
+
+class GenericJsonIndicatorRegistryEntry(BaseModel):
+    """Shared model for ADB KIDB, UNAIDS, CEPAL, AfDB pipelines."""
+    indicator_code: str
+    dataset_code: str
+    dataset_label: str
+    source_indicator_id: str
+    display_name: str
+    scale_multiplier: float = 1.0
+
+
+# Keep a named alias for AfDB (same structure)
+AfdbIndicatorRegistryEntry = GenericJsonIndicatorRegistryEntry
 
 
 class IndicatorObservation(BaseModel):
