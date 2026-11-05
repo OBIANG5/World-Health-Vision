@@ -1,16 +1,158 @@
-import { MapContainer, TileLayer } from "react-leaflet";
-import type { LatLngTuple } from "leaflet";
+// WorldHealthVision V2 — WorldMap
+// Carte Leaflet interactive clippée dans la forme œil.
+// Tooltip enrichi au survol : drapeau, devise, région.
+
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
+import type { LatLngTuple, PathOptions, Layer } from "leaflet";
+import type { Feature, FeatureCollection } from "geojson";
+import type { CountrySummary } from "../../api/types";
 import "leaflet/dist/leaflet.css";
 
-const mapCenter: LatLngTuple = [18, 5];
+const MAP_CENTER: LatLngTuple = [20, 0];
+const ISO3_FIELD = "ISO3166-1-Alpha-3";
 
-export default function WorldMap() {
+type Props = {
+  activeIso3Set: Set<string>;
+  selectedCountryIso3: string;
+  onCountryClick: (iso3: string) => void;
+  countriesMap?: Map<string, CountrySummary>;
+};
+
+// ---------- helpers ----------
+
+function flagEmoji(iso2?: string | null): string {
+  if (!iso2 || iso2.length !== 2) return "🌍";
+  const base = 0x1f1e6;
+  const A = 65;
+  const up = iso2.toUpperCase();
+  return (
+    String.fromCodePoint(up.charCodeAt(0) - A + base) +
+    String.fromCodePoint(up.charCodeAt(1) - A + base)
+  );
+}
+
+function buildTooltipHtml(
+  geoName: string,
+  _iso3: string,
+  country?: CountrySummary,
+): string {
+  const flag = flagEmoji(country?.iso2);
+  const name = country?.displayName ?? geoName;
+  const capital = country?.capitalCity;
+  const currency = country?.currencyCode;
+  const currencyName = country?.currencyName;
+  const currencySymbol = country?.currencySymbol;
+  const region = country?.subregionName ?? country?.regionName;
+
+  const capitalRow = capital
+    ? `<div class="wtc-row">🏛 ${capital}</div>`
+    : "";
+
+  let currencyRow = "";
+  if (currency) {
+    // Format: "💱 EUR — Euro (€)"  — évite les doublons type "ETB ETB"
+    const parts: string[] = [currency];
+    if (currencyName) parts.push(`— ${currencyName}`);
+    if (currencySymbol && currencySymbol !== currency) parts.push(`(${currencySymbol})`);
+    currencyRow = `<div class="wtc-row wtc-currency">💱 ${parts.join(" ")}</div>`;
+  }
+
+  const regionRow = region
+    ? `<div class="wtc-row">🌍 ${region}</div>`
+    : "";
+
+  return `
+    <div class="whv-tooltip-card">
+      <div class="wtc-header">
+        <span class="wtc-flag">${flag}</span>
+        <span class="wtc-name">${name}</span>
+      </div>
+      ${capitalRow}${currencyRow}${regionRow}
+    </div>
+  `;
+}
+
+// ---------- styles Leaflet par état ----------
+
+function countryStyle(
+  feature: Feature | undefined,
+  selectedIso3: string,
+  activeIso3Set: Set<string>,
+): PathOptions {
+  const iso3 = feature?.properties?.[ISO3_FIELD] as string | undefined;
+  const isSelected = iso3 === selectedIso3;
+  const isActive = iso3 ? activeIso3Set.has(iso3) : false;
+
+  if (isSelected) {
+    return { fillColor: "#1a82d4", fillOpacity: 0.88, color: "#5bc5ff", weight: 2.8 };
+  }
+  if (isActive) {
+    return { fillColor: "#0e3d56", fillOpacity: 0.72, color: "#1470a8", weight: 1.1 };
+  }
+  // Pays sans données — légèrement plus visible pour montrer le monde entier
+  return { fillColor: "#0c2233", fillOpacity: 0.65, color: "#1b3448", weight: 0.7 };
+}
+
+// ---------- composant ----------
+
+export default function WorldMap({
+  activeIso3Set,
+  selectedCountryIso3,
+  onCountryClick,
+  countriesMap,
+}: Props) {
+  const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
+  const renderKey = `${selectedCountryIso3}-${activeIso3Set.size}`;
+
+  useEffect(() => {
+    fetch("/countries.geojson")
+      .then((r) => r.json())
+      .then((data: FeatureCollection) => setGeoData(data))
+      .catch(() => {});
+  }, []);
+
+  function style(feature?: Feature): PathOptions {
+    return countryStyle(feature, selectedCountryIso3, activeIso3Set);
+  }
+
+  function onEachFeature(feature: Feature, layer: Layer) {
+    const iso3 = feature?.properties?.[ISO3_FIELD] as string | undefined;
+    if (!iso3) return;
+
+    const geoName = (feature.properties?.["name"] as string) ?? iso3;
+    const country = countriesMap?.get(iso3);
+
+    layer.on({
+      click: () => {
+        onCountryClick(iso3);
+      },
+      mouseover: (e) => {
+        const l = e.target as { setStyle: (s: PathOptions) => void };
+        l.setStyle({ fillOpacity: 0.80, weight: 2.2, color: "#4ab8ff" });
+      },
+      mouseout: (e) => {
+        const l = e.target as { setStyle: (s: PathOptions) => void };
+        l.setStyle(style(feature));
+      },
+    });
+
+    // Tooltip enrichi — HTML rendu par Leaflet
+    const html = buildTooltipHtml(geoName, iso3, country);
+    layer.bindTooltip(html, {
+      sticky: true,
+      className: "whv-tooltip-rich",
+      direction: "top",
+      offset: [0, -4],
+    });
+  }
+
   return (
     <MapContainer
-      center={mapCenter}
-      zoom={2}
-      minZoom={2}
-      maxZoom={6}
+      center={MAP_CENTER}
+      zoom={2.0}
+      minZoom={1.5}
+      maxZoom={7}
       zoomControl={true}
       worldCopyJump={true}
       style={{ width: "100%", height: "100%" }}
@@ -19,6 +161,14 @@ export default function WorldMap() {
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         attribution="&copy; OpenStreetMap &copy; CARTO"
       />
+      {geoData && (
+        <GeoJSON
+          key={renderKey}
+          data={geoData}
+          style={style}
+          onEachFeature={onEachFeature}
+        />
+      )}
     </MapContainer>
   );
 }
