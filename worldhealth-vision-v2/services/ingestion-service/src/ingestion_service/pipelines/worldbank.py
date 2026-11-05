@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 import json
+import logging
 from pathlib import Path
 
 from ingestion_service.bronze_store import BronzeStore
@@ -7,6 +8,8 @@ from ingestion_service.connectors.timeseries_client import TimeseriesClient
 from ingestion_service.connectors.worldbank_client import WorldBankClient
 from ingestion_service.metrics import INGESTION_RECORD_COUNTER, INGESTION_RUN_COUNTER, TIMESERIES_PUBLICATION_COUNTER
 from ingestion_service.models import CountryRegistryRecord, IndicatorObservation, IndicatorRegistryEntry, WorldBankCountryRecord
+
+LOGGER = logging.getLogger(__name__)
 
 
 class WorldBankIngestionService:
@@ -49,8 +52,17 @@ class WorldBankIngestionService:
         manifests = []
 
         for entry in indicator_entries:
+            # WGI and similar indicators may use a different API code (fetch_code)
+            # but must be stored under the canonical analytics code (entry.code).
+            api_code = entry.fetch_code or entry.code
             run_id = self._run_id(entry.code)
-            raw_rows = self._client.fetch_indicator_all_countries(entry.code)
+            try:
+                raw_rows = self._client.fetch_indicator_all_countries(api_code, source_id=entry.source_id)
+            except Exception as exc:
+                LOGGER.warning("WB indicator fetch failed, skipping — code=%s error=%s", entry.code, exc)
+                INGESTION_RUN_COUNTER.labels("WORLD_BANK", "WDI", "failure").inc()
+                continue
+
             normalized_observations = [
                 self._normalize_indicator_row(row, entry.code)
                 for row in raw_rows
