@@ -325,15 +325,20 @@ def test_country_economic_snapshot_returns_curated_business_lenses():
         await service.aclose()
 
         assert snapshot.country.iso3 == "FRA"
-        assert snapshot.lensCount == 6
-        assert {item.lensCode for item in snapshot.lenses} == {
+        # The original six lenses remain part of the expanding V2 economic
+        # profile. New lenses must not invalidate this baseline contract.
+        assert snapshot.lensCount == len(snapshot.lenses)
+        assert snapshot.lensCount >= 8
+        assert {
             "ECONOMIC_SCALE",
             "PROSPERITY_LEVEL",
             "GROWTH_MOMENTUM",
             "PRICE_PRESSURE",
             "LABOR_STRESS",
             "EXTERNAL_BALANCE",
-        }
+            "HEALTH_EXPENDITURE",
+            "LIFE_EXPECTANCY",
+        }.issubset({item.lensCode for item in snapshot.lenses})
         growth_lens = next(item for item in snapshot.lenses if item.lensCode == "GROWTH_MOMENTUM")
         labor_lens = next(item for item in snapshot.lenses if item.lensCode == "LABOR_STRESS")
         assert growth_lens.signalTone in {"BALANCED", "POSITIVE"}
@@ -458,15 +463,20 @@ def test_region_economic_snapshot_returns_curated_business_lenses():
         await service.aclose()
 
         assert snapshot.snapshotType == "CONTINENT"
-        assert snapshot.lensCount == 6
-        assert {item.lensCode for item in snapshot.lenses} == {
+        # The original six lenses remain part of the expanding V2 economic
+        # profile. New lenses must not invalidate this baseline contract.
+        assert snapshot.lensCount == len(snapshot.lenses)
+        assert snapshot.lensCount >= 8
+        assert {
             "ECONOMIC_SCALE",
             "PROSPERITY_LEVEL",
             "GROWTH_MOMENTUM",
             "PRICE_PRESSURE",
             "LABOR_STRESS",
             "EXTERNAL_BALANCE",
-        }
+            "HEALTH_EXPENDITURE",
+            "LIFE_EXPECTANCY",
+        }.issubset({item.lensCode for item in snapshot.lenses})
         growth_lens = next(item for item in snapshot.lenses if item.lensCode == "GROWTH_MOMENTUM")
         assert growth_lens.signalTone in {"BALANCED", "POSITIVE"}
         assert growth_lens.confidenceLevel in {"HIGH", "MEDIUM"}
