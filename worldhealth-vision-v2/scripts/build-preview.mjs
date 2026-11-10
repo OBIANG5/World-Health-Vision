@@ -24,12 +24,15 @@ writeFileSync(join(dist,"preview-countries.js"),
   "window.__WHV_PREVIEW_COUNTRIES__="+JSON.stringify(countries)+";");
 copyFileSync(join(root,"scripts","preview-bootstrap.js"),
              join(dist,"preview-bootstrap.js"));
+copyFileSync(join(root,"scripts","preview-mobile.css"),join(dist,"preview-mobile.css"));
 const html=join(dist,"index.html");
 let document=readFileSync(html,"utf8");
 document=document.replace(/<head>/i,
   '<head>\n<meta name="robots" content="noindex,nofollow">\n'+
   '<script src="./preview-countries.js"></script>\n'+
   '<script src="./preview-bootstrap.js"></script>\n');
-if(!document.includes("./preview-bootstrap.js"))throw Error("Failed to inject preview bootstrap");
+document=document.replace(/<\/head>/i, '  <link rel="stylesheet" href="./preview-mobile.css">\\n</head>');
+if(!document.includes("./preview-bootstrap.js") || !document.includes("./preview-mobile.css"))
+  throw Error("Failed to inject preview bootstrap or mobile CSS");
 writeFileSync(html,document);
 console.log("Built original V2 interface with "+countries.length+" country metadata entries.");
