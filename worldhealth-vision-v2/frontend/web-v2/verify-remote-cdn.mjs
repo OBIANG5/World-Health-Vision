@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/afbde14d572883a6a288476e7582999a0ec2323d/index.html";
+const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/dcca13c81fedb2bfe7a9c81ee4e579e0716f3952/index.html";
 const browser = await chromium.launch({headless: true, args: ["--no-sandbox"]});
 try {
   const page = await browser.newPage({viewport: {width:390,height:844}, isMobile:true,hasTouch:true});
@@ -48,6 +48,16 @@ try {
   await page.locator(".whv-source-card").first().waitFor({state:"visible"});
   assert(await page.locator(".whv-source-card").count() === 22,
     "Remote preview does not expose all 22 registered V2 sources");
+  // Verify the NEW public build, not a previously pinned snapshot.
+  assert(await page.locator(".whv-source-coverage[data-coverage='unknown']").count() === 22,
+    "Static preview must not claim actual observed source data");
+  assert(await page.locator(".whv-source-filters button").nth(1).isDisabled(),
+    "Data availability filter should be disabled without a live backend");
+  await page.locator("#whv-source-search").fill("OpenStreetMap");
+  assert(await page.locator(".whv-source-card").count() === 1,
+    "Source search must work through the public CDN");
+  await page.locator("#whv-source-search").fill("");
+  assert(await page.locator(".whv-source-card").count() === 22);
   await page.locator(".whv-modal-close").click();
   await page.locator(".whv-mobile-shortcut").filter({hasText:"Régions"}).click();
   await page.locator(".region-drawer.open").waitFor({state:"visible"});
