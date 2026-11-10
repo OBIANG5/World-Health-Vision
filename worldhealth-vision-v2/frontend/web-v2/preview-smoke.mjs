@@ -45,6 +45,8 @@ try {
   await phone.screenshot({path:join("dist","preview-mobile-tools.png")});
   await menu.locator("button").filter({hasText:"Pouvoir d'achat"}).click();
   await phone.locator(".pp-panel").waitFor({state:"visible"});
+  await phone.locator(".pp-close-btn").click();
+  await phone.locator(".pp-panel").waitFor({state:"hidden"});
 
   await phone.locator(".whv-mobile-shortcut").filter({hasText:"Pays"}).click();
   await phone.locator(".country-selector-popover").waitFor({state:"visible"});
