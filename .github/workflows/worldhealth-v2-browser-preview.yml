@@ -28,6 +28,12 @@ jobs:
         working-directory: worldhealth-vision-v2/frontend/web-v2
       - name: Add browser preview data adapter
         run: node worldhealth-vision-v2/scripts/build-preview.mjs
+      - name: Check mobile and desktop interactions in Chromium
+        run: |
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install chromium
+          node preview-smoke.mjs
+        working-directory: worldhealth-vision-v2/frontend/web-v2
       - name: Verify static assets
         run: |
           test -s worldhealth-vision-v2/frontend/web-v2/dist/index.html
