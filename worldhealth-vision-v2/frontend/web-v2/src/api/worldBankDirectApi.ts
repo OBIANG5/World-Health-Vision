@@ -56,22 +56,42 @@ export async function fetchWbHistory(
     .reverse();
 }
 
-// Récupère plusieurs indicateurs en parallèle — tolère les échecs partiels
+// Interroge la Banque mondiale en lots afin d'éviter 40 requêtes simultanées sur mobile.
+// API V2 : 60 indicateurs maximum par requête, les séries WDI nécessitent source=2.
+// Les indicateurs WGI sont récupérés séparément : ils ne font pas tous partie de WDI.
 export async function fetchWbMultipleLatest(
   iso3: string,
   codes: readonly string[],
 ): Promise<Record<string, WbLatestPoint>> {
-  const settled = await Promise.allSettled(
-    codes.map(async (code) => {
-      const point = await fetchWbLatestValue(iso3, code);
-      return { code, point };
-    }),
-  );
   const result: Record<string, WbLatestPoint> = {};
-  for (const entry of settled) {
-    if (entry.status === "fulfilled" && entry.value.point) {
-      result[entry.value.code] = entry.value.point;
-    }
+  const wgi = codes.filter((code) => code.endsWith(".EST"));
+  const wdi = codes.filter((code) => !code.endsWith(".EST"));
+  const batches: string[][] = [];
+  for (let start = 0; start < wdi.length; start += 12) {
+    batches.push(wdi.slice(start, start + 12));
   }
+
+  await Promise.all([
+    ...batches.map(async (batch) => {
+      const endpoint = `${WB_BASE}/country/${iso3}/indicator/${batch.join(";")}?source=2&format=json&mrv=6&per_page=900`;
+      const json = await wbFetch(endpoint);
+      const observations = parseWbObs(json) as Array<
+        WbObservation & { indicator?: { id?: string } }
+      >;
+      for (const entry of observations) {
+        const code = entry.indicator?.id;
+        if (!code || !batch.includes(code) || entry.value === null || !Number.isFinite(entry.value)) continue;
+        const existing = result[code];
+        if (!existing || Number(entry.date) > Number(existing.year)) {
+          result[code] = { value: entry.value, year: entry.date };
+        }
+      }
+    }),
+    ...wgi.map(async (code) => {
+      const point = await fetchWbLatestValue(iso3, code);
+      if (point) result[code] = point;
+    }),
+  ]);
+
   return result;
 }
