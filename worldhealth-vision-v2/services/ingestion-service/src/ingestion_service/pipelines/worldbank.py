@@ -102,7 +102,20 @@ class WorldBankIngestionService:
                 run_id=run_id,
                 raw_payload=raw_rows,
                 normalized_records=normalized_rows,
-                notes={"indicatorCode": entry.code, "indicatorName": entry.name},
+                notes={
+                    "indicatorCode": entry.code,
+                    "indicatorName": entry.name,
+                    "acquisitionFormat": (
+                        "OFFICIAL_WDI_CSV_ZIP"
+                        if any(row.get("_whv_official_bulk_export") for row in raw_rows)
+                        else "OFFICIAL_WDI_JSON_API"
+                    ),
+                    "observationStatusLimitation": (
+                        "CSV archive provides no per-observation status; source quality flagged."
+                        if any(row.get("_whv_official_bulk_export") for row in raw_rows)
+                        else None
+                    ),
+                },
             )
             manifests.append(manifest)
             INGESTION_RUN_COUNTER.labels("WORLD_BANK", "WDI", "success").inc()
@@ -153,11 +166,26 @@ class WorldBankIngestionService:
         )
 
     def _normalize_indicator_row(self, row: dict, indicator_code: str) -> IndicatorObservation:
+        # Official bulk CSV has no individual obs_status field. Preserve this
+        # limitation in source metadata and quality flags rather than silently
+        # presenting the ZIP as if it had JSON per-observation statuses.
+        from_official_zip = bool(row.get("_whv_official_bulk_export"))
+        source_metadata = {}
+        quality_flags = []
+        if from_official_zip:
+            source_metadata = {
+                "acquisitionFormat": "OFFICIAL_WDI_CSV_ZIP",
+                "datasetLastUpdated": row.get("_whv_bulk_export_last_updated"),
+                "observationStatusFromProvider": "NOT_INCLUDED_IN_ZIP",
+            }
+            quality_flags.append("WDI_BULK_CSV_OBS_STATUS_NOT_INCLUDED")
         return IndicatorObservation.annual(
             country_iso3=row["countryiso3code"].strip(),
             indicator_code=indicator_code,
             year=int(row["date"]),
             value=float(row["value"]) if row["value"] is not None else None,
+            source_metadata=source_metadata,
+            quality_flags=quality_flags,
         )
 
     def _run_id(self, suffix: str) -> str:
