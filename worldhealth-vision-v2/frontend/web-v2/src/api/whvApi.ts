@@ -60,7 +60,11 @@ class AsyncCache<T> {
   private readonly store = new Map<string, CacheSlot<T>>();
   private readonly inflight = new Map<string, Promise<T>>();
 
-  constructor(private readonly ttlMs: number = DEFAULT_TTL_MS) {}
+  private readonly ttlMs: number;
+
+  constructor(ttlMs: number = DEFAULT_TTL_MS) {
+    this.ttlMs = ttlMs;
+  }
 
   get(key: string, loader: () => Promise<T>): Promise<T> {
     const slot = this.store.get(key);
