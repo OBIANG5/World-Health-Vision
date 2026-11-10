@@ -59,3 +59,61 @@ def test_parse_optional_int_supports_fiscal_year_notation():
 
     assert service._parse_optional_int("FY2023/24") == 2024
     assert service._parse_optional_int("2022") == 2022
+
+
+
+def test_imf_missing_actual_cutoff_never_claims_future_observations():
+    service = ImfWeoIngestionService.__new__(ImfWeoIngestionService)
+    entry = ImfWeoIndicatorRegistryEntry(
+        indicator_code="FP.CPI.TOTL.ZG",
+        imf_indicator_id="PCPIPCH",
+        display_name="Inflation",
+    )
+    rows = [
+        {"COUNTRY.ID": "FRA", "LATEST_ACTUAL_ANNUAL_DATA": None, "2024": 2.0, "2025": 2.6},
+        {"COUNTRY.ID": "GAB", "LATEST_ACTUAL_ANNUAL_DATA": 0, "2024": 2.8, "2025": 3.3},
+    ]
+    assert service._normalize_indicator_rows(rows, entry) == []
+
+
+def test_imf_inflation_keeps_observed_estimated_separate_and_discards_projection():
+    service = ImfWeoIngestionService.__new__(ImfWeoIngestionService)
+    entry = ImfWeoIndicatorRegistryEntry(
+        indicator_code="FP.CPI.TOTL.ZG",
+        imf_indicator_id="PCPIPCH",
+        display_name="Inflation",
+    )
+    records = service._normalize_indicator_rows(
+        [{"COUNTRY.ID": "GAB", "LATEST_ACTUAL_ANNUAL_DATA": 2024,
+          "2024": 2.1, "2025": 3.2, "2026": 4.3}],
+        entry,
+    )
+    assert [(obs.year, obs.value_status) for obs in records] == [
+        (2024, "OBSERVED"),
+        (2025, "ESTIMATED"),
+    ]
+
+
+def test_pilot_indicators_require_actual_configured_source_codes():
+    from pathlib import Path
+    from unittest.mock import Mock
+
+    service = ImfWeoIngestionService(
+        client=Mock(),
+        bronze_store=Mock(),
+        indicator_registry_path=Path("/unused/for/this/test"),
+        dataset_code="IMF_PUBLIC_DATA",
+        dataset_label="WEO",
+        timeseries_client=None,
+    )
+    service._load_indicator_registry = lambda: [
+        ImfWeoIndicatorRegistryEntry(
+            indicator_code="FP.CPI.TOTL.ZG", imf_indicator_id="PCPIPCH", display_name="Inflation"
+        )
+    ]
+    try:
+        service.fetch_core_indicators(indicator_codes={"NONEXISTENT_CODE"})
+        assert False, "Unknown indicators must fail before the IMF download"
+    except ValueError as exc:
+        assert "NONEXISTENT_CODE" in str(exc)
+    service._client.fetch_countries_sheet_rows.assert_not_called()
