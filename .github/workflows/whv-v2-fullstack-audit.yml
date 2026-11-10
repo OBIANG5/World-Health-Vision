@@ -40,6 +40,23 @@ jobs:
           chmod +x mvnw
           ./mvnw -B -ntp test
           ./mvnw -B -ntp -DskipTests package
+      - name: Inspect and syntax-check every canonical V2 Python module
+        run: |
+          python -m compileall -q worldhealth-vision-v2/services/analytics-service/src
+          python -m compileall -q worldhealth-vision-v2/services/ingestion-service/src
+          python - <<'PY'
+          from pathlib import Path
+          root = Path('worldhealth-vision-v2')
+          source_files = [
+              p for p in root.rglob('*')
+              if p.is_file()
+              and not any(part in {'node_modules','target','__pycache__','dist','.git','.m2'} for part in p.parts)
+              and p.suffix.lower() in {'.py','.java','.ts','.tsx','.js','.mjs','.sql','.yml','.yaml','.json','.md','.css'}
+          ]
+          print('Canonical V2 source/config/documentation files inventoried:',len(source_files))
+          assert len(source_files) >= 200
+          assert all(str(p).startswith('worldhealth-vision-v2/') for p in source_files)
+          PY
       - name: Python 3.12 V2 analytics unit tests
         run: |
           pip install -e './worldhealth-vision-v2/services/analytics-service[dev]'
