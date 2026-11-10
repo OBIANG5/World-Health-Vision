@@ -21,6 +21,7 @@ import com.worldhealthvision.timeseries.api.dto.CountryLatestComparisonResponse;
 import com.worldhealthvision.timeseries.api.dto.LatestSourceObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
+import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
 import com.worldhealthvision.timeseries.api.internal.dto.IngestionObservationBatchRequest;
@@ -73,6 +74,75 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                         rs.getInt("latest_observation_count")
                 ))
                 .single();
+    }
+
+    /**
+     * A source can be declared in catalog.source without a single observation.
+     * This aggregate is based on canonical latest observations, never the
+     * source_run.record_count field (an attempted ingestion is not data).
+     *
+     * Reingesting a period does not artificially inflate coverage. Suppressed
+     * or missing records never count as available, and modeled/estimated values
+     * are always distinguished from observed values.
+     */
+    @Override
+    public List<SourceDataCoverageResponse> listSourceDataCoverage() {
+        String sql = """
+                with available_by_source as (
+                    select
+                        lo.source_code,
+                        count(*) filter (
+                            where lo.value_status = 'OBSERVED'
+                              and (lo.numeric_value is not null or lo.text_value is not null)
+                        ) as observed_count,
+                        count(*) filter (
+                            where lo.value_status = 'ESTIMATED'
+                              and (lo.numeric_value is not null or lo.text_value is not null)
+                        ) as estimated_count,
+                        count(*) filter (
+                            where lo.value_status = 'OBSERVED' and lo.numeric_value is not null
+                        ) as numeric_observed_count,
+                        count(distinct lo.country_iso3) filter (
+                            where lo.value_status in ('OBSERVED', 'ESTIMATED')
+                              and (lo.numeric_value is not null or lo.text_value is not null)
+                        ) as covered_country_count,
+                        max(lo.period_start) filter (
+                            where lo.value_status in ('OBSERVED', 'ESTIMATED')
+                              and (lo.numeric_value is not null or lo.text_value is not null)
+                        ) as latest_available_period_start,
+                        max(lo.fetched_at_utc) filter (
+                            where lo.value_status in ('OBSERVED', 'ESTIMATED')
+                              and (lo.numeric_value is not null or lo.text_value is not null)
+                        ) as latest_data_fetched_at_utc
+                    from timeseries.latest_observation lo
+                    group by lo.source_code
+                )
+                select
+                    s.code as source_code,
+                    s.display_name as source_display_name,
+                    coalesce(a.observed_count, 0) as observed_count,
+                    coalesce(a.estimated_count, 0) as estimated_count,
+                    coalesce(a.numeric_observed_count, 0) as numeric_observed_count,
+                    coalesce(a.covered_country_count, 0) as covered_country_count,
+                    a.latest_available_period_start,
+                    a.latest_data_fetched_at_utc
+                from catalog.source s
+                left join available_by_source a on a.source_code = s.code
+                order by s.display_name
+                """;
+
+        return jdbcClient.sql(sql)
+                .query((rs, rowNum) -> new SourceDataCoverageResponse(
+                        rs.getString("source_code"),
+                        rs.getString("source_display_name"),
+                        rs.getLong("observed_count"),
+                        rs.getLong("estimated_count"),
+                        rs.getLong("numeric_observed_count"),
+                        rs.getLong("covered_country_count"),
+                        rs.getObject("latest_available_period_start", LocalDate.class),
+                        rs.getObject("latest_data_fetched_at_utc", OffsetDateTime.class)
+                ))
+                .list();
     }
 
     @Override
