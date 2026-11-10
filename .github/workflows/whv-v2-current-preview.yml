@@ -1,0 +1,65 @@
+name: WHV V2 latest authentic mobile browser preview
+
+on:
+  push:
+    branches:
+      - 'preview/whv-v2-complete-current-2026-11-10'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact original V2 source
+        uses: actions/checkout@v4
+      - name: Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install authentic V2 dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Enforce TypeScript validation
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npx tsc -b --pretty false
+      - name: Compile V2 frontend using relative static assets
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npx vite build --base=./
+      - name: Add explicit stat-free browser preview adapter and real country reference data
+        run: node worldhealth-vision-v2/scripts/build-preview.mjs
+      - name: Test original mobile tools and desktop layout in real Chromium
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+          node preview-current-smoke.mjs
+      - name: Check preview output
+        run: |
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/index.html
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/countries.geojson
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-bootstrap.js
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-mobile-current.png
+      - name: Checkout existing isolated preview deployment branch
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: .preview-deploy
+          persist-credentials: true
+      - name: Publish only after Chromium checks succeed (no forced update)
+        run: |
+          set -eu
+          git -C .preview-deploy config user.name "github-actions[bot]"
+          git -C .preview-deploy config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C .preview-deploy rm -r --ignore-unmatch .
+          cp -a worldhealth-vision-v2/frontend/web-v2/dist/. .preview-deploy/
+          git -C .preview-deploy add -A
+          if ! git -C .preview-deploy diff --cached --quiet; then
+            git -C .preview-deploy commit -m "Deploy validated full V2 frontend and responsive tools from ${GITHUB_SHA}"
+            git -C .preview-deploy push origin HEAD:whv-v2-browser-preview
+          fi
