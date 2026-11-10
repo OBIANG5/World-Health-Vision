@@ -40,7 +40,6 @@ jobs:
           chmod +x mvnw
           ./mvnw -B -ntp -DskipTests package
       - name: Python 3.12 V2 analytics unit tests
-        continue-on-error: true
         run: |
           pip install -e './worldhealth-vision-v2/services/analytics-service[dev]'
           python -m pytest -q worldhealth-vision-v2/services/analytics-service/tests
@@ -51,9 +50,8 @@ jobs:
       - name: Install exact frontend V2
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: npm ci --no-audit --no-fund
-      - name: TypeScript build diagnostic (existing source errors are visible)
+      - name: TypeScript build validation
         working-directory: worldhealth-vision-v2/frontend/web-v2
-        continue-on-error: true
         run: npx tsc -b --pretty false
       - name: Generate original frontend V2 production assets
         working-directory: worldhealth-vision-v2/frontend/web-v2
