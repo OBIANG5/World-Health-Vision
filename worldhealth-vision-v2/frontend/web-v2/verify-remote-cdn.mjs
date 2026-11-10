@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/5ad3c478df907e51104dd32b8c0f345eb4228fc2/index.html";
+const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/afbde14d572883a6a288476e7582999a0ec2323d/index.html";
 const browser = await chromium.launch({headless: true, args: ["--no-sandbox"]});
 try {
   const page = await browser.newPage({viewport: {width:390,height:844}, isMobile:true,hasTouch:true});
