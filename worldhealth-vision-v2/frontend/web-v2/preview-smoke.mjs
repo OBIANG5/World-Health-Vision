@@ -65,6 +65,32 @@ try {
     "Mobile dashboard leaked to desktop layout");
   await desktop.screenshot({path:join("dist","preview-desktop-check.png")});
   console.log("OK: desktop source layout remains unchanged.");
+
+  // Check the actual immutable CDN URL, not only the local Vite server.
+  const publicContext=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+  await publicContext.addCookies([{name:"__Http-phish",value:"1",domain:"rawcdn.githack.com",path:"/",httpOnly:true,secure:true}]);
+  const publicPage=await publicContext.newPage();
+  const cdnErrors=[],assetFailures=[];
+  publicPage.on("pageerror",e=>cdnErrors.push(String(e)));
+  publicPage.on("response",r=>{
+    if(r.status()>=400)assetFailures.push(String(r.status())+" "+r.url());
+  });
+  const immutableUrl="https://rawcdn.githack.com/OBIANG5/World-Health-Vision/98fb74b5b556f2a6bd259a3caf79a713229f2c8c/index.html";
+  const response=await publicPage.goto(immutableUrl,{waitUntil:"domcontentloaded",timeout:25000});
+  await publicPage.screenshot({path:join("dist","preview-cdn-mobile-check.png")});
+  try {
+    await publicPage.locator(".whv-brand").waitFor({state:"visible",timeout:15000});
+    await publicPage.locator(".whv-mobile-overview").waitFor({state:"visible",timeout:10000});
+    assert(response?.status()===200,"CDN HTML HTTP status not 200");
+    assert(cdnErrors.length===0,"CDN JS errors: "+cdnErrors.slice(0,5).join(";"));
+    assert(assetFailures.filter(x=>x.includes("/assets/")).length===0,"CDN asset failures: "+assetFailures.slice(0,6).join(";"));
+    console.log("OK: remote immutable CDN frontend renders on mobile Chromium.");
+  } catch(err) {
+    console.error("CDN diagnostics",JSON.stringify({http:response?.status(),title:await publicPage.title(),body:(await publicPage.locator("body").innerText()).slice(0,400),cdnErrors,assetFailures}));
+    throw err;
+  }
+  await publicContext.close();
+
 }finally{
   if(browser)await browser.close();
   server.kill("SIGTERM");
