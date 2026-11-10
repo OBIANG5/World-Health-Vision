@@ -15,8 +15,19 @@ class WorldBankClient:
         return payload[1]
 
     def fetch_indicator_all_countries(
-        self, indicator_code: str, source_id: str | None = None
+        self,
+        indicator_code: str,
+        source_id: str | None = None,
+        country_iso3s: set[str] | None = None,
     ) -> list[dict[str, Any]]:
+        # The World Bank API supports semicolon-separated countries.
+        # Restricting an operational pilot avoids fetching every country
+        # and the avoidable 502 failures on later pages.
+        country_path = "all"
+        if country_iso3s is not None:
+            if not country_iso3s or any(len(code) != 3 or not code.isalpha() for code in country_iso3s):
+                raise ValueError("World Bank country scope requires valid three-letter country codes")
+            country_path = ";".join(sorted(code.upper() for code in country_iso3s))
         params: dict[str, Any] = {
             "format": "json",
             "per_page": self._page_size,
@@ -26,7 +37,7 @@ class WorldBankClient:
             params["source"] = source_id
 
         first_page = self._get_json(
-            f"/country/all/indicator/{indicator_code}",
+            f"/country/{country_path}/indicator/{indicator_code}",
             params,
         )
 
@@ -43,7 +54,7 @@ class WorldBankClient:
             if source_id is not None:
                 page_params["source"] = source_id
             page_payload = self._get_json(
-                f"/country/all/indicator/{indicator_code}",
+                f"/country/{country_path}/indicator/{indicator_code}",
                 page_params,
             )
             rows.extend(page_payload[1])
