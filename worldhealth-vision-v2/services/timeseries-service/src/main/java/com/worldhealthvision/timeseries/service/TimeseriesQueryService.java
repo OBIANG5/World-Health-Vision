@@ -4,6 +4,7 @@ import com.worldhealthvision.timeseries.api.dto.LatestSourceObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.CountryLatestComparisonResponse;
 import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
+import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesListResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
@@ -24,6 +25,11 @@ public class TimeseriesQueryService {
 
     public TimeseriesReadinessResponse getReadiness() {
         return timeseriesRepository.getReadiness();
+    }
+
+    public TimeseriesListResponse<SourceDataCoverageResponse> listSourceDataCoverage() {
+        List<SourceDataCoverageResponse> rows = timeseriesRepository.listSourceDataCoverage();
+        return new TimeseriesListResponse<>(rows.size(), rows);
     }
 
     public TimeseriesListResponse<TimeseriesObservationResponse> listSeries(
