@@ -186,8 +186,20 @@ function AppContent() {
     setShowRetirement(false);
   }
 
-  // Outil « Expat & Retraite » retiré du menu (récupérable plus tard) :
-  // le composant RetirementPanel et le state showRetirement sont conservés.
+  function handleToggleRetirement() {
+    setShowRetirement((v) => !v);
+    setShowRealEstate(false);
+    setShowDestinationScore(false);
+    setShowPurchasingPower(false);
+    setShowProfilePanel(false);
+    setShowCountrySelector(false);
+    setShowWatchlist(false);
+    setShowSourcesModal(false);
+    setShowTravelPanel(false);
+    setShowAlerts(false);
+    setShowAdvisor(false);
+    setShowCurrencyPanel(false);
+  }
 
   function handleToggleRealEstate() {
     setShowRealEstate((v) => !v);
@@ -216,7 +228,20 @@ function AppContent() {
     setShowAdvisor(false);
   }
 
-  // Assistant IA retiré du menu front (récupérable) : AdvisorPanel + state showAdvisor conservés.
+  function handleToggleAdvisor() {
+    setShowAdvisor((v) => !v);
+    setShowCurrencyPanel(false);
+    setShowAlerts(false);
+    setShowRealEstate(false);
+    setShowRetirement(false);
+    setShowDestinationScore(false);
+    setShowPurchasingPower(false);
+    setShowProfilePanel(false);
+    setShowCountrySelector(false);
+    setShowWatchlist(false);
+    setShowSourcesModal(false);
+    setShowTravelPanel(false);
+  }
 
   function handleToggleCurrencyPanel() {
     setShowCurrencyPanel((v) => !v);
@@ -312,6 +337,11 @@ function AppContent() {
               🎯 {lang === "fr" ? "Score destination" : "Destination score"}
             </button>
             <button type="button"
+              className={`whv-tools-item${showRetirement ? " active" : ""}`}
+              onClick={() => { handleToggleRetirement(); setShowToolsMenu(false); }}>
+              🌿 {lang === "fr" ? "Expat & Retraite" : "Expat & Retirement"}
+            </button>
+            <button type="button"
               className={`whv-tools-item whv-nav-btn--realestate${showRealEstate ? " active" : ""}`}
               onClick={() => { handleToggleRealEstate(); setShowToolsMenu(false); }}>
               🏘 {lang === "fr" ? "Immobilier" : "Real Estate"}
@@ -320,6 +350,11 @@ function AppContent() {
               className={`whv-tools-item whv-nav-btn--currency${showCurrencyPanel ? " active" : ""}`}
               onClick={() => { handleToggleCurrencyPanel(); setShowToolsMenu(false); }}>
               💱 {lang === "fr" ? "Devises" : "Currencies"}
+            </button>
+            <button type="button"
+              className={`whv-tools-item${showAdvisor ? " active" : ""}`}
+              onClick={() => { handleToggleAdvisor(); setShowToolsMenu(false); }}>
+              ◉ {lang === "fr" ? "Conseiller économique" : "Economic advisor"}
             </button>
             <button type="button"
               className={`whv-tools-item whv-nav-btn--watchlist${showWatchlist ? " active" : ""}`}
