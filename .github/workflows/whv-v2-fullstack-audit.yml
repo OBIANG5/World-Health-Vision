@@ -92,6 +92,16 @@ jobs:
             http://localhost:8080/api/catalog/indicators/SH.XPD.CHEX.GD.ZS
           head -c 300 /tmp/whv-indicator.json
           echo
+          echo "Waiting until the actual time-series service is ready:"
+          ready=0
+          for n in $(seq 1 40); do
+            code=$(curl -sS --max-time 4 -o /tmp/ts-readiness.json -w '%{http_code}'               http://localhost:8080/api/timeseries/readiness || true)
+            if [ "$code" = "200" ]; then ready=1; break; fi
+            sleep 3
+          done
+          if [ "$ready" -ne 1 ]; then echo "Timeseries readiness failure"; cat /tmp/ts-readiness.json || true; exit 1; fi
+          head -c 500 /tmp/ts-readiness.json
+          echo
           echo "Analytics snapshot (may initially have no observations):"
           curl -sS -o /tmp/whv-snapshot.json -w "HTTP %{http_code}\n" --max-time 25             http://localhost:8080/api/product/countries/FRA/economic-snapshot
           head -c 600 /tmp/whv-snapshot.json
