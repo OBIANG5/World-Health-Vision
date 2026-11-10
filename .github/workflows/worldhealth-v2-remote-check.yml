@@ -1,0 +1,36 @@
+name: Verify immutable V2 preview on Safari and Chrome
+
+on:
+  push:
+    branches:
+      - preview/whv-v2-iphone
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-remote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser testing runtime
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium webkit
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+      - name: Test pinned production URL in Chrome and Safari
+        run: node preview-remote-check.mjs
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+      - name: Keep diagnostic screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: remote-preview-screenshots
+          path: worldhealth-vision-v2/frontend/web-v2/remote-*.png
+          if-no-files-found: ignore
