@@ -21,7 +21,7 @@ jobs:
       - name: Fetch published immutable V2 HTML and referenced static assets
         run: |
           set -eu
-          base="https://rawcdn.githack.com/OBIANG5/World-Health-Vision/ee1104d603d598d4069033ef96d340f3727278da"
+          base="https://rawcdn.githack.com/OBIANG5/World-Health-Vision/5ad3c478df907e51104dd32b8c0f345eb4228fc2"
           curl -fLsS --retry 4 --max-time 40 "$base/index.html" -o /tmp/whv-index.html
           python3 - <<'PY'
           from html.parser import HTMLParser
