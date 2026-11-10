@@ -24,7 +24,7 @@ jobs:
         run: npm ci --no-audit --no-fund
         working-directory: worldhealth-vision-v2/frontend/web-v2
       - name: Build the original React frontend
-        run: npx vite build --base=./
+        run: VITE_WHV_PREVIEW_MODE=true npx vite build --base=./
         working-directory: worldhealth-vision-v2/frontend/web-v2
       - name: Add browser preview data adapter
         run: node worldhealth-vision-v2/scripts/build-preview.mjs
@@ -34,6 +34,7 @@ jobs:
           test -s worldhealth-vision-v2/frontend/web-v2/dist/countries.geojson
           test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-countries.js
           test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-bootstrap.js
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-mobile.css
       - name: Publish to isolated static preview branch
         env:
           GH_TOKEN: ${{ github.token }}
