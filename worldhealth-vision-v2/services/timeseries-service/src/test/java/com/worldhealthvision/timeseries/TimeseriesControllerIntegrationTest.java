@@ -138,6 +138,31 @@ class TimeseriesControllerIntegrationTest {
                 .andExpect(jsonPath("$.sourceRunCount").value(greaterThanOrEqualTo(2)))
                 .andExpect(jsonPath("$.observationCount").value(greaterThanOrEqualTo(4)));
 
+        // Registry entries without actual data must remain visibly empty.
+        // World Bank has three observed values across two countries; IMF has
+        // a single estimate; OECD is registered but not yet ingested.
+        mockMvc.perform(get("/api/timeseries/sources/coverage"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(greaterThanOrEqualTo(22)))
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'WORLD_BANK')].observedRecordCount")
+                        .value(org.hamcrest.Matchers.hasItem(3)))
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'WORLD_BANK')].observedNumericCount")
+                        .value(org.hamcrest.Matchers.hasItem(3)))
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'WORLD_BANK')].coveredCountryCount")
+                        .value(org.hamcrest.Matchers.hasItem(2)))
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'WORLD_BANK')].latestAvailablePeriodStart")
+                        .value(org.hamcrest.Matchers.hasItem("2024-01-01")))
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'IMF')].estimatedRecordCount")
+                        .value(org.hamcrest.Matchers.hasItem(1)))
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'IMF')].observedRecordCount")
+                        .value(org.hamcrest.Matchers.hasItem(0)))
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'OECD')].observedRecordCount")
+                        .value(org.hamcrest.Matchers.hasItem(0)))
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'OECD')].estimatedRecordCount")
+                        .value(org.hamcrest.Matchers.hasItem(0)));
+
+
+
         mockMvc.perform(get("/api/timeseries/series")
                         .param("countryIso3", "FRA")
                         .param("indicatorCode", "NY.GDP.MKTP.CD")
