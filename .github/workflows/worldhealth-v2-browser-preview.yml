@@ -1,0 +1,50 @@
+name: World Health Vision V2 browser preview
+
+on:
+  push:
+    branches:
+      - 'preview/whv-v2-iphone'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact V2 source
+        uses: actions/checkout@v4
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install frontend dependencies
+        run: npm ci --no-audit --no-fund
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+      - name: Build the original React frontend
+        run: npm run build -- --base=./
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+      - name: Add browser preview data adapter
+        run: node worldhealth-vision-v2/scripts/build-preview.mjs
+      - name: Verify static assets
+        run: |
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/index.html
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/countries.geojson
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-countries.js
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-bootstrap.js
+      - name: Publish to isolated static preview branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          mkdir -p /tmp/whv-browser-preview
+          cp -r worldhealth-vision-v2/frontend/web-v2/dist/. /tmp/whv-browser-preview/
+          cd /tmp/whv-browser-preview
+          git init -b whv-v2-browser-preview
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Deploy V2 original React frontend browser preview"
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/whv-v2-browser-preview
