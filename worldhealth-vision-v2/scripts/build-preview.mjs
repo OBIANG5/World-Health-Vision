@@ -31,7 +31,7 @@ document=document.replace(/<head>/i,
   '<head>\n<meta name="robots" content="noindex,nofollow">\n'+
   '<script src="./preview-countries.js"></script>\n'+
   '<script src="./preview-bootstrap.js"></script>\n');
-document=document.replace(/<\/head>/i, '  <link rel="stylesheet" href="./preview-mobile.css">\\n</head>');
+document=document.replace(/<\/head>/i, '  <link rel="stylesheet" href="./preview-mobile.css"></head>');
 if(!document.includes("./preview-bootstrap.js") || !document.includes("./preview-mobile.css"))
   throw Error("Failed to inject preview bootstrap or mobile CSS");
 writeFileSync(html,document);
