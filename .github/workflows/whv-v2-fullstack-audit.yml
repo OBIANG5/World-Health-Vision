@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - 'audit/whv-v2-integral-2026-11-10'
+      - 'v2'
+      - 'improve/v2-*'
   workflow_dispatch:
 
 permissions:
@@ -136,6 +138,22 @@ jobs:
           if [ "$ready" -ne 1 ]; then echo "Timeseries readiness failure"; cat /tmp/ts-readiness.json || true; exit 1; fi
           head -c 500 /tmp/ts-readiness.json
           echo
+          echo "Verify catalogue registration is not confused with real observations:"
+          curl -fsS --max-time 20 http://localhost:8080/api/timeseries/sources/coverage > /tmp/whv-source-coverage.json
+          python3 - <<'PY'
+          import json
+          registered = json.load(open('/tmp/whv-sources.json'))['items']
+          coverage = json.load(open('/tmp/whv-source-coverage.json'))['items']
+          by_code = {item['sourceCode']: item for item in coverage}
+          assert len(coverage) == len(registered), (len(coverage), len(registered))
+          assert {s['code'] for s in registered} == set(by_code)
+          for code, item in by_code.items():
+              assert item['observedRecordCount'] == 0, (code, item)
+              assert item['estimatedRecordCount'] == 0, (code, item)
+              assert item['coveredCountryCount'] == 0, (code, item)
+              assert item['latestAvailablePeriodStart'] is None
+          print('V2 source registry and zero-observation evidence verified for', len(coverage), 'sources')
+          PY
           echo "Validate all five real application containers are running without a startup crash:"
           for name in whv-gateway whv-catalog whv-timeseries whv-analytics whv-ingestion; do
             running=$(docker inspect --format '{{.State.Running}}' "$name")
