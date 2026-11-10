@@ -4,6 +4,7 @@ import com.worldhealthvision.timeseries.api.dto.LatestSourceObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.CountryLatestComparisonResponse;
 import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
+import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
 import com.worldhealthvision.timeseries.api.internal.dto.IngestionObservationBatchRequest;
@@ -14,6 +15,9 @@ import java.util.UUID;
 public interface TimeseriesRepository {
 
     TimeseriesReadinessResponse getReadiness();
+
+    /** V2 catalog registry + actual available values, one row per registered source. */
+    List<SourceDataCoverageResponse> listSourceDataCoverage();
 
     List<TimeseriesObservationResponse> listSeries(
             String countryIso3,
