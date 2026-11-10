@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     ilostat_indicator_url: str = "https://rplumber.ilo.org/data/indicator/"
     ilostat_dataset_code: str = "ILOSTAT_BULK"
     ilostat_dataset_label: str = "ILOSTAT Bulk Data"
-    imf_weo_workbook_url: str = "https://data.imf.org/-/media/iData/External%20Storage/Documents/5661B7CB2FCC4A56866765D4281AEF01/en/WEOOct2025all"
+    imf_weo_workbook_url: str = "https://data.imf.org/-/media/iData/External-Storage/Documents/0FA3DC49A04D446E9D69DBEB29979E1C/en/WEOOct2026all.xlsx"
     imf_weo_dataset_code: str = "IMF_PUBLIC_DATA"
     imf_weo_dataset_label: str = "World Economic Outlook"
     unodc_homicide_dataset_code: str = "UNODC_HOMICIDE"
