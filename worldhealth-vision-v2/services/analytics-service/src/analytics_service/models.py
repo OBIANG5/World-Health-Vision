@@ -313,12 +313,47 @@ class DivergenceSummary(BaseModel):
         consistent_relative_threshold: float = 0.02,
         mixed_relative_threshold: float = 0.08,
     ) -> "DivergenceSummary":
+        # An annual 2024 IMF observation CANNOT be compared to 2025 WDI
+        # as though they described the same economic period. Use only
+        # observations with identical period interval and granularity.
+        #
+        # No duplicate votes: datasets from the same institution are one
+        # source of evidence, not independent confirmation. ESTIMATED
+        # values may be shown, but are never relabelled as observed.
+        valid = [
+            item for item in items
+            if item.numericValue is not None
+            and item.valueStatus in {"OBSERVED", "ESTIMATED"}
+        ]
+        target_period = latest_comparable_period_label
+        if target_period is None and valid:
+            target_period = max(valid, key=lambda item: item.periodStart).periodLabel
+
+        aligned = [item for item in valid if item.periodLabel == target_period]
+        if aligned:
+            reference = max(aligned, key=lambda item: item.periodStart)
+            aligned = [
+                item for item in aligned
+                if item.periodGranularity == reference.periodGranularity
+                and item.periodStart == reference.periodStart
+                and item.periodEnd == reference.periodEnd
+            ]
+
+        by_source: dict[str, LatestSourceObservation] = {}
+        for item in aligned:
+            existing = by_source.get(item.sourceCode)
+            if existing is None or (
+                existing.valueStatus == "ESTIMATED" and item.valueStatus == "OBSERVED"
+            ):
+                by_source[item.sourceCode] = item
+
+        comparable = list(by_source.values())
         return cls.from_numeric_values(
-            numeric_values=[item.numericValue for item in items],
-            source_count=len(items),
+            numeric_values=[item.numericValue for item in comparable],
+            source_count=len({item.sourceCode for item in items}),
             primary_source_code=primary_source_code,
             primary_source_display_name=primary_source_display_name,
-            latest_comparable_period_label=latest_comparable_period_label,
+            latest_comparable_period_label=target_period,
             consistent_relative_threshold=consistent_relative_threshold,
             mixed_relative_threshold=mixed_relative_threshold,
         )
