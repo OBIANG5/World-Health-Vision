@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+import logging
 import json
 from pathlib import Path
 import re
@@ -9,6 +10,8 @@ from ingestion_service.connectors.imf_weo_client import ImfWeoClient
 from ingestion_service.connectors.timeseries_client import TimeseriesClient
 from ingestion_service.metrics import INGESTION_RECORD_COUNTER, INGESTION_RUN_COUNTER, TIMESERIES_PUBLICATION_COUNTER
 from ingestion_service.models import IndicatorObservation, ImfWeoIndicatorRegistryEntry
+
+LOGGER = logging.getLogger(__name__)
 
 
 class ImfWeoIngestionService:
@@ -31,8 +34,23 @@ class ImfWeoIngestionService:
         self._timeseries_client = timeseries_client
         self._allowed_country_iso3s = allowed_country_iso3s
 
-    def fetch_core_indicators(self):
+    def fetch_core_indicators(
+        self,
+        *,
+        indicator_codes: set[str] | None = None,
+        country_iso3s: set[str] | None = None,
+    ):
+        # A bounded operational pilot only fetches the requested indicators
+        # and never stores unrelated countries in the raw bronze manifest.
         indicator_entries = self._load_indicator_registry()
+        if indicator_codes is not None:
+            indicator_entries = [entry for entry in indicator_entries if entry.indicator_code in indicator_codes]
+            if len(indicator_entries) != len(indicator_codes):
+                raise ValueError(f"Unsupported WEO indicators: {sorted(indicator_codes - {item.indicator_code for item in indicator_entries})}")
+        if country_iso3s is not None:
+            if not country_iso3s or any(len(code) != 3 or not code.isalpha() for code in country_iso3s):
+                raise ValueError("country_iso3s must be non-empty ISO3 codes")
+            country_iso3s = {code.upper() for code in country_iso3s}
         raw_rows = self._client.fetch_countries_sheet_rows()
         source_descriptor = self._client.describe_source()
         manifests = []
@@ -44,12 +62,17 @@ class ImfWeoIngestionService:
                 for row in raw_rows
                 if self._normalize_cell_to_text(row.get("INDICATOR.ID")) == entry.imf_indicator_id
                 and self._is_country_code(self._normalize_cell_to_text(row.get("COUNTRY.ID")))
+                and (country_iso3s is None or self._normalize_cell_to_text(row.get("COUNTRY.ID")) in country_iso3s)
             ]
             normalized_observations = self._normalize_indicator_rows(matching_rows, entry)
             normalized_observations, dropped_country_counts = filter_observations_to_country_scope(
                 normalized_observations,
                 self._allowed_country_iso3s,
             )
+            if not normalized_observations:
+                raise ValueError(
+                    f"IMF WEO returned no verifiable historical/one-year-estimate records for {entry.indicator_code}"
+                )
             normalized_rows = [item.model_dump(mode="json") for item in normalized_observations]
 
             manifest = self._bronze_store.persist_dataset(
@@ -114,6 +137,15 @@ class ImfWeoIngestionService:
         for row in rows:
             country_iso3 = self._normalize_cell_to_text(row.get("COUNTRY.ID"))
             latest_actual_year = self._parse_optional_int(row.get("LATEST_ACTUAL_ANNUAL_DATA"))
+            # A zero means the whole IMF WEO series is estimated. A missing
+            # cutoff cannot justify assigning historical values OBSERVED.
+            # Do not silently turn future WEO projections into actual data.
+            if latest_actual_year is None or latest_actual_year < 1980:
+                LOGGER.warning(
+                    "Skipping WEO series without a verifiable latest-actual cutoff: country=%s indicator=%s raw=%r",
+                    country_iso3, entry.imf_indicator_id, row.get("LATEST_ACTUAL_ANNUAL_DATA"),
+                )
+                continue
             source_published_at = self._parse_optional_datetime(row.get("PUBLICATION_DATE"))
 
             for year_label in year_columns:
