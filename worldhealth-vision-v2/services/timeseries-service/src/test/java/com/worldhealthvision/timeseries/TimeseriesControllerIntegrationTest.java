@@ -12,6 +12,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import java.util.UUID;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -29,8 +31,25 @@ class TimeseriesControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Test
     void shouldAcceptObservationBatchAndExposeBusinessReadEndpoints() throws Exception {
+        // The isolated timeseries test bootstraps only two registry sources,
+        // unlike the full V2 catalog's 22. Add one intentionally un-ingested
+        // source to verify that registration is not mistaken for data.
+        jdbcTemplate.update("""
+                insert into catalog.source (
+                    id, code, display_name, type, organization_name,
+                    access_model, license_summary, geographic_scope, temporal_granularity
+                ) values (
+                    ?, 'EMPTY_TEST_SOURCE', 'Unpopulated integration source', 'OFFICIAL',
+                    'Integration test', 'OPEN', 'Test-only fixture',
+                    'GLOBAL', 'ANNUAL'
+                ) on conflict (code) do nothing
+                """, UUID.randomUUID());
+
         mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -143,7 +162,7 @@ class TimeseriesControllerIntegrationTest {
         // a single estimate; OECD is registered but not yet ingested.
         mockMvc.perform(get("/api/timeseries/sources/coverage"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.count").value(greaterThanOrEqualTo(22)))
+                .andExpect(jsonPath("$.count").value(greaterThanOrEqualTo(3)))
                 .andExpect(jsonPath("$.items[?(@.sourceCode == 'WORLD_BANK')].observedRecordCount")
                         .value(org.hamcrest.Matchers.hasItem(3)))
                 .andExpect(jsonPath("$.items[?(@.sourceCode == 'WORLD_BANK')].observedNumericCount")
@@ -156,9 +175,9 @@ class TimeseriesControllerIntegrationTest {
                         .value(org.hamcrest.Matchers.hasItem(1)))
                 .andExpect(jsonPath("$.items[?(@.sourceCode == 'IMF')].observedRecordCount")
                         .value(org.hamcrest.Matchers.hasItem(0)))
-                .andExpect(jsonPath("$.items[?(@.sourceCode == 'OECD')].observedRecordCount")
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'EMPTY_TEST_SOURCE')].observedRecordCount")
                         .value(org.hamcrest.Matchers.hasItem(0)))
-                .andExpect(jsonPath("$.items[?(@.sourceCode == 'OECD')].estimatedRecordCount")
+                .andExpect(jsonPath("$.items[?(@.sourceCode == 'EMPTY_TEST_SOURCE')].estimatedRecordCount")
                         .value(org.hamcrest.Matchers.hasItem(0)));
 
 
