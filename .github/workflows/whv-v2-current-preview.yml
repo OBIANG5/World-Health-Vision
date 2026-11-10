@@ -6,6 +6,10 @@ on:
       - 'preview/whv-v2-complete-current-2026-11-10'
   workflow_dispatch:
 
+concurrency:
+  group: whv-v2-current-preview-publish
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -30,8 +34,8 @@ jobs:
         run: npx tsc -b --pretty false
       - name: Compile V2 frontend using relative static assets
         working-directory: worldhealth-vision-v2/frontend/web-v2
-        run: npx vite build --base=./
-      - name: Add explicit stat-free browser preview adapter and real country reference data
+        run: VITE_WHV_PREVIEW_MODE=true npx vite build --base=./
+      - name: Build transparent V2 preview from real country and registered source catalogues
         run: node worldhealth-vision-v2/scripts/build-preview.mjs
       - name: Test original mobile tools and desktop layout in real Chromium
         working-directory: worldhealth-vision-v2/frontend/web-v2
@@ -44,6 +48,7 @@ jobs:
           test -s worldhealth-vision-v2/frontend/web-v2/dist/index.html
           test -s worldhealth-vision-v2/frontend/web-v2/dist/countries.geojson
           test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-bootstrap.js
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-sources.js
           test -s worldhealth-vision-v2/frontend/web-v2/dist/preview-mobile-current.png
       - name: Checkout existing isolated preview deployment branch
         uses: actions/checkout@v4
