@@ -4,18 +4,24 @@
 (() => {
   const countries=window.__WHV_PREVIEW_COUNTRIES__||[];
   const byCode=new Map(countries.map(c=>[c.iso3,c]));
-  const regions=[...new Map(countries.filter(c=>c.regionCode)
-      .map(c=>[c.regionCode,{code:c.regionCode,displayName:c.regionName||c.regionCode,type:"REGION",countryCount:countries.filter(x=>x.regionCode===c.regionCode).length,aggregateCount:0}])).values()];
-  const sources=[{
-    code:"WORLD_BANK",displayName:"World Bank Open Data",type:"OFFICIAL",
-    organizationName:"World Bank",homepageUrl:"https://data.worldbank.org/",
-    documentationUrl:"https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
-    accessModel:"OPEN",licenseSummary:"Conditions de réutilisation à vérifier auprès de la Banque mondiale",
-    geographicScope:"GLOBAL",temporalGranularity:"ANNUAL",updateCadence:"PERIODIC",
-    biasNotes:"Les données dépendent des déclarations statistiques nationales.",
-    qualityNotes:"Aperçu navigateur : référentiel pays seulement. Séries chiffrées non chargées.",
-    enabled:true
-  }];
+  // Exact country and region metadata comes from V2's World Bank registry.
+  // Both geographic regions and subregions are searchable; data are not invented.
+  const regionMap=new Map();
+  for(const country of countries) {
+    for(const [code,name,type] of [
+      [country.regionCode,country.regionName,"REGION"],
+      [country.subregionCode,country.subregionName,"SUBREGION"],
+    ]) {
+      if(!code)continue;
+      if(!regionMap.has(code))regionMap.set(code,{
+        code,displayName:name||code,type,countryCount:0,aggregateCount:0
+      });
+      regionMap.get(code).countryCount++;
+    }
+  }
+  const regions=[...regionMap.values()].sort((a,b)=>
+    a.type.localeCompare(b.type)||a.displayName.localeCompare(b.displayName));
+  const sources=window.__WHV_PREVIEW_SOURCES__||[];
   // axios choisit son adaptateur fetch plutôt que XMLHttpRequest.
   try { window.XMLHttpRequest=undefined; } catch(_) {}
   for(const key of ["localStorage","sessionStorage"]) {
@@ -59,7 +65,17 @@
       return country?json(country):json({detail:"Pays introuvable dans le catalogue"},404);
     }
     if(path==="/api/catalog/regions") return json({count:regions.length,items:regions});
+    if(path.startsWith("/api/catalog/regions/")) {
+      const code=decodeURIComponent(path.split("/").at(-1));
+      const match=regions.find(region=>region.code===code);
+      return match?json(match):json({detail:"Région non référencée"},404);
+    }
     if(path==="/api/catalog/sources") return json({count:sources.length,items:sources});
+    if(path.startsWith("/api/catalog/sources/")) {
+      const code=decodeURIComponent(path.split("/").at(-1));
+      const match=sources.find(source=>source.code===code);
+      return match?json(match):json({detail:"Source non référencée"},404);
+    }
     const countrySnap=path.match(/^\/api\/product\/countries\/([A-Z]{3})\/(economic-snapshot|relative-cost-snapshot)$/);
     if(countrySnap){
       const c=light(byCode.get(countrySnap[1]));
@@ -81,5 +97,5 @@
        "Service backend désactivé dans l'aperçu : aucune donnée statistique simulée."},503);
     return baseFetch(input,init);
   };
-  console.info("World Health Vision V2 — mode aperçu : catalogue local, sans Docker.");
+  console.info("World Health Vision V2 — aperçu transparent sans backend, "+sources.length+" sources référencées (pas nécessairement ingérées).");
 })();
