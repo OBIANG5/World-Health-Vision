@@ -47,52 +47,8 @@ const SUGGESTED_EN = [
   "What are the tax benefits for expats in {country}?",
 ];
 
-// ---------- stub responses (until real LLM backend is wired) ----------
-
-function generateStubResponse(question: string, countryName: string, lang: string): string {
-  const fr = lang === "fr";
-  const q = question.toLowerCase();
-
-  if (q.includes("coût") || q.includes("cost") || q.includes("prix") || q.includes("price")) {
-    return fr
-      ? `Le coût de la vie en **${countryName}** varie selon le style de vie. D'après les données WHV (sources : Banque Mondiale, OCDE, Numbeo), l'indice général de prix oscille autour de la base OCDE=100. Les villes principales sont généralement plus onéreuses que les zones rurales. \n\n**Postes majeurs :** logement (35–45% du budget), alimentation (20–25%), transport (10–15%).\n\n*Pour une estimation précise, consultez le module "Pouvoir d'achat" et renseignez votre budget mensuel.*`
-      : `The cost of living in **${countryName}** varies by lifestyle. According to WHV data (sources: World Bank, OECD, Numbeo), the general price index fluctuates around the OECD=100 base. Major cities are typically more expensive than rural areas.\n\n**Main expenses:** housing (35–45%), food (20–25%), transport (10–15%).\n\n*For a precise estimate, check the "Purchasing Power" module and enter your monthly budget.*`;
-  }
-
-  if (q.includes("santé") || q.includes("health") || q.includes("médical") || q.includes("medical")) {
-    return fr
-      ? `Le système de santé de **${countryName}** est évalué à travers l'indice de prospérité WHV (sources : OMS, Banque Mondiale, OCDE). \n\n**Points clés pour les expatriés :**\n- Assurance maladie internationale recommandée\n- Qualité variable entre secteur public et privé\n- Couverture des médicaments chroniques à vérifier\n\n*La section "Santé & Développement humain" de la fiche pays affiche les indicateurs détaillés.*`
-      : `The healthcare system of **${countryName}** is assessed through the WHV prosperity index (sources: WHO, World Bank, OECD).\n\n**Key points for expats:**\n- International health insurance recommended\n- Variable quality between public and private sectors\n- Check coverage for chronic medication\n\n*The "Health & Human Development" section in the country sheet shows detailed indicators.*`;
-  }
-
-  if (q.includes("retraite") || q.includes("retirement") || q.includes("expat")) {
-    return fr
-      ? `**${countryName}** présente certaines caractéristiques intéressantes pour la retraite ou l'expatriation. \n\n**Facteurs à considérer :**\n- Coût de la vie relatif (indice WHV GENERAL_COST_LEVEL)\n- Stabilité économique (LABOR_STRESS, EXTERNAL_BALANCE)\n- Qualité de vie (PROSPERITY_LEVEL)\n- Visas pour retraités / résidence long terme\n\n*Utilisez le module "Expat" pour comparer automatiquement votre budget avec les destinations disponibles.*`
-      : `**${countryName}** presents certain interesting characteristics for retirement or expat living.\n\n**Factors to consider:**\n- Relative cost of living (WHV GENERAL_COST_LEVEL index)\n- Economic stability (LABOR_STRESS, EXTERNAL_BALANCE)\n- Quality of life (PROSPERITY_LEVEL)\n- Retirement / long-term residence visas\n\n*Use the "Expat" module to automatically compare your budget with available destinations.*`;
-  }
-
-  if (q.includes("risque") || q.includes("risk") || q.includes("économique") || q.includes("economic")) {
-    return fr
-      ? `Les risques économiques en **${countryName}** sont analysés par plusieurs lentilles WHV :\n\n- **PRICE_PRESSURE** : pression inflationniste sur les ménages\n- **LABOR_STRESS** : tensions sur le marché de l'emploi\n- **EXTERNAL_BALANCE** : déficit/excédent courant — indicateur de vulnérabilité externe\n\n*Sources : FMI, Banque Mondiale, OCDE. Consultez la fiche pays pour les signaux détaillés et le niveau de confiance des données.*`
-      : `Economic risks in **${countryName}** are analyzed through several WHV lenses:\n\n- **PRICE_PRESSURE**: inflationary pressure on households\n- **LABOR_STRESS**: labor market tensions\n- **EXTERNAL_BALANCE**: current account deficit/surplus — external vulnerability indicator\n\n*Sources: IMF, World Bank, OECD. Check the country sheet for detailed signals and data confidence levels.*`;
-  }
-
-  if (q.includes("emploi") || q.includes("travail") || q.includes("job") || q.includes("work")) {
-    return fr
-      ? `Le marché de l'emploi de **${countryName}** est mesuré par la lentille LABOR_STRESS (sources : OIT, Banque Mondiale). \n\n**Points clés :**\n- Taux de chômage et tendances récentes\n- Secteurs porteurs pour les étrangers\n- Reconnaissance des diplômes et permis de travail\n- Barrière linguistique (langue de travail dominante)\n\n*Ce conseil est basé sur les données WHV disponibles. Pour des informations spécifiques à votre secteur, complétez avec des sources locales.*`
-      : `The labor market in **${countryName}** is measured by the LABOR_STRESS lens (sources: ILO, World Bank).\n\n**Key points:**\n- Unemployment rate and recent trends\n- High-demand sectors for foreigners\n- Degree recognition and work permits\n- Language barrier (dominant working language)\n\n*This advice is based on available WHV data. For sector-specific information, supplement with local sources.*`;
-  }
-
-  if (q.includes("fiscal") || q.includes("impôt") || q.includes("tax")) {
-    return fr
-      ? `La fiscalité de **${countryName}** est un aspect critique pour les expatriés. \n\n**Éléments à analyser :**\n- Convention fiscale avec votre pays d'origine\n- Taux d'imposition sur les revenus étrangers\n- Taxes locales et charges sociales\n- Régimes spéciaux pour non-résidents\n\n*WHV ne couvre pas encore les données fiscales détaillées. Cette information est à vérifier auprès d'un conseiller fiscal local ou de sources comme IBFD / EY Tax Guides.*`
-      : `The tax system in **${countryName}** is critical for expats.\n\n**Elements to analyze:**\n- Tax treaty with your home country\n- Tax rate on foreign income\n- Local taxes and social contributions\n- Special regimes for non-residents\n\n*WHV does not yet cover detailed tax data. Check with a local tax advisor or sources like IBFD / EY Tax Guides.*`;
-  }
-
-  return fr
-    ? `Voici ce que je sais sur **${countryName}** basé sur les données WHV actuelles.\n\nLes indicateurs économiques clés incluent le niveau de prix (GENERAL_COST_LEVEL), la stabilité (LABOR_STRESS, EXTERNAL_BALANCE) et la prospérité (PROSPERITY_LEVEL). Ces lentilles agrègent des données de la Banque Mondiale, du FMI, de l'OCDE et d'autres sources.\n\n*Pour une analyse approfondie, consultez la fiche pays complète ou posez une question plus spécifique.*`
-    : `Here is what I know about **${countryName}** based on current WHV data.\n\nKey economic indicators include price level (GENERAL_COST_LEVEL), stability (LABOR_STRESS, EXTERNAL_BALANCE), and prosperity (PROSPERITY_LEVEL). These lenses aggregate data from the World Bank, IMF, OECD, and other sources.\n\n*For in-depth analysis, check the full country sheet or ask a more specific question.*`;
-}
+// When the real V2 analytics service is offline, do not fabricate country
+// statistics or claim that OECD, Numbeo or World Bank data were consulted.
 
 // ---------- helper ----------
 
@@ -172,9 +128,10 @@ export default function AdvisorPanel({ countries, selectedIso3, onClose }: Advis
       response = data.answer;
       setUsedBackend(true);
     } catch {
-      // Fallback to local stub when backend is unreachable
-      const countryName = contextCountry?.displayName ?? contextIso3;
-      response = generateStubResponse(text, countryName, lang);
+      setUsedBackend(false);
+      response = fr
+        ? "Le conseiller économique nécessite le service Analytics de WorldHealth Vision V2. Il n'est pas accessible pour le moment : aucune statistique, source ou recommandation n'a été simulée. Consultez les indicateurs disponibles dans la fiche du pays."
+        : "The WorldHealth Vision V2 Analytics service is currently unavailable. No figures, sources or recommendations have been invented. Please consult the available country indicators.";
     }
 
     setMessages((prev) => prev.map((m) =>
@@ -231,7 +188,7 @@ export default function AdvisorPanel({ countries, selectedIso3, onClose }: Advis
         <span>
           {usedBackend
             ? (fr ? "Données WHV en direct · analytics-service connecté" : "Live WHV data · analytics-service connected")
-            : (fr ? "Mode hors-ligne — données WHV simulées (backend non connecté)" : "Offline mode — simulated WHV data (backend not connected)")}
+            : (fr ? "Service Analytics non vérifié · aucune donnée simulée" : "Analytics service not verified · no simulated data")}
         </span>
       </div>
 
