@@ -57,7 +57,7 @@ def test_same_year_independent_sources_are_comparable():
         [world_bank, imf], latest_comparable_period_label="2024"
     )
     assert result.comparableValueCount == 2
-    assert result.medianNumericValue == 2.4
+    assert abs(result.medianNumericValue - 2.4) < 1e-10
     assert abs(result.rangeAbsolute - 0.6) < 1e-10
     assert result.agreementLevel == "DIVERGENT"
 
