@@ -1,0 +1,1 @@
+var e=new Set([8364,8218,402,8222,8230,8224,8225,710,8240,352,8249,338,381,8216,8217,8220,8221,8226,8211,8212,732,8482,353,8250,339,382,376].map(e=>String.fromCharCode(e)));function t(t){let n=t.replace(/[     ⁠﻿]/g,` `).replace(/[₀-₉]/g,e=>String.fromCharCode(e.charCodeAt(0)-8320+48));return Array.from(n).map(t=>(t.codePointAt(0)??0)<=255||e.has(t)?t:``).join(``)}export{t};
