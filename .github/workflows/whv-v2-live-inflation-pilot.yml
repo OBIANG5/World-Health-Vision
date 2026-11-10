@@ -1,0 +1,91 @@
+name: WHV V2 live official inflation evidence pilot
+
+on:
+  push:
+    branches:
+      - 'improve/v2-inflation-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-v2-live-inflation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build only canonical V2 infrastructure (no V0 or V1)
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml up --build -d \
+            gateway-service catalog-service timeseries-service analytics-service ingestion-service
+      - name: Await public gateway and time-series readiness
+        run: |
+          set -eu
+          ready=0
+          for i in $(seq 1 85); do
+            if curl -fsS --max-time 3 http://localhost:8080/api/timeseries/readiness >/tmp/whv-ready.json; then
+              ready=1
+              break
+            fi
+            sleep 4
+          done
+          test "$ready" = 1
+          cat /tmp/whv-ready.json
+      - name: Fetch 2026 IMF WEO and World Bank CPI inflation, publish to real TimescaleDB
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml exec -T ingestion-service \
+            python -m ingestion_service.cli pilot inflation --countries FRA,GAB,USA \
+            > reports/inflation-real-sources.json
+          python3 - <<'PY'
+          import json
+          with open('reports/inflation-real-sources.json', encoding='utf-8') as fh:
+              result = json.load(fh)
+          assert result['status'] == 'INGESTED_AND_AUDITED'
+          assert set(result['sourceRuns']) == {'WORLD_BANK', 'IMF'}
+          assert all(value['persistedCount'] > 0 for value in result['sourceRuns'].values())
+          assert len(result['countries']) == 3
+          assert any(row['comparisonStatus'] == 'ALIGNED_OBSERVED' for row in result['countries'])
+          for row in result['countries']:
+              if row['comparisonStatus'] == 'ALIGNED_OBSERVED':
+                  assert {p['sourceCode'] for p in row['sourceValues']} == {'WORLD_BANK', 'IMF'}
+                  assert all(p['periodLabel'] == row['year'] and p['valueStatus'] == 'OBSERVED' for p in row['sourceValues'])
+          print('REAL OFFICIAL INGESTION VERIFIED')
+          for row in result['countries']:
+              print(row['countryIso3'], row['comparisonStatus'], row['year'], row['absoluteGapPercentagePoints'])
+          PY
+      - name: Recheck canonical data coverage and real country inflation API
+        run: |
+          curl -fsS --max-time 30 http://localhost:8080/api/timeseries/sources/coverage >reports/coverage-real-sources.json
+          curl -fsS --max-time 30 http://localhost:8080/api/product/countries/FRA/indicators/FP.CPI.TOTL.ZG/overview > reports/france-real-inflation-overview.json
+          python3 - <<'PY'
+          import json
+          rows = json.load(open('reports/coverage-real-sources.json'))['items']
+          source = {row['sourceCode']: row for row in rows}
+          assert source['WORLD_BANK']['observedRecordCount'] > 0
+          assert source['IMF']['observedRecordCount'] > 0
+          data = json.load(open('reports/france-real-inflation-overview.json'))
+          assert data['indicator']['code'] == 'FP.CPI.TOTL.ZG'
+          assert data['divergence']['comparableValueCount'] <= 2
+          print('Real read paths and source count verified, 2 independent publishers maximum')
+          PY
+      - name: Upload factual JSON audit report (not a production database)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-real-inflation-source-evidence
+          path: reports/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Diagnostics on failure
+        if: failure()
+        run: docker compose -f worldhealth-vision-v2/infra/docker-compose.yml logs --tail 100 --no-color ingestion-service timeseries-service catalog-service || true
+      - name: Destroy ephemeral database and containers
+        if: always()
+        run: docker compose -f worldhealth-vision-v2/infra/docker-compose.yml down -v --remove-orphans || true
