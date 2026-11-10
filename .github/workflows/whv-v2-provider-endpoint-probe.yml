@@ -1,0 +1,44 @@
+name: Diagnostic — official World Bank CPI endpoints (no data fabricated)
+on:
+  push:
+    branches:
+      - 'probe/v2-official-inflation-downloads-*'
+permissions:
+  contents: read
+jobs:
+  upstream-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Probe documented World Bank API and official CSV export routes
+        shell: bash
+        run: |
+          set -u
+          urls=(
+            'https://api.worldbank.org/v2/country/FRA/indicator/FP.CPI.TOTL.ZG?format=json&date=2020:2025&per_page=10'
+            'https://api.worldbank.org/v2/country/FR/indicator/FP.CPI.TOTL.ZG?format=json&date=2020:2025&per_page=10'
+            'https://api.worldbank.org/v2/country/FRA;GAB;USA/indicator/FP.CPI.TOTL.ZG?format=json&date=2020:2025&per_page=40'
+            'https://api.worldbank.org/v2/en/indicator/FP.CPI.TOTL.ZG?downloadformat=csv'
+            'https://api.worldbank.org/v2/country/FRA/indicator/FP.CPI.TOTL.ZG?downloadformat=csv'
+            'https://api.worldbank.org/v2/country?format=json&per_page=5'
+            'https://api.worldbank.org/v2/indicator/FP.CPI.TOTL.ZG?format=json'
+          )
+          for url in "${urls[@]}"; do
+            echo "PROBE $url"
+            result=$(curl --http1.1 -L -sS --retry 0 -A 'WorldHealthVisionV2-OfficialDataAudit/1.0' \
+              --connect-timeout 7 --max-time 26 \
+              -o /tmp/wb-probe-output -w 'http=%{http_code} type=%{content_type} bytes=%{size_download} remote=%{remote_ip}' "$url" 2>&1)
+            echo "$result"
+            if [[ "$result" == *'http=200'* ]]; then
+              file /tmp/wb-probe-output || true
+              head -c 80 /tmp/wb-probe-output | strings | head -4 || true
+            fi
+          done
+          echo "Network diagnostic only; HTTP 200 != validation of data schema/provenance."
+      - name: Probe the revised IMF October 2026 official workbook URL without full download
+        shell: bash
+        run: |
+          set +e
+          curl -sSIL --connect-timeout 7 --max-time 26 \
+            'https://data.imf.org/-/media/iData/External-Storage/Documents/0FA3DC49A04D446E9D69DBEB29979E1C/en/WEOOct2026all.xlsx' \
+            | grep -Ei '^(HTTP/|content-type:|content-length:|location:)' | head -12
