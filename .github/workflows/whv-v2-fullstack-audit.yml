@@ -85,6 +85,20 @@ jobs:
           assert isinstance(v,dict) and 'items' in v
           print('Catalog countries',len(v['items']))
           PY
+          echo "Validate full multi-source registry and non-empty geographic region catalogue:"
+          curl -fsS --max-time 12 http://localhost:8080/api/catalog/sources >/tmp/whv-sources.json
+          curl -fsS --max-time 12 http://localhost:8080/api/catalog/regions >/tmp/whv-regions.json
+          python3 - <<'PY'
+          import json
+          sources = json.load(open('/tmp/whv-sources.json'))['items']
+          regions = json.load(open('/tmp/whv-regions.json'))['items']
+          codes = {source['code'] for source in sources}
+          assert len(codes) >= 22, f"Missing V2 registered sources: only {len(codes)}"
+          assert {'WORLD_BANK','IMF','OECD','NUMBEO','OSM','WHO_GHO','AFDB'} <= codes
+          member_regions = [region for region in regions if region['countryCount'] > 0]
+          assert len(member_regions) >= 6, "Region catalog lacks real member countries"
+          print('Sources registered', len(codes), 'Regions with members', len(member_regions))
+          PY
           echo "Database indicator catalog check:"
           docker compose -f worldhealth-vision-v2/infra/docker-compose.yml exec -T whv-timescaledb \
             psql -U whv_user -d whv -Atc "select code from catalog.indicator where code like 'SH.XPD.%' order by code" || true
@@ -113,6 +127,17 @@ jobs:
             test "$running" = "true"
             test "$restarts" = "0"
           done
+          echo "Check real advisor POST route and forbid fabricated answers in empty database:"
+          curl -fsS --max-time 30 -H 'Content-Type: application/json' \
+            -d '{"question":"Quelle est la croissance française ?","iso3":"FRA","lang":"fr"}' \
+            http://localhost:8080/api/analytics/advisor/chat > /tmp/whv-advisor.json
+          python3 - <<'PY'
+          import json
+          answer = json.load(open('/tmp/whv-advisor.json'))
+          assert answer['dataPoints'] == 0, answer
+          assert answer['sourcesUsed'] == [], answer
+          print('Advisor correctly reports missing observations without simulated sources')
+          PY
           echo "Analytics snapshot (may initially have no observations):"
           curl -fsS -o /tmp/whv-snapshot.json -w "HTTP %{http_code}\n" --max-time 25             http://localhost:8080/api/product/countries/FRA/economic-snapshot
           head -c 600 /tmp/whv-snapshot.json
