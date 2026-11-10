@@ -47,8 +47,21 @@ class WorldBankIngestionService:
         INGESTION_RECORD_COUNTER.labels("WORLD_BANK", "COUNTRIES").inc(len(normalized_records))
         return manifest
 
-    def fetch_core_indicators(self):
+    def fetch_core_indicators(
+        self,
+        *,
+        indicator_codes: set[str] | None = None,
+        country_iso3s: set[str] | None = None,
+    ):
         indicator_entries = self._load_indicator_registry()
+        if indicator_codes is not None:
+            indicator_entries = [entry for entry in indicator_entries if entry.code in indicator_codes]
+            if len(indicator_entries) != len(indicator_codes):
+                raise ValueError(f"Unsupported World Bank indicators: {sorted(indicator_codes - {e.code for e in indicator_entries})}")
+        if country_iso3s is not None:
+            if not country_iso3s or any(len(code) != 3 or not code.isalpha() for code in country_iso3s):
+                raise ValueError("country_iso3s must be non-empty ISO3 codes")
+            country_iso3s = {code.upper() for code in country_iso3s}
         manifests = []
 
         for entry in indicator_entries:
@@ -67,7 +80,13 @@ class WorldBankIngestionService:
                 self._normalize_indicator_row(row, entry.code)
                 for row in raw_rows
                 if row.get("countryiso3code") and row.get("date")
+                and (country_iso3s is None or row["countryiso3code"].upper() in country_iso3s)
             ]
+            if not normalized_observations or not any(item.value is not None for item in normalized_observations):
+                raise ValueError(
+                    f"World Bank provided no usable observations for indicator {entry.code} "
+                    f"in selected country scope; refusing an empty successful ingestion"
+                )
             normalized_rows = [item.model_dump() for item in normalized_observations]
 
             manifest = self._bronze_store.persist_dataset(
