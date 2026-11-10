@@ -121,6 +121,7 @@ function AppContent() {
   const { profile, hasProfile } = useUserProfile();
   const { countries, loading: countriesLoading, error: countriesError } = useCountryCatalog();
   const isOffline = !countriesLoading && !!countriesError && countries.length === 0;
+  const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
 
   const selectedCountry = useMemo<CountrySummary | null>(
     () => countries.find((c) => c.iso3 === selectedCountryIso3) ?? null,
@@ -291,6 +292,8 @@ function AppContent() {
           type="button"
           className={`whv-nav-btn whv-nav-btn--tools${showToolsMenu || anyToolOpen ? " active" : ""}`}
           onClick={() => setShowToolsMenu((v) => !v)}
+          aria-expanded={showToolsMenu}
+          aria-haspopup="menu"
           title={lang === "fr" ? "Outils d'analyse" : "Analysis tools"}
         >
           ⚙ {lang === "fr" ? "Outils" : "Tools"}
@@ -389,10 +392,10 @@ function AppContent() {
       {/* ── Statut des services ── */}
       <span
         className={`whv-service-status ${isOffline ? "whv-service-status--offline" : countriesLoading ? "whv-service-status--loading" : "whv-service-status--online"}`}
-        title={isOffline ? "Services backend hors ligne — démarrez gateway, catalog, analytics" : countriesLoading ? "Connexion..." : `${countries.length} pays chargés`}
+        title={isPreview ? "Aperçu public : catalogue de pays et APIs ouvertes ; services WHV autonomes non déployés" : isOffline ? "Services backend hors ligne — démarrez gateway, catalog, analytics" : countriesLoading ? "Connexion..." : `${countries.length} pays chargés`}
       >
         <span className="whv-service-status-dot" />
-        {isOffline ? "Hors ligne" : countriesLoading ? "..." : "En ligne"}
+        {isPreview ? "Aperçu" : isOffline ? "Hors ligne" : countriesLoading ? "..." : "En ligne"}
       </span>
 
       {showCountrySelector && (
@@ -415,6 +418,48 @@ function AppContent() {
         selectedCountryIso3={selectedCountryIso3}
         onCountryClick={handleCountryClick}
       />
+
+      <aside className="whv-mobile-overview" aria-label={lang === "fr" ? "Explorer les pays" : "Explore countries"}>
+        <div>
+          <span className="whv-mobile-eyebrow">{lang === "fr" ? "L'EXPLORATEUR MONDIAL" : "WORLD EXPLORER"}</span>
+          <h2>{lang === "fr" ? "Le monde, en perspective." : "The world, in perspective."}</h2>
+          <p className="whv-mobile-overview-description">
+            {lang === "fr"
+              ? "Touchez un pays sur la carte ou ouvrez sa fiche pour explorer ses indicateurs."
+              : "Select a country on the map or open its profile to explore its indicators."}
+          </p>
+        </div>
+        <button className="whv-mobile-featured" type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
+          <span className="whv-mobile-featured-text">
+            <span className="whv-mobile-featured-label">{lang === "fr" ? "PAYS SÉLECTIONNÉ" : "SELECTED COUNTRY"}</span>
+            <span className="whv-mobile-featured-name">{selectedCountry?.displayName ?? (lang === "fr" ? "Choisir un pays" : "Choose a country")}</span>
+            <span className="whv-mobile-featured-subtitle">
+              {[selectedCountry?.capitalCity, selectedCountry?.regionName].filter(Boolean).join(" · ")
+                || (lang === "fr" ? "Explorer la fiche du pays" : "Explore the country profile")}
+            </span>
+          </span>
+          <span className="whv-mobile-featured-arrow" aria-hidden="true">↗</span>
+        </button>
+        <div className="whv-mobile-shortcuts">
+          <button type="button" className="whv-mobile-shortcut" onClick={() => { setShowCountrySelector(true); setShowToolsMenu(false); }}>
+            <span className="whv-mobile-shortcut-symbol" aria-hidden="true">🌍</span>
+            <span>{lang === "fr" ? "Pays" : "Countries"}</span>
+          </button>
+          <button type="button" className="whv-mobile-shortcut" onClick={handleOpenRegions}>
+            <span className="whv-mobile-shortcut-symbol" aria-hidden="true">🗺️</span>
+            <span>{lang === "fr" ? "Régions" : "Regions"}</span>
+          </button>
+          <button type="button" className="whv-mobile-shortcut" onClick={() => { setShowToolsMenu(true); setShowCountrySelector(false); }}>
+            <span className="whv-mobile-shortcut-symbol" aria-hidden="true">⚙️</span>
+            <span>{lang === "fr" ? "Outils" : "Tools"}</span>
+          </button>
+        </div>
+        <p className="whv-mobile-note">
+          <strong>{countries.length} {lang === "fr" ? "pays dans le catalogue" : "countries in the catalog"}</strong>
+          {" · "}
+          {lang === "fr" ? "Métadonnées Banque mondiale. Les valeurs en ligne affichent leur source et leur année." : "World Bank metadata. Live indicators display their source and reference year."}
+        </p>
+      </aside>
 
       <Suspense fallback={null}>
       <CountryDrawer
