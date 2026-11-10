@@ -24,7 +24,7 @@ jobs:
         run: npm ci --no-audit --no-fund
         working-directory: worldhealth-vision-v2/frontend/web-v2
       - name: Build the original React frontend
-        run: VITE_WHV_PREVIEW_MODE=true npx vite build --base=./
+        run: VITE_WHV_PREVIEW_MODE=true npm run build -- --base=./
         working-directory: worldhealth-vision-v2/frontend/web-v2
       - name: Add browser preview data adapter
         run: node worldhealth-vision-v2/scripts/build-preview.mjs
