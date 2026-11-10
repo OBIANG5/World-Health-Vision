@@ -68,7 +68,7 @@ jobs:
           docker compose version
       - name: Start ONLY the canonical V2 core backend
         run: |
-          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml up --build -d             gateway-service catalog-service timeseries-service analytics-service
+          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml up --build -d             gateway-service catalog-service timeseries-service analytics-service ingestion-service
       - name: Check live health and query paths
         run: |
           set -eu
@@ -92,6 +92,8 @@ jobs:
             http://localhost:8080/api/catalog/indicators/SH.XPD.CHEX.GD.ZS
           head -c 300 /tmp/whv-indicator.json
           echo
+          echo "Check ingestion service without firing any costly external jobs:"
+          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml exec -T ingestion-service             python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=15).read().decode()[:600])"
           echo "Waiting until the actual time-series service is ready:"
           ready=0
           for n in $(seq 1 40); do
