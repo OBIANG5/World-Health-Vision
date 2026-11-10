@@ -28,6 +28,8 @@ const AlertsPanel = lazy(() => import("./components/layout/AlertsPanel"));
 const AdvisorPanel = lazy(() => import("./components/layout/AdvisorPanel"));
 const CurrencyPanel = lazy(() => import("./components/layout/CurrencyPanel"));
 
+import "./styles/mobile.css";
+
 // ---------- Sélecteur de pays (popover) ----------
 
 function CountrySelectorPopover({
@@ -450,6 +452,48 @@ function AppContent() {
         selectedCountryIso3={selectedCountryIso3}
         onCountryClick={handleCountryClick}
       />
+
+<aside className="whv-mobile-overview" aria-label={lang === "fr" ? "Explorer les pays" : "Explore countries"}>
+        <div>
+          <span className="whv-mobile-eyebrow">{lang === "fr" ? "L'EXPLORATEUR MONDIAL" : "WORLD EXPLORER"}</span>
+          <h2>{lang === "fr" ? "Le monde, en perspective." : "The world, in perspective."}</h2>
+          <p className="whv-mobile-overview-description">
+            {lang === "fr"
+              ? "Touchez un pays sur la carte ou ouvrez sa fiche pour explorer ses indicateurs."
+              : "Select a country on the map or open its profile to explore its indicators."}
+          </p>
+        </div>
+        <button className="whv-mobile-featured" type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
+          <span className="whv-mobile-featured-text">
+            <span className="whv-mobile-featured-label">{lang === "fr" ? "PAYS SÉLECTIONNÉ" : "SELECTED COUNTRY"}</span>
+            <span className="whv-mobile-featured-name">{selectedCountry?.displayName ?? (lang === "fr" ? "Choisir un pays" : "Choose a country")}</span>
+            <span className="whv-mobile-featured-subtitle">
+              {[selectedCountry?.capitalCity, selectedCountry?.regionName].filter(Boolean).join(" · ")
+                || (lang === "fr" ? "Explorer la fiche du pays" : "Explore the country profile")}
+            </span>
+          </span>
+          <span className="whv-mobile-featured-arrow" aria-hidden="true">↗</span>
+        </button>
+        <div className="whv-mobile-shortcuts">
+          <button type="button" className="whv-mobile-shortcut" onClick={() => { setShowCountrySelector(true); setShowToolsMenu(false); }}>
+            <span className="whv-mobile-shortcut-symbol" aria-hidden="true">🌍</span>
+            <span>{lang === "fr" ? "Pays" : "Countries"}</span>
+          </button>
+          <button type="button" className="whv-mobile-shortcut" onClick={handleOpenRegions}>
+            <span className="whv-mobile-shortcut-symbol" aria-hidden="true">🗺️</span>
+            <span>{lang === "fr" ? "Régions" : "Regions"}</span>
+          </button>
+          <button type="button" className="whv-mobile-shortcut" onClick={() => { setShowToolsMenu(true); setShowCountrySelector(false); }}>
+            <span className="whv-mobile-shortcut-symbol" aria-hidden="true">⚙️</span>
+            <span>{lang === "fr" ? "Outils" : "Tools"}</span>
+          </button>
+        </div>
+        <p className="whv-mobile-note">
+          <strong>{countries.length} {lang === "fr" ? "pays dans le catalogue" : "countries in the catalog"}</strong>
+          {" · "}
+          {lang === "fr" ? "Explorez les indicateurs provenant des services V2, avec leurs sources et années de référence." : "Explore indicators from the V2 services, including provenance and reference years."}
+        </p>
+      </aside>
 
       <Suspense fallback={null}>
       <CountryDrawer
