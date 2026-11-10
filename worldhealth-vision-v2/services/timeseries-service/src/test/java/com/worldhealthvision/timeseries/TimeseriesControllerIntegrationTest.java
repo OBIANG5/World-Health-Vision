@@ -40,14 +40,9 @@ class TimeseriesControllerIntegrationTest {
         // unlike the full V2 catalog's 22. Add one intentionally un-ingested
         // source to verify that registration is not mistaken for data.
         jdbcTemplate.update("""
-                insert into catalog.source (
-                    id, code, display_name, type, organization_name,
-                    access_model, license_summary, geographic_scope, temporal_granularity
-                ) values (
-                    ?, 'EMPTY_TEST_SOURCE', 'Unpopulated integration source', 'OFFICIAL',
-                    'Integration test', 'OPEN', 'Test-only fixture',
-                    'GLOBAL', 'ANNUAL'
-                ) on conflict (code) do nothing
+                insert into catalog.source (id, code, display_name)
+                values (?, 'EMPTY_TEST_SOURCE', 'Unpopulated integration source')
+                on conflict (code) do nothing
                 """, UUID.randomUUID());
 
         mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
