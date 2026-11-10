@@ -1354,8 +1354,13 @@ class AnalyticsService:
 
         evidence.extend(self._build_alignment_and_freshness_evidence(source_codes, dataset_codes, freshness, divergence))
 
-        observed_source_count = sum(1 for item in source_perspectives if item.valueStatus == "OBSERVED")
-        estimated_source_count = sum(1 for item in source_perspectives if item.valueStatus == "ESTIMATED")
+        aligned = [
+            item for item in source_perspectives
+            if item.periodLabel == divergence.latestComparablePeriodLabel
+            and item.numericValue is not None
+        ]
+        observed_source_count = len({item.sourceCode for item in aligned if item.valueStatus == "OBSERVED"})
+        estimated_source_count = len({item.sourceCode for item in aligned if item.valueStatus == "ESTIMATED"})
         if observed_source_count > 0:
             evidence.append(
                 AuditEvidenceItem(
@@ -2130,9 +2135,18 @@ class AnalyticsService:
         freshness: FreshnessSummary,
         divergence: DivergenceSummary,
     ) -> ConfidenceSummary:
-        source_types = {item.sourceType for item in source_perspectives if item.sourceType}
-        observed_source_count = sum(1 for item in source_perspectives if item.valueStatus == "OBSERVED")
-        estimated_source_count = sum(1 for item in source_perspectives if item.valueStatus == "ESTIMATED")
+        # Confidence about a comparison MUST be based on the same period as
+        # the divergence calculation. Latest 2024 and 2025 are not two
+        # independent validations of 2025, even if both were freshly fetched.
+        aligned = [
+            item for item in source_perspectives
+            if item.periodLabel == divergence.latestComparablePeriodLabel
+            and item.numericValue is not None
+            and item.valueStatus in {"OBSERVED", "ESTIMATED"}
+        ]
+        source_types = {item.sourceType for item in aligned if item.sourceType}
+        observed_source_count = len({item.sourceCode for item in aligned if item.valueStatus == "OBSERVED"})
+        estimated_source_count = len({item.sourceCode for item in aligned if item.valueStatus == "ESTIMATED"})
         reasons: list[str] = []
         score = 0
 
