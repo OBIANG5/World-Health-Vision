@@ -70,10 +70,16 @@ class WorldBankIngestionService:
             api_code = entry.fetch_code or entry.code
             run_id = self._run_id(entry.code)
             try:
-                raw_rows = self._client.fetch_indicator_all_countries(api_code, source_id=entry.source_id)
+                raw_rows = self._client.fetch_indicator_all_countries(
+                    api_code, source_id=entry.source_id, country_iso3s=country_iso3s
+                )
             except Exception as exc:
-                LOGGER.warning("WB indicator fetch failed, skipping — code=%s error=%s", entry.code, exc)
                 INGESTION_RUN_COUNTER.labels("WORLD_BANK", "WDI", "failure").inc()
+                if indicator_codes is not None:
+                    # A precisely requested source cannot be silently skipped:
+                    # the caller must know that real ingestion did not work.
+                    raise RuntimeError(f"World Bank requested indicator {entry.code} failed") from exc
+                LOGGER.warning("WB indicator fetch failed, skipping — code=%s error=%s", entry.code, exc)
                 continue
 
             normalized_observations = [
@@ -81,6 +87,7 @@ class WorldBankIngestionService:
                 for row in raw_rows
                 if row.get("countryiso3code") and row.get("date")
                 and (country_iso3s is None or row["countryiso3code"].upper() in country_iso3s)
+                and str(row.get("obs_status") or "").upper() != "F"
             ]
             if not normalized_observations or not any(item.value is not None for item in normalized_observations):
                 raise ValueError(
