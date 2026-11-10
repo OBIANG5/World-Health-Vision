@@ -108,15 +108,21 @@ def _build_context_block(
         code = getattr(lens, "lensCode", None)
         if code not in relevant_codes:
             continue
-        headline = getattr(lens, "headline", None)
-        tone = getattr(lens, "tone", None)
-        latest_val = getattr(lens, "latestValue", None)
+        headline = getattr(lens, "headline", None) or ""
+        tone = getattr(lens, "signalTone", None)
+        latest_val = getattr(lens, "latestComparableValue", None)
         display_name = getattr(lens, "lensDisplayName", code)
-        confidence = getattr(lens, "confidence", None)
+        confidence = getattr(lens, "confidenceLevel", None)
+        unit = getattr(lens, "unitLabel", None) or ""
+        period = getattr(lens, "latestPeriodLabel", None)
 
+        # These are the real CountryEconomicLens model fields. Never imply
+        # a value was observed when only a missing-source lens was returned.
+        if latest_val is None:
+            continue
         tone_str = tone_label.get(str(tone), str(tone).lower()) if tone else ""
-        val_str = f" ({latest_val:.1f})" if latest_val is not None else ""
-        conf_str = f" — confiance {confidence:.0%}" if confidence is not None else ""
+        val_str = f" ({latest_val:,.2f} {unit}; {period or 'période inconnue'})"
+        conf_str = f" — confiance {confidence}" if confidence else ""
 
         if lang == "fr":
             lines.append(f"- **{display_name}** : {headline}{val_str} [{tone_str}{conf_str}]")
@@ -156,31 +162,34 @@ def build_advisor_response(
     country_name = _country_name(eco_snapshot, cost_snapshot)
     all_lenses = _lens_list(eco_snapshot) + _lens_list(cost_snapshot)
 
-    if not all_lenses:
+    available_lenses = [
+        lens for lens in all_lenses
+        if getattr(lens, "latestComparableValue", None) is not None
+    ]
+    if not available_lenses:
         return _no_data_response(lang, iso3)
 
     context_block = _build_context_block(topics or list(_LENS_TOPIC_MAP.values()), eco_snapshot, cost_snapshot, lang)
 
     highlights = getattr(eco_snapshot, "highlights", None) if eco_snapshot else None
+    # Snapshot highlights are a list[str], not a topStrength/topRisk object.
     highlights_text = ""
-    if highlights:
-        strength = getattr(highlights, "topStrength", None)
-        risk = getattr(highlights, "topRisk", None)
-        if lang == "fr":
-            if strength:
-                highlights_text += f"\n**Point fort** : {getattr(strength, 'headline', '')}."
-            if risk:
-                highlights_text += f"\n**Point de vigilance** : {getattr(risk, 'headline', '')}."
-        else:
-            if strength:
-                highlights_text += f"\n**Strength**: {getattr(strength, 'headline', '')}."
-            if risk:
-                highlights_text += f"\n**Risk**: {getattr(risk, 'headline', '')}."
+    if isinstance(highlights, list):
+        readable = [line for line in highlights if isinstance(line, str) and line.strip()]
+        if readable:
+            title = "Contexte additionnel" if lang == "fr" else "Additional context"
+            highlights_text = f"\n\n**{title}** :\n" + "\n".join(f"- {line}" for line in readable[:3])
 
     sources_used: list[str] = []
-    for lens in all_lenses:
+    for lens in available_lenses:
+        selected_source = getattr(lens, "selectedSourceCode", None)
+        if selected_source:
+            sources_used.append(selected_source)
         audit = getattr(lens, "sourceAudit", None)
         if audit:
+            primary = getattr(audit, "primarySourceCode", None)
+            if primary:
+                sources_used.append(primary)
             evidence = getattr(audit, "evidence", []) or []
             for ev in evidence:
                 sc = getattr(ev, "sourceCodes", []) or []
@@ -207,5 +216,5 @@ def build_advisor_response(
     return {
         "answer": answer,
         "sourcesUsed": sources_used[:6],
-        "dataPoints": len(all_lenses),
+        "dataPoints": len(available_lenses),
     }
