@@ -1930,3 +1930,28 @@
     font-size: 17px;
   }
 }
+/* V2 regional member explorer: interactive even without time-series observations. */
+.whv-region-members { padding: 10px 12px; }
+.whv-region-members-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; min-height: 40px; padding: 6px 4px;
+  color: #caeafd; text-align: left; font: inherit; font-size: 13px;
+  font-weight: 700; background: transparent; border: 0; cursor: pointer;
+}
+.whv-region-members-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 7px; padding: 10px 0 2px;
+}
+.whv-region-member {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-height: 40px; padding: 8px 10px; text-align: left;
+  color: #c9e6f8; background: rgba(37, 99, 155, .12);
+  border: 1px solid rgba(98, 174, 225, .16); border-radius: 9px;
+  cursor: pointer; font: inherit; font-size: 12px;
+}
+.whv-region-member:hover, .whv-region-member:focus-visible {
+  border-color: rgba(120, 202, 250, .64); background: rgba(43, 121, 188, .23);
+}
+@media (max-width: 720px) {
+  .whv-region-members-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
