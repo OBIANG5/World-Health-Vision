@@ -130,6 +130,7 @@ function AppContent() {
   const { profile, hasProfile } = useUserProfile();
   const { countries, loading: countriesLoading, error: countriesError } = useCountryCatalog();
   const isOffline = !countriesLoading && !!countriesError && countries.length === 0;
+  const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
 
   const selectedCountry = useMemo<CountrySummary | null>(
     () => countries.find((c) => c.iso3 === selectedCountryIso3) ?? null,
@@ -448,11 +449,11 @@ function AppContent() {
 
       {/* ── Statut des services ── */}
       <span
-        className={`whv-service-status ${isOffline ? "whv-service-status--offline" : countriesLoading ? "whv-service-status--loading" : "whv-service-status--online"}`}
-        title={isOffline ? "Services backend hors ligne — démarrez gateway, catalog, analytics" : countriesLoading ? "Connexion..." : `${countries.length} pays chargés`}
+        className={`whv-service-status ${isPreview || isOffline ? "whv-service-status--offline" : countriesLoading ? "whv-service-status--loading" : "whv-service-status--online"}`}
+        title={isPreview ? "Aperçu statique du frontend V2 : le backend permanent n'est pas connecté" : isOffline ? "Services backend hors ligne — démarrez gateway, catalog, analytics" : countriesLoading ? "Connexion..." : `${countries.length} pays chargés`}
       >
         <span className="whv-service-status-dot" />
-        {isOffline ? "Hors ligne" : countriesLoading ? "..." : "En ligne"}
+        {isPreview ? "Aperçu" : isOffline ? "Hors ligne" : countriesLoading ? "..." : "En ligne"}
       </span>
 
       {showCountrySelector && createPortal(
@@ -516,7 +517,13 @@ function AppContent() {
         <p className="whv-mobile-note">
           <strong>{countries.length} {lang === "fr" ? "pays dans le catalogue" : "countries in the catalog"}</strong>
           {" · "}
-          {lang === "fr" ? "Explorez les indicateurs provenant des services V2, avec leurs sources et années de référence." : "Explore indicators from the V2 services, including provenance and reference years."}
+          {isPreview
+            ? (lang === "fr"
+              ? "Aperçu sans backend permanent : les données directes de la Banque mondiale peuvent être consultées, les comparaisons multi-sources nécessitent le backend V2."
+              : "Preview without a permanent backend: direct World Bank data may be available, but multi-source comparisons require the V2 backend.")
+            : (lang === "fr"
+              ? "Explorez les indicateurs provenant des services V2, avec leurs sources et années de référence."
+              : "Explore indicators from the V2 services, including provenance and reference years.")}
         </p>
       </aside>
 
