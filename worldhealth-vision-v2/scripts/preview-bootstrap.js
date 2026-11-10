@@ -40,11 +40,19 @@
       aggregate:false,active:true,dataQualityTier:0}):null;
   window.fetch=(input,init)=>{
     const raw=typeof input==="string"?input:String(input&&input.url||input);
-    if (/api\.worldbank\.org\/v2\//i.test(raw)) return json([{page:1,pages:0,per_page:5,total:0},[]]);
+    // Direct World Bank API remains LIVE (no invented or suppressed statistics).
     if (/countries\.geojson(?:[?#]|$)/i.test(raw))
       return baseFetch(new URL("./countries.geojson",document.baseURI),init);
     let path="";
     try { path=new URL(raw,document.baseURI).pathname; } catch(_) {}
+    // Frankfurter is a publicly accessible, keyless CORS-enabled reference-rate API.
+    // The original frontend expects the /fx-api path supplied by Vite in local dev.
+    if (path==="/fx-api" || path.startsWith("/fx-api/")) {
+      const src=new URL(raw,document.baseURI);
+      const suffix=src.pathname.slice("/fx-api".length);
+      const endpoint="https://api.frankfurter.dev/v1"+suffix+src.search;
+      return baseFetch(endpoint,{...init,mode:"cors",credentials:"omit"});
+    }
     if(path==="/api/catalog/countries") return json({count:countries.length,items:countries});
     if(path.startsWith("/api/catalog/countries/")){
       const country=byCode.get(decodeURIComponent(path.split("/").at(-1)).toUpperCase());
