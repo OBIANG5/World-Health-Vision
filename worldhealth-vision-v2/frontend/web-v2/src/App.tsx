@@ -1,7 +1,8 @@
 // WorldHealthVision V2 — App
 // Composant racine : carte + navigation header + fiche pays + fiche région.
 
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { CountrySummary } from "./api/types";
 import EyeLayout from "./components/layout/EyeLayout";
 import EyeMapFrame from "./components/layout/EyeMapFrame";
@@ -38,12 +39,14 @@ function CountrySelectorPopover({
   selectedIso3,
   watchedIso3s,
   onSelect,
+  anchor,
 }: {
   countries: CountrySummary[];
   loading: boolean;
   selectedIso3: string;
   watchedIso3s: Set<string>;
   onSelect: (iso3: string) => void;
+  anchor: { top: number; left: number };
 }) {
   const [search, setSearch] = useState("");
 
@@ -64,7 +67,7 @@ function CountrySelectorPopover({
   }, [countries, search, watchedIso3s]);
 
   return (
-    <div className="country-selector-popover">
+    <div className="country-selector-popover" style={{ position: "fixed", top: anchor.top, left: anchor.left, zIndex: 1199 }}>
       <input
         className="country-selector-search"
         type="text"
@@ -119,22 +122,27 @@ function AppContent() {
   const [showAdvisor, setShowAdvisor] = useState(false);
   const [showCurrencyPanel, setShowCurrencyPanel] = useState(false);
   const [showToolsMenu, setShowToolsMenu] = useState(false);
+  const toolsButtonRef = useRef<HTMLButtonElement>(null);
+  const countryButtonRef = useRef<HTMLButtonElement>(null);
+  const [toolsAnchor, setToolsAnchor] = useState({ top: 80, left: 16 });
+  const [countryAnchor, setCountryAnchor] = useState({ top: 80, left: 16 });
   const [selectedCountryIso3, setSelectedCountryIso3] = useState("FRA");
   const { profile, hasProfile } = useUserProfile();
   const { countries, loading: countriesLoading, error: countriesError } = useCountryCatalog();
   const isOffline = !countriesLoading && !!countriesError && countries.length === 0;
+  const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
 
   const selectedCountry = useMemo<CountrySummary | null>(
     () => countries.find((c) => c.iso3 === selectedCountryIso3) ?? null,
     [countries, selectedCountryIso3],
   );
 
-  function handleCountryClick(iso3: string) {
+  const handleCountryClick = useCallback((iso3: string) => {
     setRegionDrawerOpen(false);
     setShowCountrySelector(false);
     setSelectedCountryIso3(iso3);
     setDrawerOpen(true);
-  }
+  }, []);
 
   function handleSelectFromPopover(iso3: string) {
     setSelectedCountryIso3(iso3);
@@ -276,8 +284,11 @@ function AppContent() {
       {/* ── Pays ── */}
       <button
         type="button"
+        ref={countryButtonRef}
         className={`whv-nav-btn${drawerOpen || showCountrySelector ? " active" : ""}`}
         onClick={() => {
+          const rect = countryButtonRef.current?.getBoundingClientRect();
+          if (rect) setCountryAnchor({ top: rect.bottom + 8, left: Math.max(8, rect.left) });
           setShowCountrySelector((v) => !v);
           setRegionDrawerOpen(false);
           setShowToolsMenu(false);
@@ -316,8 +327,19 @@ function AppContent() {
       <div className="whv-tools-dropdown" style={{ position: "relative", zIndex: 120 }}>
         <button
           type="button"
+          ref={toolsButtonRef}
+          aria-expanded={showToolsMenu}
+          aria-controls="whv-tools-menu"
           className={`whv-nav-btn whv-nav-btn--tools${showToolsMenu || anyToolOpen ? " active" : ""}`}
-          onClick={() => setShowToolsMenu((v) => !v)}
+          onClick={() => {
+            const rect = toolsButtonRef.current?.getBoundingClientRect();
+            if (rect) setToolsAnchor({
+              top: rect.bottom + 8,
+              left: Math.max(8, Math.min(rect.left, window.innerWidth - 270)),
+            });
+            setShowToolsMenu((v) => !v);
+            setShowCountrySelector(false);
+          }}
           title={lang === "fr" ? "Outils d'analyse" : "Analysis tools"}
         >
           ⚙ {lang === "fr" ? "Outils" : "Tools"}
@@ -326,8 +348,9 @@ function AppContent() {
           )}
         </button>
 
-        {showToolsMenu && (
-          <div className="whv-tools-menu">
+        {showToolsMenu && createPortal(
+          <div className="whv-tools-menu" id="whv-tools-menu" role="menu"
+            style={{ position: "fixed", top: toolsAnchor.top, left: toolsAnchor.left, zIndex: 1200 }}>
             <button type="button"
               className={`whv-tools-item whv-nav-btn--pp${showPurchasingPower ? " active" : ""}`}
               onClick={() => { handleTogglePurchasingPower(); setShowToolsMenu(false); }}>
@@ -394,7 +417,8 @@ function AppContent() {
               onClick={() => { handleToggleAlerts(); setShowToolsMenu(false); }}>
               🔔 {lang === "fr" ? "Alertes" : "Alerts"}
             </button>
-          </div>
+          </div>,
+          document.body,
         )}
       </div>
 
@@ -425,21 +449,23 @@ function AppContent() {
 
       {/* ── Statut des services ── */}
       <span
-        className={`whv-service-status ${isOffline ? "whv-service-status--offline" : countriesLoading ? "whv-service-status--loading" : "whv-service-status--online"}`}
-        title={isOffline ? "Services backend hors ligne — démarrez gateway, catalog, analytics" : countriesLoading ? "Connexion..." : `${countries.length} pays chargés`}
+        className={`whv-service-status ${isPreview || isOffline ? "whv-service-status--offline" : countriesLoading ? "whv-service-status--loading" : "whv-service-status--online"}`}
+        title={isPreview ? "Aperçu statique du frontend V2 : le backend permanent n'est pas connecté" : isOffline ? "Services backend hors ligne — démarrez gateway, catalog, analytics" : countriesLoading ? "Connexion..." : `${countries.length} pays chargés`}
       >
         <span className="whv-service-status-dot" />
-        {isOffline ? "Hors ligne" : countriesLoading ? "..." : "En ligne"}
+        {isPreview ? "Aperçu" : isOffline ? "Hors ligne" : countriesLoading ? "..." : "En ligne"}
       </span>
 
-      {showCountrySelector && (
+      {showCountrySelector && createPortal(
         <CountrySelectorPopover
           countries={countries}
           loading={countriesLoading}
           selectedIso3={selectedCountryIso3}
           watchedIso3s={watchlist}
           onSelect={handleSelectFromPopover}
-        />
+          anchor={countryAnchor}
+        />,
+        document.body,
       )}
     </nav>
   );
@@ -491,12 +517,18 @@ function AppContent() {
         <p className="whv-mobile-note">
           <strong>{countries.length} {lang === "fr" ? "pays dans le catalogue" : "countries in the catalog"}</strong>
           {" · "}
-          {lang === "fr" ? "Explorez les indicateurs provenant des services V2, avec leurs sources et années de référence." : "Explore indicators from the V2 services, including provenance and reference years."}
+          {isPreview
+            ? (lang === "fr"
+              ? "Aperçu sans backend permanent : les données directes de la Banque mondiale peuvent être consultées, les comparaisons multi-sources nécessitent le backend V2."
+              : "Preview without a permanent backend: direct World Bank data may be available, but multi-source comparisons require the V2 backend.")
+            : (lang === "fr"
+              ? "Explorez les indicateurs provenant des services V2, avec leurs sources et années de référence."
+              : "Explore indicators from the V2 services, including provenance and reference years.")}
         </p>
       </aside>
 
       <Suspense fallback={null}>
-      <CountryDrawer
+      {drawerOpen && <CountryDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         selectedCountryIso3={selectedCountryIso3}
@@ -508,12 +540,14 @@ function AppContent() {
         countriesError={countriesError}
         watched={isWatched(selectedCountryIso3)}
         onToggleWatch={() => toggleWatch(selectedCountryIso3)}
-      />
+      />}
 
-      <RegionDrawer
+      {regionDrawerOpen && <RegionDrawer
         open={regionDrawerOpen}
         onClose={() => setRegionDrawerOpen(false)}
-      />
+        countries={countries}
+        onOpenCountry={handleCountryClick}
+      />}
 
       {showSourcesModal && (
         <SourceMethodologyModal onClose={() => setShowSourcesModal(false)} />

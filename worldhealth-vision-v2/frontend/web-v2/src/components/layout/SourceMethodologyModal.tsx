@@ -122,6 +122,7 @@ function lv(mapFr: Record<string, string>, mapEn: Record<string, string>, key: s
 export default function SourceMethodologyModal({ onClose }: { onClose: () => void }) {
   const lang = useLang();
   const l = L[lang];
+  const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
   const [sources, setSources] = useState<SourceDetail[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -143,9 +144,12 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
   }, [onClose]);
 
   const sorted = sources
-    ? [...sources].sort(
-        (a, b) => (TYPE_ORDER.indexOf(a.type) ?? 99) - (TYPE_ORDER.indexOf(b.type) ?? 99),
-      )
+    ? [...sources].sort((a, b) => {
+        const aRank = TYPE_ORDER.indexOf(a.type);
+        const bRank = TYPE_ORDER.indexOf(b.type);
+        return (aRank < 0 ? TYPE_ORDER.length : aRank) -
+          (bRank < 0 ? TYPE_ORDER.length : bRank);
+      })
     : null;
 
   return (
@@ -176,7 +180,16 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
           )}
 
           {sorted && (
-            <div className="whv-source-grid">
+            <>
+              <p style={{ margin: "0 0 12px", fontSize: 13, color: "rgba(190,226,245,.77)" }}>
+                {sorted.length} {lang === "fr" ? "sources répertoriées dans le catalogue V2" : "sources registered in the V2 catalog"}.
+                {isPreview && (
+                  <span> {lang === "fr"
+                    ? "Mode aperçu : cette liste provient des migrations SQL de la V2. Une source répertoriée n'implique pas que ses données soient déjà ingérées ou actualisées."
+                    : "Preview mode: entries are generated from V2 SQL migrations. A registered source does not mean its observations have been ingested or refreshed."}</span>
+                )}
+              </p>
+              <div className="whv-source-grid">
               {sorted.map((s) => {
                 const meta = TYPE_META[s.type] ?? {
                   bg: "rgba(255,255,255,0.06)",
@@ -270,7 +283,8 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
                   </div>
                 );
               })}
-            </div>
+              </div>
+            </>
           )}
         </div>
       </div>

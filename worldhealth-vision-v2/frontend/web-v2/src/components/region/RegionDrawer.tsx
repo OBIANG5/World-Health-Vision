@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import type {
+  CountrySummary,
   RegionalEconomicLens,
   RegionalRelativeCostLens,
   RegionSummary,
@@ -381,13 +382,16 @@ async function downloadRegionPdf(
 type RegionDrawerProps = {
   open: boolean;
   onClose: () => void;
+  countries: CountrySummary[];
+  onOpenCountry: (iso3: string) => void;
 };
 
-export default function RegionDrawer({ open, onClose }: RegionDrawerProps) {
+export default function RegionDrawer({ open, onClose, countries, onOpenCountry }: RegionDrawerProps) {
   const [fullscreen, setFullscreen] = useState(false);
+  const [showMemberCountries, setShowMemberCountries] = useState(false);
   const [expandedLens, setExpandedLens] = useState<string | null>(null);
 
-  const { regions: allRegions, loading: regionsLoading } = useRegions();
+  const { regions: allRegions, loading: regionsLoading, error: regionsError } = useRegions();
   const regions = useMemo(
     () => allRegions.filter((r) => r.countryCount > 0),
     [allRegions],
@@ -396,6 +400,12 @@ export default function RegionDrawer({ open, onClose }: RegionDrawerProps) {
   const defaultCode = regions[0]?.code ?? "";
   const [selectedCode, setSelectedCode] = useState<string>("");
   const activeCode = selectedCode || defaultCode;
+  const memberCountries = useMemo(() => (
+    countries
+      .filter((country) => country.active && !country.aggregate &&
+        (country.regionCode === activeCode || country.subregionCode === activeCode))
+      .sort((left, right) => left.displayName.localeCompare(right.displayName))
+  ), [countries, activeCode]);
 
   const { economicSnapshot, relativeCostSnapshot, loading, error } = useRegionSheet(
     activeCode,
@@ -487,9 +497,45 @@ export default function RegionDrawer({ open, onClose }: RegionDrawerProps) {
           onSelect={(code) => {
             setSelectedCode(code);
             setExpandedLens(null);
+            setShowMemberCountries(false);
           }}
           loading={regionsLoading}
         />
+
+        {regionsError && (
+          <div className="info-card" role="alert">
+            <p className="drawer-error">Impossible de charger le catalogue des régions.</p>
+            <p className="drawer-hint">{regionsError}</p>
+          </div>
+        )}
+
+        {activeCode && (
+          <div className="info-card whv-region-members">
+            <button
+              type="button"
+              className="whv-region-members-toggle"
+              aria-expanded={showMemberCountries}
+              onClick={() => setShowMemberCountries((value) => !value)}
+            >
+              <span>🌍 {memberCountries.length} pays dans cette zone</span>
+              <span aria-hidden="true">{showMemberCountries ? "−" : "+"}</span>
+            </button>
+            {showMemberCountries && (
+              <div className="whv-region-members-grid">
+                {memberCountries.map((country) => (
+                  <button
+                    key={country.iso3}
+                    type="button"
+                    className="whv-region-member"
+                    onClick={() => onOpenCountry(country.iso3)}
+                  >
+                    {country.displayName} <span aria-hidden="true">↗</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Chargement / erreur */}
         {loading && (
@@ -579,10 +625,12 @@ export default function RegionDrawer({ open, onClose }: RegionDrawerProps) {
             )}
 
             {/* État vide */}
-            {!economicSnapshot && activeCode && (
+            {activeCode && !regionLenses.length && (
               <div className="info-card">
                 <p style={{ color: "rgba(183,220,245,0.65)", margin: 0, fontSize: 13 }}>
-                  Aucune donnée disponible pour cette région.
+                  Les indicateurs chiffrés de cette région ne sont pas encore disponibles.
+                  Le catalogue des pays reste consultable ci-dessus. Aucune statistique
+                  n'est inventée lorsque les séries temporelles sont absentes.
                 </p>
               </div>
             )}

@@ -2,6 +2,7 @@
 // Contient la carte interactive clippée en forme d'œil.
 // Design inspiré du logo officiel : bordure épaisse navy, globe en pupille.
 
+import { memo, useMemo } from "react";
 import WorldMap from "../map/WorldMap";
 import type { CountrySummary } from "../../api/types";
 import "../../styles/eye.css";
@@ -29,16 +30,16 @@ const EYE_PATH =
 const EYE_PATH_NORM =
   "M0.01875 0.5 C0.13125 0.10789,0.3125 -0.05263,0.5 -0.05263 C0.6875 -0.05263,0.86875 0.10789,0.98125 0.5 C0.86875 0.89211,0.6875 1.05263,0.5 1.05263 C0.3125 1.05263,0.13125 0.89211,0.01875 0.5 Z";
 
-export default function EyeMapFrame({
+function EyeMapFrame({
   drawerOpen,
   countries,
   selectedCountryIso3,
   onCountryClick,
 }: EyeMapFrameProps) {
-  const activeIso3Set = new Set(countries.map((c) => c.iso3));
+  const activeIso3Set = useMemo(() => new Set(countries.map((c) => c.iso3)), [countries]);
 
   // Dictionnaire iso3 → CountrySummary pour les tooltips enrichis de WorldMap
-  const countriesMap = new Map(countries.map((c) => [c.iso3, c]));
+  const countriesMap = useMemo(() => new Map(countries.map((c) => [c.iso3, c])), [countries]);
 
   return (
     <section className={`eye-stage ${drawerOpen ? "drawer-open" : ""}`}>
@@ -154,3 +155,4 @@ export default function EyeMapFrame({
     </section>
   );
 }
+export default memo(EyeMapFrame);
