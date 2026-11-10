@@ -30,7 +30,7 @@ services:
       catalog-service:
         condition: service_started
       timeseries-service:
-        condition: service_started
+        condition: service_healthy
       analytics-service:
         condition: service_started
     networks:
@@ -54,6 +54,14 @@ services:
     depends_on:
       whv-timescaledb:
         condition: service_healthy
+    # The catalog's Flyway migrations create the shared catalog schema.
+    # Ready means the Spring HTTP server has started after migrations.
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 30s
     networks:
       - whv-private
 
@@ -74,6 +82,16 @@ services:
     depends_on:
       whv-timescaledb:
         condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+    # Prevent ingestion and analytics from running against a database
+    # whose timeseries migrations have not yet completed.
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 30s
     networks:
       - whv-private
 
@@ -96,7 +114,7 @@ services:
       - whv_data_lake:/app/data
     depends_on:
       timeseries-service:
-        condition: service_started
+        condition: service_healthy
     networks:
       - whv-private
       - whv-public
@@ -116,7 +134,7 @@ services:
       catalog-service:
         condition: service_started
       timeseries-service:
-        condition: service_started
+        condition: service_healthy
     networks:
       - whv-private
 
