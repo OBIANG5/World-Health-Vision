@@ -38,6 +38,7 @@ jobs:
         working-directory: worldhealth-vision-v2
         run: |
           chmod +x mvnw
+          ./mvnw -B -ntp test
           ./mvnw -B -ntp -DskipTests package
       - name: Python 3.12 V2 analytics unit tests
         run: |
