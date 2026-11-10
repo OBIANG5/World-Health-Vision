@@ -13,6 +13,12 @@ try {
   });
   const result = await page.goto(url, {waitUntil:"domcontentloaded", timeout:45000});
   assert(result?.status() === 200, "Remote immutable CDN did not return HTTP 200");
+  // GitHack displays an interstitial security notice on a first visit.
+  // The real user must tap "Open the page", so exercise that flow.
+  if ((await page.title()).includes("External Content Notice")) {
+    console.log("CDN first-visit security notice found; following Open the page.");
+    await page.getByText("Open the page", {exact: true}).click();
+  }
   try {
     await page.locator(".whv-mobile-overview").waitFor({state:"visible",timeout:25000});
   } catch (error) {
