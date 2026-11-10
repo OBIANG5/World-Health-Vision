@@ -16,7 +16,7 @@ const L = {
   fr: {
     title: "Sources & Méthodologie",
     subtitle:
-      "Référentiel des sources de données utilisées par World Health Vision. La plateforme ne masque pas les biais — elle les expose.",
+      "Référentiel des sources enregistrées dans World Health Vision. La plateforme confronte les observations disponibles et rend leurs biais visibles.",
     close: "Fermer",
     organisation: "Organisation",
     porteeGeo: "Portée géographique",
@@ -28,6 +28,8 @@ const L = {
     documentation: "Documentation",
     siteOfficiel: "Site officiel",
     loading: "Chargement des sources...",
+    coverageLoading: "Vérification des observations présentes dans la base…",
+    numericObserved: "Mesures chiffrées",
     error: "Impossible de charger les sources. Vérifier que le backend est actif.",
     search: "Rechercher une source",
     all: "Toutes",
@@ -49,7 +51,7 @@ const L = {
   en: {
     title: "Sources & Methodology",
     subtitle:
-      "Reference catalogue of data sources used by World Health Vision. The platform doesn't hide biases — it exposes them.",
+      "Catalogue of sources registered in World Health Vision. The platform compares available observations and exposes their limitations.",
     close: "Close",
     organisation: "Organization",
     porteeGeo: "Geographic coverage",
@@ -61,6 +63,8 @@ const L = {
     documentation: "Documentation",
     siteOfficiel: "Official website",
     loading: "Loading sources...",
+    coverageLoading: "Checking observations present in the data store…",
+    numericObserved: "Numeric measurements",
     error: "Failed to load sources. Check that the backend is running.",
     search: "Search a source",
     all: "All",
@@ -264,7 +268,7 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
                   ? (lang === "fr"
                     ? `${withObserved} sources avec mesures · ${withEstimatesOnly} avec estimations seules · ${withNoValues} sans observation utilisable`
                     : `${withObserved} sources with measured values · ${withEstimatesOnly} estimates only · ${withNoValues} without usable observations`)
-                  : (isPreview ? l.preview : coverageState === "loading" ? l.loading : l.unknown)}
+                  : (isPreview ? l.preview : coverageState === "loading" ? l.coverageLoading : l.unknown)}
               </div>
               <div className="whv-source-controls">
                 <label htmlFor="whv-source-search">{l.search}</label>
@@ -325,6 +329,7 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
                       {verified && data && hasValues && (
                         <div className="whv-source-coverage-detail">
                           <span>{l.observed} : {observed.toLocaleString(lang)}</span>
+                          <span>{l.numericObserved} : {data.observedNumericCount.toLocaleString(lang)}</span>
                           <span>{l.estimated} : {estimated.toLocaleString(lang)}</span>
                           <span>{l.coveredCountries} : {data.coveredCountryCount.toLocaleString(lang)}</span>
                           {data.latestAvailablePeriodStart && <span>{l.lastPeriod} : {data.latestAvailablePeriodStart}</span>}
