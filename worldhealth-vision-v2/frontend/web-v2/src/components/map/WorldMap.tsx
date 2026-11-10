@@ -2,9 +2,9 @@
 // Carte Leaflet interactive clippée dans la forme œil.
 // Tooltip enrichi au survol : drapeau, devise, région.
 
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
-import type { LatLngTuple, PathOptions, Layer } from "leaflet";
+import type { LatLngTuple, PathOptions, Layer, GeoJSON as LeafletGeoJSON } from "leaflet";
 import type { Feature, FeatureCollection } from "geojson";
 import type { CountrySummary } from "../../api/types";
 import "leaflet/dist/leaflet.css";
@@ -96,14 +96,18 @@ function countryStyle(
 
 // ---------- composant ----------
 
-export default function WorldMap({
+function WorldMap({
   activeIso3Set,
   selectedCountryIso3,
   onCountryClick,
   countriesMap,
 }: Props) {
   const [geoData, setGeoData] = useState<FeatureCollection | null>(null);
-  const renderKey = `${selectedCountryIso3}-${activeIso3Set.size}`;
+  const geoLayerRef = useRef<LeafletGeoJSON | null>(null);
+  // Leaflet installs event handlers once. These refs always point to the newest
+  // selection, country registry and callback without recreating 200+ polygons.
+  const liveRef = useRef({ selectedCountryIso3, activeIso3Set, onCountryClick, countriesMap });
+  liveRef.current = { selectedCountryIso3, activeIso3Set, onCountryClick, countriesMap };
 
   useEffect(() => {
     fetch("/countries.geojson")
@@ -112,24 +116,32 @@ export default function WorldMap({
       .catch(() => {});
   }, []);
 
-  function style(feature?: Feature): PathOptions {
-    return countryStyle(feature, selectedCountryIso3, activeIso3Set);
-  }
+  const style = useCallback((feature?: Feature): PathOptions => {
+    const current = liveRef.current;
+    return countryStyle(feature, current.selectedCountryIso3, current.activeIso3Set);
+  }, []);
 
-  function onEachFeature(feature: Feature, layer: Layer) {
+  // React-Leaflet does not need a new GeoJSON instance when the selected country
+  // changes. Updating styles in place preserves map position and touch gestures.
+  useEffect(() => {
+    geoLayerRef.current?.setStyle(style);
+  }, [selectedCountryIso3, activeIso3Set, style]);
+
+  const onEachFeature = useCallback((feature: Feature, layer: Layer) => {
     const iso3 = feature?.properties?.[ISO3_FIELD] as string | undefined;
     if (!iso3) return;
 
     const geoName = (feature.properties?.["name"] as string) ?? iso3;
-    const country = countriesMap?.get(iso3);
-
     layer.on({
-      click: () => {
-        onCountryClick(iso3);
-      },
+      click: () => liveRef.current.onCountryClick(iso3),
       mouseover: (e) => {
         const l = e.target as { setStyle: (s: PathOptions) => void };
         l.setStyle({ fillOpacity: 0.80, weight: 2.2, color: "#4ab8ff" });
+        const content = buildTooltipHtml(geoName, iso3, liveRef.current.countriesMap?.get(iso3));
+        const tooltipLayer = layer as Layer & {
+          getTooltip?: () => { setContent: (html: string) => void } | undefined;
+        };
+        tooltipLayer.getTooltip?.()?.setContent(content);
       },
       mouseout: (e) => {
         const l = e.target as { setStyle: (s: PathOptions) => void };
@@ -137,15 +149,13 @@ export default function WorldMap({
       },
     });
 
-    // Tooltip enrichi — HTML rendu par Leaflet
-    const html = buildTooltipHtml(geoName, iso3, country);
-    layer.bindTooltip(html, {
+    layer.bindTooltip(buildTooltipHtml(geoName, iso3, liveRef.current.countriesMap?.get(iso3)), {
       sticky: true,
       className: "whv-tooltip-rich",
       direction: "top",
       offset: [0, -4],
     });
-  }
+  }, [style]);
 
   return (
     <MapContainer
@@ -163,7 +173,7 @@ export default function WorldMap({
       />
       {geoData && (
         <GeoJSON
-          key={renderKey}
+          ref={geoLayerRef}
           data={geoData}
           style={style}
           onEachFeature={onEachFeature}
@@ -172,3 +182,4 @@ export default function WorldMap({
     </MapContainer>
   );
 }
+export default memo(WorldMap);
