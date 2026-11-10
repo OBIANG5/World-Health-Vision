@@ -1,6 +1,14 @@
+import json
 import typer
 
-from ingestion_service.runtime import build_numbeo_service, build_unodc_service, build_worldbank_service
+from ingestion_service.pilots.inflation import DEFAULT_COUNTRIES, run_inflation_pilot
+from ingestion_service.runtime import (
+    build_imf_weo_service,
+    build_numbeo_service,
+    build_unodc_service,
+    build_worldbank_service,
+)
+from ingestion_service.settings import get_settings
 
 app = typer.Typer(help="WorldHealth Vision ingestion CLI.")
 worldbank_app = typer.Typer(help="World Bank ingestion commands.")
@@ -9,6 +17,8 @@ numbeo_app = typer.Typer(help="Numbeo ingestion commands (clé API requise).")
 app.add_typer(worldbank_app, name="worldbank")
 app.add_typer(unodc_app, name="unodc")
 app.add_typer(numbeo_app, name="numbeo")
+pilot_app = typer.Typer(help="Controlled official multi-source evidence pilots.")
+app.add_typer(pilot_app, name="pilot")
 
 
 @worldbank_app.command("fetch-countries")
@@ -57,6 +67,34 @@ def fetch_country_indices():
     typer.echo(f"runs={len(manifests)}")
     for manifest in manifests:
         typer.echo(manifest.model_dump_json(indent=2))
+
+
+@pilot_app.command("inflation")
+def pilot_inflation(
+    countries: str = typer.Option(
+        ",".join(DEFAULT_COUNTRIES),
+        "--countries",
+        help="Comma-separated ISO3 country selection (default FRA,GAB,USA).",
+    ),
+):
+    """Ingest CPI inflation from live WDI and IMF WEO, verify Timescale writes.
+
+    This requires the REAL backend and never uses fabricated demo values.
+    The execution is bounded to one indicator and the requested countries.
+    Results compare only matching-year OBSERVED observations. Official API
+    downloads may take time; do not run in a production request handler.
+    """
+    iso3s = tuple(x.strip().upper() for x in countries.split(",") if x.strip())
+    if not iso3s:
+        raise typer.BadParameter("At least one ISO3 country is required.")
+    settings = get_settings()
+    result = run_inflation_pilot(
+        worldbank=build_worldbank_service(),
+        imf_weo=build_imf_weo_service(),
+        timeseries_base_url=settings.timeseries_base_url,
+        countries=iso3s,
+    )
+    typer.echo(json.dumps(result, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
