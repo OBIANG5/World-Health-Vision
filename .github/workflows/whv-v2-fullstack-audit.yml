@@ -88,7 +88,7 @@ jobs:
           docker compose -f worldhealth-vision-v2/infra/docker-compose.yml exec -T whv-timescaledb \
             psql -U whv_user -d whv -Atc "select code from catalog.indicator where code like 'SH.XPD.%' order by code" || true
           echo "HTTP catalog indicator check:"
-          curl -sS -o /tmp/whv-indicator.json -w 'HTTP %{http_code}\\n' --max-time 10 \
+          curl -fsS -o /tmp/whv-indicator.json -w 'HTTP %{http_code}\\n' --max-time 10 \
             http://localhost:8080/api/catalog/indicators/SH.XPD.CHEX.GD.ZS
           head -c 300 /tmp/whv-indicator.json
           echo
@@ -104,8 +104,16 @@ jobs:
           if [ "$ready" -ne 1 ]; then echo "Timeseries readiness failure"; cat /tmp/ts-readiness.json || true; exit 1; fi
           head -c 500 /tmp/ts-readiness.json
           echo
+          echo "Validate all five real application containers are running without a startup crash:"
+          for name in whv-gateway whv-catalog whv-timeseries whv-analytics whv-ingestion; do
+            running=$(docker inspect --format '{{.State.Running}}' "$name")
+            restarts=$(docker inspect --format '{{.RestartCount}}' "$name")
+            echo "$name running=$running restartCount=$restarts"
+            test "$running" = "true"
+            test "$restarts" = "0"
+          done
           echo "Analytics snapshot (may initially have no observations):"
-          curl -sS -o /tmp/whv-snapshot.json -w "HTTP %{http_code}\n" --max-time 25             http://localhost:8080/api/product/countries/FRA/economic-snapshot
+          curl -fsS -o /tmp/whv-snapshot.json -w "HTTP %{http_code}\n" --max-time 25             http://localhost:8080/api/product/countries/FRA/economic-snapshot
           head -c 600 /tmp/whv-snapshot.json
       - name: Services and diagnostics
         if: always()
