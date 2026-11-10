@@ -337,7 +337,7 @@ export default function CurrencyPanel({ onClose }: Props) {
                         color: "rgba(183,220,245,0.9)",
                         padding: "6px 10px",
                       }}
-                      formatter={(v: number) => [fmtRate(v), `${baseCur}/${histTarget}`]}
+                      formatter={(value) => [fmtRate(typeof value === "number" ? value : Number(value)), `${baseCur}/${histTarget}`]}
                       labelStyle={{ color: "rgba(183,220,245,0.55)", fontSize: 10 }}
                     />
                     <Line
