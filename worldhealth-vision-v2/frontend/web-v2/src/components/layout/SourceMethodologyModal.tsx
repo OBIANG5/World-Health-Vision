@@ -3,8 +3,8 @@
 // Ouvert depuis le bouton "Sources" dans la nav principale.
 
 import { useEffect, useRef, useState } from "react";
-import type { SourceDetail } from "../../api/types";
-import { fetchSources } from "../../api/whvApi";
+import type { SourceDataCoverage, SourceDetail } from "../../api/types";
+import { fetchSourceDataCoverage, fetchSources } from "../../api/whvApi";
 import { useLang } from "../../context/LanguageContext";
 import type { Lang } from "../../context/LanguageContext";
 
@@ -16,7 +16,7 @@ const L = {
   fr: {
     title: "Sources & Méthodologie",
     subtitle:
-      "Référentiel des sources de données utilisées par World Health Vision. La plateforme ne masque pas les biais — elle les expose.",
+      "Référentiel des sources enregistrées dans World Health Vision. La plateforme confronte les observations disponibles et rend leurs biais visibles.",
     close: "Fermer",
     organisation: "Organisation",
     porteeGeo: "Portée géographique",
@@ -28,12 +28,30 @@ const L = {
     documentation: "Documentation",
     siteOfficiel: "Site officiel",
     loading: "Chargement des sources...",
+    coverageLoading: "Vérification des observations présentes dans la base…",
+    numericObserved: "Mesures chiffrées",
     error: "Impossible de charger les sources. Vérifier que le backend est actif.",
+    search: "Rechercher une source",
+    all: "Toutes",
+    available: "Avec données",
+    absent: "Sans données",
+    unknown: "Disponibilité des observations non vérifiable : le service de séries temporelles n'est pas connecté.",
+    preview: "Cet aperçu présente les sources enregistrées. Leur couverture réelle sera vérifiée après connexion à la base de données.",
+    observed: "Observations mesurées",
+    estimated: "Estimations",
+    coveredCountries: "Pays avec valeurs",
+    lastPeriod: "Dernière période",
+    lastFetched: "Dernière collecte",
+    noValues: "Source répertoriée, aucune observation utilisable dans la base",
+    measured: "Données mesurées disponibles",
+    estimatesOnly: "Estimations uniquement",
+    notVerified: "Données non vérifiables",
+    noMatch: "Aucune source ne correspond à cette recherche.",
   },
   en: {
     title: "Sources & Methodology",
     subtitle:
-      "Reference catalogue of data sources used by World Health Vision. The platform doesn't hide biases — it exposes them.",
+      "Catalogue of sources registered in World Health Vision. The platform compares available observations and exposes their limitations.",
     close: "Close",
     organisation: "Organization",
     porteeGeo: "Geographic coverage",
@@ -45,7 +63,25 @@ const L = {
     documentation: "Documentation",
     siteOfficiel: "Official website",
     loading: "Loading sources...",
+    coverageLoading: "Checking observations present in the data store…",
+    numericObserved: "Numeric measurements",
     error: "Failed to load sources. Check that the backend is running.",
+    search: "Search a source",
+    all: "All",
+    available: "With data",
+    absent: "Without data",
+    unknown: "Observation availability cannot be verified: the time-series service is not connected.",
+    preview: "This preview lists registered sources. Real availability requires the connected data store.",
+    observed: "Measured observations",
+    estimated: "Estimates",
+    coveredCountries: "Countries with values",
+    lastPeriod: "Latest data period",
+    lastFetched: "Latest fetch",
+    noValues: "Registered source, no usable observations in the database",
+    measured: "Measured data available",
+    estimatesOnly: "Estimates only",
+    notVerified: "Data not verifiable",
+    noMatch: "No sources match this search.",
   },
 } as const;
 
@@ -125,14 +161,34 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
   const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
   const [sources, setSources] = useState<SourceDetail[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [coverage, setCoverage] = useState<Map<string, SourceDataCoverage> | null>(null);
+  const [coverageState, setCoverageState] = useState<"loading" | "available" | "unavailable">(
+    isPreview ? "unavailable" : "loading",
+  );
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "available" | "absent">("all");
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let mounted = true;
     fetchSources()
-      .then((items) => setSources(items))
-      .catch(() => setError(l.error));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      .then((items) => { if (mounted) setSources(items); })
+      .catch(() => { if (mounted) setError(l.error); });
+    return () => { mounted = false; };
+  }, [l.error]);
+
+  useEffect(() => {
+    if (isPreview) return;
+    let mounted = true;
+    fetchSourceDataCoverage()
+      .then((items) => {
+        if (!mounted) return;
+        setCoverage(new Map(items.map((item) => [item.sourceCode, item])));
+        setCoverageState("available");
+      })
+      .catch(() => { if (mounted) setCoverageState("unavailable"); });
+    return () => { mounted = false; };
+  }, [isPreview]);
 
   // Fermer sur Escape
   useEffect(() => {
@@ -151,6 +207,24 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
           (bRank < 0 ? TYPE_ORDER.length : bRank);
       })
     : null;
+  const withObserved = sorted?.filter((s) => (coverage?.get(s.code)?.observedRecordCount ?? 0) > 0).length ?? 0;
+  const withEstimatesOnly = sorted?.filter((s) => {
+    const item = coverage?.get(s.code);
+    return item && item.observedRecordCount === 0 && item.estimatedRecordCount > 0;
+  }).length ?? 0;
+  const withNoValues = sorted && coverageState === "available"
+    ? sorted.length - withObserved - withEstimatesOnly
+    : 0;
+  const visible = sorted?.filter((source) => {
+    const query = search.trim().toLocaleLowerCase();
+    if (query && !(`${source.displayName} ${source.organizationName} ${source.code}`).toLocaleLowerCase().includes(query)) {
+      return false;
+    }
+    if (coverageState !== "available" || filter === "all") return true;
+    const item = coverage?.get(source.code);
+    const hasValues = !!item && (item.observedRecordCount > 0 || item.estimatedRecordCount > 0);
+    return filter === "available" ? hasValues : !hasValues;
+  });
 
   return (
     <div
@@ -189,8 +263,48 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
                     : "Preview mode: entries are generated from V2 SQL migrations. A registered source does not mean its observations have been ingested or refreshed."}</span>
                 )}
               </p>
+              <div className="whv-source-coverage-overview" role="status">
+                {coverageState === "available"
+                  ? (lang === "fr"
+                    ? `${withObserved} sources avec mesures · ${withEstimatesOnly} avec estimations seules · ${withNoValues} sans observation utilisable`
+                    : `${withObserved} sources with measured values · ${withEstimatesOnly} estimates only · ${withNoValues} without usable observations`)
+                  : (isPreview ? l.preview : coverageState === "loading" ? l.coverageLoading : l.unknown)}
+              </div>
+              <div className="whv-source-controls">
+                <label htmlFor="whv-source-search">{l.search}</label>
+                <input
+                  id="whv-source-search"
+                  type="search"
+                  value={search}
+                  placeholder={l.search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+                <div className="whv-source-filters" role="group" aria-label={l.title}>
+                  {(["all", "available", "absent"] as const).map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={filter === key ? "active" : ""}
+                      aria-pressed={filter === key}
+                      disabled={coverageState !== "available" && key !== "all"}
+                      onClick={() => setFilter(key)}
+                    >
+                      {l[key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {visible?.length === 0 && <p className="whv-modal-message">{l.noMatch}</p>}
               <div className="whv-source-grid">
-              {sorted.map((s) => {
+              {visible?.map((s) => {
+                const data = coverage?.get(s.code);
+                const observed = data?.observedRecordCount ?? 0;
+                const estimated = data?.estimatedRecordCount ?? 0;
+                const verified = coverageState === "available";
+                const hasValues = observed > 0 || estimated > 0;
+                const statusText = !verified
+                  ? l.notVerified
+                  : observed > 0 ? l.measured : estimated > 0 ? l.estimatesOnly : l.noValues;
                 const meta = TYPE_META[s.type] ?? {
                   bg: "rgba(255,255,255,0.06)",
                   color: "#999",
@@ -210,6 +324,19 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
                       </span>
                     </div>
 
+                    <div className="whv-source-coverage" data-coverage={verified ? (hasValues ? "available" : "absent") : "unknown"}>
+                      <strong>{statusText}</strong>
+                      {verified && data && hasValues && (
+                        <div className="whv-source-coverage-detail">
+                          <span>{l.observed} : {observed.toLocaleString(lang)}</span>
+                          <span>{l.numericObserved} : {data.observedNumericCount.toLocaleString(lang)}</span>
+                          <span>{l.estimated} : {estimated.toLocaleString(lang)}</span>
+                          <span>{l.coveredCountries} : {data.coveredCountryCount.toLocaleString(lang)}</span>
+                          {data.latestAvailablePeriodStart && <span>{l.lastPeriod} : {data.latestAvailablePeriodStart}</span>}
+                          {data.latestDataFetchedAtUtc && <span>{l.lastFetched} : {data.latestDataFetchedAtUtc.slice(0, 10)}</span>}
+                        </div>
+                      )}
+                    </div>
                     {/* Organisation */}
                     <p className="whv-source-meta">
                       {l.organisation} :{" "}

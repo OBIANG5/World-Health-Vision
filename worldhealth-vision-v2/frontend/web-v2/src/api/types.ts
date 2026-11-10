@@ -351,6 +351,21 @@ export interface IndicatorRankResponse {
 // Sources catalog
 // ---------------------------------------------------------------------------
 
+/**
+ * Reported by the real V2 timeseries store, NOT by catalog.source.
+ * Observed and estimated values remain distinct; null dates mean no evidence.
+ */
+export interface SourceDataCoverage {
+  sourceCode: string;
+  sourceDisplayName: string;
+  observedRecordCount: number;
+  estimatedRecordCount: number;
+  observedNumericCount: number;
+  coveredCountryCount: number;
+  latestAvailablePeriodStart: string | null;
+  latestDataFetchedAtUtc: string | null;
+}
+
 export interface SourceDetail {
   code: string;
   displayName: string;

@@ -1389,3 +1389,97 @@ button, input, select, textarea {
     grid-template-columns: 1fr;
   }
 }
+/* V2 source evidence is calculated from actual canonical observations.
+   Never style a registered source as connected while coverage is unknown. */
+.whv-source-coverage-overview {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(85, 160, 214, 0.19);
+  border-radius: 11px;
+  background: rgba(43, 111, 161, 0.09);
+  color: rgba(210, 235, 251, 0.87);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.whv-source-controls {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.whv-source-controls > label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(190, 224, 247, 0.76);
+}
+.whv-source-controls > input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  border-radius: 9px;
+  border: 1px solid rgba(130, 195, 242, 0.24);
+  padding: 10px 12px;
+  color: #d9effd;
+  background: rgba(3, 17, 31, 0.6);
+  font: inherit;
+}
+.whv-source-controls > input:focus-visible {
+  outline: 2px solid rgba(99, 196, 255, .85);
+  outline-offset: 2px;
+}
+.whv-source-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.whv-source-filters button {
+  border: 1px solid rgba(115, 180, 220, .2);
+  border-radius: 999px;
+  padding: 8px 13px;
+  font: inherit;
+  font-size: 12px;
+  color: rgba(210, 232, 247, .85);
+  background: rgba(25, 56, 80, .36);
+  cursor: pointer;
+}
+.whv-source-filters button.active {
+  border-color: rgba(105, 195, 250, .75);
+  background: rgba(43, 122, 177, .27);
+  color: #d7efff;
+}
+.whv-source-filters button:disabled {
+  opacity: .43;
+  cursor: not-allowed;
+}
+.whv-source-filters button:focus-visible {
+  outline: 2px solid #88d4ff;
+  outline-offset: 2px;
+}
+.whv-source-coverage {
+  padding: 9px 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(155, 185, 210, 0.17);
+  color: rgba(205, 227, 241, 0.71);
+  background: rgba(180, 196, 210, 0.045);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.whv-source-coverage[data-coverage="available"] {
+  color: #9be3c7;
+  border-color: rgba(103, 204, 168, .24);
+  background: rgba(20, 120, 85, .12);
+}
+.whv-source-coverage[data-coverage="absent"] {
+  color: rgba(218, 224, 233, .75);
+}
+.whv-source-coverage-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+  margin-top: 8px;
+  color: rgba(214, 237, 245, .8);
+}
+@media (max-width: 720px) {
+  .whv-source-coverage-overview { margin-bottom: 13px; }
+  .whv-source-coverage-detail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .whv-source-controls > input { font-size: 16px; }
+}

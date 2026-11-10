@@ -13,6 +13,7 @@ import type {
   RegionRelativeCostSnapshotResponse,
   RegionSummary,
   SourceDetail,
+  SourceDataCoverage,
   TimeseriesSeriesResponse,
 } from "./types";
 
@@ -93,6 +94,7 @@ class AsyncCache<T> {
 const rankCache = new AsyncCache<IndicatorRankResponse>();
 const overviewCache = new AsyncCache<IndicatorOverviewResponse>();
 const historyCache = new AsyncCache<TimeseriesSeriesResponse>();
+const sourceCoverageCache = new AsyncCache<SourceDataCoverage[]>(2 * 60 * 1000);
 
 export async function fetchCountries(): Promise<CountrySummary[]> {
   try {
@@ -227,6 +229,29 @@ export async function fetchSources(): Promise<SourceDetail[]> {
   } catch (error) {
     throw new Error(`Unable to load sources: ${extractErrorMessage(error)}`);
   }
+}
+
+/**
+ * The catalog alone cannot prove data availability. This route reads the
+ * canonical timeseries store and intentionally remains separate from fetchSources.
+ * On a preview or disconnected backend, it REJECTS so the UI displays "unknown"
+ * rather than claiming zero observations or presenting fabricated coverage.
+ */
+export async function fetchSourceDataCoverage(): Promise<SourceDataCoverage[]> {
+  return sourceCoverageCache.get("all-source-coverage", async () => {
+    try {
+      const response = await whvApi.get<CatalogListResponse<SourceDataCoverage>>(
+        "/api/timeseries/sources/coverage",
+        { timeout: 15000 },
+      );
+      if (!Array.isArray(response.data.items)) {
+        throw new Error("Unexpected source coverage response");
+      }
+      return response.data.items;
+    } catch (error) {
+      throw new Error(`Unable to load observed source coverage: ${extractErrorMessage(error)}`);
+    }
+  });
 }
 
 // ---------------------------------------------------------------------------

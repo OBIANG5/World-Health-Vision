@@ -64,6 +64,20 @@ try {
     assert((await phone.locator(".whv-modal-body").innerText()).includes(source),
       "Missing original V2 catalogue source " + source);
   }
+  // A static preview must NEVER display invented coverage as observed data.
+  assert((await phone.locator(".whv-source-coverage-overview").innerText()).includes("aperçu"),
+    "Static preview must disclose that live observation coverage is unavailable");
+  assert(await phone.locator(".whv-source-coverage[data-coverage='unknown']").count() === 22,
+    "Preview source data must be explicitly unverified for all 22 registered sources");
+  assert(await phone.locator(".whv-source-filters button").nth(1).isDisabled(),
+    "Real-data filter must not imply backend availability in the static preview");
+  const sourceSearch = phone.locator("#whv-source-search");
+  await sourceSearch.fill("OpenStreetMap");
+  assert(await phone.locator(".whv-source-card").count() === 1,
+    "Searching registered V2 sources must filter the actual catalogue");
+  await sourceSearch.fill("");
+  assert(await phone.locator(".whv-source-card").count() === 22,
+    "Clearing source search must restore every source");
   await phone.locator(".whv-modal-close").click();
 
   // Regions must open, select a real group, expose member countries and navigate.
