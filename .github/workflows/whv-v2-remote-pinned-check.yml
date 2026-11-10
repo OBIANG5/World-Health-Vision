@@ -1,0 +1,54 @@
+name: Verify immutable published WHV V2 preview
+
+on:
+  push:
+    branches:
+      - 'preview/whv-v2-complete-current-2026-11-10'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-cdn-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch published immutable V2 HTML and referenced static assets
+        run: |
+          set -eu
+          base="https://rawcdn.githack.com/OBIANG5/World-Health-Vision/ee1104d603d598d4069033ef96d340f3727278da"
+          curl -fLsS --retry 4 --max-time 40 "$base/index.html" -o /tmp/whv-index.html
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          class Assets(HTMLParser):
+              paths=[]
+              def handle_starttag(self, tag, attrs):
+                  values=dict(attrs)
+                  for field in ("src","href"):
+                      path=values.get(field,"")
+                      if path.startswith("./assets/"):
+                          self.paths.append(path)
+          a=Assets()
+          a.feed(open("/tmp/whv-index.html").read())
+          assert a.paths,"No frontend assets referenced"
+          open("/tmp/whv-paths.txt","w").write("\n".join(a.paths)+"\n")
+          print("Found",len(a.paths),"module and stylesheet references")
+          PY
+          while IFS= read -r path; do
+            curl -fLsS --retry 4 --max-time 40 "$base/${path#./}" -o /tmp/whv-asset
+            test "$(wc -c </tmp/whv-asset)" -gt 100
+          done </tmp/whv-paths.txt
+      - name: Install headless browser
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+      - name: Verify remote mobile interactions in Chromium
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node verify-remote-cdn.mjs
