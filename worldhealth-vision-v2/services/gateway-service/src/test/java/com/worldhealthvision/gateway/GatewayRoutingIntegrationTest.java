@@ -279,6 +279,23 @@ class GatewayRoutingIntegrationTest {
     }
 
     @Test
+    void shouldRouteOnlyAdvisorChatPostToAnalytics() {
+        webTestClient.post()
+                .uri("/api/analytics/advisor/chat")
+                .header("Content-Type", "application/json")
+                .bodyValue("{\"question\":\"Quelle est l'inflation ?\",\"iso3\":\"FRA\",\"lang\":\"fr\"}")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.service").isEqualTo("analytics")
+                .jsonPath("$.forwardedPath").isEqualTo("/api/analytics/advisor/chat")
+                .jsonPath("$.forwardedMethod").isEqualTo("POST");
+
+        assertThat(lastAnalyticsPath.get()).isEqualTo("/api/analytics/advisor/chat");
+        assertThat(lastAnalyticsMethod.get()).isEqualTo("POST");
+    }
+
+    @Test
     void shouldNotExposeInternalTimeseriesEndpoints() {
         webTestClient.post()
                 .uri("/internal/timeseries/ingestion/observation-batches")
