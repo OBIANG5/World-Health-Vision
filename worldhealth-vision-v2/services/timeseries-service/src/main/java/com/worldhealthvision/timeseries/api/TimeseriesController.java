@@ -21,6 +21,7 @@ import com.worldhealthvision.timeseries.api.dto.LatestSourceObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.CountryLatestComparisonResponse;
 import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
+import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesListResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
@@ -49,6 +50,15 @@ public class TimeseriesController {
     @GetMapping("/readiness")
     public TimeseriesReadinessResponse getReadiness() {
         return timeseriesQueryService.getReadiness();
+    }
+
+    /**
+     * Registered sources and their actual measured/estimated observations.
+     * Missing, suppressed or not-yet-ingested data is never presented as available.
+     */
+    @GetMapping("/sources/coverage")
+    public TimeseriesListResponse<SourceDataCoverageResponse> listSourceDataCoverage() {
+        return timeseriesQueryService.listSourceDataCoverage();
     }
 
     @GetMapping("/series")
