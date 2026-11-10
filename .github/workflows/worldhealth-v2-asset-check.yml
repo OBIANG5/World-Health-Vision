@@ -1,0 +1,40 @@
+name: Check pinned V2 website assets
+
+on:
+  push:
+    branches:
+      - preview/whv-v2-iphone
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-cdn:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check HTML, JS, CSS at immutable URL
+        run: |
+          set -euo pipefail
+          BASE="https://rawcdn.githack.com/OBIANG5/World-Health-Vision/98fb74b5b556f2a6bd259a3caf79a713229f2c8c"
+          curl -fLsS --max-time 25 "$BASE/index.html" -o /tmp/index.html
+          python3 - <<'PY'
+          import re
+          html=open("/tmp/index.html").read()
+          print("HTML bytes",len(html))
+          print("module assets",re.findall(r'src="(\./assets/[^"]+)"',html))
+          assert 'preview-bootstrap.js' in html and 'preview-mobile.css' in html
+          for path in re.findall(r'(?:src|href)="(\./assets/[^"]+)"',html):
+            print("ASSET",path)
+            with open('/tmp/paths.txt','a') as f:f.write(path+'\n')
+          PY
+          while IFS= read -r path; do
+            code=$(curl -LsS --max-time 25 -o /tmp/asset-body -w '%{http_code}' "$BASE/${path#./}")
+            printf "asset %s: HTTP %s (%s bytes)\n" "$path" "$code" "$(wc -c </tmp/asset-body)"
+            test "$code" = "200"
+          done </tmp/paths.txt
+          curl -fLsS --max-time 25 "$BASE/preview-countries.js" -o /tmp/countries.js
+          curl -fLsS --max-time 25 "$BASE/preview-bootstrap.js" -o /tmp/bootstrap.js
+          test "$(wc -c </tmp/countries.js)" -gt 50000
+          echo "All HTML and assets available from immutable HTTPS URL"
