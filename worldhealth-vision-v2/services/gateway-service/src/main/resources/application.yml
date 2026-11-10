@@ -80,6 +80,14 @@ spring:
             - Path=/api/timeseries/**
             - Method=GET
 
+        # Only the data-grounded advisor chat may be submitted by the public
+        # frontend. Keep ingestion and internal service mutation routes private.
+        - id: analytics-advisor-chat-route
+          uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
+          predicates:
+            - Path=/api/analytics/advisor/chat
+            - Method=POST
+
         - id: analytics-service-read-route
           uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
           predicates:
