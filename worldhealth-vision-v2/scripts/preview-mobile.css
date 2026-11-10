@@ -55,3 +55,9 @@
  .whv-mobile-shortcut{min-height:58px}
 }
 @media(prefers-reduced-motion:reduce){.eye-scene,.whv-tools-menu,.whv-mobile-overview{animation:none!important;transition:none!important}}
+
+@media(max-width:720px){
+  /* In the original SVG the limbic ring is taller than it is wide on phones.
+     Equalise its displayed radii while retaining the source artwork. */
+  .eye-svg ellipse{transform-box:fill-box;transform-origin:center;transform:scale(1.15,.9)}
+}
