@@ -13,7 +13,21 @@ try {
   });
   const result = await page.goto(url, {waitUntil:"domcontentloaded", timeout:45000});
   assert(result?.status() === 200, "Remote immutable CDN did not return HTTP 200");
-  await page.locator(".whv-mobile-overview").waitFor({state:"visible",timeout:25000});
+  try {
+    await page.locator(".whv-mobile-overview").waitFor({state:"visible",timeout:25000});
+  } catch (error) {
+    console.error("Remote render diagnostics:", JSON.stringify({
+      httpStatus: result?.status(),
+      title: await page.title(),
+      body: (await page.locator("body").innerText()).slice(0,800),
+      html: (await page.locator("body").innerHTML()).slice(0,600),
+      jsErrors: errors,
+      assetFailures: failures,
+      location: page.url(),
+    }));
+    await page.screenshot({path:"remote-preview-failure.png"});
+    throw error;
+  }
   await page.locator(".eye-stage").waitFor({state:"visible"});
   await page.locator(".whv-nav-btn--tools").click();
   await page.locator(".whv-tools-menu").waitFor({state:"visible"});
