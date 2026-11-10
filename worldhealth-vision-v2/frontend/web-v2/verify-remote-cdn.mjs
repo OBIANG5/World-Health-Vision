@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/ee1104d603d598d4069033ef96d340f3727278da/index.html";
+const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/5ad3c478df907e51104dd32b8c0f345eb4228fc2/index.html";
 const browser = await chromium.launch({headless: true, args: ["--no-sandbox"]});
 try {
   const page = await browser.newPage({viewport: {width:390,height:844}, isMobile:true,hasTouch:true});
@@ -43,6 +43,16 @@ try {
   await page.locator(".whv-nav-btn--tools").click();
   await page.locator(".whv-tools-menu").getByText("Conseiller économique").click();
   await page.locator(".adv-panel").waitFor({state:"visible"});
+  await page.locator(".adv-close-btn").click();
+  await page.locator(".whv-nav-btn--sources").click();
+  await page.locator(".whv-source-card").first().waitFor({state:"visible"});
+  assert(await page.locator(".whv-source-card").count() === 22,
+    "Remote preview does not expose all 22 registered V2 sources");
+  await page.locator(".whv-modal-close").click();
+  await page.locator(".whv-mobile-shortcut").filter({hasText:"Régions"}).click();
+  await page.locator(".region-drawer.open").waitFor({state:"visible"});
+  await page.locator(".whv-region-members-toggle").click();
+  await page.locator(".whv-region-member").first().waitFor({state:"visible"});
   assert(errors.length === 0, "Remote JS errors: "+errors.join("; "));
   assert(failures.length === 0, "Remote static asset failures: "+failures.join("; "));
   console.log("PASS remote pinned V2: Mobile overview, eye, tools, retirement and advisor.");
