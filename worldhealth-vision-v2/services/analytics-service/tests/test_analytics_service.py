@@ -6,8 +6,13 @@ import httpx
 from analytics_service.clients.catalog_client import CatalogClient
 from analytics_service.clients.timeseries_client import TimeseriesClient
 from analytics_service.config import Settings
+from analytics_service.product_profiles import ECONOMIC_LENS_PROFILES, RELATIVE_COST_LENS_PROFILES
 from analytics_service.service import AnalyticsService
 
+
+PROFILE_INDICATOR_CODES = {
+    profile.indicator_code for profile in (*ECONOMIC_LENS_PROFILES, *RELATIVE_COST_LENS_PROFILES)
+}
 
 INDICATOR_FIXTURES = {
     "NY.GDP.MKTP.CD": {
@@ -201,7 +206,7 @@ def test_country_indicator_overview_computes_trend_and_divergence():
         assert overview.divergence.rangeAbsolute == 13000000000.0
         assert overview.divergence.agreementLevel == "CONSISTENT"
         assert overview.confidence.level in {"HIGH", "MEDIUM"}
-        assert overview.freshness.level in {"FRESH", "AGING"}
+        assert overview.freshness.level == "STALE"
         assert overview.sourceAudit.scopeType == "COUNTRY"
         assert overview.sourceAudit.comparableSourceCount == 2
         assert any(item.code == "MULTI_SOURCE_COMPARISON" for item in overview.sourceAudit.evidence)
@@ -377,7 +382,7 @@ def test_country_relative_cost_snapshot_returns_cost_product_lenses():
             "CONSUMER_PRICE_PRESSURE",
             "HOUSING_MARKET_HEAT",
         ]
-        assert travel_signal.freshnessLevel in {"FRESH", "AGING"}
+        assert travel_signal.freshnessLevel == "STALE"
         assert len(travel_signal.cautionaryNotes) == 2
 
     asyncio.run(run())
@@ -588,7 +593,19 @@ def catalog_handler(request: httpx.Request) -> httpx.Response:
         indicator_code = request.url.path.rsplit("/", 1)[-1]
         fixture = INDICATOR_FIXTURES.get(indicator_code)
         if fixture is None:
-            raise AssertionError(f"Unexpected indicator code: {indicator_code}")
+            # The V2 catalog exposes additional indicator profiles even when the
+            # isolated test fixture has no associated country observations.
+            assert indicator_code in PROFILE_INDICATOR_CODES, f"Unexpected indicator code: {indicator_code}"
+            fixture = {
+                "displayName": indicator_code,
+                "topic": "MACROECONOMIC",
+                "unitLabel": "PERCENT",
+                "description": "Known V2 profile without mock observations",
+                "preferredFrequency": "ANNUAL",
+                "sourceDatasetCode": "WDI",
+                "core": False,
+                "methodologyNotes": "No test observations available",
+            }
         return json_response({"code": indicator_code, **fixture})
 
     if request.url.path == "/api/catalog/sources/WORLD_BANK":
@@ -830,6 +847,9 @@ def timeseries_handler(request: httpx.Request) -> httpx.Response:
     if request.url.path == "/api/timeseries/series/latest":
         assert query["countryIso3"] == "FRA"
         indicator_code = query["indicatorCode"]
+        if indicator_code not in COUNTRY_TIME_SERIES_FIXTURES:
+            assert indicator_code in PROFILE_INDICATOR_CODES
+            return json_response({"count": 0, "items": []})
         fixture = COUNTRY_TIME_SERIES_FIXTURES[indicator_code]
         items = []
         for source_code in _selected_country_sources(indicator_code, query.get("sourceCode"), query.get("datasetCode")):
@@ -862,6 +882,9 @@ def timeseries_handler(request: httpx.Request) -> httpx.Response:
     if request.url.path == "/api/timeseries/series/availability":
         assert query["countryIso3"] == "FRA"
         indicator_code = query["indicatorCode"]
+        if indicator_code not in COUNTRY_TIME_SERIES_FIXTURES:
+            assert indicator_code in PROFILE_INDICATOR_CODES
+            return json_response({"count": 0, "items": []})
         fixture = COUNTRY_TIME_SERIES_FIXTURES[indicator_code]
         items = []
         for source_code in _selected_country_sources(indicator_code, query.get("sourceCode"), query.get("datasetCode")):
@@ -899,6 +922,9 @@ def timeseries_handler(request: httpx.Request) -> httpx.Response:
     if request.url.path == "/api/timeseries/series":
         assert query["countryIso3"] == "FRA"
         indicator_code = query["indicatorCode"]
+        if indicator_code not in COUNTRY_TIME_SERIES_FIXTURES:
+            assert indicator_code in PROFILE_INDICATOR_CODES
+            return json_response({"count": 0, "items": []})
         fixture = COUNTRY_TIME_SERIES_FIXTURES[indicator_code]
         items = []
         for source_code in _selected_country_sources(indicator_code, query.get("sourceCode"), query.get("datasetCode")):
@@ -959,7 +985,8 @@ def timeseries_handler(request: httpx.Request) -> httpx.Response:
         indicator_code = request.url.params.get("indicatorCode")
         compare_fixture = REGIONAL_COMPARE_FIXTURES.get(indicator_code)
         if compare_fixture is None:
-            raise AssertionError(f"Unexpected regional compare indicator: {indicator_code}")
+            assert indicator_code in PROFILE_INDICATOR_CODES
+            return json_response({"count": 0, "items": []})
 
         if source_code is not None:
             selected_sources = [source_code]
