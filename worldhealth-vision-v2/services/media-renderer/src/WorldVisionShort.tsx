@@ -1,6 +1,7 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Img,
   Sequence,
   interpolate,
   spring,
@@ -46,6 +47,28 @@ const PreviewBackdrop: React.FC<{scene: VideoScene}> = ({scene}) => {
 
   return (
     <>
+      {scene.asset_url && (
+        <>
+          <Img
+            src={scene.asset_url}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              filter: "brightness(.52) saturate(.88)",
+              transform: "scale(1.03)",
+            }}
+          />
+          <AbsoluteFill
+            style={{
+              background:
+                "linear-gradient(180deg,rgba(5,5,5,.22) 0%,rgba(5,5,5,.42) 48%,rgba(5,5,5,.86) 100%)",
+            }}
+          />
+        </>
+      )}
       <div
         style={{
           position: "absolute",
@@ -70,7 +93,7 @@ const PreviewBackdrop: React.FC<{scene: VideoScene}> = ({scene}) => {
           background: accents.line,
         }}
       />
-      {scene.visual_kind !== "source_card" && (
+      {!scene.asset_url && scene.visual_kind !== "source_card" && (
         <div
           style={{
             position: "absolute",
@@ -188,7 +211,7 @@ const SceneView: React.FC<{
           {scene.on_screen_text}
         </div>
 
-        {!isSource && scene.asset_query && (
+        {!isSource && !scene.asset_url && scene.asset_query && (
           <div
             style={{
               marginTop: 42,
@@ -203,11 +226,29 @@ const SceneView: React.FC<{
         )}
       </div>
 
+      {scene.asset_url && scene.asset_attribution && (
+        <div
+          style={{
+            position: "absolute",
+            left: safe.left,
+            right: safe.right,
+            bottom: 410,
+            fontSize: 15,
+            lineHeight: 1.35,
+            color: "rgba(255,255,255,.72)",
+            textShadow: "0 2px 10px rgba(0,0,0,.9)",
+          }}
+        >
+          Média : {scene.asset_attribution}
+          {scene.asset_license ? ` · ${scene.asset_license}` : ""}
+        </div>
+      )}
+
       <div
         style={{
           position: "absolute",
           left: safe.left,
-          bottom: 210,
+          bottom: 350,
           display: "flex",
           alignItems: "center",
           gap: 14,
