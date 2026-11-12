@@ -145,6 +145,7 @@ QaCheckName = Literal[
     "source_display",
     "rights",
     "audio",
+    "render_integrity",
 ]
 
 
@@ -176,6 +177,7 @@ class QaState(BaseModel):
     source_display: Literal["pending", "pass", "fail"] = "pending"
     rights: Literal["pending", "pass", "fail"] = "pending"
     audio: Literal["pending", "pass", "fail"] = "pending"
+    render_integrity: Literal["pending", "pass", "fail"] = "pending"
     notes: list[str] = Field(default_factory=list)
 
 
@@ -364,6 +366,22 @@ class ConfirmPublicationRequest(BaseModel):
     note: str | None = None
 
 
+class RenderProbe(BaseModel):
+    format_name: str | None = None
+    size_bytes: int = Field(gt=0)
+    duration_sec: float = Field(gt=0)
+    video_codec: str | None = None
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+    fps: float = Field(gt=0)
+    pixel_format: str | None = None
+    video_bit_rate: int | None = Field(default=None, ge=0)
+    has_audio: bool
+    audio_codec: str | None = None
+    audio_sample_rate_hz: int | None = Field(default=None, gt=0)
+    audio_channels: int | None = Field(default=None, gt=0)
+
+
 class RenderJobRef(BaseModel):
     id: str
     story_id: str
@@ -374,6 +392,7 @@ class RenderJobRef(BaseModel):
     updated_at: datetime
     output_url: str | None = None
     output_sha256: str | None = Field(default=None, min_length=64, max_length=64)
+    output_probe: RenderProbe | None = None
     error: str | None = None
 
 
