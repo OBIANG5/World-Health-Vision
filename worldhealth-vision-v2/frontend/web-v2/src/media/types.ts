@@ -188,6 +188,22 @@ export type RenderProfile =
   | "canonical_newsroom_v1"
   | "tiktok_api_clean_v1";
 
+export type RenderProbe = {
+  format_name?: string | null;
+  size_bytes: number;
+  duration_sec: number;
+  video_codec?: string | null;
+  width: number;
+  height: number;
+  fps: number;
+  pixel_format?: string | null;
+  video_bit_rate?: number | null;
+  has_audio: boolean;
+  audio_codec?: string | null;
+  audio_sample_rate_hz?: number | null;
+  audio_channels?: number | null;
+};
+
 export type RenderJobRef = {
   id: string;
   story_id: string;
@@ -198,6 +214,7 @@ export type RenderJobRef = {
   updated_at: string;
   output_url?: string | null;
   output_sha256?: string | null;
+  output_probe?: RenderProbe | null;
   error?: string | null;
 };
 
@@ -228,7 +245,8 @@ export type QaCheckName =
   | "logo_integrity"
   | "source_display"
   | "rights"
-  | "audio";
+  | "audio"
+  | "render_integrity";
 
 export type QaIssue = {
   check: QaCheckName;
@@ -254,6 +272,7 @@ export type QaState = {
   source_display: "pending" | "pass" | "fail";
   rights: "pending" | "pass" | "fail";
   audio: "pending" | "pass" | "fail";
+  render_integrity: "pending" | "pass" | "fail";
   notes: string[];
 };
 
