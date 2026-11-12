@@ -47,6 +47,36 @@ jobs:
       - name: Run media tests
         run: pytest -q
 
+  media-postgres:
+    name: PostgreSQL newsroom integration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: whv
+          POSTGRES_USER: whv_user
+          POSTGRES_PASSWORD: whv_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U whv_user -d whv"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      WHV_TEST_MEDIA_DATABASE_URL: postgresql://whv_user:whv_password@127.0.0.1:5432/whv
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e '.[dev]'
+      - run: pytest -q tests/test_persistence_postgres.py
+
   media-renderer:
     name: Remotion renderer checks
     runs-on: ubuntu-latest
