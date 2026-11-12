@@ -48,6 +48,52 @@ export interface CountryDetail extends CountrySummary {
   dataQualityTier: number;
 }
 
+/** Country-local research registry. Verified organization is not verified data. */
+export interface CountryLocalSource {
+  countryIso3: string;
+  sourceCode: string;
+  displayName: string;
+  organizationName: string;
+  sourceRole: string;
+  sourceType: "NATIONAL_OFFICIAL" | "LOCAL_MEDIA" | "LOCAL_RESEARCH" | "LOCAL_COMMUNITY";
+  homepageUrl: string;
+  evidenceUrl: string;
+  verificationState: "VERIFIED_ORGANIZATION" | "REVIEW_REQUIRED";
+  lastReviewedOn: string;
+  methodologyCaveat: string;
+  reuseRightsNote: string;
+}
+
+/** A documented release is editorial evidence, NOT a canonical observation. */
+export interface CountryDocumentedRelease {
+  releaseCode: string;
+  countryIso3: string;
+  sourceCode: string;
+  indicatorCode: string;
+  referenceYear: number;
+  valueNumeric: number;
+  unitLabel: string;
+  populationScope: "ALL_RESIDENTS" | "NATIONAL_CITIZENS" | "NOT_APPLICABLE";
+  methodKind: string;
+  publicationStatus: string;
+  releaseDate: string;
+  title: string;
+  primaryEvidenceUrl: string;
+  corroborationUrl: string | null;
+  methodologyCaveat: string;
+  internationalComparisonNote: string;
+  verificationStatus: "DOCUMENTED_NOT_INGESTED" | "INGESTED_VERIFIED";
+  reviewedOn: string;
+}
+
+export interface CountryLocalContext {
+  countryIso3: string;
+  localSourceCount: number;
+  localSources: CountryLocalSource[];
+  documentedReleaseCount: number;
+  documentedReleases: CountryDocumentedRelease[];
+}
+
 export interface SourceAuditEvidence {
   code: string;
   severity: AuditEvidenceSeverity;
