@@ -1,5 +1,7 @@
 import httpx
 
+from analytics_service.national_comparisons import LocalCatalogResponse
+
 from analytics_service.models import (
     CatalogListEnvelope,
     CountrySummary,
@@ -42,6 +44,18 @@ class CatalogClient:
         response = await self._client.get(f"/api/catalog/countries/{country_iso3}")
         response.raise_for_status()
         return CountryDetail.model_validate(response.json())
+
+    async def get_country_local_context(self, country_iso3: str) -> LocalCatalogResponse:
+        """Read verified national institutions and published releases from the catalog.
+
+        A documented release is NOT automatically a canonical observation.
+        The catalog responds 404 when the ISO3 country is unknown.
+        """
+        response = await self._client.get(
+            f"/api/catalog/countries/{country_iso3}/local-context"
+        )
+        response.raise_for_status()
+        return LocalCatalogResponse.model_validate(response.json())
 
     async def list_countries(
         self,
