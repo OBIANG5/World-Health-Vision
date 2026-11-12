@@ -9,6 +9,7 @@ from uuid import uuid4
 from media_service.asset_workflow import (
     recompute_unresolved_scene_orders,
     required_asset_scene_orders,
+    score_asset_for_vertical,
 )
 from media_service.creative import build_video_draft
 from media_service.models import (
@@ -454,10 +455,13 @@ class MediaStoryStore:
             for selection in bundle.selections
             if selection.scene_order != request.scene_order
         ]
+        selection_score, selection_reason = score_asset_for_vertical(asset)
         bundle.selections.append(
             AssetSelection(
                 scene_order=request.scene_order,
                 asset_id=request.asset_id,
+                selection_score=selection_score,
+                selection_reason="Sélection manuelle · " + selection_reason,
             )
         )
         bundle.selections.sort(key=lambda selection: selection.scene_order)
