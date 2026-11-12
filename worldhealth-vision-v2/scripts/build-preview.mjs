@@ -133,4 +133,8 @@ document=document.replace(/<head>/i,
 if(!document.includes("./preview-bootstrap.js") || !document.includes("./preview-sources.js"))
   throw Error("Failed to inject V2 source catalogue and preview bootstrap");
 writeFileSync(html,document);
+// Enrich the SAME original React preview with the versioned V24-V26
+// country-first institutional registry, without a fake API or statistics.
+await import("./build-local-preview.mjs");
+
 console.log("Built original V2 interface with "+countries.length+" country metadata entries and "+registeredSources.length+" real V2 registered sources.");
