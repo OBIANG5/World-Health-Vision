@@ -4,40 +4,39 @@
 
 Implemented on `feature/world-vision-media-studio`:
 
-- canonical V2 `media-service` (FastAPI);
-- provenance-aware story model;
-- explainable 0-100 editorial scoring;
-- explicit editorial workflow and guarded transitions;
-- hook selection;
-- renderer-ready `VideoDraft` (1080x1920, 30 fps, timed scenes);
-- manual story ingestion API;
-- asynchronous Remotion renderer worker with queue and progress;
-- H.264 preview output with browser range streaming;
-- canonical V2 Control Room at `/media-studio`;
-- preview launch, synchronization and in-browser playback;
-- gateway routing and authentication boundaries;
-- Docker Compose wiring and persistent render volume;
-- Prometheus monitoring for the media API;
-- CI for media service, renderer, frontend, gateway and compose;
+- canonical V2 `media-service` (FastAPI), Control Room and gateway integration;
+- PostgreSQL newsroom persistence with JSONB story state and idempotent RADAR scan audit history;
+- Redis-backed distributed RADAR scheduler with lock, heartbeat and five-minute production cadence;
+- live OpenAI web-search RADAR with retrieved-URL grounding, deduplication and explainable editorial scoring;
+- canonical country/local-source enrichment through `catalog-service`, with code fallback only when the catalogue has no entry;
+- claim-level VERIFY reports with supporting/contradicting URLs and a hard approval gate for unverified stories;
+- human editorial approval before production;
+- claim-grounded CREATIVE packages: angle, hooks, narration segments, caption, hashtags and scene plan;
+- rights-aware ASSETS discovery through Wikimedia Commons with author, licence, attribution and explicit review states;
+- automatic blocking of final drafts when a real-media scene has unresolved rights;
+- renderer-ready `VideoDraft` (1080x1920, 30 fps, timed scenes) with selected licensed imagery;
+- OpenAI Realtime voice-over generation using PCM 24 kHz, WAV persistence, transcript comparison, duration QA and visible AI disclosure;
+- asynchronous Remotion renderer with queue, progress, H.264 output, real imagery, attribution, narration and browser range streaming;
+- final explainable QA report for facts, spelling, safe-zone preflight, logo/design-system integrity, source display, rights and audio;
+- canonical Publication Package for TikTok + WhatsApp text/video/source metadata with SHA-256 manifest;
+- proof-based publication receipts: a story cannot become `published` until all requested channels have real receipt evidence;
+- Prometheus monitoring and six-job CI covering media service, PostgreSQL integration, renderer, frontend, gateway and Compose;
 - draft pull request #5 used as a non-merge validation surface.
 
 Deliberately not implemented yet:
 
-- continuous RADAR news discovery;
-- country-by-country source registry at production scale;
-- AI-assisted hook/script generation;
-- real asset acquisition and rights workflow;
-- voice synthesis, word timing, music and final audio normalization;
-- automated visual QA against TikTok safe zones;
-- persistence in PostgreSQL/TimescaleDB;
-- official TikTok publishing;
-- WhatsApp Channel publishing automation.
+- official authenticated TikTok publishing connector;
+- official WhatsApp Channel publishing connector;
+- broader production-scale country source packs beyond the current canonical catalogue coverage;
+- automated acquisition/licensing of arbitrary news video footage (ASSETS currently automates rights-aware Wikimedia image discovery);
+- music beds and final broadcast-style loudness normalization;
+- pixel-level computer-vision QA of rendered frames (current safe-zone/logo checks are deterministic structural preflight plus fixed Remotion contracts);
+- autonomous publishing without human approval or explicit channel allow-lists.
 
-The current Remotion composition is a **structural preview**, not a final newsroom template:
-unresolved real-media slots are explicitly labelled instead of being fabricated.
+The Remotion composition is now a **functional newsroom renderer**, not only a placeholder:
+licensed selected images, attribution and validated AI narration can be embedded in the final preview. Unsupported or unresolved media are never silently fabricated.
 
 ---
-
 
 ## Goal
 
@@ -58,7 +57,7 @@ This module is isolated from the core World-Vision product while remaining integ
 
 ## Pipeline
 
-RADAR -> VERIFY -> SCORE -> NEWSROOM -> CREATIVE -> ASSETS -> STUDIO -> QA -> APPROVAL -> PUBLISH
+RADAR -> VERIFY -> SCORE -> NEWSROOM -> APPROVAL -> CREATIVE -> ASSETS -> STUDIO -> AUDIO -> PREVIEW -> QA -> PACKAGE -> PUBLISH
 
 ### RADAR
 Continuously ingest:
@@ -134,11 +133,15 @@ Collect:
 - licence/source metadata for every asset
 
 ### STUDIO
-Initial recommendation:
-- Remotion as primary renderer
-- FFmpeg for encoding, audio normalization and media preparation
-- reusable World-Vision scene components
-- 1080x1920 / 30 fps default
+Implemented foundation:
+- Remotion as the primary code-based renderer;
+- reusable World-Vision scene components;
+- 1080x1920 / 30 fps default;
+- selected licensed imagery with attribution;
+- validated AI narration mixed into the MP4;
+- H.264 output and browser range streaming.
+
+FFmpeg remains the target for future loudness normalization and richer media preparation.
 
 ### QA
 Automated checks:
@@ -184,11 +187,12 @@ Build one complete real-news workflow before full automation:
 
 - frontend/web-v2/src/media/ : editorial control room UI
 - services/media-service/ : newsroom state, provenance, scoring and approvals
-- services/ingestion-service/ : future source connectors and continuous discovery
-- future media-renderer worker : Remotion/FFmpeg rendering
-- future publisher adapter : official platform integrations, initially disabled/manual
-- data/media/ : future schemas, source registry and country source packs
-- infra/ : queues, scheduler, object storage and workers
+- services/media-service/ : newsroom state, RADAR, VERIFY, scoring, CREATIVE, ASSETS, AUDIO, QA, publication manifests and approvals
+- services/media-renderer/ : Remotion worker and media/audio serving
+- services/catalog-service/ : canonical country/local-source catalogue
+- services/ingestion-service/ : structured-data ingestion and future additional source connectors
+- future publisher adapters : official authenticated TikTok / WhatsApp integrations
+- infra/ : PostgreSQL, Redis scheduler/locks, persistent media volumes, monitoring and workers
 
 ## Automation strategy
 
@@ -203,16 +207,20 @@ Use:
 
 ## Initial publication policy
 
-Phase 1: manual publishing after final approval.
-Phase 2: one-click publishing where official APIs allow.
-Phase 3: optional auto-publishing only for explicitly whitelisted formats and confidence thresholds.
+Phase 1 (current): generate a canonical, QA-approved publication package and publish externally only after human approval; record proof receipts per channel.
+Phase 2: one-click publishing through official authenticated platform APIs, with the same package hash and receipt model.
+Phase 3: optional auto-publishing only for explicitly whitelisted formats, channels and confidence/QA thresholds.
 
 ## Success criteria for Phase 1
 
-- one story can move from source to approved preview
-- all claims retain source provenance
-- score is explainable
-- video output is 1080x1920
-- TikTok-safe composition
-- preview can be approved/rejected from the dashboard
-- corrections persist as reusable rules
+- one story can move from live discovery to `publish_ready` through guarded transitions;
+- all factual claims retain source evidence;
+- score is explainable;
+- real-media rights and attribution are retained;
+- AI narration is transcript-checked and disclosed;
+- video output is 1080x1920 / 30 fps;
+- TikTok-safe structural preflight is enforced;
+- final QA produces an explainable report;
+- publication text/video/sources are frozen into a SHA-256 manifest;
+- `published` requires proof receipts for every target channel;
+- the full branch remains green across the six CI validation jobs.
