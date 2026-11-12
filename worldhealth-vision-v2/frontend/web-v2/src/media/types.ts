@@ -348,6 +348,9 @@ export type PublicationPackage = {
   story_id: string;
   target_channels: PublicationChannel[];
   video_url: string;
+  /** The actual H.264 MP4 file digest, not the manifest digest. */
+  video_sha256?: string | null;
+  video_render_profile?: RenderProfile;
   title: string;
   caption: string;
   hashtags: string[];
