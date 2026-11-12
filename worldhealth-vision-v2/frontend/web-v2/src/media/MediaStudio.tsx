@@ -1473,6 +1473,26 @@ function StoryInspector({
                   ? `audio ${story.render_job.output_probe.audio_codec ?? "présent"}`
                   : "sans audio"}
               </span>
+              {story.render_job.output_probe.audio_sample_rate_hz && (
+                <span>
+                  {(story.render_job.output_probe.audio_sample_rate_hz / 1000).toFixed(0)} kHz
+                </span>
+              )}
+              {story.render_job.output_probe.integrated_lufs != null && (
+                <span>
+                  {story.render_job.output_probe.integrated_lufs.toFixed(1)} LUFS
+                </span>
+              )}
+              {story.render_job.output_probe.true_peak_dbfs != null && (
+                <span>
+                  TP {story.render_job.output_probe.true_peak_dbfs.toFixed(1)} dB
+                </span>
+              )}
+              {story.render_job.output_probe.loudness_range_lu != null && (
+                <span>
+                  LRA {story.render_job.output_probe.loudness_range_lu.toFixed(1)} LU
+                </span>
+              )}
               <span>
                 {(story.render_job.output_probe.size_bytes / 1_000_000).toFixed(2)} Mo
               </span>
