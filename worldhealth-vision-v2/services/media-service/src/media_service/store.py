@@ -626,6 +626,7 @@ class MediaStoryStore:
                 "source_display": story.qa.source_display,
                 "rights": story.qa.rights,
                 "audio": story.qa.audio,
+                "render_integrity": story.qa.render_integrity,
             }
             pending = [name for name, value in checks.items() if value != "pass"]
             if pending:
