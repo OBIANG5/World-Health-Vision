@@ -149,7 +149,7 @@ export default function MediaStudio() {
 
   async function decision(
     story: MediaStory,
-    action: "approve" | "reject" | "request_changes" | "mark_publish_ready",
+    action: "approve" | "reject" | "request_changes" | "approve_preview" | "mark_publish_ready",
   ) {
     setActionBusy(true);
     setError(null);
@@ -204,6 +204,45 @@ export default function MediaStudio() {
       if (!response.ok) {
         const detail = await response.text();
         throw new Error(`Draft impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function launchRender(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_ROOT}/stories/${story.id}/render-preview`, {
+        method: "POST",
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(`Rendu impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function syncRender(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/render-preview/sync`,
+        { method: "POST" },
+      );
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(`Synchronisation impossible (HTTP ${response.status}) : ${detail}`);
       }
       await load();
     } catch (caught) {
@@ -326,6 +365,8 @@ export default function MediaStudio() {
               onDecision={decision}
               onSelectHook={selectHook}
               onPrepareDraft={prepareDraft}
+              onLaunchRender={launchRender}
+              onSyncRender={syncRender}
             />
           ) : (
             <div className="wv-media-empty">Sélectionne une actualité.</div>
@@ -367,15 +408,19 @@ function StoryInspector({
   onDecision,
   onSelectHook,
   onPrepareDraft,
+  onLaunchRender,
+  onSyncRender,
 }: {
   story: MediaStory;
   busy: boolean;
   onDecision: (
     story: MediaStory,
-    action: "approve" | "reject" | "request_changes" | "mark_publish_ready",
+    action: "approve" | "reject" | "request_changes" | "approve_preview" | "mark_publish_ready",
   ) => Promise<void>;
   onSelectHook: (story: MediaStory, hookId: string) => Promise<void>;
   onPrepareDraft: (story: MediaStory) => Promise<void>;
+  onLaunchRender: (story: MediaStory) => Promise<void>;
+  onSyncRender: (story: MediaStory) => Promise<void>;
 }) {
   const scoreEntries = Object.entries(story.score.factors) as [
     keyof EditorialScoreFactors,
@@ -521,6 +566,34 @@ function StoryInspector({
         </div>
       </section>
 
+      {story.render_job && (
+        <section className="wv-media-panel">
+          <div className="wv-media-panel-title">
+            <span>Aperçu Remotion</span>
+            <small>{story.render_job.status} · {Math.round(story.render_job.progress * 100)}%</small>
+          </div>
+
+          <div className="wv-media-render-progress">
+            <div style={{ width: `${Math.round(story.render_job.progress * 100)}%` }} />
+          </div>
+
+          {story.render_job.error && (
+            <div className="wv-media-render-error">{story.render_job.error}</div>
+          )}
+
+          {story.render_job.output_url && (
+            <div className="wv-media-preview-frame">
+              <video
+                controls
+                playsInline
+                preload="metadata"
+                src={story.render_job.output_url}
+              />
+            </div>
+          )}
+        </section>
+      )}
+
       <section className="wv-media-panel">
         <div className="wv-media-panel-title">
           <span>Contrôle qualité</span>
@@ -613,13 +686,15 @@ function StoryInspector({
           </>
         )}
 
-        {["scripting", "assets", "rendering"].includes(story.status) && (
+        {story.status === "scripting" && (
           <>
-            {story.status === "scripting" && story.video_draft && (
-              <div className="wv-media-progress-note">
-                Draft structuré. Prochaine brique : sélection des médias et rendu.
-              </div>
-            )}
+            <button
+              className="wv-media-action primary"
+              disabled={busy || !story.video_draft}
+              onClick={() => void onLaunchRender(story)}
+            >
+              ▶ Lancer l’aperçu Remotion
+            </button>
             <button
               className="wv-media-action secondary"
               disabled={busy}
@@ -637,11 +712,66 @@ function StoryInspector({
           </>
         )}
 
-        {["qa", "preview_ready"].includes(story.status) && (
+        {story.status === "rendering" && (
+          <>
+            <div className="wv-media-progress-note">
+              Rendu en cours : {Math.round((story.render_job?.progress ?? 0) * 100)}%.
+            </div>
+            <button
+              className="wv-media-action primary"
+              disabled={busy}
+              onClick={() => void onSyncRender(story)}
+            >
+              ↻ Actualiser le rendu
+            </button>
+            <button
+              className="wv-media-action secondary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "request_changes")}
+            >
+              Arrêter et corriger
+            </button>
+          </>
+        )}
+
+        {story.status === "assets" && (
+          <div className="wv-media-progress-note">
+            Sélection média en cours. Cette étape sera connectée au moteur d’assets au prochain incrément.
+          </div>
+        )}
+
+        {story.status === "preview_ready" && (
           <>
             <button
               className="wv-media-action primary"
               disabled={busy}
+              onClick={() => void onDecision(story, "approve_preview")}
+            >
+              ✓ Valider le montage → QA
+            </button>
+            <button
+              className="wv-media-action secondary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "request_changes")}
+            >
+              Demander une nouvelle version
+            </button>
+          </>
+        )}
+
+        {story.status === "qa" && (
+          <>
+            <div className="wv-media-progress-note">
+              Montage validé. La publication reste bloquée tant que tous les contrôles QA ne sont pas au vert.
+            </div>
+            <button
+              className="wv-media-action primary"
+              disabled={
+                busy ||
+                Object.values(story.qa)
+                  .filter((value) => typeof value === "string")
+                  .some((value) => value !== "pass")
+              }
               onClick={() => void onDecision(story, "mark_publish_ready")}
             >
               ✓ Marquer prêt à publier
