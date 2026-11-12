@@ -231,6 +231,66 @@ def evaluate_structural_qa(
             "The final draft does not visibly expose at least one real story source.",
         )
 
+    # Final render integrity is measured from the encoded MP4 with ffprobe.
+    render_job = story.render_job
+    probe = render_job.output_probe if render_job is not None else None
+    if (
+        render_job is None
+        or render_job.status != "completed"
+        or not render_job.output_url
+        or not render_job.output_sha256
+        or probe is None
+    ):
+        state.render_integrity = "fail"
+        _append_issue(
+            issues,
+            "render_integrity",
+            "The final MP4 has not been completed, hashed and ffprobe-validated.",
+        )
+    else:
+        duration_tolerance = max(0.75, 2 / max(draft.fps, 1))
+        format_ok = (
+            probe.format_name is None
+            or "mp4" in probe.format_name.casefold()
+            or "mov" in probe.format_name.casefold()
+        )
+        render_checks = {
+            "container": format_ok,
+            "codec": (probe.video_codec or "").casefold() == "h264",
+            "width": probe.width == draft.width,
+            "height": probe.height == draft.height,
+            "fps": abs(probe.fps - draft.fps) <= 0.05,
+            "duration": abs(probe.duration_sec - draft.duration_sec)
+            <= duration_tolerance,
+            "size": probe.size_bytes > 0,
+        }
+        failed_render_checks = [
+            name for name, passed in render_checks.items() if not passed
+        ]
+        if failed_render_checks:
+            state.render_integrity = "fail"
+            _append_issue(
+                issues,
+                "render_integrity",
+                "Encoded MP4 failed technical checks: "
+                + ", ".join(failed_render_checks)
+                + (
+                    f" (measured {probe.width}x{probe.height}, "
+                    f"{probe.fps:.3f} fps, {probe.duration_sec:.3f}s, "
+                    f"{probe.video_codec or 'unknown codec'})."
+                ),
+            )
+        else:
+            state.render_integrity = "pass"
+
+        if story.voiceover is not None and not probe.has_audio:
+            state.audio = "fail"
+            _append_issue(
+                issues,
+                "audio",
+                "The approved voiceover exists, but the encoded MP4 has no audio stream.",
+            )
+
     return state, issues
 
 
@@ -417,6 +477,7 @@ async def run_publication_qa(
         state.source_display,
         state.rights,
         state.audio,
+        state.render_integrity,
     ]
     previous_version = (
         story.qa_report.version
