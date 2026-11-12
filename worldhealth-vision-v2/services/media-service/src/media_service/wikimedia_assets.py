@@ -14,6 +14,13 @@ from media_service.settings import Settings, get_settings
 
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 
+SUPPORTED_RENDER_VIDEO_MIME = {
+    "video/webm",
+    "video/mp4",
+    "video/quicktime",
+    "video/x-m4v",
+}
+
 
 class AssetProviderError(RuntimeError):
     pass
@@ -119,8 +126,8 @@ def parse_commons_search_response(
         )
         if requested_kind == "video":
             is_requested_media = (
-                mime_value.startswith("video/")
-                or media_type_value == "VIDEO"
+                mime_value.casefold() in SUPPORTED_RENDER_VIDEO_MIME
+                and media_type_value == "VIDEO"
             )
         else:
             is_requested_media = mime_value.startswith("image/")
