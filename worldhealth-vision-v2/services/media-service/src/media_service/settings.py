@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     verification_timeout_seconds: float = 120.0
     creative_model: str = "gpt-6-astra"
     creative_timeout_seconds: float = 60.0
+    audio_model: str = "gpt-realtime-2.1-mini"
+    audio_voice: str = "marin"
+    audio_timeout_seconds: float = 90.0
     redis_url: str = "redis://localhost:6379/0"
     internal_api_base_url: str = "http://localhost:8000"
     catalog_base_url: str = "http://localhost:8082"
