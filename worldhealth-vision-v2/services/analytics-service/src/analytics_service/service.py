@@ -855,7 +855,10 @@ class AnalyticsService:
                     period_granularity=period_granularity,
                     include_missing=include_missing,
                     sort_direction="DESC",
-                    limit=series_limit * 4,
+                    # Search enough of the bounded historical window to
+                    # recover an older *common* year across publishers.
+                    # Avoid the previous 4x-preview limit that often omitted it.
+                    limit=min(600, max(96, series_limit * 10)),
                 )
             ),
         )
@@ -873,20 +876,37 @@ class AnalyticsService:
             availability=availability,
             source_contexts=source_contexts,
         )
-        divergence = DivergenceSummary.from_latest_by_source(
-            latest_by_source,
+        divergence, aligned_values = DivergenceSummary.from_historical_observations(
+            items=series,
+            source_count=len({item.sourceCode for item in latest_by_source}),
             primary_source_code=trend.sourceCode,
             primary_source_display_name=trend.sourceDisplayName,
-            latest_comparable_period_label=trend.latestPeriodLabel,
             consistent_relative_threshold=self._settings.divergence_consistent_relative_threshold,
             mixed_relative_threshold=self._settings.divergence_mixed_relative_threshold,
         )
-        freshness = self._build_freshness_summary(source_perspectives)
-        confidence = self._build_country_confidence_summary(source_perspectives, freshness, divergence)
+        # The latest value shown for each source may refer to a different
+        # year than the period we can actually cross-check. Do NOT build
+        # confidence or audit evidence from those unrelated latest values.
+        context_by_source = {
+            (item.sourceCode, item.datasetCode): item for item in source_perspectives
+        }
+        comparable_contexts = [
+            context_by_source[(item.sourceCode, item.datasetCode)].model_copy(update={
+                "periodLabel": item.periodLabel,
+                "numericValue": item.numericValue,
+                "valueStatus": item.valueStatus,
+                "sourcePublishedAt": item.sourcePublishedAt,
+                "fetchedAtUtc": item.fetchedAtUtc,
+            })
+            for item in aligned_values
+            if (item.sourceCode, item.datasetCode) in context_by_source
+        ]
+        freshness = self._build_freshness_summary(comparable_contexts)
+        confidence = self._build_country_confidence_summary(comparable_contexts, freshness, divergence)
         source_audit = self._build_country_source_audit(
             country=country,
             indicator=indicator,
-            source_perspectives=source_perspectives,
+            source_perspectives=comparable_contexts,
             freshness=freshness,
             divergence=divergence,
             confidence=confidence,
@@ -904,6 +924,7 @@ class AnalyticsService:
             latestBySource=latest_by_source,
             sourcePerspectives=source_perspectives,
             selectedSeriesPreview=selected_series,
+            alignedComparisonValues=aligned_values,
         )
 
     async def _build_region_indicator_overview(
