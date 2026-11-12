@@ -48,6 +48,8 @@ const L = {
     notVerified: "Données non vérifiables",
     noMatch: "Aucune source ne correspond à cette recherche.",
     localCoverageTitle: "Couverture des sources nationales — état réel",
+    localCoverageTitlePreview: "Sources nationales — extrait versionné du catalogue V2",
+    localCoverageSnapshot: "APERÇU STATIQUE · Ces chiffres sont calculés à partir des migrations SQL V24–V26 du projet (12 novembre 2026). Ce n'est ni une interrogation en direct ni une preuve que des données économiques sont collectées.",
     localCoverageLoading: "Vérification du registre des pays et des sources nationales…",
     localCoverageUnknown: "Couverture nationale non vérifiable : le catalogue connecté n'est pas disponible.",
     localCoveragePreview: "En aperçu statique, aucune couverture nationale n'est confirmée.",
@@ -93,6 +95,8 @@ const L = {
     notVerified: "Data not verifiable",
     noMatch: "No sources match this search.",
     localCoverageTitle: "National source coverage — real status",
+    localCoverageTitlePreview: "National sources — versioned V2 catalog snapshot",
+    localCoverageSnapshot: "STATIC PREVIEW · These counts are derived from project SQL migrations V24–V26 (November 12, 2026). This is not a live backend query or proof of economic data collection.",
     localCoverageLoading: "Checking country and national-source research coverage…",
     localCoverageUnknown: "Country source coverage cannot be verified: the connected catalog is unavailable.",
     localCoveragePreview: "Static preview cannot confirm country source research coverage.",
@@ -183,9 +187,7 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
   const [error, setError] = useState<string | null>(null);
   const [coverage, setCoverage] = useState<Map<string, SourceDataCoverage> | null>(null);
   const [nationalCoverage, setNationalCoverage] = useState<CountryLocalCoverageOverview | null>(null);
-  const [nationalCoverageState, setNationalCoverageState] = useState<"loading" | "available" | "unavailable">(
-    isPreview ? "unavailable" : "loading",
-  );
+  const [nationalCoverageState, setNationalCoverageState] = useState<"loading" | "available" | "unavailable">("loading");
   const [coverageState, setCoverageState] = useState<"loading" | "available" | "unavailable">(
     isPreview ? "unavailable" : "loading",
   );
@@ -215,7 +217,8 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
   }, [isPreview]);
 
   useEffect(() => {
-    if (isPreview) return;
+    // In static mode fetch() is intentionally served by the audited,
+    // migration-derived versioned snapshot. Never label it as live evidence.
     let mounted = true;
     fetchCountrySourceCoverage()
       .then((data) => {
@@ -301,7 +304,7 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
                 )}
               </p>
               <details className="whv-national-coverage-overview">
-                <summary>{l.localCoverageTitle}</summary>
+                <summary>{isPreview ? l.localCoverageTitlePreview : l.localCoverageTitle}</summary>
                 <div className="whv-national-coverage-overview-body" role="status">
                   {nationalCoverageState === "loading" && <p>{l.localCoverageLoading}</p>}
                   {nationalCoverageState === "unavailable" && (
@@ -309,6 +312,7 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
                   )}
                   {nationalCoverageState === "available" && nationalCoverage && (
                     <>
+                      {isPreview && <p className="whv-national-coverage-caution"><strong>{l.localCoverageSnapshot}</strong></p>}
                       <p>
                         <strong>{nationalCoverage.totalCountryCount}</strong>{" "}
                         {lang === "fr" ? "pays et territoires actifs du registre" : "active countries and territories in the registry"}.
