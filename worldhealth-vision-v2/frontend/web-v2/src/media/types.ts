@@ -218,6 +218,9 @@ export type RenderJobRef = {
   output_url?: string | null;
   output_sha256?: string | null;
   output_probe?: RenderProbe | null;
+  attempts?: number;
+  max_attempts?: number;
+  recovered_at?: string | null;
   error?: string | null;
 };
 
