@@ -1,0 +1,140 @@
+name: WorldHealth Vision V2 - stable phone preview
+
+on:
+  push:
+    branches:
+      - v2
+  workflow_dispatch:
+
+# This workflow publishes ONLY the existing V2 frontend, never the V0/V1 trees.
+# The preview remains a transparent static demo; it is not a live data backend.
+permissions:
+  contents: write
+
+concurrency:
+  group: worldhealth-v2-stable-preview
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout canonical V2 sources
+        uses: actions/checkout@v4
+        with:
+          ref: v2
+          path: source
+          persist-credentials: true
+
+      - name: Checkout existing phone preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: preview
+          persist-credentials: true
+
+      - name: Set up supported Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/worldhealth-vision-v2/frontend/web-v2/package-lock.json
+
+      - name: Install V2 dependencies from lockfile
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck and build REAL V2 in honest static-preview mode
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        env:
+          VITE_WHV_PREVIEW_MODE: 'true'
+        run: |
+          npx tsc -b --pretty false
+          npx vite build --base=./
+
+      - name: Update compiled application without losing evidence snapshots
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import shutil
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          source = Path("source/worldhealth-vision-v2/frontend/web-v2/dist")
+          preview = Path("preview")
+          required = (
+              "preview-countries.js",
+              "preview-sources.js",
+              "preview-local-catalog.js",
+              "preview-bootstrap.js",
+          )
+          for filename in required:
+              if not (preview / filename).is_file():
+                  raise SystemExit(f"Refusing deployment: missing historical preview evidence {filename}")
+          if not (source / "index.html").is_file() or not (source / "assets").is_dir():
+              raise SystemExit("Refusing deployment: V2 compilation output absent")
+
+          for item in source.iterdir():
+              if item.name == "index.html":
+                  continue
+              destination = preview / item.name
+              if item.is_dir():
+                  if destination.exists():
+                      shutil.rmtree(destination)
+                  shutil.copytree(item, destination)
+              else:
+                  shutil.copy2(item, destination)
+
+          html = (source / "index.html").read_text(encoding="utf-8")
+          if "<head>" not in html:
+              raise SystemExit("Refusing deployment: unrecognized Vite document")
+          bootstrap = (
+              '<meta name="robots" content="noindex,nofollow">\n'
+              '<script src="./preview-countries.js"></script>\n'
+              '<script src="./preview-sources.js"></script>\n'
+              '<script src="./preview-local-catalog.js"></script>\n'
+              '<script src="./preview-bootstrap.js"></script>\n'
+          )
+          html = html.replace("<head>", "<head>\n" + bootstrap, 1)
+          if 'src="/assets/' in html or 'href="/assets/' in html:
+              raise SystemExit("Refusing deployment: absolute asset links would break branch preview")
+          if not all(f'./{filename}' in html for filename in required):
+              raise SystemExit("Refusing deployment: static evidence bootstrap not loaded")
+          (preview / "index.html").write_text(html, encoding="utf-8")
+          metadata = {
+              "sourceBranch": "v2",
+              "sourceCommit": os.environ["SOURCE_COMMIT"],
+              "builtAtUtc": datetime.now(timezone.utc).isoformat(),
+              "previewMode": "STATIC_NO_PERSISTENT_BACKEND",
+              "catalogSnapshots": "Existing versioned preview snapshots retained; not real-time ingestion",
+          }
+          (preview / "preview-build.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print("Built source:", metadata["sourceCommit"])
+          print("Preview published from V2, with original evidence snapshots preserved")
+          PY
+
+      - name: Commit and update SAME existing preview branch URL
+        working-directory: preview
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Preview unchanged"
+          else
+            git commit -m "preview(v2): automatically sync tested frontend from ${GITHUB_SHA::12}"
+            git push origin HEAD:whv-v2-browser-preview
+          fi
+
+      - name: Preview branch URL (short-lived GitHack cache)
+        run: |
+          echo "Stable link: https://raw.githack.com/OBIANG5/World-Health-Vision/whv-v2-browser-preview/index.html"
+          echo "This link does not change when v2 receives new commits."
+          echo "IMPORTANT: static preview only, not a persistent backend."
