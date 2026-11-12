@@ -55,13 +55,18 @@ export interface CountryLocalSource {
   displayName: string;
   organizationName: string;
   sourceRole: string;
-  sourceType: "NATIONAL_OFFICIAL" | "LOCAL_MEDIA" | "LOCAL_RESEARCH" | "LOCAL_COMMUNITY";
+  sourceType: "NATIONAL_OFFICIAL" | "REGIONAL_OFFICIAL" | "LOCAL_MEDIA" | "LOCAL_RESEARCH" | "LOCAL_COMMUNITY";
   homepageUrl: string;
   evidenceUrl: string;
   verificationState: "VERIFIED_ORGANIZATION" | "REVIEW_REQUIRED";
   lastReviewedOn: string;
   methodologyCaveat: string;
   reuseRightsNote: string;
+  /** Jurisdiction is distinct from verification/connection status. */
+  geographicScopeKind?: "NATIONAL" | "SUBNATIONAL" | "REGIONAL_SHARED";
+  connectionState?: "CATALOG_ONLY" | "CONNECTOR_IN_REVIEW" | "INGESTION_VERIFIED";
+  reviewIntervalDays?: number;
+  reviewDueOn?: string;
 }
 
 /** A documented release is editorial evidence, NOT a canonical observation. */
@@ -121,6 +126,38 @@ export interface CountryNationalComparisons {
   countryIso3: string;
   comparisonCount: number;
   comparisons: NationalReleaseComparison[];
+}
+
+/** Source directory coverage includes all active nonaggregate countries with zeros. */
+export interface CountryLocalCoverageItem {
+  countryIso3: string;
+  displayName: string;
+  regionCode: string | null;
+  listedSourceCount: number;
+  nationalOfficialCount: number;
+  regionalOfficialCount: number;
+  localMediaCount: number;
+  localResearchCount: number;
+  connectedSourceCount: number;
+  overdueReviewCount: number;
+  lastReviewedOn: string | null;
+  researchStatus: "NOT_RESEARCHED" | "REGIONAL_REFERENCE_ONLY" | "PARTIAL_CATALOGUED";
+}
+
+export interface CountryLocalCoverageOverview {
+  totalCountryCount: number;
+  countriesWithCountrySpecificSources: number;
+  countriesNotResearchedLocally: number;
+  countriesWithRegionalReferencesOnly: number;
+  cataloguedSourceLinks: number;
+  verifiedIngestionLinks: number;
+  overdueReviewLinks: number;
+  matchingCountryCount: number;
+  offset: number;
+  limit: number;
+  returnedCount: number;
+  coverageInterpretation: string;
+  items: CountryLocalCoverageItem[];
 }
 
 export interface CountryLocalContext {
