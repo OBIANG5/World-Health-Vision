@@ -134,6 +134,13 @@ def parse_commons_search_response(
         if not is_requested_media:
             continue
 
+        width_raw = info.get("width")
+        height_raw = info.get("height")
+        size_raw = info.get("size")
+        width = width_raw if isinstance(width_raw, int) and width_raw > 0 else None
+        height = height_raw if isinstance(height_raw, int) and height_raw > 0 else None
+        size_bytes = size_raw if isinstance(size_raw, int) and size_raw > 0 else None
+
         metadata = info.get("extmetadata")
         if not isinstance(metadata, dict):
             metadata = {}
@@ -172,6 +179,9 @@ def parse_commons_search_response(
                 media_url=media_url,
                 thumbnail_url=thumbnail_url,
                 mime_type=mime if isinstance(mime, str) else None,
+                width=width,
+                height=height,
+                size_bytes=size_bytes,
                 author=author,
                 license_name=license_name,
                 license_url=license_url,
@@ -203,7 +213,9 @@ class WikimediaCommonsClient:
 
         search_query = cleaned_query
         if requested_kind == "video":
-            search_query = f"{cleaned_query} filetype:video"
+            search_query = (
+                f"{cleaned_query} filetype:video filesize:<102400"
+            )
 
         params = {
             "action": "query",
@@ -212,9 +224,17 @@ class WikimediaCommonsClient:
             "generator": "search",
             "gsrsearch": search_query,
             "gsrnamespace": "6",
-            "gsrlimit": str(max(1, min(limit, 8))),
+            "gsrlimit": str(
+                max(
+                    1,
+                    min(
+                        limit * 2 if requested_kind == "video" else limit,
+                        16 if requested_kind == "video" else 8,
+                    ),
+                )
+            ),
             "prop": "imageinfo",
-            "iiprop": "url|mime|mediatype|extmetadata",
+            "iiprop": "url|mime|mediatype|size|extmetadata",
             "iiurlwidth": "1080",
             "iiextmetadatalanguage": "fr",
             "iiextmetadatafilter": (
@@ -246,7 +266,7 @@ class WikimediaCommonsClient:
             response.json(),
             query=cleaned_query,
             requested_kind=requested_kind,
-        )
+        )[:limit]
 
     async def search_images(
         self,
