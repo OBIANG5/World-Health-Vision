@@ -1,5 +1,6 @@
 import {createServer} from "node:http";
 import {createReadStream, existsSync, mkdirSync, statSync} from "node:fs";
+import {unlink} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import path from "node:path";
 import {createHash, randomUUID} from "node:crypto";
@@ -19,6 +20,12 @@ const maxConcurrency = Math.max(
   1,
   Number.parseInt(process.env.WHV_RENDER_CONCURRENCY || "1", 10) || 1,
 );
+
+const loudnessTarget = {
+  integratedLufs: -16,
+  truePeakDbfs: -1.5,
+  loudnessRangeLu: 7,
+};
 const maxAttempts = Math.max(
   1,
   Number.parseInt(process.env.WHV_RENDER_JOB_MAX_ATTEMPTS || "3", 10) || 3,
@@ -105,6 +112,107 @@ const sha256File = async (filePath) =>
     stream.on("end", () => resolve(hash.digest("hex")));
   });
 
+const finiteNumber = (value) => {
+  const parsed = Number.parseFloat(String(value ?? ""));
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const parseLoudnormReport = (stderr) => {
+  const start = stderr.lastIndexOf("{");
+  const end = stderr.lastIndexOf("}");
+  if (start < 0 || end <= start) {
+    throw new Error("FFmpeg loudnorm did not return JSON measurements.");
+  }
+  const raw = JSON.parse(stderr.slice(start, end + 1));
+  return {
+    integrated_lufs: finiteNumber(raw.input_i),
+    true_peak_dbfs: finiteNumber(raw.input_tp),
+    loudness_range_lu: finiteNumber(raw.input_lra),
+    threshold: finiteNumber(raw.input_thresh),
+    target_offset: finiteNumber(raw.target_offset),
+  };
+};
+
+const analyzeLoudness = async (filePath) => {
+  const filter =
+    `loudnorm=I=${loudnessTarget.integratedLufs}` +
+    `:TP=${loudnessTarget.truePeakDbfs}` +
+    `:LRA=${loudnessTarget.loudnessRangeLu}:print_format=json`;
+  const {stderr} = await execFileAsync(
+    "ffmpeg",
+    [
+      "-hide_banner",
+      "-nostats",
+      "-i",
+      filePath,
+      "-map",
+      "0:a:0",
+      "-af",
+      filter,
+      "-f",
+      "null",
+      "-",
+    ],
+    {maxBuffer: 8_000_000},
+  );
+  return parseLoudnormReport(stderr);
+};
+
+const normalizeNarration = async (inputPath, outputPath) => {
+  const measured = await analyzeLoudness(inputPath);
+  const required = [
+    measured.integrated_lufs,
+    measured.true_peak_dbfs,
+    measured.loudness_range_lu,
+    measured.threshold,
+    measured.target_offset,
+  ];
+  if (required.some((value) => value === null)) {
+    throw new Error("Narration loudness could not be measured reliably.");
+  }
+
+  const filter =
+    `loudnorm=I=${loudnessTarget.integratedLufs}` +
+    `:TP=${loudnessTarget.truePeakDbfs}` +
+    `:LRA=${loudnessTarget.loudnessRangeLu}` +
+    `:measured_I=${measured.integrated_lufs}` +
+    `:measured_TP=${measured.true_peak_dbfs}` +
+    `:measured_LRA=${measured.loudness_range_lu}` +
+    `:measured_thresh=${measured.threshold}` +
+    `:offset=${measured.target_offset}` +
+    ":linear=true:print_format=summary";
+
+  await execFileAsync(
+    "ffmpeg",
+    [
+      "-y",
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-i",
+      inputPath,
+      "-map",
+      "0:v:0",
+      "-map",
+      "0:a:0",
+      "-c:v",
+      "copy",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "160k",
+      "-ar",
+      "48000",
+      "-af",
+      filter,
+      "-movflags",
+      "+faststart",
+      outputPath,
+    ],
+    {maxBuffer: 8_000_000},
+  );
+};
+
 const parseRate = (value) => {
   if (!value || typeof value !== "string") return null;
   const [numeratorRaw, denominatorRaw = "1"] = value.split("/");
@@ -160,6 +268,15 @@ const probeMedia = async (filePath) => {
   const sampleRateRaw = Number.parseInt(audio?.sample_rate ?? "", 10);
   const channelsRaw = Number.parseInt(audio?.channels ?? "", 10);
 
+  let loudness = null;
+  if (audio) {
+    try {
+      loudness = await analyzeLoudness(filePath);
+    } catch {
+      loudness = null;
+    }
+  }
+
   return {
     format_name:
       typeof format.format_name === "string"
@@ -195,11 +312,15 @@ const probeMedia = async (filePath) => {
       Number.isInteger(channelsRaw) && channelsRaw > 0
         ? channelsRaw
         : null,
+    integrated_lufs: loudness?.integrated_lufs ?? null,
+    true_peak_dbfs: loudness?.true_peak_dbfs ?? null,
+    loudness_range_lu: loudness?.loudness_range_lu ?? null,
   };
 };
 
 const renderJob = async (job) => {
   running += 1;
+  let temporaryOutputLocation = null;
   try {
     await updateJob(job, {
       status: "bundling",
@@ -240,12 +361,16 @@ const renderJob = async (job) => {
 
     const filename = `${job.id}.mp4`;
     const outputLocation = path.join(outputDir, filename);
+    temporaryOutputLocation = voiceover
+      ? path.join(outputDir, `${job.id}.raw.mp4`)
+      : null;
+    const renderOutputLocation = temporaryOutputLocation || outputLocation;
 
     await renderMedia({
       codec: "h264",
       composition,
       serveUrl,
-      outputLocation,
+      outputLocation: renderOutputLocation,
       inputProps,
       onProgress: ({progress}) => {
         void updateJob(job, {
@@ -253,6 +378,16 @@ const renderJob = async (job) => {
         });
       },
     });
+
+    if (temporaryOutputLocation) {
+      updateJob(job, {status: "normalizing", progress: 0.995});
+      await normalizeNarration(
+        temporaryOutputLocation,
+        outputLocation,
+      );
+      await unlink(temporaryOutputLocation).catch(() => undefined);
+      temporaryOutputLocation = null;
+    }
 
     const [outputSha256, outputProbe] = await Promise.all([
       sha256File(outputLocation),
