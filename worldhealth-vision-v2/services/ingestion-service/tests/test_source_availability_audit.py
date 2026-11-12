@@ -212,3 +212,77 @@ def test_catalogue_outage_is_not_misrepresented_as_all_sites_down():
     ):
         with pytest.raises(httpx.HTTPStatusError):
             run_country_source_availability_audit(catalog, public)
+
+
+def test_timeout_is_a_network_state_not_evidence_a_statistic_is_missing():
+    def timeout(request):
+        raise httpx.ReadTimeout("official homepage did not answer HEAD", request=request)
+
+    with httpx.Client(transport=httpx.MockTransport(timeout)) as client:
+        result = probe_homepage("https://www.census.gov/", client)
+    assert result == {
+        "status": "TIMEOUT", "httpStatus": None, "redirectTarget": None,
+    }
+
+
+def test_transport_error_is_not_confused_with_website_http_status():
+    def failed_connection(request):
+        raise httpx.ConnectError("temporary connection refused", request=request)
+
+    with httpx.Client(transport=httpx.MockTransport(failed_connection)) as client:
+        result = probe_homepage("https://www.bea.gov/", client)
+    assert result["status"] == "TRANSPORT_ERROR"
+    assert result["httpStatus"] is None
+
+
+def test_unapproved_redirect_with_credentials_or_custom_port_is_not_followed():
+    for target in (
+        "https://user:secret@www.beac.int/",
+        "https://www.beac.int:8443/restricted",
+        "http://www.beac.int/",
+    ):
+        network_requests = []
+
+        def redirected(request):
+            network_requests.append(request)
+            return httpx.Response(302, headers={"Location": target})
+
+        with httpx.Client(
+            transport=httpx.MockTransport(redirected),
+            follow_redirects=True,
+        ) as client:
+            result = probe_homepage("https://www.beac.int/", client)
+        assert result["status"] == "REDIRECT_REVIEW_REQUIRED"
+        assert result["redirectTarget"] is None
+        assert len(network_requests) == 1
+
+
+def test_scope_limit_blocks_unbounded_site_scanning_before_any_public_probe():
+    def many_sources(request: httpx.Request):
+        if request.url.path.endswith("/local-sources/coverage"):
+            return httpx.Response(200, json={
+                "totalCountryCount": 1,
+                "items": [{"countryIso3": "GAB", "listedSourceCount": 41}],
+            })
+        return httpx.Response(200, json={
+            "countryIso3": "GAB",
+            "localSources": [
+                {"sourceCode": f"CODE_{i}", "homepageUrl": "https://www.beac.int/",
+                 "sourceType": "REGIONAL_OFFICIAL"}
+                for i in range(41)
+            ],
+        })
+
+    with (
+        httpx.Client(
+            base_url="http://catalog.test",
+            transport=httpx.MockTransport(many_sources),
+        ) as catalog,
+        httpx.Client(
+            transport=httpx.MockTransport(
+                lambda request: (_ for _ in ()).throw(AssertionError("No public requests"))
+            )
+        ) as public,
+    ):
+        with pytest.raises(ValueError, match="capacity"):
+            run_country_source_availability_audit(catalog, public)
