@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     verification_timeout_seconds: float = 120.0
     redis_url: str = "redis://localhost:6379/0"
     internal_api_base_url: str = "http://localhost:8000"
+    catalog_base_url: str = "http://localhost:8082"
+    catalog_timeout_seconds: float = 5.0
     radar_scheduler_enabled: bool = False
     radar_scheduler_interval_seconds: int = 300
     radar_scheduler_initial_delay_seconds: int = 20
