@@ -215,6 +215,31 @@ export type VerificationReport = {
   confidence_score: number;
 };
 
+export type QaCheckName =
+  | "facts"
+  | "spelling"
+  | "safe_zones"
+  | "logo_integrity"
+  | "source_display"
+  | "rights"
+  | "audio";
+
+export type QaIssue = {
+  check: QaCheckName;
+  severity: "warning" | "error";
+  message: string;
+  original_text?: string | null;
+  suggested_text?: string | null;
+};
+
+export type QaReport = {
+  version: number;
+  checked_at: string;
+  language_model?: string | null;
+  all_passed: boolean;
+  issues: QaIssue[];
+};
+
 export type QaState = {
   facts: "pending" | "pass" | "fail";
   spelling: "pending" | "pass" | "fail";
@@ -267,6 +292,7 @@ export type MediaStory = {
   };
   asset_bundle?: AssetBundle | null;
   qa: QaState;
+  qa_report?: QaReport | null;
   approval_note?: string | null;
 };
 
