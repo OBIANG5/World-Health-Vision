@@ -5,6 +5,7 @@ import type {
   MediaDashboard,
   MediaStory,
   RadarScanResult,
+  RadarSchedulerStatus,
   StoryStatus,
 } from "./types";
 
@@ -104,6 +105,7 @@ export default function MediaStudio() {
   const [radarHours, setRadarHours] = useState(6);
   const [radarCountry, setRadarCountry] = useState("");
   const [radarResult, setRadarResult] = useState<RadarScanResult | null>(null);
+  const [schedulerStatus, setSchedulerStatus] = useState<RadarSchedulerStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const selected = useMemo(
@@ -128,9 +130,10 @@ export default function MediaStudio() {
     setLoading(true);
     setError(null);
     try {
-      const [storiesResponse, dashboardResponse] = await Promise.all([
+      const [storiesResponse, dashboardResponse, schedulerResponse] = await Promise.all([
         fetch(`${API_ROOT}/stories`),
         fetch(`${API_ROOT}/dashboard`),
+        fetch(`${API_ROOT}/radar/scheduler`),
       ]);
       if (!storiesResponse.ok || !dashboardResponse.ok) {
         throw new Error("Le Media Studio ne répond pas correctement.");
@@ -140,6 +143,15 @@ export default function MediaStudio() {
       const nextDashboard = (await dashboardResponse.json()) as MediaDashboard;
       setStories(nextStories);
       setDashboard(nextDashboard);
+
+      if (schedulerResponse.ok) {
+        setSchedulerStatus(
+          (await schedulerResponse.json()) as RadarSchedulerStatus,
+        );
+      } else {
+        setSchedulerStatus(null);
+      }
+
       setSelectedId((current) => current ?? nextStories[0]?.id ?? null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
@@ -307,9 +319,16 @@ export default function MediaStudio() {
           </div>
         </div>
 
-        <div className="wv-media-live">
+        <div
+          className={`wv-media-live ${schedulerStatus?.enabled ? "auto" : "manual"}`}
+          title={
+            schedulerStatus
+              ? `Redis: ${schedulerStatus.redis_connected ? "OK" : "indisponible"} · dernier état: ${schedulerStatus.last_run_status ?? "aucun"}`
+              : "État du scheduler indisponible"
+          }
+        >
           <span className="wv-media-live-dot" />
-          RADAR PILOTE
+          {schedulerStatus?.enabled ? "RADAR AUTO" : "RADAR MANUEL"}
         </div>
 
         <a className="wv-media-back" href="/">
@@ -354,10 +373,37 @@ export default function MediaStudio() {
                   et n’ajoute à la newsroom que les candidats ayant une provenance retrouvée.
                 </p>
               </div>
-              <div className="wv-media-radar-badge">
-                LIVE WEB
+              <div className="wv-media-radar-status-stack">
+                <div className="wv-media-radar-badge">LIVE WEB</div>
+                <div
+                  className={`wv-media-scheduler-badge ${schedulerStatus?.enabled ? "enabled" : "disabled"}`}
+                >
+                  {schedulerStatus?.enabled
+                    ? `AUTO · ${Math.round(schedulerStatus.interval_seconds / 60)} min`
+                    : "AUTO DÉSACTIVÉ"}
+                </div>
               </div>
             </div>
+
+            {schedulerStatus && (
+              <div className="wv-media-scheduler-line">
+                <span>
+                  Redis {schedulerStatus.redis_connected ? "✓" : "✕"}
+                </span>
+                <span>
+                  Heartbeat {schedulerStatus.heartbeat_at ? dateLabel(schedulerStatus.heartbeat_at) : "—"}
+                </span>
+                <span>
+                  Dernier passage {schedulerStatus.last_run_at ? dateLabel(schedulerStatus.last_run_at) : "—"}
+                </span>
+                <span>
+                  État {schedulerStatus.last_run_status ?? "jamais lancé"}
+                </span>
+                {schedulerStatus.last_error && (
+                  <span className="error">Erreur : {schedulerStatus.last_error}</span>
+                )}
+              </div>
+            )}
 
             <div className="wv-media-radar-controls">
               <label>
