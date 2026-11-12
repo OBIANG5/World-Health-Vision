@@ -288,3 +288,30 @@ class RadarScanResult(BaseModel):
     candidates_rejected_without_retrieved_source: int
     stories_created: list[str]
     stories_deduplicated: list[str]
+
+
+class RadarScanHistoryItem(BaseModel):
+    scan_id: str
+    requested_at: datetime
+    hours: int
+    country_iso3: str | None = None
+    model: str
+    candidates_found: int
+    candidates_accepted: int
+    candidates_rejected_without_retrieved_source: int
+    stories_created: list[str]
+    stories_deduplicated: list[str]
+
+
+class RadarSchedulerStatus(BaseModel):
+    enabled: bool
+    interval_seconds: int
+    scan_hours: int
+    max_candidates: int
+    redis_connected: bool
+    lock_held: bool
+    heartbeat_at: datetime | None = None
+    last_run_at: datetime | None = None
+    last_run_status: str | None = None
+    last_scan_id: str | None = None
+    last_error: str | None = None
