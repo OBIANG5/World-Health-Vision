@@ -1362,6 +1362,23 @@ function StoryInspector({
             <div style={{ width: `${Math.round(story.render_job.progress * 100)}%` }} />
           </div>
 
+          {story.render_job.output_probe && (
+            <div className="wv-media-render-probe">
+              <span>{story.render_job.output_probe.width}×{story.render_job.output_probe.height}</span>
+              <span>{story.render_job.output_probe.fps.toFixed(2)} fps</span>
+              <span>{story.render_job.output_probe.duration_sec.toFixed(2)}s</span>
+              <span>{(story.render_job.output_probe.video_codec ?? "codec").toUpperCase()}</span>
+              <span>
+                {story.render_job.output_probe.has_audio
+                  ? `audio ${story.render_job.output_probe.audio_codec ?? "présent"}`
+                  : "sans audio"}
+              </span>
+              <span>
+                {(story.render_job.output_probe.size_bytes / 1_000_000).toFixed(2)} Mo
+              </span>
+            </div>
+          )}
+
           {story.render_job.error && (
             <div className="wv-media-render-error">{story.render_job.error}</div>
           )}
@@ -1385,7 +1402,7 @@ function StoryInspector({
             <span>Rapport QA · v{story.qa_report.version}</span>
             <small>
               {story.qa_report.all_passed
-                ? "7/7 contrôles validés"
+                ? "8/8 contrôles validés"
                 : `${story.qa_report.issues.length} problème(s)`}
               {story.qa_report.language_model
                 ? ` · ${story.qa_report.language_model}`
@@ -1606,6 +1623,7 @@ function StoryInspector({
           <Qa label="Sources affichées" value={story.qa.source_display} />
           <Qa label="Droits" value={story.qa.rights} />
           <Qa label="Audio" value={story.qa.audio} />
+          <Qa label="Intégrité MP4" value={story.qa.render_integrity} />
         </div>
       </section>
 
@@ -1901,7 +1919,7 @@ function StoryInspector({
             {!story.qa_report || !story.qa_report.all_passed ? (
               <>
                 <div className="wv-media-progress-note">
-                  Montage validé. Lance le QA final : faits, orthographe, safe zones, logo, sources, droits et audio.
+                  Montage validé. Lance le QA final : faits, orthographe, safe zones, logo, sources, droits, audio et intégrité réelle du MP4.
                 </div>
                 <button
                   className="wv-media-action primary"
@@ -1923,7 +1941,7 @@ function StoryInspector({
             ) : (
               <>
                 <div className="wv-media-progress-note">
-                  Les 7 contrôles QA sont au vert. Cette version peut être marquée prête à publier.
+                  Les 8 contrôles QA sont au vert. Cette version peut être marquée prête à publier.
                 </div>
                 <button
                   className="wv-media-action primary"
