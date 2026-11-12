@@ -470,6 +470,38 @@ export default function MediaStudio() {
     }
   }
 
+  async function preparePublication(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/publication/prepare`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            target_channels: ["tiktok", "whatsapp"],
+          }),
+        },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`Package publication impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function runRadar() {
     setRadarBusy(true);
     setError(null);
@@ -767,6 +799,7 @@ export default function MediaStudio() {
               onLaunchRender={launchRender}
               onSyncRender={syncRender}
               onRunQa={runPublicationQa}
+              onPreparePublication={preparePublication}
             />
           ) : (
             <div className="wv-media-empty">Sélectionne une actualité.</div>
@@ -816,6 +849,7 @@ function StoryInspector({
   onLaunchRender,
   onSyncRender,
   onRunQa,
+  onPreparePublication,
 }: {
   story: MediaStory;
   busy: boolean;
@@ -837,6 +871,7 @@ function StoryInspector({
   onLaunchRender: (story: MediaStory) => Promise<void>;
   onSyncRender: (story: MediaStory) => Promise<void>;
   onRunQa: (story: MediaStory) => Promise<void>;
+  onPreparePublication: (story: MediaStory) => Promise<void>;
 }) {
   const scoreEntries = Object.entries(story.score.factors) as [
     keyof EditorialScoreFactors,
@@ -1329,6 +1364,84 @@ function StoryInspector({
         </section>
       )}
 
+      {story.publication_package && (
+        <section className="wv-media-panel">
+          <div className="wv-media-panel-title">
+            <span>Publication Package · v{story.publication_package.version}</span>
+            <small>
+              CREATIVE v{story.publication_package.creative_version} · QA v{story.publication_package.qa_version}
+            </small>
+          </div>
+
+          <div className="wv-media-publication-manifest">
+            <div>
+              <span>MANIFESTE SHA-256</span>
+              <code>{story.publication_package.manifest_sha256}</code>
+            </div>
+            <a
+              href={story.publication_package.video_url}
+              target="_blank"
+              rel="noreferrer"
+            >
+              MP4 final ↗
+            </a>
+          </div>
+
+          <div className="wv-media-publication-channels">
+            {story.publication_package.target_channels.map((channel) => {
+              const receipt = story.publication_receipts.find(
+                (item) => item.channel === channel,
+              );
+              return (
+                <div key={channel}>
+                  <strong>{channel}</strong>
+                  <span className={receipt ? "published" : "pending"}>
+                    {receipt ? "✓ reçu enregistré" : "en attente de publication réelle"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="wv-media-publication-copy">
+            <div>
+              <span>TIKTOK</span>
+              <p>{story.publication_package.tiktok_caption}</p>
+              <button
+                type="button"
+                onClick={() =>
+                  void navigator.clipboard?.writeText(
+                    story.publication_package?.tiktok_caption ?? "",
+                  )
+                }
+              >
+                Copier
+              </button>
+            </div>
+            <div>
+              <span>WHATSAPP</span>
+              <p>{story.publication_package.whatsapp_text}</p>
+              <button
+                type="button"
+                onClick={() =>
+                  void navigator.clipboard?.writeText(
+                    story.publication_package?.whatsapp_text ?? "",
+                  )
+                }
+              >
+                Copier
+              </button>
+            </div>
+          </div>
+
+          {story.publication_package.ai_disclosure && (
+            <div className="wv-media-ai-disclosure">
+              {story.publication_package.ai_disclosure}
+            </div>
+          )}
+        </section>
+      )}
+
       <section className="wv-media-panel">
         <div className="wv-media-panel-title">
           <span>Contrôle qualité</span>
@@ -1681,9 +1794,35 @@ function StoryInspector({
         )}
 
         {story.status === "publish_ready" && (
-          <div className="wv-media-progress-note">
-            Publication volontairement manuelle pendant la Phase 1.
-          </div>
+          <>
+            {!story.publication_package ? (
+              <>
+                <div className="wv-media-progress-note">
+                  Le contenu est prêt. Prépare maintenant le manifeste canonique TikTok + WhatsApp avant toute publication externe.
+                </div>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy}
+                  onClick={() => void onPreparePublication(story)}
+                >
+                  ⇧ Préparer le package de publication
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="wv-media-progress-note">
+                  Package prêt. Le statut restera « prêt à publier » jusqu’à réception de preuves de publication pour tous les canaux demandés.
+                </div>
+                <button
+                  className="wv-media-action secondary"
+                  disabled={busy}
+                  onClick={() => void onPreparePublication(story)}
+                >
+                  ↻ Régénérer le package
+                </button>
+              </>
+            )}
+          </>
         )}
 
         {story.status === "rejected" && (
