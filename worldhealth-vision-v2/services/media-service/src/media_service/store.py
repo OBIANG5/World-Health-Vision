@@ -34,6 +34,7 @@ from media_service.models import (
     SelectHookRequest,
     StoryStatus,
     VerificationReport,
+    VoiceoverRef,
 )
 from media_service.persistence import StoryPersistence, build_story_persistence
 from media_service.scoring import compute_editorial_score
@@ -346,7 +347,9 @@ class MediaStoryStore:
         )
         story.target_duration_sec = package.target_duration_sec
         story.video_draft = None
+        story.voiceover = None
         story.render_job = None
+        story.qa.audio = "pending"
         return self._save(story)
 
     def select_hook(self, story_id: str, request: SelectHookRequest) -> MediaStory:
@@ -468,13 +471,47 @@ class MediaStoryStore:
 
         story.video_draft = draft
         story.script = draft.voiceover_script
+        story.voiceover = None
+        story.qa.audio = "pending"
         story.status = "scripting"
+        return self._save(story)
+
+    def apply_voiceover(
+        self,
+        story_id: str,
+        voiceover: VoiceoverRef,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        if story.video_draft is None:
+            raise MediaWorkflowConflictError(
+                "Prepare the final VideoDraft before generating AUDIO."
+            )
+        if story.status != "scripting":
+            raise MediaWorkflowConflictError(
+                f"AUDIO cannot be attached from status '{story.status}'."
+            )
+
+        story.voiceover = voiceover
+        story.qa.audio = "pass" if voiceover.qa_passed else "fail"
+        if not voiceover.qa_passed:
+            story.qa.notes.append(
+                "AUDIO QA failed: transcript or duration does not match the approved draft."
+            )
         return self._save(story)
 
     def attach_render_job(self, story_id: str, render_job: RenderJobRef) -> MediaStory:
         story = self.get(story_id)
         if story.video_draft is None:
             raise MediaWorkflowConflictError("A video draft is required before rendering.")
+        if story.creative_package is not None:
+            if story.voiceover is None:
+                raise MediaWorkflowConflictError(
+                    "Generate and validate AUDIO before rendering."
+                )
+            if story.qa.audio != "pass":
+                raise MediaWorkflowConflictError(
+                    "AUDIO QA must pass before rendering."
+                )
         if story.status not in {"scripting", "assets", "rendering"}:
             raise MediaWorkflowConflictError(
                 f"Render cannot start from status '{story.status}'."
