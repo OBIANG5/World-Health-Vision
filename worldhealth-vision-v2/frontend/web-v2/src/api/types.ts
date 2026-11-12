@@ -275,6 +275,8 @@ export interface IndicatorOverviewResponse {
   sourcePerspectives: SourcePerspective[];
   latestBySource: TimeseriesPoint[];
   selectedSeriesPreview: TimeseriesPoint[];
+  /** Values used in the cross-source comparison, sharing the exact same period. */
+  alignedComparisonValues?: TimeseriesPoint[];
   sourceAudit: SourceAuditView;
 }
 
