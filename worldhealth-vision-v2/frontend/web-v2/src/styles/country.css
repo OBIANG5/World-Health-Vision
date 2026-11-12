@@ -2073,3 +2073,50 @@
   .whv-national-evidence > summary { padding: 11px; }
   .whv-national-evidence-body { padding: 0 11px 12px; }
 }
+
+
+/* Cross-country release-to-canonical values: conservative comparison.
+   International numbers appear only when TimescaleDB really provided them. */
+.whv-national-comparison {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(117, 198, 242, .22);
+  background: rgba(8, 31, 52, .35);
+  border-radius: 10px;
+}
+.whv-national-comparison-title {
+  font-size: 12px;
+  color: #e1f4ff;
+}
+.whv-national-comparison > p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.whv-national-comparison-source {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 10px;
+  row-gap: 3px;
+  align-items: baseline;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(40, 101, 139, .17);
+}
+.whv-national-comparison-source > strong {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  color: #dceeff;
+}
+.whv-national-comparison-source > span {
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: #e5f4ff;
+}
+.whv-national-comparison-source > small {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: rgba(216, 238, 253, .75);
+}
