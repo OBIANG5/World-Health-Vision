@@ -292,6 +292,21 @@ def evaluate_structural_qa(
                     "The approved voiceover exists, but the encoded MP4 has no audio stream.",
                 )
             else:
+                delivery_format_ok = (
+                    (probe.audio_codec or "").casefold() == "aac"
+                    and probe.audio_sample_rate_hz == 48_000
+                )
+                if not delivery_format_ok:
+                    state.audio = "fail"
+                    _append_issue(
+                        issues,
+                        "audio",
+                        "Final narration delivery format is invalid "
+                        f"({probe.audio_codec or 'unknown codec'}, "
+                        f"{probe.audio_sample_rate_hz or 'unknown'} Hz). "
+                        "Expected AAC at 48000 Hz after normalization.",
+                    )
+
                 loudness_values_present = (
                     probe.integrated_lufs is not None
                     and probe.true_peak_dbfs is not None
