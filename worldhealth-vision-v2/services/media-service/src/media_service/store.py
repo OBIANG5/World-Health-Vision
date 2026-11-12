@@ -6,9 +6,15 @@ import unicodedata
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from media_service.asset_workflow import (
+    recompute_unresolved_scene_orders,
+    required_asset_scene_orders,
+)
 from media_service.creative import build_video_draft
 from media_service.models import (
+    AssetBundle,
     AssetInventory,
+    AssetSelection,
     CreateStoryRequest,
     CreativePackage,
     DecisionRequest,
@@ -24,6 +30,7 @@ from media_service.models import (
     RadarScanRequest,
     RadarScanResult,
     RenderJobRef,
+    SelectAssetRequest,
     SelectHookRequest,
     StoryStatus,
     VerificationReport,
@@ -349,12 +356,111 @@ class MediaStoryStore:
         story.selected_hook_id = request.hook_id
         return self._save(story)
 
+    def apply_asset_bundle(
+        self,
+        story_id: str,
+        bundle: AssetBundle,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        if story.status != "approved":
+            raise MediaWorkflowConflictError(
+                "ASSETS can only run after an approved CREATIVE package."
+            )
+        if story.creative_package is None:
+            raise MediaWorkflowConflictError(
+                "CREATIVE package is required before ASSETS."
+            )
+
+        story.asset_bundle = bundle
+        story.assets.photos = sum(
+            asset.kind == "image"
+            for asset in bundle.assets
+        )
+        story.assets.videos = sum(
+            asset.kind == "video"
+            for asset in bundle.assets
+        )
+        story.status = "assets"
+        story.qa.rights = (
+            "pass"
+            if not bundle.unresolved_scene_orders
+            else "pending"
+        )
+        return self._save(story)
+
+    def select_asset(
+        self,
+        story_id: str,
+        request: SelectAssetRequest,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        bundle = story.asset_bundle
+        if bundle is None:
+            raise MediaWorkflowConflictError(
+                "Discover assets before selecting one."
+            )
+
+        asset = next(
+            (candidate for candidate in bundle.assets if candidate.id == request.asset_id),
+            None,
+        )
+        if asset is None:
+            raise MediaWorkflowConflictError(
+                "Unknown asset for this story."
+            )
+
+        valid_scene_orders = set(required_asset_scene_orders(story))
+        if request.scene_order not in valid_scene_orders:
+            raise MediaWorkflowConflictError(
+                "This scene does not accept an external media asset."
+            )
+
+        bundle.selections = [
+            selection
+            for selection in bundle.selections
+            if selection.scene_order != request.scene_order
+        ]
+        bundle.selections.append(
+            AssetSelection(
+                scene_order=request.scene_order,
+                asset_id=request.asset_id,
+            )
+        )
+        bundle.selections.sort(key=lambda selection: selection.scene_order)
+        bundle.unresolved_scene_orders = recompute_unresolved_scene_orders(
+            story,
+            bundle,
+        )
+        story.asset_bundle = bundle
+        story.qa.rights = (
+            "pass"
+            if not bundle.unresolved_scene_orders
+            else "pending"
+        )
+        return self._save(story)
+
     def prepare_draft(self, story_id: str, request: PrepareDraftRequest) -> MediaStory:
         story = self.get(story_id)
-        if story.status not in {"approved", "changes_requested", "scripting"}:
+        if story.status not in {"approved", "assets", "changes_requested", "scripting"}:
             raise MediaWorkflowConflictError(
                 f"Video draft cannot be prepared from status '{story.status}'."
             )
+        if story.creative_package is not None:
+            required_orders = required_asset_scene_orders(story)
+            if required_orders:
+                if story.asset_bundle is None:
+                    raise MediaWorkflowConflictError(
+                        "Discover and clear media assets before preparing the final draft."
+                    )
+                unresolved = recompute_unresolved_scene_orders(
+                    story,
+                    story.asset_bundle,
+                )
+                if unresolved:
+                    raise MediaWorkflowConflictError(
+                        "Asset rights are unresolved for scenes: "
+                        + ", ".join(str(order) for order in unresolved)
+                    )
         try:
             draft = build_video_draft(story, request)
         except ValueError as exc:
