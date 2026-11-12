@@ -5,11 +5,13 @@ from fastapi.testclient import TestClient
 import media_service.api as media_api
 from media_service.api import app
 from media_service.models import (
+    ClaimVerification,
     EditorialScoreFactors,
     RadarCandidate,
     RadarHookCandidate,
     RadarSourceCandidate,
     RenderJobRef,
+    VerificationReport,
 )
 from media_service.radar import RadarDiscovery
 from media_service.store import STORE
@@ -78,6 +80,35 @@ class StubRadarClient:
         )
 
 
+class StubVerificationClient:
+    async def verify(self, story, request):
+        return VerificationReport(
+            version=1,
+            checked_at=datetime.now(timezone.utc),
+            model="test-verifier",
+            retrieved_urls=[
+                "https://acp.cd/exemple-radar",
+                "https://example.org/second-confirmation",
+            ],
+            claims=[
+                ClaimVerification(
+                    claim="Trois nouveaux cas ont été signalés.",
+                    status="verified",
+                    supporting_urls=[
+                        "https://acp.cd/exemple-radar",
+                        "https://example.org/second-confirmation",
+                    ],
+                    contradicting_urls=[],
+                    explanation="Deux sources concordantes confirment le chiffre.",
+                )
+            ],
+            distinct_supporting_sources=2,
+            has_primary_support=False,
+            verdict="verified",
+            confidence_score=92,
+        )
+
+
 class StubRendererClient:
     def __init__(self):
         self.jobs: dict[str, RenderJobRef] = {}
@@ -113,6 +144,7 @@ def setup_function():
     STORE.reset()
     media_api.RENDERER_CLIENT = StubRendererClient()
     media_api.RADAR_CLIENT = StubRadarClient()
+    media_api.VERIFICATION_CLIENT = StubVerificationClient()
 
 
 def test_health_and_dashboard():
@@ -335,3 +367,38 @@ def test_radar_scan_creates_and_then_deduplicates_story():
     assert len(scans) == 2
     assert scans[0]["scan_id"] == "radar-test-1"
     assert scans[0]["candidates_accepted"] == 1
+
+
+
+def test_radar_story_must_be_verified_before_approval():
+    scan = client.post(
+        "/api/media/radar/scans",
+        json={"hours": 3, "max_candidates": 10},
+    )
+    assert scan.status_code == 200
+    story_id = scan.json()["stories_created"][0]
+
+    blocked = client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "approve"},
+    )
+    assert blocked.status_code == 409
+    assert "verified" in blocked.json()["detail"].lower()
+
+    verified = client.post(
+        f"/api/media/stories/{story_id}/verify",
+        json={"max_claims": 6},
+    )
+    assert verified.status_code == 200
+    verified_story = verified.json()
+    assert verified_story["verification_status"] == "verified"
+    assert verified_story["confidence_score"] == 92
+    assert verified_story["verification_report"]["claims"][0]["status"] == "verified"
+    assert verified_story["qa"]["facts"] == "pass"
+
+    approved = client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "approve"},
+    )
+    assert approved.status_code == 200
+    assert approved.json()["status"] == "approved"
