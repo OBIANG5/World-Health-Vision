@@ -7,6 +7,7 @@ from media_service.models import (
     DecisionRequest,
     MediaDashboard,
     MediaStory,
+    PrepareDraftRequest,
     SelectHookRequest,
     StoryStatus,
 )
@@ -67,6 +68,16 @@ async def recompute_story_score(story_id: str) -> MediaStory:
 async def select_story_hook(story_id: str, request: SelectHookRequest) -> MediaStory:
     try:
         return STORE.select_hook(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/draft/prepare", response_model=MediaStory)
+async def prepare_story_draft(story_id: str, request: PrepareDraftRequest) -> MediaStory:
+    try:
+        return STORE.prepare_draft(story_id, request)
     except MediaStoryNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Story not found") from exc
     except MediaWorkflowConflictError as exc:
