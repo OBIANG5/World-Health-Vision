@@ -101,6 +101,9 @@ export type MediaAsset = {
   media_url: string;
   thumbnail_url?: string | null;
   mime_type?: string | null;
+  width?: number | null;
+  height?: number | null;
+  size_bytes?: number | null;
   author?: string | null;
   license_name?: string | null;
   license_url?: string | null;
