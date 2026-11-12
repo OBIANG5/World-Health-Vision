@@ -16,6 +16,7 @@ import { fetchCompareCountries } from "../../api/whvApi";
 import { useLang } from "../../context/LanguageContext";
 import { useFxHistory } from "../../hooks/useFxHistory";
 import { useCountrySheet } from "../../hooks/useCountrySheet";
+import CountryLocalEvidencePanel from "./CountryLocalEvidencePanel";
 import { useFxRates } from "../../hooks/useFxRates";
 import { useIndicatorHistory } from "../../hooks/useIndicatorHistory";
 import { useIndicatorOverview } from "../../hooks/useIndicatorOverview";
@@ -445,19 +446,38 @@ function SourceChipsRow({ lens, iso3 }: { lens: CountryEconomicLens | CountryRel
   const { overview, loading } = useIndicatorOverview(iso3, lens.indicatorCode, true);
   if (loading || !overview || overview.sourcePerspectives.length === 0) return null;
   const { divergence, sourcePerspectives } = overview;
+  const commonValues = overview.alignedComparisonValues ?? [];
+  const hasComparablePeriod = divergence.comparableValueCount >= 2 && commonValues.length >= 2;
+  // Never visually label 2025 from one institution and 2024 from another
+  // as a same-period comparison. Show the actual aligned evidence instead.
+  const displayed = hasComparablePeriod ? commonValues : sourcePerspectives;
+  const includesEstimates = commonValues.some((item) => item.valueStatus === "ESTIMATED");
   return (
-    <div className="source-chips-row">
-      {sourcePerspectives.map((sp) => (
-        <span key={`${sp.sourceCode}-${sp.datasetCode}`} className={`source-chip freshness-${sp.freshnessLevel}`}>
-          <strong>{sp.sourceCode.replace(/_/g, " ")}</strong>
-          {sp.numericValue !== null && <span className="source-chip-value">{fmtCompact(sp.numericValue, lens.unitLabel)}</span>}
-          {sp.periodLabel && <span className="source-chip-period">{sp.periodLabel}</span>}
-        </span>
-      ))}
-      {divergence.comparableValueCount >= 2 && (
-        <span className={`source-chip source-chip--agreement agreement-${divergence.agreementLevel}`}>
+    <div className="source-chips-row" aria-label="Provenance et comparaison entre organismes">
+      {displayed.map((sp) => {
+        const status = sp.valueStatus === "ESTIMATED" ? " · estimation" : "";
+        const freshness = sourcePerspectives.find((src) => src.sourceCode === sp.sourceCode)?.freshnessLevel ?? "UNKNOWN";
+        return (
+          <span key={`${sp.sourceCode}-${sp.datasetCode}`} className={`source-chip freshness-${freshness}`}>
+            <strong>{sp.sourceCode.replace(/_/g, " ")}</strong>
+            {sp.numericValue !== null && <span className="source-chip-value">{fmtCompact(sp.numericValue, lens.unitLabel)}</span>}
+            {sp.periodLabel && <span className="source-chip-period">{sp.periodLabel}{status}</span>}
+          </span>
+        );
+      })}
+      {hasComparablePeriod ? (
+        <span
+          className={`source-chip source-chip--agreement agreement-${divergence.agreementLevel}`}
+          title="Les valeurs comparées concernent exactement la même période. Les méthodes des organismes peuvent cependant différer."
+        >
           {AGREEMENT_FR[divergence.agreementLevel]}
+          {" · "}{divergence.latestComparablePeriodLabel}
+          {includesEstimates ? " · estimations incluses" : " · mesures"}
           {divergence.rangeRelativeToMedian !== null && ` · écart ${(divergence.rangeRelativeToMedian * 100).toFixed(1)} %`}
+        </span>
+      ) : (
+        <span className="source-chip" title="Pas de comparaison intersources sur une période commune suffisamment documentée.">
+          Comparaison non établie
         </span>
       )}
     </div>
@@ -1433,6 +1453,14 @@ export default function CountryDrawer({
             })()} />
           </div>
         )}
+
+        {/* Independent national/local evidence even when no economic observations exist. */}
+        <CountryLocalEvidencePanel
+          key={selectedCountryIso3}
+          iso3={selectedCountryIso3}
+          enabled={open && selectedCountryIso3 !== "-99"}
+          lang={lang}
+        />
 
         {/* Chargement / erreur */}
         {loading && (
