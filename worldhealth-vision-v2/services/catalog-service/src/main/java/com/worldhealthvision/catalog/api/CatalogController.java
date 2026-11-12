@@ -18,6 +18,7 @@ l’enrichissement devise sur les pays.
 import com.worldhealthvision.catalog.api.dto.CatalogListResponse;
 import com.worldhealthvision.catalog.api.dto.CatalogReadinessResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDetailResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalContextResponse;
 import com.worldhealthvision.catalog.api.dto.CountrySummaryResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencyDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencySummaryResponse;
@@ -78,6 +79,14 @@ public class CatalogController {
     @GetMapping("/countries/{iso3}")
     public CountryDetailResponse getCountry(@PathVariable String iso3) {
         return catalogQueryService.getCountry(iso3);
+    }
+
+    /** A country's documented national institutions, press and releases.
+     * Source registration is NOT proof that data has been automatically ingested.
+     */
+    @GetMapping("/countries/{iso3}/local-context")
+    public CountryLocalContextResponse getCountryLocalContext(@PathVariable String iso3) {
+        return catalogQueryService.getCountryLocalContext(iso3);
     }
 
     @GetMapping("/currencies")
