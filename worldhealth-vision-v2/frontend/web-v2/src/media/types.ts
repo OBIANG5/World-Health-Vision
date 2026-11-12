@@ -167,3 +167,16 @@ export type MediaDashboard = {
   rejected: number;
   top_score: number;
 };
+
+
+export type RadarScanResult = {
+  scan_id: string;
+  query: string;
+  model: string;
+  retrieved_urls: string[];
+  candidates_found: number;
+  candidates_accepted: number;
+  candidates_rejected_without_retrieved_source: number;
+  stories_created: string[];
+  stories_deduplicated: string[];
+};
