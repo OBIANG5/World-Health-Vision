@@ -1,6 +1,7 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Audio,
   Img,
   Sequence,
   interpolate,
@@ -280,11 +281,16 @@ const SceneView: React.FC<{
 
 export const WorldVisionShort: React.FC<WorldVisionRenderProps> = ({
   draft,
+  voiceover,
   story,
   brand,
 }) => {
   return (
     <AbsoluteFill style={{backgroundColor: "#050505"}}>
+      {voiceover?.renderer_url && (
+        <Audio src={voiceover.renderer_url} />
+      )}
+
       {draft.scenes.map((scene) => (
         <Sequence
           key={scene.id}
@@ -295,6 +301,28 @@ export const WorldVisionShort: React.FC<WorldVisionRenderProps> = ({
           <SceneView scene={scene} brand={brand} story={story} />
         </Sequence>
       ))}
+
+      {voiceover && (
+        <div
+          style={{
+            position: "absolute",
+            right: 238,
+            bottom: 206,
+            zIndex: 30,
+            padding: "7px 10px",
+            borderRadius: 999,
+            border: "1px solid rgba(255,255,255,.16)",
+            background: "rgba(5,5,5,.62)",
+            color: "rgba(255,255,255,.64)",
+            fontSize: 13,
+            fontWeight: 800,
+            letterSpacing: 1.1,
+            textTransform: "uppercase",
+          }}
+        >
+          {voiceover.ai_generated_disclosure}
+        </div>
+      )}
     </AbsoluteFill>
   );
 };
