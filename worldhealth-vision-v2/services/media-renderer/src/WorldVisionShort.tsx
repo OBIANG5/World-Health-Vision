@@ -134,7 +134,8 @@ const SceneView: React.FC<{
   scene: VideoScene;
   brand: WorldVisionRenderProps["brand"];
   story: WorldVisionRenderProps["story"];
-}> = ({scene, brand, story}) => {
+  renderProfile: NonNullable<WorldVisionRenderProps["render_profile"]>;
+}> = ({scene, brand, story, renderProfile}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const entrance = spring({
@@ -147,35 +148,45 @@ const SceneView: React.FC<{
   const titleSize = fontSizeFor(scene.on_screen_text, scene.purpose);
 
   const isSource = scene.visual_kind === "source_card";
+  const cleanTikTok = renderProfile === "tiktok_api_clean_v1";
+  const displayedText = cleanTikTok
+    ? scene.on_screen_text
+        .replace(/world[\s-]?vision/gi, "")
+        .replace(/voir le monde,?\s*le comprendre\.?/gi, "")
+        .replace(/\s{2,}/g, " ")
+        .trim()
+    : scene.on_screen_text;
 
   return (
     <AbsoluteFill style={{backgroundColor: "#050505", overflow: "hidden"}}>
       <PreviewBackdrop scene={scene} />
 
-      <div
-        style={{
-          position: "absolute",
-          left: safe.left,
-          top: 68,
-          display: "flex",
-          alignItems: "baseline",
-          gap: 18,
-        }}
-      >
-        <span
+      {!cleanTikTok && (
+        <div
           style={{
-            fontSize: 30,
-            fontWeight: 900,
-            letterSpacing: 3,
-            color: accents.white,
+            position: "absolute",
+            left: safe.left,
+            top: 68,
+            display: "flex",
+            alignItems: "baseline",
+            gap: 18,
           }}
         >
-          {brand.name}
-        </span>
-        <span style={{fontSize: 18, color: accents.muted}}>
-          {brand.tagline}
-        </span>
-      </div>
+          <span
+            style={{
+              fontSize: 30,
+              fontWeight: 900,
+              letterSpacing: 3,
+              color: accents.white,
+            }}
+          >
+            {brand.name}
+          </span>
+          <span style={{fontSize: 18, color: accents.muted}}>
+            {brand.tagline}
+          </span>
+        </div>
+      )}
 
       <div
         style={{
@@ -217,7 +228,7 @@ const SceneView: React.FC<{
             maxWidth: 760,
           }}
         >
-          {scene.on_screen_text}
+          {displayedText || (isSource ? "Sources" : scene.on_screen_text)}
         </div>
 
         {!isSource && !scene.asset_url && scene.asset_query && (
@@ -253,33 +264,36 @@ const SceneView: React.FC<{
         </div>
       )}
 
-      <div
-        style={{
-          position: "absolute",
-          left: safe.left,
-          bottom: 350,
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          color: accents.muted,
-          fontSize: 18,
-        }}
-      >
-        <span
+      {!cleanTikTok && (
+        <div
           style={{
-            width: 54,
-            height: 5,
-            borderRadius: 10,
-            background: "linear-gradient(90deg,#ff006e,#ff7900,#ffe600)",
+            position: "absolute",
+            left: safe.left,
+            bottom: 350,
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            color: accents.muted,
+            fontSize: 18,
           }}
-        />
-        DRAFT · {scene.purpose.toUpperCase()}
-      </div>
+        >
+          <span
+            style={{
+              width: 54,
+              height: 5,
+              borderRadius: 10,
+              background: "linear-gradient(90deg,#ff006e,#ff7900,#ffe600)",
+            }}
+          />
+          DRAFT · {scene.purpose.toUpperCase()}
+        </div>
+      )}
     </AbsoluteFill>
   );
 };
 
 export const WorldVisionShort: React.FC<WorldVisionRenderProps> = ({
+  render_profile = "canonical_newsroom_v1",
   draft,
   voiceover,
   story,
@@ -298,7 +312,12 @@ export const WorldVisionShort: React.FC<WorldVisionRenderProps> = ({
           durationInFrames={Math.max(1, Math.round(scene.duration_sec * draft.fps))}
           name={scene.id}
         >
-          <SceneView scene={scene} brand={brand} story={story} />
+          <SceneView
+            scene={scene}
+            brand={brand}
+            story={story}
+            renderProfile={render_profile}
+          />
         </Sequence>
       ))}
 
