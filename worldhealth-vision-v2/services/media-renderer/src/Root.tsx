@@ -4,6 +4,7 @@ import {WorldVisionShort} from "./WorldVisionShort";
 import type {WorldVisionRenderProps} from "./types";
 
 const defaultProps: WorldVisionRenderProps = {
+  render_profile: "canonical_newsroom_v1",
   voiceover: null,
   draft: {
     version: 1,
