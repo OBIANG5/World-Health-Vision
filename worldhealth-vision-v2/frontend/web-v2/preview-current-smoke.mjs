@@ -117,10 +117,8 @@ try {
   await evidence.locator(".whv-national-evidence-source").first().waitFor({state:"visible"});
   assert(await evidence.locator(".whv-national-evidence-source").count()===3,
     "Gabon must show INSTAT, BEAC and local press from versioned SQL");
-  const gabText=(await evidence.innerText()).replace(/[\\s\\u202f]/g,"");
-  for(const expected of ["INSTATGabon","BEAC","Agenc gabonaise".replace(" ","")]){
-    // Different national institutions may use different accented spellings.
-    if(expected==="Agencegabonaise")continue;
+  const gabText=(await evidence.innerText()).replace(/\s/g,"");
+  for(const expected of ["INSTATGabon","BEAC","Agencegabonaisedepresse"]){
     assert(gabText.includes(expected),"Missing Gabon source "+expected);
   }
   assert(gabText.includes("3518621"),"Documented RGPL release missing from Gabon mobile card");
