@@ -3,6 +3,7 @@ import type {
   CatalogListResponse,
   CompareCountriesResponse,
   CountryDetail,
+  CountryLocalContext,
   CountryEconomicSnapshotResponse,
   CountryRelativeCostSnapshotResponse,
   CountrySummary,
@@ -95,6 +96,7 @@ const rankCache = new AsyncCache<IndicatorRankResponse>();
 const overviewCache = new AsyncCache<IndicatorOverviewResponse>();
 const historyCache = new AsyncCache<TimeseriesSeriesResponse>();
 const sourceCoverageCache = new AsyncCache<SourceDataCoverage[]>(2 * 60 * 1000);
+const countryLocalContextCache = new AsyncCache<CountryLocalContext>(2 * 60 * 1000);
 
 export async function fetchCountries(): Promise<CountrySummary[]> {
   try {
@@ -124,6 +126,31 @@ export async function fetchCountryDetail(iso3: string): Promise<CountryDetail> {
   } catch (error) {
     throw new Error(`Unable to load country details: ${extractErrorMessage(error)}`);
   }
+}
+
+/**
+ * Separate, documented national evidence. No fallback to fictional local
+ * values when a backend is unreachable; callers must show "not verifiable".
+ */
+export async function fetchCountryLocalContext(iso3: string): Promise<CountryLocalContext> {
+  const code = iso3.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(code)) throw new Error("Invalid ISO3 country code");
+  return countryLocalContextCache.get(code, async () => {
+    try {
+      const response = await whvApi.get<CountryLocalContext>(
+        `/api/catalog/countries/${encodeURIComponent(code)}/local-context`,
+        { timeout: 15000 },
+      );
+      const data = response.data;
+      if (data.countryIso3 !== code || !Array.isArray(data.localSources) ||
+          !Array.isArray(data.documentedReleases)) {
+        throw new Error("Unexpected national evidence response");
+      }
+      return data;
+    } catch (error) {
+      throw new Error(`Unable to verify local country sources: ${extractErrorMessage(error)}`);
+    }
+  });
 }
 
 export async function fetchCountryEconomicSnapshot(
