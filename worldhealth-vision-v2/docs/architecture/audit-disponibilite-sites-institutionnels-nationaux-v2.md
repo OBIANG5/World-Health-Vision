@@ -52,7 +52,7 @@ Résultats de l'exécution du 12 novembre 2026 :
 - **8/9** sites : `SITE_RESPONDED` ;
 - **1/9** site : `ACCESS_RESTRICTED` ;
 - **0** hôte non autorisé ;
-- **16** tests du module de disponibilité réussis ;
+- **20** tests du module de disponibilité ajoutés (validation à confirmer sur le dernier commit) ;
 - **45** tests d'ingestion Python réussis dans l'audit global.
 
 **Attention :** `ACCESS_RESTRICTED` (401/403) ne signifie pas que
