@@ -7,7 +7,7 @@
     "studio": "remotion studio src/index.ts",
     "typecheck": "tsc --noEmit",
     "check-server": "node --check server.mjs",
-    "test-store": "node --test job-store.test.mjs job-recovery.test.mjs"
+    "test-store": "node --test job-store.test.mjs job-recovery.test.mjs storage-lifecycle.test.mjs"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.542",
