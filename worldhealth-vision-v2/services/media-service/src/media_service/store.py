@@ -430,6 +430,25 @@ class MediaStoryStore:
                 "This scene does not accept an external media asset."
             )
 
+        package = story.creative_package
+        scene = next(
+            (
+                candidate
+                for candidate in (package.scene_plan if package is not None else [])
+                if candidate.order == request.scene_order
+            ),
+            None,
+        )
+        expected_kind = (
+            "video"
+            if scene is not None and scene.visual_kind == "real_video"
+            else "image"
+        )
+        if asset.kind != expected_kind:
+            raise MediaWorkflowConflictError(
+                "Selected asset kind does not match the creative scene kind."
+            )
+
         bundle.selections = [
             selection
             for selection in bundle.selections
