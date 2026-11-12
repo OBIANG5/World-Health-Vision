@@ -191,3 +191,24 @@ def test_structural_qa_accepts_normalized_final_loudness():
         for issue in issues
         if issue.check == "audio"
     ]
+
+
+
+def test_structural_qa_rejects_wrong_final_audio_delivery_format():
+    story = attach_test_voiceover(qa_ready_seed_story())
+    story.render_job.output_probe = story.render_job.output_probe.model_copy(
+        update={
+            "audio_codec": "mp3",
+            "audio_sample_rate_hz": 44_100,
+        }
+    )
+
+    state, issues = evaluate_structural_qa(story)
+
+    assert state.audio == "fail"
+    assert any(
+        issue.check == "audio"
+        and "aac" in issue.message.lower()
+        and "48000" in issue.message
+        for issue in issues
+    )
