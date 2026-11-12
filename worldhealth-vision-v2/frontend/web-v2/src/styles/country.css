@@ -1955,3 +1955,195 @@
 @media (max-width: 720px) {
   .whv-region-members-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+
+/* V2 — country-local provenance. Shows researched evidence without
+   pretending a document cited in the catalogue is an ingested time-series. */
+.whv-national-evidence {
+  margin: 12px 0;
+  border: 1px solid rgba(103, 181, 235, .26);
+  background: rgba(16, 49, 75, .24);
+  border-radius: 13px;
+  color: #d3e9f9;
+}
+.whv-national-evidence > summary {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  min-height: 53px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.whv-national-evidence > summary:focus-visible {
+  outline: 2px solid #80c9ff;
+  outline-offset: 2px;
+}
+.whv-national-evidence > summary > span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.whv-national-evidence > summary strong {
+  font-size: 13px;
+}
+.whv-national-evidence > summary small {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(195, 223, 245, .77);
+}
+.whv-national-evidence-icon { font-size: 21px; color: #8dccf7; }
+.whv-national-evidence-count {
+  border: 1px solid rgba(112, 197, 244, .33);
+  background: rgba(112, 197, 244, .12);
+  border-radius: 100px;
+  font-size: 11px;
+  padding: 3px 8px;
+}
+.whv-national-evidence-body {
+  display: grid;
+  gap: 12px;
+  padding: 0 14px 14px;
+}
+.whv-national-evidence-body > p { font-size: 12px; line-height: 1.6; margin: 0; }
+.whv-national-evidence-sources {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 8px;
+}
+.whv-national-evidence-source {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  padding: 11px;
+  background: rgba(16, 49, 76, .47);
+  border: 1px solid rgba(106, 177, 217, .18);
+  border-radius: 10px;
+  min-width: 0;
+}
+.whv-national-evidence-source > strong { font-size: 13px; }
+.whv-national-evidence-kind {
+  color: #9fd9f4;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+.whv-national-evidence-meta { font-size: 11px; color: rgba(207, 233, 249, .75); }
+.whv-national-evidence a {
+  color: #aee0ff;
+  font-size: 12px;
+  text-underline-offset: 2px;
+  width: fit-content;
+}
+.whv-national-evidence a:focus-visible {
+  outline: 2px solid #aee0ff;
+  outline-offset: 3px;
+}
+.whv-national-evidence-release {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  background: rgba(48, 116, 161, .1);
+  border: 1px solid rgba(115, 198, 242, .24);
+  border-radius: 11px;
+}
+.whv-national-evidence-release > p { margin: 0; font-size: 12px; line-height: 1.65; }
+.whv-national-evidence-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: clamp(23px, 4vw, 30px);
+  font-variant-numeric: tabular-nums;
+}
+.whv-national-evidence-value > span {
+  font-size: 12px; font-weight: 400; color: rgba(205, 230, 245, .84);
+}
+.whv-national-evidence-caution { color: #f9daae; }
+.whv-national-evidence-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.whv-national-evidence-footnote {
+  color: rgba(196, 223, 244, .72);
+  border-top: 1px solid rgba(130, 192, 225, .18);
+  padding-top: 10px;
+}
+@media (max-width: 720px) {
+  .whv-national-evidence-sources { grid-template-columns: 1fr; }
+  .whv-national-evidence > summary { padding: 11px; }
+  .whv-national-evidence-body { padding: 0 11px 12px; }
+}
+
+
+/* Cross-country release-to-canonical values: conservative comparison.
+   International numbers appear only when TimescaleDB really provided them. */
+.whv-national-comparison {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(117, 198, 242, .22);
+  background: rgba(8, 31, 52, .35);
+  border-radius: 10px;
+}
+.whv-national-comparison-title {
+  font-size: 12px;
+  color: #e1f4ff;
+}
+.whv-national-comparison > p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.whv-national-comparison-source {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 10px;
+  row-gap: 3px;
+  align-items: baseline;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(40, 101, 139, .17);
+}
+.whv-national-comparison-source > strong {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  color: #dceeff;
+}
+.whv-national-comparison-source > span {
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: #e5f4ff;
+}
+.whv-national-comparison-source > small {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: rgba(216, 238, 253, .75);
+}
+
+
+.whv-national-evidence-connection {
+  font-size: 11px;
+  color: #ffdf9c;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.whv-national-evidence-restrictions {
+  border-top: 1px solid rgba(134, 192, 230, .16);
+  padding: 7px 0 2px;
+}
+.whv-national-evidence-restrictions > summary {
+  cursor: pointer;
+  color: #bfddf1;
+  font-size: 11px;
+}
+.whv-national-evidence-restrictions > summary:focus-visible {
+  outline: 2px solid #9bd7ff;
+  outline-offset: 3px;
+}
+.whv-national-evidence-restrictions > p {
+  font-size: 11px;
+  color: rgba(211, 232, 246, .79);
+  line-height: 1.65;
+  margin: 8px 0 0;
+}
