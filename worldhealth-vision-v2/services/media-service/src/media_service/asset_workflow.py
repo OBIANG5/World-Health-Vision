@@ -25,6 +25,13 @@ class AssetClientProtocol(Protocol):
         limit: int = 4,
     ) -> list[MediaAsset]: ...
 
+    async def search_videos(
+        self,
+        query: str,
+        *,
+        limit: int = 4,
+    ) -> list[MediaAsset]: ...
+
 
 class AssetWorkflowError(RuntimeError):
     pass
@@ -92,12 +99,17 @@ async def discover_asset_bundle(
             f"{story.country_name or story.region or ''} "
             f"{story.category} {story.title}"
         ).strip()
-        searches.append(
-            asset_client.search_images(
+        if scene.visual_kind == "real_video":
+            search = asset_client.search_videos(
                 query,
                 limit=request.limit_per_scene,
             )
-        )
+        else:
+            search = asset_client.search_images(
+                query,
+                limit=request.limit_per_scene,
+            )
+        searches.append(search)
 
     results = await asyncio.gather(*searches, return_exceptions=True)
 
@@ -120,7 +132,13 @@ async def discover_asset_bundle(
             (
                 asset
                 for asset in scene_assets
-                if asset.rights_status == "approved"
+                if (
+                    asset.rights_status == "approved"
+                    and (
+                        (scene.visual_kind == "real_video" and asset.kind == "video")
+                        or (scene.visual_kind == "real_photo" and asset.kind == "image")
+                    )
+                )
             ),
             None,
         )
