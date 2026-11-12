@@ -52,6 +52,43 @@ export type HookOption = {
   text: string;
   score: number;
   rationale: string;
+  claim_indexes: number[];
+};
+
+export type CreativeScriptSegment = {
+  text: string;
+  claim_indexes: number[];
+};
+
+export type CreativeScenePlan = {
+  order: number;
+  purpose: string;
+  on_screen_text: string;
+  visual_kind:
+    | "real_photo"
+    | "real_video"
+    | "map"
+    | "chart"
+    | "document"
+    | "typography"
+    | "source_card";
+  asset_query?: string | null;
+  claim_indexes: number[];
+};
+
+export type CreativePackage = {
+  version: number;
+  created_at: string;
+  model: string;
+  angle: string;
+  angle_claim_indexes: number[];
+  target_duration_sec: number;
+  hooks: HookOption[];
+  script_segments: CreativeScriptSegment[];
+  caption: string;
+  caption_claim_indexes: number[];
+  hashtags: string[];
+  scene_plan: CreativeScenePlan[];
 };
 
 
@@ -162,6 +199,7 @@ export type MediaStory = {
   };
   hooks: HookOption[];
   selected_hook_id?: string | null;
+  creative_package?: CreativePackage | null;
   script?: string | null;
   video_draft?: VideoDraft | null;
   render_job?: RenderJobRef | null;
