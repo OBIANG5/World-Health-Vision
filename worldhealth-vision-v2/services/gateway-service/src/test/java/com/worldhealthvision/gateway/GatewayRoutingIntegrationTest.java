@@ -142,6 +142,21 @@ class GatewayRoutingIntegrationTest {
     }
 
     @Test
+    void shouldRouteNationalComparisonsToAnalyticsAsReadOnly() {
+        webTestClient.get()
+                .uri("/api/product/countries/GAB/national-comparisons")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.service").isEqualTo("analytics")
+                .jsonPath("$.forwardedPath").isEqualTo("/api/analytics/countries/GAB/national-comparisons")
+                .jsonPath("$.forwardedMethod").isEqualTo("GET");
+
+        assertThat(lastAnalyticsPath.get()).isEqualTo("/api/analytics/countries/GAB/national-comparisons");
+        assertThat(lastAnalyticsMethod.get()).isEqualTo("GET");
+    }
+
+    @Test
     void shouldRewriteProductCountryOverviewToAnalyticsService() {
         webTestClient.get()
                 .uri("/api/product/countries/FRA/overview?indicatorCode=NY.GDP.MKTP.CD")
