@@ -1198,7 +1198,10 @@ def test_country_indicator_overview_uses_latest_common_historical_year_for_confi
         }:
             return response
         payload = response.json()
-        for row in payload.get("items", []):
+        # Iterate over a snapshot: this mock appends the older reference
+        # year to the returned series. Iterating the same growing list would
+        # recurse indefinitely and exhaust the CI runner.
+        for row in list(payload.get("items", [])):
             if row.get("sourceCode") != "IMF":
                 continue
             if request.url.path == "/api/timeseries/series/availability":
