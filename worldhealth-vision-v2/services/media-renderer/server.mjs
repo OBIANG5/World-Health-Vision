@@ -8,6 +8,7 @@ import {renderMedia, selectComposition} from "@remotion/renderer";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const outputDir = process.env.WHV_RENDER_OUTPUT_DIR || path.join(root, "output");
+const audioDir = process.env.WHV_RENDER_AUDIO_DIR || path.join(root, "audio");
 const port = Number.parseInt(process.env.WHV_RENDER_PORT || "8011", 10);
 const maxConcurrency = Math.max(
   1,
@@ -15,6 +16,7 @@ const maxConcurrency = Math.max(
 );
 
 mkdirSync(outputDir, {recursive: true});
+mkdirSync(audioDir, {recursive: true});
 
 const jobs = new Map();
 const queue = [];
@@ -82,8 +84,21 @@ const renderJob = async (job) => {
     const serveUrl = await getBundle();
 
     updateJob(job, {status: "rendering", progress: 0.05});
+    const rawVoiceover = job.payload.voiceover || null;
+    const voiceover = rawVoiceover?.renderer_url
+      ? {
+          ...rawVoiceover,
+          renderer_url: rawVoiceover.renderer_url.startsWith(
+            "/api/media-renderer/audio/",
+          )
+            ? `http://127.0.0.1:${port}${rawVoiceover.renderer_url}`
+            : rawVoiceover.renderer_url,
+        }
+      : rawVoiceover;
+
     const inputProps = {
       draft: job.payload.draft,
+      voiceover,
       story: job.payload.story,
       brand: job.payload.brand || {
         name: "WORLD-VISION",
@@ -190,6 +205,60 @@ const serveVideo = (req, res, filename) => {
   createReadStream(filePath, {start, end}).pipe(res);
 };
 
+const serveAudio = (req, res, filename) => {
+  if (!/^[A-Za-z0-9_-]+\.wav$/.test(filename)) {
+    json(res, 400, {detail: "Invalid audio filename."});
+    return;
+  }
+
+  const filePath = path.join(audioDir, filename);
+  if (!existsSync(filePath)) {
+    json(res, 404, {detail: "Audio not found."});
+    return;
+  }
+
+  const size = statSync(filePath).size;
+  const range = req.headers.range;
+
+  if (!range) {
+    res.writeHead(200, {
+      "content-type": "audio/wav",
+      "content-length": size,
+      "accept-ranges": "bytes",
+      "cache-control": "private, max-age=3600",
+    });
+    createReadStream(filePath).pipe(res);
+    return;
+  }
+
+  const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+  if (!match) {
+    res.writeHead(416, {"content-range": `bytes */${size}`});
+    res.end();
+    return;
+  }
+
+  const start = match[1] ? Number.parseInt(match[1], 10) : 0;
+  const end = match[2]
+    ? Math.min(Number.parseInt(match[2], 10), size - 1)
+    : size - 1;
+
+  if (start > end || start >= size) {
+    res.writeHead(416, {"content-range": `bytes */${size}`});
+    res.end();
+    return;
+  }
+
+  res.writeHead(206, {
+    "content-type": "audio/wav",
+    "content-length": end - start + 1,
+    "content-range": `bytes ${start}-${end}/${size}`,
+    "accept-ranges": "bytes",
+    "cache-control": "private, max-age=3600",
+  });
+  createReadStream(filePath, {start, end}).pipe(res);
+};
+
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
@@ -201,6 +270,7 @@ const server = createServer(async (req, res) => {
         running,
         queued: queue.length,
         concurrency: maxConcurrency,
+        audio_dir: audioDir,
       });
       return;
     }
@@ -243,6 +313,12 @@ const server = createServer(async (req, res) => {
         return;
       }
       json(res, 200, publicJob(job));
+      return;
+    }
+
+    const audioMatch = /^\/api\/media-renderer\/audio\/([^/]+)$/.exec(url.pathname);
+    if (req.method === "GET" && audioMatch) {
+      serveAudio(req, res, audioMatch[1]);
       return;
     }
 
