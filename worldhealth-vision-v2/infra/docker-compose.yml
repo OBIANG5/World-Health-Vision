@@ -181,6 +181,7 @@ services:
       WHV_MEDIA_DATABASE_POOL_MIN_SIZE: 1
       WHV_MEDIA_DATABASE_POOL_MAX_SIZE: 5
       WHV_MEDIA_SEED_DEMO_STORY: "false"
+      WHV_MEDIA_CATALOG_BASE_URL: http://catalog-service:8080
       WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
       WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
@@ -192,6 +193,8 @@ services:
       WHV_MEDIA_RADAR_SCHEDULER_HEARTBEAT_TTL_SECONDS: 120
       WHV_MEDIA_RADAR_SCHEDULER_LOCK_TTL_SECONDS: 240
     depends_on:
+      catalog-service:
+        condition: service_healthy
       media-renderer:
         condition: service_healthy
       whv-timescaledb:
@@ -222,6 +225,7 @@ services:
       WHV_MEDIA_DATABASE_POOL_MIN_SIZE: 1
       WHV_MEDIA_DATABASE_POOL_MAX_SIZE: 3
       WHV_MEDIA_SEED_DEMO_STORY: "false"
+      WHV_MEDIA_CATALOG_BASE_URL: http://catalog-service:8080
       WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
       WHV_MEDIA_REDIS_URL: redis://redis:6379/0
@@ -233,6 +237,8 @@ services:
       WHV_MEDIA_RADAR_SCHEDULER_HEARTBEAT_TTL_SECONDS: 120
       WHV_MEDIA_RADAR_SCHEDULER_LOCK_TTL_SECONDS: 240
     depends_on:
+      catalog-service:
+        condition: service_healthy
       media-service:
         condition: service_healthy
       whv-timescaledb:
