@@ -86,6 +86,43 @@ export interface CountryDocumentedRelease {
   reviewedOn: string;
 }
 
+/** Canonical observations, not estimates copied from a press article. */
+export interface NationalInternationalReference {
+  sourceCode: string;
+  sourceDisplayName: string;
+  datasetCode: string;
+  periodStart: string;
+  periodEnd: string;
+  periodLabel: string;
+  numericValue: number;
+  valueStatus: "OBSERVED" | "ESTIMATED";
+  sourcePublishedAt: string | null;
+  fetchedAtUtc: string | null;
+}
+
+export type NationalComparisonStatus =
+  | "NO_INTERNATIONAL_OBSERVATIONS"
+  | "DIFFERENT_REFERENCE_PERIOD"
+  | "SAME_YEAR_METHOD_NOT_VERIFIED";
+
+export interface NationalReleaseComparison {
+  releaseCode: string;
+  indicatorCode: string;
+  localSourceCode: string;
+  localReferenceYear: number;
+  internationalLatest: NationalInternationalReference[];
+  status: NationalComparisonStatus;
+  comparableByMethod: boolean;
+  numericalDifference: number | null;
+  explanation: string;
+}
+
+export interface CountryNationalComparisons {
+  countryIso3: string;
+  comparisonCount: number;
+  comparisons: NationalReleaseComparison[];
+}
+
 export interface CountryLocalContext {
   countryIso3: string;
   localSourceCount: number;
