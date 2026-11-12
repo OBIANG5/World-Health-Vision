@@ -15,6 +15,7 @@ from media_service.models import (
     RadarSourceCandidate,
     RenderJobRef,
     HookOption,
+    MediaAsset,
     VerificationReport,
 )
 from media_service.radar import RadarDiscovery
@@ -161,6 +162,38 @@ class StubCreativeClient:
         )
 
 
+class StubCreativePhotoClient(StubCreativeClient):
+    async def generate(self, story, request):
+        package = await super().generate(story, request)
+        package.scene_plan[0].visual_kind = "real_photo"
+        package.scene_plan[0].asset_query = "RDC riposte sanitaire Kinshasa"
+        return package
+
+
+class StubAssetsClient:
+    async def search_images(self, query, *, limit=4):
+        return [
+            MediaAsset(
+                id="asset-approved-rdc",
+                provider="wikimedia_commons",
+                title="Kinshasa, République démocratique du Congo",
+                kind="image",
+                source_page_url="https://commons.wikimedia.org/wiki/File:Kinshasa_test.jpg",
+                media_url="https://upload.wikimedia.org/test/kinshasa.jpg",
+                thumbnail_url="https://upload.wikimedia.org/test/1080px-kinshasa.jpg",
+                mime_type="image/jpeg",
+                author="Test Photographer",
+                license_name="CC BY 4.0",
+                license_url="https://creativecommons.org/licenses/by/4.0/",
+                attribution="Test Photographer · CC BY 4.0 · Wikimedia Commons",
+                rights_status="approved",
+                rights_note="Licence Creative Commons BY détectée.",
+                query=query,
+                discovered_at=datetime.now(timezone.utc),
+            )
+        ][:limit]
+
+
 class StubRendererClient:
     def __init__(self):
         self.jobs: dict[str, RenderJobRef] = {}
@@ -198,6 +231,7 @@ def setup_function():
     media_api.RADAR_CLIENT = StubRadarClient()
     media_api.VERIFICATION_CLIENT = StubVerificationClient()
     media_api.CREATIVE_CLIENT = StubCreativeClient()
+    media_api.WIKIMEDIA_CLIENT = StubAssetsClient()
 
 
 def test_health_and_dashboard():
@@ -501,3 +535,68 @@ def test_verified_approved_story_can_generate_creative_and_prepare_draft():
     assert body["status"] == "scripting"
     assert body["video_draft"]["hook_id"] == hook_id
     assert body["video_draft"]["scenes"][0]["on_screen_text"].startswith("🇨🇩")
+
+
+
+def test_real_photo_creative_requires_licensed_assets_before_final_draft():
+    media_api.CREATIVE_CLIENT = StubCreativePhotoClient()
+
+    scan = client.post(
+        "/api/media/radar/scans",
+        json={"hours": 3, "max_candidates": 10},
+    )
+    assert scan.status_code == 200
+    story_id = scan.json()["stories_created"][0]
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/verify",
+        json={"max_claims": 6},
+    ).status_code == 200
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "approve"},
+    ).status_code == 200
+
+    creative = client.post(
+        f"/api/media/stories/{story_id}/creative/generate",
+        json={"target_duration_sec": 15, "max_hooks": 3},
+    )
+    assert creative.status_code == 200
+    hook_id = creative.json()["hooks"][0]["id"]
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/hooks/select",
+        json={"hook_id": hook_id},
+    ).status_code == 200
+
+    blocked = client.post(
+        f"/api/media/stories/{story_id}/draft/prepare",
+        json={},
+    )
+    assert blocked.status_code == 409
+    assert "asset" in blocked.json()["detail"].lower()
+
+    discovered = client.post(
+        f"/api/media/stories/{story_id}/assets/discover",
+        json={"limit_per_scene": 4},
+    )
+    assert discovered.status_code == 200
+    asset_story = discovered.json()
+    assert asset_story["status"] == "assets"
+    assert asset_story["qa"]["rights"] == "pass"
+    assert asset_story["asset_bundle"]["unresolved_scene_orders"] == []
+    assert asset_story["asset_bundle"]["selections"][0]["asset_id"] == "asset-approved-rdc"
+
+    draft = client.post(
+        f"/api/media/stories/{story_id}/draft/prepare",
+        json={},
+    )
+    assert draft.status_code == 200
+    body = draft.json()
+    assert body["status"] == "scripting"
+    scene = body["video_draft"]["scenes"][0]
+    assert scene["asset_id"] == "asset-approved-rdc"
+    assert scene["asset_url"].endswith("1080px-kinshasa.jpg")
+    assert "Test Photographer" in scene["asset_attribution"]
+    assert scene["asset_license"] == "CC BY 4.0"
