@@ -774,3 +774,47 @@ def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
     )
     assert ready.status_code == 200
     assert ready.json()["status"] == "publish_ready"
+
+    package = client.post(
+        f"/api/media/stories/{story_id}/publication/prepare",
+        json={"target_channels": ["tiktok", "whatsapp"]},
+    )
+    assert package.status_code == 200
+    package_story = package.json()
+    assert package_story["status"] == "publish_ready"
+    assert len(package_story["publication_package"]["manifest_sha256"]) == 64
+    assert package_story["publication_package"]["video_url"].endswith(".mp4")
+    assert "Sources" in package_story["publication_package"]["whatsapp_text"]
+    assert package_story["publication_package"]["ai_disclosure"] == "Voix générée par IA"
+
+    missing_proof = client.post(
+        f"/api/media/stories/{story_id}/publication/confirm",
+        json={"channel": "tiktok"},
+    )
+    assert missing_proof.status_code == 409
+
+    tiktok = client.post(
+        f"/api/media/stories/{story_id}/publication/confirm",
+        json={
+            "channel": "tiktok",
+            "external_id": "tiktok-post-123",
+        },
+    )
+    assert tiktok.status_code == 200
+    assert tiktok.json()["status"] == "publish_ready"
+    assert len(tiktok.json()["publication_receipts"]) == 1
+
+    whatsapp = client.post(
+        f"/api/media/stories/{story_id}/publication/confirm",
+        json={
+            "channel": "whatsapp",
+            "public_url": "https://whatsapp.com/channel/example/post/456",
+        },
+    )
+    assert whatsapp.status_code == 200
+    published_story = whatsapp.json()
+    assert published_story["status"] == "published"
+    assert {
+        receipt["channel"]
+        for receipt in published_story["publication_receipts"]
+    } == {"tiktok", "whatsapp"}
