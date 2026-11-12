@@ -287,6 +287,10 @@ async def retry_preview_render(story_id: str) -> MediaStory:
             raise MediaWorkflowConflictError(
                 "Only a failed preview render can be retried."
             )
+        if story.render_job.attempts >= story.render_job.max_attempts:
+            raise MediaWorkflowConflictError(
+                "Preview render retry limit has been reached."
+            )
         render_job = await RENDERER_CLIENT.retry_job(story.render_job.id)
         return STORE.sync_render_job(story_id, render_job)
     except MediaStoryNotFoundError as exc:
@@ -361,6 +365,10 @@ async def retry_tiktok_clean_export(story_id: str) -> MediaStory:
         if export.render_job.status != "failed":
             raise MediaWorkflowConflictError(
                 "Only a failed TikTok clean export can be retried."
+            )
+        if export.render_job.attempts >= export.render_job.max_attempts:
+            raise MediaWorkflowConflictError(
+                "TikTok clean export retry limit has been reached."
             )
         render_job = await RENDERER_CLIENT.retry_job(export.render_job.id)
         return STORE.sync_channel_export(story_id, "tiktok", render_job)
