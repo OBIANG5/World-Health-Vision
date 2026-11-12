@@ -22,6 +22,10 @@
   const regions=[...regionMap.values()].sort((a,b)=>
     a.type.localeCompare(b.type)||a.displayName.localeCompare(b.displayName));
   const sources=window.__WHV_PREVIEW_SOURCES__||[];
+  const nationalContexts=window.__WHV_PREVIEW_LOCAL_CONTEXT__||{};
+  const countrySourceCoverage=window.__WHV_PREVIEW_COUNTRY_COVERAGE__||null;
+  // These snapshots were extracted from versioned V24-V26 SQL migrations.
+  // They are NOT responses from a running V2 Catalog or TimescaleDB service.
   // axios choisit son adaptateur fetch plutôt que XMLHttpRequest.
   try { window.XMLHttpRequest=undefined; } catch(_) {}
   for(const key of ["localStorage","sessionStorage"]) {
@@ -59,6 +63,20 @@
       const endpoint="https://api.frankfurter.dev/v1"+suffix+src.search;
       return baseFetch(endpoint,{...init,mode:"cors",credentials:"omit"});
     }
+    if(path==="/api/catalog/local-sources/coverage") {
+      return countrySourceCoverage
+        ?json(countrySourceCoverage)
+        :json({detail:"Instantané des sources nationales absent"},503);
+    }
+    const localMatch=path.match(/^\/api\/catalog\/countries\/([A-Z]{3})\/local-context$/i);
+    if(localMatch){
+      const iso3=localMatch[1].toUpperCase();
+      if(!byCode.has(iso3))return json({detail:"Pays introuvable"},404);
+      const snapshot=nationalContexts[iso3];
+      return snapshot
+        ?json(snapshot)
+        :json({detail:"Catalogue local non disponible dans cet aperçu"},503);
+    }
     if(path==="/api/catalog/countries") return json({count:countries.length,items:countries});
     if(path.startsWith("/api/catalog/countries/")){
       const country=byCode.get(decodeURIComponent(path.split("/").at(-1)).toUpperCase());
@@ -93,9 +111,15 @@
       if(regionSnap[2]==="relative-cost")Object.assign(body,{decisionSignalCount:0,decisionSignals:[]});
       return json(body);
     }
+    if(/^\/api\/product\/countries\/[A-Z]{3}\/national-comparisons$/.test(path)){
+      return json({detail:
+        "Aperçu statique : comparaison nationale et séries internationales indisponibles sans backend. Le recensement local est une publication SQL documentée, non une observation ingérée."},503);
+    }
     if(path.startsWith("/api/"))return json({detail:
        "Service backend désactivé dans l'aperçu : aucune donnée statistique simulée."},503);
     return baseFetch(input,init);
   };
-  console.info("World Health Vision V2 — aperçu transparent sans backend, "+sources.length+" sources référencées (pas nécessairement ingérées).");
+  console.info("World Health Vision V2 — aperçu transparent sans backend, "+sources.length+
+    " sources mondiales, "+Object.values(nationalContexts).reduce((n,c)=>n+c.localSourceCount,0)+
+    " liens institutionnels locaux SQL versionnés ; aucune donnée économique mondiale simulée.");
 })();
