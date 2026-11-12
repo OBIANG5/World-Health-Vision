@@ -119,6 +119,113 @@ Règles:
 """.strip()
 
 
+def adjudicate_verification(
+    *,
+    story: MediaStory,
+    raw_claims: list[object],
+    retrieved_urls: list[str],
+    model: str,
+) -> VerificationReport:
+    retrieved_set = set(retrieved_urls)
+    claims: list[ClaimVerification] = []
+
+    max_claims = 10
+    for raw_claim in raw_claims[:max_claims]:
+        if not isinstance(raw_claim, dict):
+            continue
+
+        claim_text = raw_claim.get("claim")
+        explanation = raw_claim.get("explanation")
+        if not isinstance(claim_text, str) or not claim_text.strip():
+            continue
+        if not isinstance(explanation, str):
+            explanation = ""
+
+        supporting = _dedupe_valid_urls(
+            raw_claim.get("supporting_urls"),
+            retrieved_set,
+        )
+        contradicting = _dedupe_valid_urls(
+            raw_claim.get("contradicting_urls"),
+            retrieved_set,
+        )
+
+        if contradicting:
+            status = "conflicting"
+        elif supporting:
+            status = "verified"
+        else:
+            status = "unresolved"
+
+        claims.append(
+            ClaimVerification(
+                claim=claim_text.strip(),
+                status=status,
+                supporting_urls=supporting,
+                contradicting_urls=contradicting,
+                explanation=explanation.strip(),
+            )
+        )
+
+    support_urls = {
+        url
+        for claim in claims
+        for url in claim.supporting_urls
+    }
+    primary_urls = {
+        canonical_url(source.url)
+        for source in story.sources
+        if source.is_primary
+    }
+    has_primary_support = bool(support_urls.intersection(primary_urls))
+
+    conflicting = sum(claim.status == "conflicting" for claim in claims)
+    verified = sum(claim.status == "verified" for claim in claims)
+    unresolved = sum(claim.status == "unresolved" for claim in claims)
+
+    if conflicting:
+        verdict = "conflicting"
+    elif claims and unresolved == 0 and (
+        len(support_urls) >= 2 or has_primary_support
+    ):
+        verdict = "verified"
+    elif verified:
+        verdict = "partially_verified"
+    else:
+        verdict = "unverified"
+
+    if not claims:
+        confidence = 0
+    else:
+        verified_ratio = verified / len(claims)
+        confidence = round(
+            verified_ratio * 70
+            + min(len(support_urls), 3) * 7
+            + (9 if has_primary_support else 0)
+        )
+        if conflicting:
+            confidence = min(confidence, 45)
+        confidence = max(0, min(100, confidence))
+
+    previous_version = (
+        story.verification_report.version
+        if story.verification_report is not None
+        else 0
+    )
+
+    return VerificationReport(
+        version=previous_version + 1,
+        checked_at=datetime.now(timezone.utc),
+        model=model,
+        retrieved_urls=retrieved_urls,
+        claims=claims,
+        distinct_supporting_sources=len(support_urls),
+        has_primary_support=has_primary_support,
+        verdict=verdict,
+        confidence_score=confidence,
+    )
+
+
 class OpenAIVerificationClient:
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or get_settings()
@@ -184,7 +291,6 @@ class OpenAIVerificationClient:
             )
 
         retrieved_urls = _extract_retrieved_urls(payload)
-        retrieved_set = set(retrieved_urls)
 
         try:
             raw = json.loads(_extract_output_text(payload))
@@ -194,100 +300,11 @@ class OpenAIVerificationClient:
                 "OpenAI VERIFY returned invalid JSON."
             ) from exc
 
-        claims: list[ClaimVerification] = []
-        for raw_claim in raw_claims[: request.max_claims]:
-            if not isinstance(raw_claim, dict):
-                continue
-
-            claim_text = raw_claim.get("claim")
-            explanation = raw_claim.get("explanation")
-            if not isinstance(claim_text, str) or not claim_text.strip():
-                continue
-            if not isinstance(explanation, str):
-                explanation = ""
-
-            supporting = _dedupe_valid_urls(
-                raw_claim.get("supporting_urls"),
-                retrieved_set,
-            )
-            contradicting = _dedupe_valid_urls(
-                raw_claim.get("contradicting_urls"),
-                retrieved_set,
-            )
-
-            if contradicting:
-                status = "conflicting"
-            elif supporting:
-                status = "verified"
-            else:
-                status = "unresolved"
-
-            claims.append(
-                ClaimVerification(
-                    claim=claim_text.strip(),
-                    status=status,
-                    supporting_urls=supporting,
-                    contradicting_urls=contradicting,
-                    explanation=explanation.strip(),
-                )
-            )
-
-        support_urls = {
-            url
-            for claim in claims
-            for url in claim.supporting_urls
-        }
-        primary_urls = {
-            canonical_url(source.url)
-            for source in story.sources
-            if source.is_primary
-        }
-        has_primary_support = bool(support_urls.intersection(primary_urls))
-
-        conflicting = sum(claim.status == "conflicting" for claim in claims)
-        verified = sum(claim.status == "verified" for claim in claims)
-        unresolved = sum(claim.status == "unresolved" for claim in claims)
-
-        if conflicting:
-            verdict = "conflicting"
-        elif claims and unresolved == 0 and (
-            len(support_urls) >= 2 or has_primary_support
-        ):
-            verdict = "verified"
-        elif verified:
-            verdict = "partially_verified"
-        else:
-            verdict = "unverified"
-
-        if not claims:
-            confidence = 0
-        else:
-            verified_ratio = verified / len(claims)
-            confidence = round(
-                verified_ratio * 70
-                + min(len(support_urls), 3) * 7
-                + (9 if has_primary_support else 0)
-            )
-            if conflicting:
-                confidence = min(confidence, 45)
-            confidence = max(0, min(100, confidence))
-
-        previous_version = (
-            story.verification_report.version
-            if story.verification_report is not None
-            else 0
-        )
-
-        return VerificationReport(
-            version=previous_version + 1,
-            checked_at=datetime.now(timezone.utc),
-            model=self.settings.verification_model,
+        return adjudicate_verification(
+            story=story,
+            raw_claims=raw_claims,
             retrieved_urls=retrieved_urls,
-            claims=claims,
-            distinct_supporting_sources=len(support_urls),
-            has_primary_support=has_primary_support,
-            verdict=verdict,
-            confidence_score=confidence,
+            model=self.settings.verification_model,
         )
 
 
