@@ -1234,6 +1234,16 @@ function StoryInspector({
                               <strong>{asset.title}</strong>
                               <span>{asset.author ?? "Auteur non renseigné"}</span>
                               <span>{asset.license_name ?? "Licence non renseignée"}</span>
+                              {(asset.width || asset.height || asset.size_bytes) && (
+                                <span>
+                                  {asset.width && asset.height
+                                    ? `${asset.width}×${asset.height}`
+                                    : "dimensions inconnues"}
+                                  {asset.size_bytes
+                                    ? ` · ${(asset.size_bytes / 1_000_000).toFixed(1)} Mo`
+                                    : ""}
+                                </span>
+                              )}
                               <small>{asset.rights_note}</small>
                             </div>
                             <div className="wv-media-asset-card-actions">
