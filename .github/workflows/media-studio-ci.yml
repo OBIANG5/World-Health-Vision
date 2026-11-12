@@ -5,70 +5,75 @@ on:
     branches:
       - feature/world-vision-media-studio
     paths:
-      - "frontend/web/**"
-      - "services/api-service/**"
-      - "docs/media/**"
+      - "worldhealth-vision-v2/frontend/web-v2/**"
+      - "worldhealth-vision-v2/services/media-service/**"
+      - "worldhealth-vision-v2/services/gateway-service/**"
+      - "worldhealth-vision-v2/infra/**"
+      - "worldhealth-vision-v2/docs/media/**"
       - ".github/workflows/media-studio-ci.yml"
-  pull_request:
-    branches:
-      - v2
-    paths:
-      - "frontend/web/**"
-      - "services/api-service/**"
-      - "docs/media/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  backend:
-    name: Backend syntax and media domain
+  media-service:
+    name: Media service tests
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: services/api-service
+        working-directory: worldhealth-vision-v2/services/media-service
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Install backend dependencies
-        run: pip install -r requirements.txt
-
-      - name: Compile backend
-        run: python -m compileall -q app main.py
-
-      - name: Smoke-test editorial scoring
-        run: |
-          python - <<'PY'
-          from app.media_store import STORE
-          from app.media_scoring import compute_editorial_score
-
-          stories = STORE.list()
-          assert stories, "Media Studio needs at least one seed story"
-          story = stories[0]
-          recomputed = compute_editorial_score(story.score.factors)
-          assert 0 <= recomputed.total <= 100
-          assert story.sources, "Story provenance must never be empty"
-          print(f"story={story.id} score={recomputed.total} sources={len(story.sources)}")
-          PY
+      - name: Install media service
+        run: pip install -e '.[dev]'
+      - name: Compile media service
+        run: python -m compileall -q src
+      - name: Run media tests
+        run: pytest -q
 
   frontend:
-    name: Frontend TypeScript build
+    name: Canonical V2 frontend build
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend/web
+        working-directory: worldhealth-vision-v2/frontend/web-v2
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: frontend/web/package-lock.json
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
 
-      - name: Install frontend dependencies
-        run: npm ci
+  gateway:
+    name: Gateway tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - run: chmod +x mvnw
+      - run: ./mvnw -B -ntp -pl services/gateway-service -am test
 
-      - name: Build frontend
-        run: npm run build
+  compose:
+    name: Docker Compose validation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f infra/docker-compose.yml config --quiet
