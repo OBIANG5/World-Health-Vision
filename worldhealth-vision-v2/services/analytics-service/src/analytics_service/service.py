@@ -346,7 +346,9 @@ class AnalyticsService:
                     trendDirection=item.trend.direction,
                     latestComparableValue=item.divergence.medianNumericValue,
                     latestComparableSourceCount=item.divergence.comparableValueCount,
-                    latestPeriodLabel=item.trend.latestPeriodLabel,
+                    # The summary value is from the historical aligned period,
+                    # not necessarily the primary source's latest trend year.
+                    latestPeriodLabel=item.divergence.latestComparablePeriodLabel,
                     selectedSourceCode=item.trend.sourceCode,
                     selectedDatasetCode=item.trend.datasetCode,
                     divergenceRangeAbsolute=item.divergence.rangeAbsolute,
