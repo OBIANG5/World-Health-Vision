@@ -3,6 +3,9 @@ import type {
   CatalogListResponse,
   CompareCountriesResponse,
   CountryDetail,
+  CountryLocalContext,
+  CountryLocalCoverageOverview,
+  CountryNationalComparisons,
   CountryEconomicSnapshotResponse,
   CountryRelativeCostSnapshotResponse,
   CountrySummary,
@@ -95,6 +98,9 @@ const rankCache = new AsyncCache<IndicatorRankResponse>();
 const overviewCache = new AsyncCache<IndicatorOverviewResponse>();
 const historyCache = new AsyncCache<TimeseriesSeriesResponse>();
 const sourceCoverageCache = new AsyncCache<SourceDataCoverage[]>(2 * 60 * 1000);
+const countryLocalContextCache = new AsyncCache<CountryLocalContext>(2 * 60 * 1000);
+const countrySourceCoverageCache = new AsyncCache<CountryLocalCoverageOverview>(2 * 60 * 1000);
+const nationalComparisonCache = new AsyncCache<CountryNationalComparisons>(2 * 60 * 1000);
 
 export async function fetchCountries(): Promise<CountrySummary[]> {
   try {
@@ -124,6 +130,82 @@ export async function fetchCountryDetail(iso3: string): Promise<CountryDetail> {
   } catch (error) {
     throw new Error(`Unable to load country details: ${extractErrorMessage(error)}`);
   }
+}
+
+/**
+ * Separate, documented national evidence. No fallback to fictional local
+ * values when a backend is unreachable; callers must show "not verifiable".
+ */
+export async function fetchCountryLocalContext(iso3: string): Promise<CountryLocalContext> {
+  const code = iso3.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(code)) throw new Error("Invalid ISO3 country code");
+  return countryLocalContextCache.get(code, async () => {
+    try {
+      const response = await whvApi.get<CountryLocalContext>(
+        `/api/catalog/countries/${encodeURIComponent(code)}/local-context`,
+        { timeout: 15000 },
+      );
+      const data = response.data;
+      if (data.countryIso3 !== code || !Array.isArray(data.localSources) ||
+          !Array.isArray(data.documentedReleases)) {
+        throw new Error("Unexpected national evidence response");
+      }
+      return data;
+    } catch (error) {
+      throw new Error(`Unable to verify local country sources: ${extractErrorMessage(error)}`);
+    }
+  });
+}
+
+/** World-wide source research audit from the real country registry, including gaps. */
+export async function fetchCountrySourceCoverage(): Promise<CountryLocalCoverageOverview> {
+  return countrySourceCoverageCache.get("all", async () => {
+    try {
+      const response = await whvApi.get<CountryLocalCoverageOverview>(
+        "/api/catalog/local-sources/coverage",
+        { params: { limit: 500, offset: 0 }, timeout: 20000 },
+      );
+      const data = response.data;
+      if (!Array.isArray(data.items)
+          || !Number.isInteger(data.totalCountryCount)
+          || !Number.isInteger(data.countriesNotResearchedLocally)
+          || data.totalCountryCount < 0
+          || data.returnedCount !== data.items.length
+          || data.totalCountryCount < data.returnedCount) {
+        throw new Error("Unexpected country coverage response");
+      }
+      return data;
+    } catch (error) {
+      throw new Error(`Unable to verify national source research: ${extractErrorMessage(error)}`);
+    }
+  });
+}
+
+/**
+ * Read canonical international values alongside documented national releases.
+ * A dependency failure is NOT rewritten as a "0 observations" claim.
+ */
+export async function fetchCountryNationalComparisons(
+  iso3: string,
+): Promise<CountryNationalComparisons> {
+  const code = iso3.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(code)) throw new Error("Invalid ISO3 country code");
+  return nationalComparisonCache.get(code, async () => {
+    try {
+      const response = await whvApi.get<CountryNationalComparisons>(
+        `/api/product/countries/${encodeURIComponent(code)}/national-comparisons`,
+        { timeout: 15000 },
+      );
+      const data = response.data;
+      if (data.countryIso3 !== code || !Array.isArray(data.comparisons) ||
+          data.comparisonCount !== data.comparisons.length) {
+        throw new Error("Invalid national comparison response");
+      }
+      return data;
+    } catch (error) {
+      throw new Error(`Unable to verify canonical international series: ${extractErrorMessage(error)}`);
+    }
+  });
 }
 
 export async function fetchCountryEconomicSnapshot(
