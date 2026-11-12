@@ -1,8 +1,13 @@
 import asyncio
 from datetime import datetime, timezone
 
-from media_service.asset_workflow import discover_asset_bundle
+from media_service.asset_workflow import (
+    discover_asset_bundle,
+    recompute_unresolved_scene_orders,
+)
 from media_service.models import (
+    AssetBundle,
+    AssetSelection,
     CreativePackage,
     CreativeScenePlan,
     CreativeScriptSegment,
@@ -184,3 +189,27 @@ def test_real_video_scene_stays_unresolved_when_only_photo_is_available():
 
     assert bundle.selections == []
     assert bundle.unresolved_scene_orders == [1]
+
+
+
+def test_recompute_keeps_video_scene_unresolved_with_selected_photo():
+    story = creative_story(visual_kind="real_video")
+    selected_photo = asset(
+        "photo-approved",
+        "approved",
+        kind="image",
+    )
+    bundle = AssetBundle(
+        version=1,
+        discovered_at=datetime.now(timezone.utc),
+        assets=[selected_photo],
+        selections=[
+            AssetSelection(
+                scene_order=1,
+                asset_id=selected_photo.id,
+            )
+        ],
+        unresolved_scene_orders=[],
+    )
+
+    assert recompute_unresolved_scene_orders(story, bundle) == [1]
