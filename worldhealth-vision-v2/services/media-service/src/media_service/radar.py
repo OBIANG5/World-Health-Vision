@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from dataclasses import dataclass
 from urllib.parse import urlsplit, urlunsplit
@@ -8,9 +9,18 @@ from uuid import uuid4
 import httpx
 from pydantic import ValidationError
 
+from media_service.catalog_client import (
+    CATALOG_CLIENT,
+    CatalogClient,
+    CatalogLocalSource,
+)
 from media_service.models import RadarCandidate, RadarScanRequest
 from media_service.settings import Settings, get_settings
-from media_service.source_registry import priority_sources, resolve_source
+from media_service.source_registry import (
+    normalized_domain,
+    priority_sources,
+    resolve_source,
+)
 
 
 class RadarConfigurationError(RuntimeError):
@@ -228,13 +238,84 @@ def _extract_retrieved_urls(payload: dict) -> list[str]:
     return sorted(urls)
 
 
-def _build_prompt(request: RadarScanRequest) -> str:
+def _catalog_source_type(source: CatalogLocalSource) -> str:
+    if source.source_role == "NEWS_AGENCY":
+        return "press_agency"
+    if source.source_role == "LOCAL_NEWSROOM":
+        return "media"
+    if source.source_role == "RESEARCH_INSTITUTION":
+        return "research"
+    if source.source_type == "LOCAL_RESEARCH":
+        return "research"
+    if source.source_type == "LOCAL_MEDIA":
+        return "media"
+    if source.source_type == "NATIONAL_OFFICIAL":
+        return "institution"
+    return "other"
+
+
+def _catalog_source_is_primary(source: CatalogLocalSource) -> bool:
+    return source.source_type == "NATIONAL_OFFICIAL"
+
+
+def _verified_catalog_sources(
+    sources: list[CatalogLocalSource],
+) -> list[CatalogLocalSource]:
+    return [
+        source
+        for source in sources
+        if source.verification_state == "VERIFIED_ORGANIZATION"
+    ]
+
+
+def _match_catalog_source(
+    url: str,
+    sources: list[CatalogLocalSource],
+) -> CatalogLocalSource | None:
+    domain = normalized_domain(url)
+    if not domain:
+        return None
+
+    for source in _verified_catalog_sources(sources):
+        for registered_url in (source.homepage_url, source.evidence_url):
+            registered_domain = normalized_domain(registered_url)
+            if not registered_domain:
+                continue
+            if (
+                domain == registered_domain
+                or domain.endswith("." + registered_domain)
+                or registered_domain.endswith("." + domain)
+            ):
+                return source
+    return None
+
+
+def _build_prompt(
+    request: RadarScanRequest,
+    catalog_sources: list[CatalogLocalSource] | None = None,
+) -> str:
     country = request.country_iso3.upper() if request.country_iso3 else None
-    preferred = priority_sources(country)
-    source_lines = "\n".join(
-        f"- {entry.name}: {entry.domain} ({entry.scope}, priorité {entry.priority})"
-        for entry in preferred
-    )
+
+    source_lines: list[str] = []
+    seen_domains: set[str] = set()
+
+    for source in _verified_catalog_sources(catalog_sources or []):
+        domain = normalized_domain(source.homepage_url)
+        if domain:
+            seen_domains.add(domain)
+        source_lines.append(
+            f"- {source.display_name}: {source.homepage_url} "
+            f"(catalogue V2 vérifié, rôle={source.source_role}, pays={source.country_iso3})"
+        )
+
+    for entry in priority_sources(country):
+        if entry.domain in seen_domains:
+            continue
+        source_lines.append(
+            f"- {entry.name}: {entry.domain} ({entry.scope}, priorité {entry.priority})"
+        )
+
+    source_text = "\n".join(source_lines) or "- aucune source prioritaire spécifique"
 
     scope_line = (
         f"Concentre le scan sur le pays ISO3 {country}, sans ignorer un événement "
@@ -261,7 +342,7 @@ Objectif éditorial:
 - produire les textes et hooks en français.
 
 Sources prioritaires déjà connues (liste non exhaustive):
-{source_lines}
+{source_text}
 
 Retourne au maximum {request.max_candidates} candidats, classés du plus intéressant au moins intéressant.
 Pour chaque source, donne l'URL EXACTE réellement consultée pendant la recherche.
@@ -272,8 +353,13 @@ Propose jusqu'à 3 hooks par sujet; ils doivent être courts, factuels, parlants
 
 
 class OpenAIRadarClient:
-    def __init__(self, settings: Settings | None = None) -> None:
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        catalog_client: CatalogClient | None = None,
+    ) -> None:
         self.settings = settings or get_settings()
+        self.catalog_client = catalog_client or CATALOG_CLIENT
 
     async def scan(self, request: RadarScanRequest) -> RadarDiscovery:
         if not self.settings.openai_api_key:
@@ -282,7 +368,17 @@ class OpenAIRadarClient:
             )
 
         scan_id = f"radar-{uuid4().hex[:12]}"
-        prompt = _build_prompt(request)
+        requested_country = (
+            request.country_iso3.upper()
+            if request.country_iso3
+            else None
+        )
+        requested_catalog_sources = (
+            await self.catalog_client.get_country_local_sources(requested_country)
+            if requested_country
+            else []
+        )
+        prompt = _build_prompt(request, requested_catalog_sources)
         body = {
             "model": self.settings.radar_model,
             "reasoning": {"effort": "low"},
@@ -338,6 +434,28 @@ class OpenAIRadarClient:
         except (json.JSONDecodeError, TypeError) as exc:
             raise RadarProviderError("OpenAI RADAR returned invalid JSON.") from exc
 
+        country_codes = {
+            value.strip().upper()
+            for raw_candidate in raw_candidates[: request.max_candidates]
+            if isinstance(raw_candidate, dict)
+            for value in [raw_candidate.get("country_iso3")]
+            if isinstance(value, str) and len(value.strip()) == 3
+        }
+
+        catalog_by_country: dict[str, list[CatalogLocalSource]] = {}
+        if requested_country:
+            catalog_by_country[requested_country] = requested_catalog_sources
+
+        missing_countries = sorted(country_codes.difference(catalog_by_country))
+        if missing_countries:
+            fetched = await asyncio.gather(
+                *(
+                    self.catalog_client.get_country_local_sources(country)
+                    for country in missing_countries
+                )
+            )
+            catalog_by_country.update(zip(missing_countries, fetched))
+
         accepted: list[RadarCandidate] = []
         rejected = 0
 
@@ -354,15 +472,59 @@ class OpenAIRadarClient:
                 if normalized not in retrieved_set:
                     continue
 
-                registered = resolve_source(source["url"])
-                if registered:
+                candidate_country = raw_candidate.get("country_iso3")
+                source_country = source.get("country_iso3")
+                country = (
+                    source_country.strip().upper()
+                    if isinstance(source_country, str) and len(source_country.strip()) == 3
+                    else (
+                        candidate_country.strip().upper()
+                        if isinstance(candidate_country, str)
+                        and len(candidate_country.strip()) == 3
+                        else None
+                    )
+                )
+
+                catalog_source = (
+                    _match_catalog_source(
+                        source["url"],
+                        catalog_by_country.get(country, []),
+                    )
+                    if country
+                    else None
+                )
+
+                if catalog_source is not None:
                     source = {
                         **source,
-                        "name": registered.name,
-                        "source_type": registered.source_type,
-                        "scope": registered.scope,
-                        "country_iso3": registered.country_iso3 or source.get("country_iso3"),
+                        "name": catalog_source.display_name,
+                        "source_type": _catalog_source_type(catalog_source),
+                        "scope": "local",
+                        "country_iso3": catalog_source.country_iso3,
+                        "is_primary": _catalog_source_is_primary(catalog_source),
+                        "note": (
+                            f"{catalog_source.methodology_caveat} "
+                            f"Organisation vérifiée dans le catalogue V2 "
+                            f"le {catalog_source.last_reviewed_on}."
+                        ).strip(),
+                        "rights_note": catalog_source.reuse_rights_note,
                     }
+                else:
+                    registered = resolve_source(source["url"])
+                    if registered:
+                        source = {
+                            **source,
+                            "name": registered.name,
+                            "source_type": registered.source_type,
+                            "scope": registered.scope,
+                            "country_iso3": (
+                                registered.country_iso3
+                                or source.get("country_iso3")
+                            ),
+                            "is_primary": registered.is_primary,
+                            "note": registered.note or source.get("note", ""),
+                        }
+
                 validated_sources.append(source)
 
             if not validated_sources:
