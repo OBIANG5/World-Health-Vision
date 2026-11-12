@@ -159,10 +159,12 @@ class CreativePackage(BaseModel):
     created_at: datetime
     model: str
     angle: str
+    angle_claim_indexes: list[int] = Field(default_factory=list)
     target_duration_sec: int = Field(ge=5, le=60)
     hooks: list[HookOption] = Field(min_length=1, max_length=3)
     script_segments: list[CreativeScriptSegment] = Field(min_length=1)
     caption: str
+    caption_claim_indexes: list[int] = Field(default_factory=list)
     hashtags: list[str] = Field(default_factory=list, max_length=12)
     scene_plan: list[CreativeScenePlan] = Field(min_length=2)
 
