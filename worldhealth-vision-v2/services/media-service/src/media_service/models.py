@@ -277,6 +277,7 @@ class RadarSourceCandidate(BaseModel):
     is_primary: bool
     published_at: datetime | None = None
     note: str
+    rights_note: str | None = None
 
 
 class RadarHookCandidate(BaseModel):
