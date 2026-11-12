@@ -159,16 +159,18 @@ RADAR_SCHEMA = {
 
 
 def canonical_url(url: str) -> str:
+    raw = url.strip()
     try:
-        parsed = urlsplit(url.strip())
+        parsed = urlsplit(raw)
+        host = (parsed.hostname or "").lower().removeprefix("www.")
+        port_value = parsed.port
     except ValueError:
-        return url.strip()
+        return raw
 
-    host = (parsed.hostname or "").lower().removeprefix("www.")
     if not host:
-        return url.strip()
+        return raw
 
-    port = f":{parsed.port}" if parsed.port else ""
+    port = f":{port_value}" if port_value else ""
     path = parsed.path.rstrip("/") or "/"
     return urlunsplit((parsed.scheme.lower() or "https", host + port, path, "", ""))
 
