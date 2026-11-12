@@ -1255,3 +1255,66 @@ def test_country_indicator_overview_uses_latest_common_historical_year_for_confi
         assert result.confidence.observedSourceCount == 2
 
     asyncio.run(run())
+
+
+def test_country_overview_card_period_matches_its_historical_median_not_trend():
+    """The number on a country summary card must carry its own period label.
+
+    A primary World Bank trend can extend to 2025 while the cross-source
+    median used by the card is available only for the shared 2024 period.
+    """
+    def shifted_imf(request: httpx.Request) -> httpx.Response:
+        response = timeseries_handler(request)
+        if request.url.params.get("indicatorCode") != "FP.CPI.TOTL.ZG":
+            return response
+        if request.url.path not in {
+            "/api/timeseries/series",
+            "/api/timeseries/series/latest",
+            "/api/timeseries/series/availability",
+        }:
+            return response
+        payload = response.json()
+        for row in list(payload.get("items", [])):
+            if row.get("sourceCode") != "IMF":
+                continue
+            if request.url.path == "/api/timeseries/series/availability":
+                row["latestPeriodStart"] = "2025-01-01"
+                row["latestPeriodEnd"] = "2025-12-31"
+                row["latestPeriodLabel"] = "2025"
+                continue
+            row["periodStart"] = "2025-01-01"
+            row["periodEnd"] = "2025-12-31"
+            row["periodLabel"] = "2025"
+            if request.url.path == "/api/timeseries/series":
+                payload["items"].append({
+                    **row, "periodStart": "2024-01-01", "periodEnd": "2024-12-31",
+                    "periodLabel": "2024", "valueStatus": "OBSERVED",
+                })
+        payload["count"] = len(payload.get("items", []))
+        return json_response(payload)
+
+    async def run():
+        service = build_service()
+        await service._timeseries_client.aclose()
+        service._timeseries_client = TimeseriesClient(
+            base_url="http://timeseries.test",
+            timeout_seconds=5,
+            transport=httpx.MockTransport(shifted_imf),
+        )
+        try:
+            overview = await service.get_country_overview(
+                country_iso3="FRA",
+                indicator_codes=["FP.CPI.TOTL.ZG"],
+                source_code=None,
+                dataset_code=None,
+                period_granularity="ANNUAL",
+                include_missing=False,
+                max_indicators=3,
+                series_limit=6,
+            )
+            assert overview.indicators[0].latestPeriodLabel == "2024"
+            assert overview.indicators[0].latestComparableSourceCount == 2
+        finally:
+            await service.aclose()
+
+    asyncio.run(run())
