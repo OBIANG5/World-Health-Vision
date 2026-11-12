@@ -22,7 +22,13 @@ const COPY = {
     empty: "Aucune source locale documentée pour ce pays dans notre catalogue pour le moment. Cela ne signifie pas qu'il n'en existe pas.",
     official: "Institution nationale",
     press: "Média local",
+    regional: "Institution régionale partagée",
     other: "Source locale",
+    catalogueOnly: "Répertoriée — aucun connecteur de collecte opérationnel",
+    connectionInReview: "Connecteur en cours de vérification",
+    connectionVerified: "Connecteur testé (ne garantit pas une couverture complète)",
+    reviewDue: "Prochaine révision des informations",
+    sourceLimitations: "Limites et droits de réutilisation",
     verified: "Organisation identifiée",
     review: "À vérifier",
     record: "Publication statistique documentée",
@@ -58,7 +64,13 @@ const COPY = {
     empty: "No researched local sources have yet been recorded for this country. This does not mean none exist.",
     official: "National institution",
     press: "Local media",
+    regional: "Shared regional institution",
     other: "Local source",
+    catalogueOnly: "Listed only — no operational collection connector",
+    connectionInReview: "Connector under review",
+    connectionVerified: "Connector tested (does not guarantee complete coverage)",
+    reviewDue: "Next source metadata review",
+    sourceLimitations: "Source limitations and reuse terms",
     verified: "Organization identified",
     review: "Needs review",
     record: "Documented statistical release",
@@ -172,7 +184,13 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
                 const url = validExternalUrl(source.evidenceUrl);
                 const sourceKind = source.sourceType === "NATIONAL_OFFICIAL"
                   ? copy.official
-                  : source.sourceType === "LOCAL_MEDIA" ? copy.press : copy.other;
+                  : source.sourceType === "REGIONAL_OFFICIAL"
+                    ? copy.regional
+                    : source.sourceType === "LOCAL_MEDIA" ? copy.press : copy.other;
+                const connection = source.connectionState === "INGESTION_VERIFIED"
+                  ? copy.connectionVerified
+                  : source.connectionState === "CONNECTOR_IN_REVIEW"
+                    ? copy.connectionInReview : copy.catalogueOnly;
                 return (
                   <div className="whv-national-evidence-source" key={source.sourceCode}>
                     <span className="whv-national-evidence-kind">{sourceKind}</span>
@@ -180,6 +198,17 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
                     <span className="whv-national-evidence-meta">
                       {source.verificationState === "VERIFIED_ORGANIZATION" ? copy.verified : copy.review}
                     </span>
+                    <span className="whv-national-evidence-connection">{connection}</span>
+                    {source.reviewDueOn && (
+                      <span className="whv-national-evidence-meta">
+                        {copy.reviewDue} : {source.reviewDueOn}
+                      </span>
+                    )}
+                    <details className="whv-national-evidence-restrictions">
+                      <summary>{copy.sourceLimitations}</summary>
+                      <p>{source.methodologyCaveat}</p>
+                      <p>{source.reuseRightsNote}</p>
+                    </details>
                     {url && <a href={url} target="_blank" rel="noopener noreferrer">
                       {lang === "fr" ? "Consulter la source" : "Open source"}
                     </a>}
