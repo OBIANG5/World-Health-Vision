@@ -76,7 +76,7 @@ try {
   await gab.locator(".whv-national-evidence-source").first().waitFor({state:"visible"});
   assert(await gab.locator(".whv-national-evidence-source").count()===3,
     "Published country drawer must show three genuine V24–V26 Gabon references");
-  const gabText=(await gab.innerText()).replace(/\\s/g,"");
+  const gabText=(await gab.innerText()).replace(/\s/g,"");
   assert(gabText.includes("3518621"),"Published Gabon census number missing");
   assert(gabText.includes("APERÇUSTATIQUE"),"Published Gabon panel must disclose static provenance");
   await gab.getByText("Comparaison internationale en direct indisponible",{exact:false})
