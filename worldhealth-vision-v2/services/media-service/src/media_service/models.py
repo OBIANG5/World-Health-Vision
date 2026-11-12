@@ -315,3 +315,19 @@ class RadarSchedulerStatus(BaseModel):
     last_run_status: str | None = None
     last_scan_id: str | None = None
     last_error: str | None = None
+
+
+class RadarScanAuditRecord(BaseModel):
+    scan_id: str
+    requested_at: datetime
+    hours: int = Field(ge=1, le=48)
+    country_iso3: str | None = None
+    max_candidates: int = Field(ge=1, le=30)
+    query: str
+    model: str
+    retrieved_urls: list[str]
+    candidates_found: int
+    candidates_accepted: int
+    candidates_rejected_without_retrieved_source: int
+    stories_created: list[str]
+    stories_deduplicated: list[str]
