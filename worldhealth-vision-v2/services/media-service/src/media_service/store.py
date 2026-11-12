@@ -15,6 +15,7 @@ from media_service.models import (
     AssetBundle,
     AssetInventory,
     AssetSelection,
+    ConfirmPublicationRequest,
     CreateStoryRequest,
     CreativePackage,
     DecisionRequest,
@@ -24,6 +25,9 @@ from media_service.models import (
     MediaSource,
     MediaStory,
     PrepareDraftRequest,
+    PreparePublicationRequest,
+    PublicationPackage,
+    PublicationReceipt,
     QaReport,
     QaState,
     RadarCandidate,
@@ -38,6 +42,10 @@ from media_service.models import (
     VoiceoverRef,
 )
 from media_service.persistence import StoryPersistence, build_story_persistence
+from media_service.publication import (
+    PublicationWorkflowError,
+    build_publication_package,
+)
 from media_service.scoring import compute_editorial_score
 from media_service.settings import get_settings
 
@@ -351,6 +359,8 @@ class MediaStoryStore:
         story.voiceover = None
         story.render_job = None
         story.qa.audio = "pending"
+        story.publication_package = None
+        story.publication_receipts = []
         return self._save(story)
 
     def select_hook(self, story_id: str, request: SelectHookRequest) -> MediaStory:
@@ -474,6 +484,8 @@ class MediaStoryStore:
         story.script = draft.voiceover_script
         story.voiceover = None
         story.qa.audio = "pending"
+        story.publication_package = None
+        story.publication_receipts = []
         story.status = "scripting"
         return self._save(story)
 
@@ -622,6 +634,75 @@ class MediaStoryStore:
 
         story.status = next_status
         story.approval_note = request.note
+        return self._save(story)
+
+    def prepare_publication_package(
+        self,
+        story_id: str,
+        request: PreparePublicationRequest,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        try:
+            package = build_publication_package(story, request)
+        except PublicationWorkflowError as exc:
+            raise MediaWorkflowConflictError(str(exc)) from exc
+
+        story.publication_package = package
+        # A newly prepared immutable package invalidates receipts from any
+        # previous package version.
+        story.publication_receipts = []
+        return self._save(story)
+
+    def confirm_publication(
+        self,
+        story_id: str,
+        request: ConfirmPublicationRequest,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        package = story.publication_package
+        if package is None:
+            raise MediaWorkflowConflictError(
+                "Prepare the canonical publication package first."
+            )
+        if story.status not in {"publish_ready", "published"}:
+            raise MediaWorkflowConflictError(
+                f"Publication cannot be confirmed from status '{story.status}'."
+            )
+        if request.channel not in package.target_channels:
+            raise MediaWorkflowConflictError(
+                f"Channel '{request.channel}' is not part of this publication package."
+            )
+        if (
+            request.channel != "manual"
+            and not request.public_url
+            and not request.external_id
+        ):
+            raise MediaWorkflowConflictError(
+                "A real public URL or external platform ID is required as publication proof."
+            )
+
+        receipt = PublicationReceipt(
+            id=f"pub-{uuid4().hex[:12]}",
+            channel=request.channel,
+            published_at=datetime.now(timezone.utc),
+            public_url=request.public_url,
+            external_id=request.external_id,
+            note=request.note,
+        )
+        story.publication_receipts = [
+            existing
+            for existing in story.publication_receipts
+            if existing.channel != request.channel
+        ]
+        story.publication_receipts.append(receipt)
+
+        confirmed_channels = {
+            existing.channel
+            for existing in story.publication_receipts
+        }
+        if set(package.target_channels).issubset(confirmed_channels):
+            story.status = "published"
+
         return self._save(story)
 
     def dashboard(self) -> MediaDashboard:
