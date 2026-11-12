@@ -538,3 +538,17 @@ body{margin:0}
   .wv-media-asset-grid{grid-template-columns:1fr}
   .wv-media-publication-copy{grid-template-columns:1fr}
 }
+
+/* Global Media Studio navigation: current journey vs original operational room. */
+.wv-media-viewnav{display:flex;gap:5px;align-items:center;justify-self:end;padding:4px;background:#122229;border:1px solid rgba(255,255,255,.14);border-radius:9px}
+.wv-media-viewnav button{border:0;background:transparent;color:#afbec0;padding:10px 15px;border-radius:6px;font-size:11px;font-weight:850;white-space:nowrap;cursor:pointer}
+.wv-media-viewnav button.active{background:#f1eddb;color:#122229}
+.wv-media-viewnav button:focus-visible{outline:2px solid #f0e280;outline-offset:2px}
+@media(max-width:700px){
+  .wv-media-topbar{display:flex!important;align-items:center;justify-content:space-between;gap:7px;padding:9px 11px!important;height:auto;min-height:66px;flex-wrap:wrap}
+  .wv-media-wordmark{font-size:13px}
+  .wv-media-brand-sub{font-size:7px}
+  .wv-media-live{display:none!important}
+  .wv-media-viewnav{margin-left:auto}
+  .wv-media-viewnav button{font-size:9px;padding:9px 9px}
+}
