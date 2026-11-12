@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 
 from media_service.models import (
@@ -93,6 +94,15 @@ def build_publication_package(
         raise PublicationWorkflowError(
             "Publication package requires a render output URL."
         )
+    video_sha256 = (story.render_job.output_sha256 or "").lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", video_sha256):
+        raise PublicationWorkflowError(
+            "Publication package requires a verified SHA-256 of the encoded MP4."
+        )
+    if story.render_job.render_profile != "canonical_newsroom_v1":
+        raise PublicationWorkflowError(
+            "The canonical publication package must reference the approved newsroom render."
+        )
     if story.creative_package is None:
         raise PublicationWorkflowError(
             "Publication package requires CREATIVE output."
@@ -124,6 +134,8 @@ def build_publication_package(
         "publication_version": version,
         "target_channels": channels,
         "video_url": story.render_job.output_url,
+        "video_sha256": video_sha256,
+        "video_render_profile": story.render_job.render_profile,
         "title": story.title,
         "caption": story.creative_package.caption,
         "hashtags": story.creative_package.hashtags,
@@ -154,6 +166,8 @@ def build_publication_package(
         story_id=story.id,
         target_channels=channels,
         video_url=story.render_job.output_url,
+        video_sha256=video_sha256,
+        video_render_profile=story.render_job.render_profile,
         title=story.title,
         caption=story.creative_package.caption,
         hashtags=story.creative_package.hashtags,
