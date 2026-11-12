@@ -96,7 +96,7 @@ class CatalogControllerIntegrationTest {
                 .andExpect(jsonPath("$.documentedReleases[0].publicationStatus").value("PRELIMINARY_HOMOLOGATED"))
                 .andExpect(jsonPath("$.documentedReleases[0].verificationStatus").value("DOCUMENTED_NOT_INGESTED"))
                 .andExpect(jsonPath("$.documentedReleases[0].internationalComparisonNote")
-                        .value(org.hamcrest.Matchers.containsString("different year and method")));
+                        .value(org.hamcrest.Matchers.containsString("dynamically retrieved latest canonical source values")));
     }
 
     @Test
