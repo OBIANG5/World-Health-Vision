@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     service_port: int = 8000
     default_language: str = "fr"
     repository_backend: str = "memory"
+    renderer_base_url: str = "http://localhost:8011"
+    renderer_timeout_seconds: float = 10.0
 
 
 def get_settings() -> Settings:
