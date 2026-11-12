@@ -181,7 +181,6 @@ services:
       WHV_MEDIA_DATABASE_POOL_MIN_SIZE: 1
       WHV_MEDIA_DATABASE_POOL_MAX_SIZE: 5
       WHV_MEDIA_SEED_DEMO_STORY: "false"
-      WHV_MEDIA_REDIS_URL: redis://redis:6379/0
       WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
       WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
@@ -204,41 +203,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-      start_period: 10s
-    networks:
-      - whv-private
-      - whv-public
-
-  media-scheduler:
-    container_name: whv-media-scheduler
-    image: whv/media-service:local
-    restart: unless-stopped
-    entrypoint: ["python", "-m", "media_service.scheduler"]
-    environment:
-      WHV_MEDIA_REPOSITORY_BACKEND: postgres
-      WHV_MEDIA_DATABASE_URL: postgresql://whv_user:whv_password@whv-timescaledb:5432/whv
-      WHV_MEDIA_DATABASE_POOL_MIN_SIZE: 1
-      WHV_MEDIA_DATABASE_POOL_MAX_SIZE: 3
-      WHV_MEDIA_SEED_DEMO_STORY: "false"
-      WHV_MEDIA_REDIS_URL: redis://redis:6379/0
-      WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
-      WHV_MEDIA_RADAR_SCHEDULER_ENABLED: ${WHV_MEDIA_RADAR_SCHEDULER_ENABLED:-false}
-      WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS: ${WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS:-900}
-      WHV_MEDIA_RADAR_SCHEDULER_INITIAL_DELAY_SECONDS: ${WHV_MEDIA_RADAR_SCHEDULER_INITIAL_DELAY_SECONDS:-20}
-      WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS: ${WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS:-3}
-      WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES: ${WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES:-12}
-    depends_on:
-      media-service:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "python", "-m", "media_service.scheduler_health"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      start_period: 15s
     networks:
       - whv-private
       - whv-public
