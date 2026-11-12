@@ -25,6 +25,7 @@ services:
       WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
       WHV_ANALYTICS_BASE_URL: http://analytics-service:8000
       WHV_MEDIA_BASE_URL: http://media-service:8000
+      WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
     ports:
       - "8080:8080"
     depends_on:
@@ -35,6 +36,8 @@ services:
       analytics-service:
         condition: service_started
       media-service:
+        condition: service_healthy
+      media-renderer:
         condition: service_healthy
     networks:
       - whv-private
@@ -141,6 +144,28 @@ services:
     networks:
       - whv-private
 
+  media-renderer:
+    container_name: whv-media-renderer
+    build:
+      context: ..
+      dockerfile: services/media-renderer/Dockerfile
+    image: whv/media-renderer:local
+    restart: unless-stopped
+    environment:
+      WHV_RENDER_PORT: 8011
+      WHV_RENDER_OUTPUT_DIR: /app/output
+      WHV_RENDER_CONCURRENCY: 1
+    volumes:
+      - whv_media_renders:/app/output
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8011/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 45s
+    networks:
+      - whv-private
+
   media-service:
     container_name: whv-media
     build:
@@ -152,6 +177,10 @@ services:
       WHV_MEDIA_SERVICE_PORT: 8000
       WHV_MEDIA_DEFAULT_LANGUAGE: fr
       WHV_MEDIA_REPOSITORY_BACKEND: memory
+      WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
+    depends_on:
+      media-renderer:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
       interval: 5s
@@ -373,3 +402,4 @@ volumes:
   whv_loki_data:
   whv_grafana_data:
   whv_data_lake:
+  whv_media_renders:
