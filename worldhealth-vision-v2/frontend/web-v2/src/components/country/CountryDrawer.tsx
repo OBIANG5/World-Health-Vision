@@ -16,6 +16,7 @@ import { fetchCompareCountries } from "../../api/whvApi";
 import { useLang } from "../../context/LanguageContext";
 import { useFxHistory } from "../../hooks/useFxHistory";
 import { useCountrySheet } from "../../hooks/useCountrySheet";
+import CountryLocalEvidencePanel from "./CountryLocalEvidencePanel";
 import { useFxRates } from "../../hooks/useFxRates";
 import { useIndicatorHistory } from "../../hooks/useIndicatorHistory";
 import { useIndicatorOverview } from "../../hooks/useIndicatorOverview";
@@ -1433,6 +1434,14 @@ export default function CountryDrawer({
             })()} />
           </div>
         )}
+
+        {/* Independent national/local evidence even when no economic observations exist. */}
+        <CountryLocalEvidencePanel
+          key={selectedCountryIso3}
+          iso3={selectedCountryIso3}
+          enabled={open && selectedCountryIso3 !== "-99"}
+          lang={lang}
+        />
 
         {/* Chargement / erreur */}
         {loading && (
