@@ -7,6 +7,7 @@ from media_service.models import (
     DecisionRequest,
     DiscoverAssetsRequest,
     GenerateCreativeRequest,
+    GenerateVoiceoverRequest,
     MediaDashboard,
     MediaStory,
     PrepareDraftRequest,
@@ -45,6 +46,12 @@ from media_service.store import (
 from media_service.wikimedia_assets import (
     WIKIMEDIA_CLIENT,
     AssetProviderError,
+)
+from media_service.voiceover import (
+    VOICEOVER_CLIENT,
+    VoiceoverConfigurationError,
+    VoiceoverProviderError,
+    VoiceoverQualityError,
 )
 from media_service.verification import (
     VERIFICATION_CLIENT,
@@ -217,6 +224,27 @@ async def prepare_story_draft(story_id: str, request: PrepareDraftRequest) -> Me
         raise HTTPException(status_code=404, detail="Story not found") from exc
     except MediaWorkflowConflictError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/audio/generate", response_model=MediaStory)
+async def generate_story_voiceover(
+    story_id: str,
+    request: GenerateVoiceoverRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        voiceover = await VOICEOVER_CLIENT.generate(story, request)
+        return STORE.apply_voiceover(story_id, voiceover)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except VoiceoverQualityError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except VoiceoverConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except VoiceoverProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.post("/api/media/stories/{story_id}/render-preview", response_model=MediaStory)
