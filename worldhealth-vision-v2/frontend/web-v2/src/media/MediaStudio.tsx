@@ -307,6 +307,39 @@ export default function MediaStudio() {
     }
   }
 
+  async function generateCreative(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/creative/generate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            target_duration_sec: story.target_duration_sec || 15,
+            max_hooks: 3,
+          }),
+        },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`CREATIVE impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function runRadar() {
     setRadarBusy(true);
     setError(null);
@@ -595,6 +628,7 @@ export default function MediaStudio() {
               busy={actionBusy}
               onDecision={decision}
               onVerify={verifyStory}
+              onGenerateCreative={generateCreative}
               onSelectHook={selectHook}
               onPrepareDraft={prepareDraft}
               onLaunchRender={launchRender}
@@ -639,6 +673,7 @@ function StoryInspector({
   busy,
   onDecision,
   onVerify,
+  onGenerateCreative,
   onSelectHook,
   onPrepareDraft,
   onLaunchRender,
@@ -651,6 +686,7 @@ function StoryInspector({
     action: "approve" | "reject" | "request_changes" | "approve_preview" | "mark_publish_ready",
   ) => Promise<void>;
   onVerify: (story: MediaStory) => Promise<void>;
+  onGenerateCreative: (story: MediaStory) => Promise<void>;
   onSelectHook: (story: MediaStory, hookId: string) => Promise<void>;
   onPrepareDraft: (story: MediaStory) => Promise<void>;
   onLaunchRender: (story: MediaStory) => Promise<void>;
@@ -787,6 +823,45 @@ function StoryInspector({
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {story.creative_package && (
+        <section className="wv-media-panel">
+          <div className="wv-media-panel-title">
+            <span>CREATIVE · v{story.creative_package.version}</span>
+            <small>
+              {story.creative_package.model} · {story.creative_package.target_duration_sec}s
+            </small>
+          </div>
+
+          <div className="wv-media-creative-angle">
+            <span>ANGLE</span>
+            <strong>{story.creative_package.angle}</strong>
+            <small>
+              claims {story.creative_package.angle_claim_indexes.join(", ")}
+            </small>
+          </div>
+
+          <div className="wv-media-creative-script">
+            {story.creative_package.script_segments.map((segment, index) => (
+              <div key={`${segment.text}-${index}`}>
+                <span>{index + 1}</span>
+                <p>{segment.text}</p>
+                <small>claims {segment.claim_indexes.join(", ")}</small>
+              </div>
+            ))}
+          </div>
+
+          <div className="wv-media-creative-caption">
+            <span>LÉGENDE</span>
+            <p>{story.creative_package.caption}</p>
+            <div>
+              {story.creative_package.hashtags.map((tag) => (
+                <small key={tag}>{tag}</small>
+              ))}
+            </div>
           </div>
         </section>
       )}
@@ -982,16 +1057,42 @@ function StoryInspector({
 
         {story.status === "approved" && (
           <>
-            <button
-              className="wv-media-action primary"
-              disabled={busy || !story.selected_hook_id}
-              onClick={() => void onPrepareDraft(story)}
-              title={!story.selected_hook_id ? "Choisis d’abord un hook." : undefined}
-            >
-              ▶ Préparer script + storyboard
-            </button>
-            {!story.selected_hook_id && (
-              <div className="wv-media-action-hint">Choisis d’abord un hook ci-dessus.</div>
+            {!story.creative_package ? (
+              <>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy}
+                  onClick={() => void onGenerateCreative(story)}
+                >
+                  ✦ Générer angle + script CREATIVE
+                </button>
+                <div className="wv-media-action-hint">
+                  CREATIVE utilisera uniquement les claims VERIFY confirmés.
+                </div>
+              </>
+            ) : (
+              <>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy || !story.selected_hook_id}
+                  onClick={() => void onPrepareDraft(story)}
+                  title={!story.selected_hook_id ? "Choisis d’abord un hook CREATIVE." : undefined}
+                >
+                  ▶ Préparer le storyboard vidéo
+                </button>
+                {!story.selected_hook_id && (
+                  <div className="wv-media-action-hint">
+                    Choisis l’un des hooks CREATIVE ci-dessus avant le storyboard.
+                  </div>
+                )}
+                <button
+                  className="wv-media-action secondary"
+                  disabled={busy}
+                  onClick={() => void onGenerateCreative(story)}
+                >
+                  ↻ Régénérer CREATIVE
+                </button>
+              </>
             )}
             <button
               className="wv-media-action secondary"
