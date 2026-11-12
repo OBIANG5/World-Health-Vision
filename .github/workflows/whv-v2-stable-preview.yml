@@ -137,6 +137,12 @@ jobs:
           path: preview-artifacts/
           if-no-files-found: ignore
 
+      - name: Refresh publicly viewable screenshots with the ACTUAL tested frontend
+        run: |
+          cp preview-artifacts/iphone-globe.png preview/preview-mobile-current.png
+          cp preview-artifacts/iphone-tools.png preview/preview-mobile-tools-current.png
+          cp preview-artifacts/desktop-globe.png preview/preview-desktop-current.png
+
       - name: Commit and update SAME existing preview branch URL
         working-directory: preview
         run: |
