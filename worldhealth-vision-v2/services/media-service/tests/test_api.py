@@ -4,11 +4,78 @@ from fastapi.testclient import TestClient
 
 import media_service.api as media_api
 from media_service.api import app
-from media_service.models import RenderJobRef
+from media_service.models import (
+    EditorialScoreFactors,
+    RadarCandidate,
+    RadarHookCandidate,
+    RadarSourceCandidate,
+    RenderJobRef,
+)
+from media_service.radar import RadarDiscovery
 from media_service.store import STORE
 
 
 client = TestClient(app)
+
+
+class StubRadarClient:
+    async def scan(self, request):
+        candidate = RadarCandidate(
+            title="RDC : trois nouveaux cas signalés dans une riposte sanitaire",
+            summary=(
+                "Une source nationale rapporte trois nouveaux cas dans le cadre "
+                "d'une riposte sanitaire en République démocratique du Congo."
+            ),
+            category="santé",
+            country_iso3="COD",
+            country_name="RDC",
+            region="Afrique centrale",
+            breaking=True,
+            event_at=datetime.now(timezone.utc),
+            confidence_score=91,
+            sources=[
+                RadarSourceCandidate(
+                    name="Agence Congolaise de Presse (ACP)",
+                    url="https://acp.cd/exemple-radar",
+                    source_type="press_agency",
+                    scope="local",
+                    country_iso3="COD",
+                    is_primary=False,
+                    published_at=datetime.now(timezone.utc),
+                    note="Source nationale de démonstration pour le test.",
+                )
+            ],
+            factors=EditorialScoreFactors(
+                freshness=96,
+                surprise=78,
+                human_impact=88,
+                importance=82,
+                visual_potential=75,
+                numerical_strength=82,
+                undercoverage=92,
+                francophone_relevance=88,
+                africa_relevance=100,
+                source_confidence=91,
+                urgency=94,
+                saturation_penalty=12,
+            ),
+            hooks=[
+                RadarHookCandidate(
+                    text="🇨🇩 Trois nouveaux cas viennent d’être signalés.",
+                    score=90,
+                    rationale="Chiffre immédiat et sujet sanitaire local.",
+                )
+            ],
+        )
+        return RadarDiscovery(
+            scan_id="radar-test-1",
+            query="test radar",
+            model="test-model",
+            retrieved_urls=["https://acp.cd/exemple-radar"],
+            raw_candidate_count=1,
+            candidates=[candidate],
+            rejected_without_retrieved_source=0,
+        )
 
 
 class StubRendererClient:
@@ -45,6 +112,7 @@ class StubRendererClient:
 def setup_function():
     STORE.reset()
     media_api.RENDERER_CLIENT = StubRendererClient()
+    media_api.RADAR_CLIENT = StubRadarClient()
 
 
 def test_health_and_dashboard():
@@ -229,3 +297,34 @@ def test_preview_render_lifecycle():
     assert story["status"] == "preview_ready"
     assert story["render_job"]["status"] == "completed"
     assert story["render_job"]["output_url"].endswith(".mp4")
+
+
+def test_radar_scan_creates_and_then_deduplicates_story():
+    first = client.post(
+        "/api/media/radar/scans",
+        json={"hours": 6, "max_candidates": 10},
+    )
+    assert first.status_code == 200
+    first_body = first.json()
+    assert first_body["candidates_found"] == 1
+    assert first_body["candidates_accepted"] == 1
+    assert len(first_body["stories_created"]) == 1
+    assert first_body["stories_deduplicated"] == []
+
+    created_id = first_body["stories_created"][0]
+    created_story = client.get(f"/api/media/stories/{created_id}")
+    assert created_story.status_code == 200
+    story = created_story.json()
+    assert story["radar_scan_id"] == "radar-test-1"
+    assert story["verification_status"] == "partially_verified"
+    assert story["sources"][0]["scope"] == "local"
+    assert story["score"]["total"] >= 80
+
+    second = client.post(
+        "/api/media/radar/scans",
+        json={"hours": 6, "max_candidates": 10},
+    )
+    assert second.status_code == 200
+    second_body = second.json()
+    assert second_body["stories_created"] == []
+    assert second_body["stories_deduplicated"] == [created_id]
