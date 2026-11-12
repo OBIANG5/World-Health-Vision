@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 from copy import deepcopy
 from threading import RLock
 from typing import Protocol
@@ -80,6 +81,7 @@ class PostgresStoryPersistence:
             check=ConnectionPool.check_connection,
             kwargs={"row_factory": dict_row},
         )
+        atexit.register(self._pool.close)
 
     @staticmethod
     def _story_from_row(row: dict | None) -> MediaStory | None:
