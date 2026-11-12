@@ -14,6 +14,7 @@ from media_service.models import (
     RadarHookCandidate,
     RadarSourceCandidate,
     RenderJobRef,
+    RenderProbe,
     HookOption,
     MediaAsset,
     VerificationReport,
@@ -221,6 +222,7 @@ class StubLanguageQa:
 class StubRendererClient:
     def __init__(self):
         self.jobs: dict[str, RenderJobRef] = {}
+        self.draft_durations: dict[str, float] = {}
 
     async def create_job(
         self,
@@ -244,6 +246,7 @@ class StubRendererClient:
             updated_at=now,
         )
         self.jobs[job.id] = job
+        self.draft_durations[job.id] = story.video_draft.duration_sec
         return job
 
     async def get_job(self, job_id: str):
@@ -258,6 +261,21 @@ class StubRendererClient:
                     "b" * 64
                     if previous.render_profile == "tiktok_api_clean_v1"
                     else "a" * 64
+                ),
+                "output_probe": RenderProbe(
+                    format_name="mov,mp4,m4a,3gp,3g2,mj2",
+                    size_bytes=1_250_000,
+                    duration_sec=self.draft_durations[job_id],
+                    video_codec="h264",
+                    width=1080,
+                    height=1920,
+                    fps=30.0,
+                    pixel_format="yuv420p",
+                    video_bit_rate=900_000,
+                    has_audio=True,
+                    audio_codec="aac",
+                    audio_sample_rate_hz=48_000,
+                    audio_channels=2,
                 ),
             }
         )
@@ -771,6 +789,10 @@ def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
     assert qa.status_code == 200
     qa_story = qa.json()
     assert qa_story["qa_report"]["all_passed"] is True
+    assert qa_story["render_job"]["output_probe"]["width"] == 1080
+    assert qa_story["render_job"]["output_probe"]["height"] == 1920
+    assert qa_story["render_job"]["output_probe"]["fps"] == 30.0
+    assert qa_story["render_job"]["output_probe"]["has_audio"] is True
     assert all(
         qa_story["qa"][name] == "pass"
         for name in [
@@ -781,6 +803,7 @@ def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
             "source_display",
             "rights",
             "audio",
+            "render_integrity",
         ]
     )
 
