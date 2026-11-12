@@ -380,6 +380,32 @@ export default function MediaStudio() {
     }
   }
 
+  async function retryRender(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/render-preview/retry`,
+        { method: "POST" },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`Relance rendu impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function verifyStory(story: MediaStory) {
     setActionBusy(true);
     setError(null);
@@ -545,6 +571,32 @@ export default function MediaStudio() {
           // Keep raw body.
         }
         throw new Error(`Synchronisation TikTok impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function retryTikTokCleanExport(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/publication/exports/tiktok/retry`,
+        { method: "POST" },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`Relance TikTok impossible (HTTP ${response.status}) : ${detail}`);
       }
       await load();
     } catch (caught) {
@@ -850,10 +902,12 @@ export default function MediaStudio() {
               onGenerateVoiceover={generateVoiceover}
               onLaunchRender={launchRender}
               onSyncRender={syncRender}
+              onRetryRender={retryRender}
               onRunQa={runPublicationQa}
               onPreparePublication={preparePublication}
               onLaunchTikTokCleanExport={launchTikTokCleanExport}
               onSyncTikTokCleanExport={syncTikTokCleanExport}
+              onRetryTikTokCleanExport={retryTikTokCleanExport}
             />
           ) : (
             <div className="wv-media-empty">Sélectionne une actualité.</div>
@@ -902,10 +956,12 @@ function StoryInspector({
   onGenerateVoiceover,
   onLaunchRender,
   onSyncRender,
+  onRetryRender,
   onRunQa,
   onPreparePublication,
   onLaunchTikTokCleanExport,
   onSyncTikTokCleanExport,
+  onRetryTikTokCleanExport,
 }: {
   story: MediaStory;
   busy: boolean;
@@ -926,10 +982,12 @@ function StoryInspector({
   onGenerateVoiceover: (story: MediaStory) => Promise<void>;
   onLaunchRender: (story: MediaStory) => Promise<void>;
   onSyncRender: (story: MediaStory) => Promise<void>;
+  onRetryRender: (story: MediaStory) => Promise<void>;
   onRunQa: (story: MediaStory) => Promise<void>;
   onPreparePublication: (story: MediaStory) => Promise<void>;
   onLaunchTikTokCleanExport: (story: MediaStory) => Promise<void>;
   onSyncTikTokCleanExport: (story: MediaStory) => Promise<void>;
+  onRetryTikTokCleanExport: (story: MediaStory) => Promise<void>;
 }) {
   const scoreEntries = Object.entries(story.score.factors) as [
     keyof EditorialScoreFactors,
@@ -1425,6 +1483,24 @@ function StoryInspector({
             <div className="wv-media-render-error">{story.render_job.error}</div>
           )}
 
+          {story.render_job.status === "failed" && (
+            <button
+              type="button"
+              className="wv-media-inline-action primary"
+              disabled={
+                busy ||
+                (story.render_job.attempts ?? 0) >=
+                  (story.render_job.max_attempts ?? 3)
+              }
+              onClick={() => void onRetryRender(story)}
+            >
+              {(story.render_job.attempts ?? 0) >=
+              (story.render_job.max_attempts ?? 3)
+                ? "Limite de relance atteinte"
+                : "↻ Relancer le même job"}
+            </button>
+          )}
+
           {story.render_job.output_url && (
             <div className="wv-media-preview-frame">
               <video
@@ -1589,6 +1665,22 @@ function StoryInspector({
                         Ouvrir le MP4 clean ↗
                       </a>
                     </div>
+                  ) : tiktokExport.render_job.status === "failed" ? (
+                    <button
+                      type="button"
+                      className="wv-media-inline-action primary"
+                      disabled={
+                        busy ||
+                        (tiktokExport.render_job.attempts ?? 0) >=
+                          (tiktokExport.render_job.max_attempts ?? 3)
+                      }
+                      onClick={() => void onRetryTikTokCleanExport(story)}
+                    >
+                      {(tiktokExport.render_job.attempts ?? 0) >=
+                      (tiktokExport.render_job.max_attempts ?? 3)
+                        ? "Limite de relance atteinte"
+                        : "↻ Relancer l’export TikTok"}
+                    </button>
                   ) : (
                     <button
                       type="button"
