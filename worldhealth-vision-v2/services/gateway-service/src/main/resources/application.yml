@@ -88,6 +88,12 @@ spring:
             - Path=/api/media/**
             - Method=GET,POST,PATCH,PUT,DELETE
 
+        - id: media-renderer-route
+          uri: ${WHV_MEDIA_RENDERER_BASE_URL:http://localhost:8011}
+          predicates:
+            - Path=/api/media-renderer/**
+            - Method=GET,POST
+
         - id: analytics-advisor-chat-route
           uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
           predicates:
