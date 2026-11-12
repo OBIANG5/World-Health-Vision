@@ -1,5 +1,44 @@
 # World-Vision Media Studio
 
+## Implementation status — 2026-11-12
+
+Implemented on `feature/world-vision-media-studio`:
+
+- canonical V2 `media-service` (FastAPI);
+- provenance-aware story model;
+- explainable 0-100 editorial scoring;
+- explicit editorial workflow and guarded transitions;
+- hook selection;
+- renderer-ready `VideoDraft` (1080x1920, 30 fps, timed scenes);
+- manual story ingestion API;
+- asynchronous Remotion renderer worker with queue and progress;
+- H.264 preview output with browser range streaming;
+- canonical V2 Control Room at `/media-studio`;
+- preview launch, synchronization and in-browser playback;
+- gateway routing and authentication boundaries;
+- Docker Compose wiring and persistent render volume;
+- Prometheus monitoring for the media API;
+- CI for media service, renderer, frontend, gateway and compose;
+- draft pull request #5 used as a non-merge validation surface.
+
+Deliberately not implemented yet:
+
+- continuous RADAR news discovery;
+- country-by-country source registry at production scale;
+- AI-assisted hook/script generation;
+- real asset acquisition and rights workflow;
+- voice synthesis, word timing, music and final audio normalization;
+- automated visual QA against TikTok safe zones;
+- persistence in PostgreSQL/TimescaleDB;
+- official TikTok publishing;
+- WhatsApp Channel publishing automation.
+
+The current Remotion composition is a **structural preview**, not a final newsroom template:
+unresolved real-media slots are explicitly labelled instead of being fabricated.
+
+---
+
+
 ## Goal
 
 Build a semi-automated newsroom capable of detecting, ranking, verifying, producing and preparing one short-form French news video per hour, with human approval gates before publication.
