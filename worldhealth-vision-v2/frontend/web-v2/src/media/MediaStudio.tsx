@@ -311,6 +311,36 @@ export default function MediaStudio() {
     }
   }
 
+  async function generateVoiceover(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/audio/generate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`AUDIO impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function launchRender(story: MediaStory) {
     setActionBusy(true);
     setError(null);
@@ -703,6 +733,7 @@ export default function MediaStudio() {
               onSelectAsset={selectAsset}
               onSelectHook={selectHook}
               onPrepareDraft={prepareDraft}
+              onGenerateVoiceover={generateVoiceover}
               onLaunchRender={launchRender}
               onSyncRender={syncRender}
             />
@@ -750,6 +781,7 @@ function StoryInspector({
   onSelectAsset,
   onSelectHook,
   onPrepareDraft,
+  onGenerateVoiceover,
   onLaunchRender,
   onSyncRender,
 }: {
@@ -769,6 +801,7 @@ function StoryInspector({
   ) => Promise<void>;
   onSelectHook: (story: MediaStory, hookId: string) => Promise<void>;
   onPrepareDraft: (story: MediaStory) => Promise<void>;
+  onGenerateVoiceover: (story: MediaStory) => Promise<void>;
   onLaunchRender: (story: MediaStory) => Promise<void>;
   onSyncRender: (story: MediaStory) => Promise<void>;
 }) {
@@ -1157,6 +1190,38 @@ function StoryInspector({
         </div>
       </section>
 
+      {story.voiceover && (
+        <section className="wv-media-panel">
+          <div className="wv-media-panel-title">
+            <span>AUDIO · voix off IA</span>
+            <small>
+              {story.voiceover.model} · {story.voiceover.voice} · {story.voiceover.duration_sec.toFixed(1)}s
+            </small>
+          </div>
+
+          <div className="wv-media-audio-status">
+            <span className={story.voiceover.qa_passed ? "pass" : "fail"}>
+              {story.voiceover.qa_passed ? "✓ QA AUDIO OK" : "⚠ QA AUDIO ÉCHEC"}
+            </span>
+            <span>
+              Concordance script {story.voiceover.transcript_match_score}%
+            </span>
+            <span>
+              Durée {story.voiceover.duration_fit ? "compatible" : "trop longue"}
+            </span>
+          </div>
+
+          <div className="wv-media-audio-transcript">
+            <span>TRANSCRIPTION DE CONTRÔLE</span>
+            <p>{story.voiceover.transcript}</p>
+          </div>
+
+          <div className="wv-media-ai-disclosure">
+            {story.voiceover.ai_generated_disclosure}
+          </div>
+        </section>
+      )}
+
       {story.render_job && (
         <section className="wv-media-panel">
           <div className="wv-media-panel-title">
@@ -1355,13 +1420,50 @@ function StoryInspector({
 
         {story.status === "scripting" && (
           <>
-            <button
-              className="wv-media-action primary"
-              disabled={busy || !story.video_draft}
-              onClick={() => void onLaunchRender(story)}
-            >
-              ▶ Lancer l’aperçu Remotion
-            </button>
+            {!story.voiceover ? (
+              <>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy || !story.video_draft}
+                  onClick={() => void onGenerateVoiceover(story)}
+                >
+                  ◉ Générer la voix off IA
+                </button>
+                <div className="wv-media-action-hint">
+                  AUDIO lira le script approuvé, puis comparera sa transcription au texte avant d’autoriser le rendu.
+                </div>
+              </>
+            ) : story.qa.audio === "pass" ? (
+              <>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy || !story.video_draft}
+                  onClick={() => void onLaunchRender(story)}
+                >
+                  ▶ Lancer l’aperçu Remotion
+                </button>
+                <button
+                  className="wv-media-action secondary"
+                  disabled={busy}
+                  onClick={() => void onGenerateVoiceover(story)}
+                >
+                  ↻ Régénérer la voix off
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="wv-media-action-hint">
+                  La voix off a échoué au contrôle AUDIO. Le rendu reste bloqué pour éviter une narration différente du script approuvé.
+                </div>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy}
+                  onClick={() => void onGenerateVoiceover(story)}
+                >
+                  ↻ Régénérer AUDIO
+                </button>
+              </>
+            )}
             <button
               className="wv-media-action secondary"
               disabled={busy}
