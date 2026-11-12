@@ -1379,6 +1379,18 @@ function StoryInspector({
             <div style={{ width: `${Math.round(story.render_job.progress * 100)}%` }} />
           </div>
 
+          <div className="wv-media-render-runtime">
+            <span>
+              tentative {story.render_job.attempts ?? 0}/{story.render_job.max_attempts ?? 3}
+            </span>
+            <span>
+              persistance {story.render_job.recovered_at ? "récupérée après redémarrage" : "active"}
+            </span>
+            {story.render_job.recovered_at && (
+              <span>reprise {dateLabel(story.render_job.recovered_at)}</span>
+            )}
+          </div>
+
           {story.render_job.output_probe && (
             <div className="wv-media-render-probe">
               <span>{story.render_job.output_probe.width}×{story.render_job.output_probe.height}</span>
