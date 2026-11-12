@@ -136,6 +136,24 @@ async def country_relative_cost_snapshot(
             raise HTTPException(status_code=502, detail=str(exception)) from exception
 
 
+@app.get("/api/analytics/countries/{country_iso3}/national-comparisons")
+async def country_national_comparisons(country_iso3: str, request: Request):
+    """Corroborated local releases alongside REAL canonical international series.
+
+    No local source is silently elevated to a Timescale observation, no hard
+    coded external data, and no numeric difference before method review.
+    """
+    with observe_request("country_national_comparisons"):
+        try:
+            return await get_service(request).get_country_national_comparisons(country_iso3)
+        except ValueError as exception:
+            raise HTTPException(status_code=400, detail=str(exception)) from exception
+        except AnalyticsNotFoundError as exception:
+            raise HTTPException(status_code=404, detail=str(exception)) from exception
+        except AnalyticsDependencyError as exception:
+            raise HTTPException(status_code=502, detail=str(exception)) from exception
+
+
 @app.get("/api/analytics/countries/{country_iso3}/indicators/{indicator_code}/overview")
 async def country_indicator_overview(
     country_iso3: str,
