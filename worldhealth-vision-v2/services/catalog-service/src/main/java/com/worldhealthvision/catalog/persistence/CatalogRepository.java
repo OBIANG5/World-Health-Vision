@@ -4,6 +4,7 @@ import com.worldhealthvision.catalog.api.dto.CatalogReadinessResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CountryLocalSourceResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDocumentedReleaseResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalCoverageResponse;
 import com.worldhealthvision.catalog.api.dto.CountrySummaryResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencyDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencySummaryResponse;
@@ -37,6 +38,9 @@ public interface CatalogRepository {
 
     /** National institutions and local media indexed per ISO3, whether ingested or not. */
     List<CountryLocalSourceResponse> listCountryLocalSources(String iso3);
+
+    /** Coverage across real active nonaggregate ISO3 countries, including zeros. */
+    List<CountryLocalCoverageResponse> listCountryLocalCoverage(String regionCode);
 
     /** Curated published claims, never silently inserted into canonical time series. */
     List<CountryDocumentedReleaseResponse> listCountryDocumentedReleases(String iso3);
