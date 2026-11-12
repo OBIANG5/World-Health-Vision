@@ -85,6 +85,7 @@ def parse_commons_search_response(
     payload: dict,
     *,
     query: str,
+    requested_kind: str = "image",
 ) -> list[MediaAsset]:
     pages = payload.get("query", {}).get("pages", [])
     if isinstance(pages, dict):
@@ -109,7 +110,21 @@ def parse_commons_search_response(
             continue
 
         mime = info.get("mime")
-        if isinstance(mime, str) and not mime.startswith("image/"):
+        media_type = info.get("mediatype")
+        mime_value = mime if isinstance(mime, str) else ""
+        media_type_value = (
+            media_type.upper()
+            if isinstance(media_type, str)
+            else ""
+        )
+        if requested_kind == "video":
+            is_requested_media = (
+                mime_value.startswith("video/")
+                or media_type_value == "VIDEO"
+            )
+        else:
+            is_requested_media = mime_value.startswith("image/")
+        if not is_requested_media:
             continue
 
         metadata = info.get("extmetadata")
@@ -145,7 +160,7 @@ def parse_commons_search_response(
                 id=_asset_id(media_url),
                 provider="wikimedia_commons",
                 title=title.removeprefix("File:"),
-                kind="image",
+                kind="video" if requested_kind == "video" else "image",
                 source_page_url=source_page_url,
                 media_url=media_url,
                 thumbnail_url=thumbnail_url,
@@ -168,22 +183,27 @@ class WikimediaCommonsClient:
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or get_settings()
 
-    async def search_images(
+    async def _search(
         self,
         query: str,
         *,
-        limit: int = 4,
+        limit: int,
+        requested_kind: str,
     ) -> list[MediaAsset]:
         cleaned_query = " ".join(query.split()).strip()
         if not cleaned_query:
             return []
+
+        search_query = cleaned_query
+        if requested_kind == "video":
+            search_query = f"{cleaned_query} filetype:video"
 
         params = {
             "action": "query",
             "format": "json",
             "formatversion": "2",
             "generator": "search",
-            "gsrsearch": cleaned_query,
+            "gsrsearch": search_query,
             "gsrnamespace": "6",
             "gsrlimit": str(max(1, min(limit, 8))),
             "prop": "imageinfo",
@@ -218,6 +238,31 @@ class WikimediaCommonsClient:
         return parse_commons_search_response(
             response.json(),
             query=cleaned_query,
+            requested_kind=requested_kind,
+        )
+
+    async def search_images(
+        self,
+        query: str,
+        *,
+        limit: int = 4,
+    ) -> list[MediaAsset]:
+        return await self._search(
+            query,
+            limit=limit,
+            requested_kind="image",
+        )
+
+    async def search_videos(
+        self,
+        query: str,
+        *,
+        limit: int = 4,
+    ) -> list[MediaAsset]:
+        return await self._search(
+            query,
+            limit=limit,
+            requested_kind="video",
         )
 
 
