@@ -235,6 +235,7 @@ class MediaStoryStore:
                 is_primary=source.is_primary,
                 published_at=source.published_at,
                 note=source.note,
+                rights_note=source.rights_note,
             )
             for source in candidate.sources
         ]
