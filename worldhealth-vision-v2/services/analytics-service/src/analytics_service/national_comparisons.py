@@ -13,7 +13,7 @@ unsourced numbers into scripts.
 from __future__ import annotations
 
 import math
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -92,6 +92,16 @@ def _select_independent_latest(
 ) -> list[InternationalReference]:
     """Require matching ISO3/indicator, numeric finite values and publisher identity."""
     by_source: dict[str, LatestSourceObservation] = {}
+
+    def fetch_epoch(item: LatestSourceObservation) -> float:
+        # Normalize naive and timezone-aware provider timestamps consistently.
+        stamp = item.fetchedAtUtc
+        if stamp is None:
+            return float("-inf")
+        if stamp.tzinfo is None:
+            stamp = stamp.replace(tzinfo=UTC)
+        return stamp.timestamp()
+
     for item in observations:
         if item.countryIso3 != country_iso3 or item.indicatorCode != indicator_code:
             continue
@@ -105,10 +115,10 @@ def _select_independent_latest(
         # One publisher = one perspective, even if it offers multiple datasets.
         current = by_source.get(item.sourceCode)
         if current is None or (
-            item.periodEnd, item.valueStatus == "OBSERVED", item.fetchedAtUtc or datetime.min
+            item.periodEnd, item.valueStatus == "OBSERVED", fetch_epoch(item)
         ) > (
             current.periodEnd, current.valueStatus == "OBSERVED",
-            current.fetchedAtUtc or datetime.min,
+            fetch_epoch(current),
         ):
             by_source[item.sourceCode] = item
     return [
