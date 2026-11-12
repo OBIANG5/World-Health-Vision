@@ -502,6 +502,58 @@ export default function MediaStudio() {
     }
   }
 
+  async function launchTikTokCleanExport(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/publication/exports/tiktok`,
+        { method: "POST" },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`Export TikTok impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function syncTikTokCleanExport(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/publication/exports/tiktok/sync`,
+        { method: "POST" },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`Synchronisation TikTok impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function runRadar() {
     setRadarBusy(true);
     setError(null);
@@ -800,6 +852,8 @@ export default function MediaStudio() {
               onSyncRender={syncRender}
               onRunQa={runPublicationQa}
               onPreparePublication={preparePublication}
+              onLaunchTikTokCleanExport={launchTikTokCleanExport}
+              onSyncTikTokCleanExport={syncTikTokCleanExport}
             />
           ) : (
             <div className="wv-media-empty">Sélectionne une actualité.</div>
@@ -850,6 +904,8 @@ function StoryInspector({
   onSyncRender,
   onRunQa,
   onPreparePublication,
+  onLaunchTikTokCleanExport,
+  onSyncTikTokCleanExport,
 }: {
   story: MediaStory;
   busy: boolean;
@@ -872,6 +928,8 @@ function StoryInspector({
   onSyncRender: (story: MediaStory) => Promise<void>;
   onRunQa: (story: MediaStory) => Promise<void>;
   onPreparePublication: (story: MediaStory) => Promise<void>;
+  onLaunchTikTokCleanExport: (story: MediaStory) => Promise<void>;
+  onSyncTikTokCleanExport: (story: MediaStory) => Promise<void>;
 }) {
   const scoreEntries = Object.entries(story.score.factors) as [
     keyof EditorialScoreFactors,
@@ -894,6 +952,9 @@ function StoryInspector({
   const assetsResolved =
     requiredAssetScenes.length === 0 ||
     (story.asset_bundle?.unresolved_scene_orders.length ?? requiredAssetScenes.length) === 0;
+  const tiktokExport = story.channel_exports.find(
+    (item) => item.channel === "tiktok",
+  );
 
   return (
     <>
@@ -1402,6 +1463,96 @@ function StoryInspector({
               );
             })}
           </div>
+
+          {story.publication_package.target_channels.includes("tiktok") && (
+            <div className="wv-media-tiktok-export">
+              <div className="wv-media-tiktok-export-head">
+                <div>
+                  <span>EXPORT TIKTOK API CLEAN</span>
+                  <strong>Sans branding applicatif · sources et disclosure conservées</strong>
+                </div>
+                <span className={
+                  tiktokExport?.render_job.status === "completed"
+                    ? "ready"
+                    : tiktokExport
+                      ? "pending"
+                      : "missing"
+                }>
+                  {tiktokExport?.render_job.status === "completed"
+                    ? "✓ PRÊT"
+                    : tiktokExport
+                      ? tiktokExport.render_job.status.toUpperCase()
+                      : "À GÉNÉRER"}
+                </span>
+              </div>
+
+              {tiktokExport ? (
+                <>
+                  <div className="wv-media-render-progress">
+                    <div
+                      style={{
+                        width: `${Math.round(tiktokExport.render_job.progress * 100)}%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="wv-media-tiktok-export-meta">
+                    <span>Profil {tiktokExport.render_profile}</span>
+                    <span>
+                      manifeste {tiktokExport.canonical_manifest_sha256.slice(0, 12)}…
+                    </span>
+                    {tiktokExport.render_job.output_sha256 && (
+                      <span>
+                        MP4 {tiktokExport.render_job.output_sha256.slice(0, 12)}…
+                      </span>
+                    )}
+                  </div>
+
+                  {tiktokExport.render_job.error && (
+                    <div className="wv-media-render-error">
+                      {tiktokExport.render_job.error}
+                    </div>
+                  )}
+
+                  {tiktokExport.render_job.output_url ? (
+                    <div className="wv-media-tiktok-export-ready">
+                      <video
+                        controls
+                        playsInline
+                        preload="metadata"
+                        src={tiktokExport.render_job.output_url}
+                      />
+                      <a
+                        href={tiktokExport.render_job.output_url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Ouvrir le MP4 clean ↗
+                      </a>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="wv-media-inline-action"
+                      disabled={busy}
+                      onClick={() => void onSyncTikTokCleanExport(story)}
+                    >
+                      ↻ Actualiser l’export
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="wv-media-inline-action primary"
+                  disabled={busy}
+                  onClick={() => void onLaunchTikTokCleanExport(story)}
+                >
+                  ▶ Générer l’export TikTok clean
+                </button>
+              )}
+            </div>
+          )}
 
           <div className="wv-media-publication-copy">
             <div>
