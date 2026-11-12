@@ -134,11 +134,26 @@ class VideoDraft(BaseModel):
     fps: Literal[30] = 30
     duration_sec: float = Field(ge=5, le=60)
     rendering_engine: Literal["remotion"] = "remotion"
+    design_system_id: str = "wv-pilot-editorial-dark-v1"
     safe_zone_profile: str = "tiktok-conservative-v1"
     hook_id: str
     voiceover_script: str
     source_line: str
     scenes: list[VideoScene] = Field(min_length=2)
+
+
+RenderJobStatus = Literal["queued", "bundling", "rendering", "completed", "failed"]
+
+
+class RenderJobRef(BaseModel):
+    id: str
+    story_id: str
+    status: RenderJobStatus
+    progress: float = Field(ge=0, le=1)
+    created_at: datetime
+    updated_at: datetime
+    output_url: str | None = None
+    error: str | None = None
 
 
 class MediaStory(BaseModel):
@@ -164,6 +179,7 @@ class MediaStory(BaseModel):
     selected_hook_id: str | None = None
     script: str | None = None
     video_draft: VideoDraft | None = None
+    render_job: RenderJobRef | None = None
     target_duration_sec: int = Field(ge=5, le=60, default=15)
     assets: AssetInventory = Field(default_factory=AssetInventory)
     qa: QaState = Field(default_factory=QaState)
