@@ -741,6 +741,27 @@ class MediaStoryStore:
             raise MediaWorkflowConflictError(
                 f"Channel '{request.channel}' is not part of this publication package."
             )
+        if request.channel == "tiktok":
+            export = next(
+                (
+                    candidate
+                    for candidate in story.channel_exports
+                    if candidate.channel == "tiktok"
+                ),
+                None,
+            )
+            if (
+                export is None
+                or export.canonical_manifest_sha256 != package.manifest_sha256
+                or export.render_job.render_profile != "tiktok_api_clean_v1"
+                or export.render_job.status != "completed"
+                or not export.render_job.output_url
+                or not export.render_job.output_sha256
+            ):
+                raise MediaWorkflowConflictError(
+                    "TikTok publication requires a completed clean export linked "
+                    "to the active publication manifest."
+                )
         if (
             request.channel != "manual"
             and not request.public_url
