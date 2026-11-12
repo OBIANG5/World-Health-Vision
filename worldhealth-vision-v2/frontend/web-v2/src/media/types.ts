@@ -180,3 +180,31 @@ export type RadarScanResult = {
   stories_created: string[];
   stories_deduplicated: string[];
 };
+
+
+export type RadarScanHistoryItem = {
+  scan_id: string;
+  requested_at: string;
+  hours: number;
+  country_iso3?: string | null;
+  model: string;
+  candidates_found: number;
+  candidates_accepted: number;
+  candidates_rejected_without_retrieved_source: number;
+  stories_created: string[];
+  stories_deduplicated: string[];
+};
+
+export type RadarSchedulerStatus = {
+  enabled: boolean;
+  interval_seconds: number;
+  scan_hours: number;
+  max_candidates: number;
+  redis_connected: boolean;
+  lock_held: boolean;
+  heartbeat_at?: string | null;
+  last_run_at?: string | null;
+  last_run_status?: string | null;
+  last_scan_id?: string | null;
+  last_error?: string | null;
+};
