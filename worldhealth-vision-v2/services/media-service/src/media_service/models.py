@@ -104,6 +104,9 @@ class MediaAsset(BaseModel):
     media_url: str
     thumbnail_url: str | None = None
     mime_type: str | None = None
+    width: int | None = Field(default=None, gt=0)
+    height: int | None = Field(default=None, gt=0)
+    size_bytes: int | None = Field(default=None, gt=0)
     author: str | None = None
     license_name: str | None = None
     license_url: str | None = None
