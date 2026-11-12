@@ -4,6 +4,7 @@ import type {
   CompareCountriesResponse,
   CountryDetail,
   CountryLocalContext,
+  CountryNationalComparisons,
   CountryEconomicSnapshotResponse,
   CountryRelativeCostSnapshotResponse,
   CountrySummary,
@@ -97,6 +98,7 @@ const overviewCache = new AsyncCache<IndicatorOverviewResponse>();
 const historyCache = new AsyncCache<TimeseriesSeriesResponse>();
 const sourceCoverageCache = new AsyncCache<SourceDataCoverage[]>(2 * 60 * 1000);
 const countryLocalContextCache = new AsyncCache<CountryLocalContext>(2 * 60 * 1000);
+const nationalComparisonCache = new AsyncCache<CountryNationalComparisons>(2 * 60 * 1000);
 
 export async function fetchCountries(): Promise<CountrySummary[]> {
   try {
@@ -149,6 +151,33 @@ export async function fetchCountryLocalContext(iso3: string): Promise<CountryLoc
       return data;
     } catch (error) {
       throw new Error(`Unable to verify local country sources: ${extractErrorMessage(error)}`);
+    }
+  });
+}
+
+/**
+ * Read canonical international values alongside documented national releases.
+ * A dependency failure is NOT rewritten as a "0 observations" claim.
+ */
+export async function fetchCountryNationalComparisons(
+  iso3: string,
+): Promise<CountryNationalComparisons> {
+  const code = iso3.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(code)) throw new Error("Invalid ISO3 country code");
+  return nationalComparisonCache.get(code, async () => {
+    try {
+      const response = await whvApi.get<CountryNationalComparisons>(
+        `/api/product/countries/${encodeURIComponent(code)}/national-comparisons`,
+        { timeout: 15000 },
+      );
+      const data = response.data;
+      if (data.countryIso3 !== code || !Array.isArray(data.comparisons) ||
+          data.comparisonCount !== data.comparisons.length) {
+        throw new Error("Invalid national comparison response");
+      }
+      return data;
+    } catch (error) {
+      throw new Error(`Unable to verify canonical international series: ${extractErrorMessage(error)}`);
     }
   });
 }
