@@ -14,6 +14,7 @@ from media_service.models import (
     RadarSchedulerStatus,
     SelectHookRequest,
     StoryStatus,
+    VerifyStoryRequest,
 )
 from media_service.radar import (
     RADAR_CLIENT,
@@ -27,6 +28,11 @@ from media_service.store import (
     MediaStoryNotFoundError,
     MediaWorkflowConflictError,
     STORE,
+)
+from media_service.verification import (
+    VERIFICATION_CLIENT,
+    VerificationConfigurationError,
+    VerificationProviderError,
 )
 
 
@@ -92,6 +98,23 @@ async def get_media_story(story_id: str) -> MediaStory:
         return STORE.get(story_id)
     except MediaStoryNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Story not found") from exc
+
+
+@app.post("/api/media/stories/{story_id}/verify", response_model=MediaStory)
+async def verify_media_story(
+    story_id: str,
+    request: VerifyStoryRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        report = await VERIFICATION_CLIENT.verify(story, request)
+        return STORE.apply_verification(story_id, report)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except VerificationConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except VerificationProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.post("/api/media/stories/{story_id}/score/recompute", response_model=MediaStory)
