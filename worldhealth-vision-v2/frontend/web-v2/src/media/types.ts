@@ -104,6 +104,26 @@ export type RenderJobRef = {
   error?: string | null;
 };
 
+export type ClaimVerification = {
+  claim: string;
+  status: "verified" | "unresolved" | "conflicting";
+  supporting_urls: string[];
+  contradicting_urls: string[];
+  explanation: string;
+};
+
+export type VerificationReport = {
+  version: number;
+  checked_at: string;
+  model: string;
+  retrieved_urls: string[];
+  claims: ClaimVerification[];
+  distinct_supporting_sources: number;
+  has_primary_support: boolean;
+  verdict: VerificationStatus;
+  confidence_score: number;
+};
+
 export type QaState = {
   facts: "pending" | "pass" | "fail";
   spelling: "pending" | "pass" | "fail";
@@ -132,6 +152,7 @@ export type MediaStory = {
   updated_at: string;
   verification_status: VerificationStatus;
   confidence_score: number;
+  verification_report?: VerificationReport | null;
   sources: MediaSource[];
   score: {
     total: number;
