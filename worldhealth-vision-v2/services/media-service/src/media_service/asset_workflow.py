@@ -241,7 +241,10 @@ async def discover_asset_bundle(
 
         approved = max(
             approved_candidates,
-            key=lambda candidate: score_asset_for_vertical(candidate)[0],
+            key=lambda candidate: (
+                score_asset_for_vertical(candidate)[0],
+                candidate.id,
+            ),
         )
         selection_score, selection_reason = score_asset_for_vertical(approved)
         selections.append(
