@@ -101,6 +101,33 @@ class QaState(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+ClaimVerificationStatus = Literal["verified", "unresolved", "conflicting"]
+
+
+class ClaimVerification(BaseModel):
+    claim: str
+    status: ClaimVerificationStatus
+    supporting_urls: list[str] = Field(default_factory=list)
+    contradicting_urls: list[str] = Field(default_factory=list)
+    explanation: str
+
+
+class VerificationReport(BaseModel):
+    version: int = Field(ge=1)
+    checked_at: datetime
+    model: str
+    retrieved_urls: list[str] = Field(default_factory=list)
+    claims: list[ClaimVerification] = Field(default_factory=list)
+    distinct_supporting_sources: int = 0
+    has_primary_support: bool = False
+    verdict: VerificationStatus
+    confidence_score: int = Field(ge=0, le=100)
+
+
+class VerifyStoryRequest(BaseModel):
+    max_claims: int = Field(default=6, ge=1, le=10)
+
+
 VisualKind = Literal[
     "real_photo",
     "real_video",
@@ -173,6 +200,7 @@ class MediaStory(BaseModel):
     updated_at: datetime
     verification_status: VerificationStatus = "unverified"
     confidence_score: int = Field(ge=0, le=100, default=0)
+    verification_report: VerificationReport | None = None
     sources: list[MediaSource] = Field(default_factory=list)
     score: EditorialScore
     hooks: list[HookOption] = Field(default_factory=list)
