@@ -359,6 +359,87 @@ class DivergenceSummary(BaseModel):
         )
 
 
+    @classmethod
+    def from_historical_observations(
+        cls,
+        items: list[TimeseriesObservation],
+        source_count: int,
+        primary_source_code: str | None = None,
+        primary_source_display_name: str | None = None,
+        consistent_relative_threshold: float = 0.02,
+        mixed_relative_threshold: float = 0.08,
+    ) -> tuple["DivergenceSummary", list[TimeseriesObservation]]:
+        """Choose the latest genuinely shared period from real stored history.
+
+        Different years, quarters, or period intervals are NOT comparable.
+        Repeated datasets from one publisher count as one source of evidence.
+        Observations and estimates remain labeled exactly as upstream records.
+        The returned aligned records make the numeric comparison auditable.
+
+        The input is a bounded query: lack of shared periods in this window
+        means *insufficient observed overlap*, not that institutions disagree.
+        """
+        import math
+
+        by_period: dict[
+            tuple[str, date, date],
+            dict[str, TimeseriesObservation],
+        ] = {}
+        for item in items:
+            if (
+                item.numericValue is None
+                or not math.isfinite(item.numericValue)
+                or item.valueStatus not in {"OBSERVED", "ESTIMATED"}
+            ):
+                continue
+            period = (item.periodGranularity, item.periodStart, item.periodEnd)
+            sources = by_period.setdefault(period, {})
+            previous = sources.get(item.sourceCode)
+            if previous is None or (
+                previous.valueStatus == "ESTIMATED" and item.valueStatus == "OBSERVED"
+            ) or (
+                previous.valueStatus == item.valueStatus
+                and item.fetchedAtUtc is not None
+                and (previous.fetchedAtUtc is None or item.fetchedAtUtc > previous.fetchedAtUtc)
+            ):
+                sources[item.sourceCode] = item
+
+        if not by_period:
+            result = cls.from_numeric_values(
+                numeric_values=[],
+                source_count=source_count,
+                primary_source_code=primary_source_code,
+                primary_source_display_name=primary_source_display_name,
+                consistent_relative_threshold=consistent_relative_threshold,
+                mixed_relative_threshold=mixed_relative_threshold,
+            )
+            return result, []
+
+        # A common older period is more honest than silently comparing a
+        # newer one-source estimate against an older international statistic.
+        candidates = [
+            (key, sources) for key, sources in by_period.items()
+            if len(sources) >= 2
+        ]
+        if not candidates:
+            candidates = list(by_period.items())
+        period, sources = max(
+            candidates,
+            key=lambda entry: (entry[0][2], entry[0][1], len(entry[1])),
+        )
+        aligned = sorted(sources.values(), key=lambda item: item.sourceCode)
+        result = cls.from_numeric_values(
+            numeric_values=[item.numericValue for item in aligned],
+            source_count=source_count,
+            primary_source_code=primary_source_code,
+            primary_source_display_name=primary_source_display_name,
+            latest_comparable_period_label=aligned[0].periodLabel,
+            consistent_relative_threshold=consistent_relative_threshold,
+            mixed_relative_threshold=mixed_relative_threshold,
+        )
+        return result, aligned
+
+
 class FreshnessSummary(BaseModel):
     level: FreshnessLevel
     comparableSourceCount: int
@@ -496,6 +577,7 @@ class IndicatorOverviewResponse(BaseModel):
     latestBySource: list[LatestSourceObservation]
     sourcePerspectives: list[SourcePerspective]
     selectedSeriesPreview: list[TimeseriesObservation]
+    alignedComparisonValues: list[TimeseriesObservation] = Field(default_factory=list)
 
 
 class CountryOverviewItem(BaseModel):
