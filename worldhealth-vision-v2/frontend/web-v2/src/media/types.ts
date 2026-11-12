@@ -84,11 +84,24 @@ export type VideoDraft = {
   fps: 30;
   duration_sec: number;
   rendering_engine: "remotion";
+  design_system_id: string;
   safe_zone_profile: string;
   hook_id: string;
   voiceover_script: string;
   source_line: string;
   scenes: VideoScene[];
+};
+
+
+export type RenderJobRef = {
+  id: string;
+  story_id: string;
+  status: "queued" | "bundling" | "rendering" | "completed" | "failed";
+  progress: number;
+  created_at: string;
+  updated_at: string;
+  output_url?: string | null;
+  error?: string | null;
 };
 
 export type QaState = {
@@ -130,6 +143,7 @@ export type MediaStory = {
   selected_hook_id?: string | null;
   script?: string | null;
   video_draft?: VideoDraft | null;
+  render_job?: RenderJobRef | null;
   target_duration_sec: number;
   assets: {
     photos: number;
