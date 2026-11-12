@@ -42,6 +42,7 @@ services:
     networks:
       - whv-private
       - whv-public
+      - whv-public
 
   catalog-service:
     container_name: whv-catalog
@@ -178,6 +179,8 @@ services:
       WHV_MEDIA_DEFAULT_LANGUAGE: fr
       WHV_MEDIA_REPOSITORY_BACKEND: memory
       WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
+      WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
     depends_on:
       media-renderer:
         condition: service_healthy
