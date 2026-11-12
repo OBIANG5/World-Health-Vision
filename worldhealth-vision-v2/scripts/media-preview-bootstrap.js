@@ -15,7 +15,7 @@
   const qa = {
     facts: "pending", spelling: "pending", safe_zones: "pending",
     logo_integrity: "pending", source_display: "pending",
-    rights: "pending", audio: "pending", notes: [],
+    rights: "pending", audio: "pending", render_integrity: "pending", notes: [],
   };
   const demoSource = {
     id: "demo-source", name: "Référence de démonstration (NON journalistique)",
