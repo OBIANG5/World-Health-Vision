@@ -3,8 +3,12 @@ import {createReadStream, existsSync, mkdirSync, statSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import path from "node:path";
 import {createHash, randomUUID} from "node:crypto";
+import {execFile} from "node:child_process";
+import {promisify} from "node:util";
 import {bundle} from "@remotion/bundler";
 import {renderMedia, selectComposition} from "@remotion/renderer";
+
+const execFileAsync = promisify(execFile);
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const outputDir = process.env.WHV_RENDER_OUTPUT_DIR || path.join(root, "output");
@@ -45,6 +49,7 @@ const publicJob = (job) => ({
   render_profile: job.render_profile,
   output_url: job.output_url,
   output_sha256: job.output_sha256,
+  output_probe: job.output_probe,
   error: job.error,
 });
 
@@ -87,6 +92,99 @@ const sha256File = async (filePath) =>
     stream.on("error", reject);
     stream.on("end", () => resolve(hash.digest("hex")));
   });
+
+const parseRate = (value) => {
+  if (!value || typeof value !== "string") return null;
+  const [numeratorRaw, denominatorRaw = "1"] = value.split("/");
+  const numerator = Number.parseFloat(numeratorRaw);
+  const denominator = Number.parseFloat(denominatorRaw);
+  if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator === 0) {
+    return null;
+  }
+  const rate = numerator / denominator;
+  return Number.isFinite(rate) && rate > 0 ? rate : null;
+};
+
+const probeMedia = async (filePath) => {
+  const {stdout} = await execFileAsync(
+    "ffprobe",
+    [
+      "-v",
+      "error",
+      "-print_format",
+      "json",
+      "-show_format",
+      "-show_streams",
+      filePath,
+    ],
+    {maxBuffer: 4_000_000},
+  );
+  const payload = JSON.parse(stdout);
+  const streams = Array.isArray(payload.streams) ? payload.streams : [];
+  const video = streams.find((stream) => stream?.codec_type === "video");
+  const audio = streams.find((stream) => stream?.codec_type === "audio");
+  if (!video) {
+    throw new Error("ffprobe did not find a video stream in rendered output.");
+  }
+
+  const format = payload.format || {};
+  const duration = Number.parseFloat(format.duration ?? video.duration ?? "");
+  const sizeBytes = Number.parseInt(format.size ?? "", 10);
+  const fps =
+    parseRate(video.avg_frame_rate) ??
+    parseRate(video.r_frame_rate);
+
+  if (!Number.isFinite(duration) || duration <= 0) {
+    throw new Error("ffprobe returned an invalid rendered duration.");
+  }
+  if (!Number.isInteger(sizeBytes) || sizeBytes <= 0) {
+    throw new Error("ffprobe returned an invalid rendered file size.");
+  }
+  if (!fps) {
+    throw new Error("ffprobe returned an invalid rendered frame rate.");
+  }
+
+  const bitRateRaw = Number.parseInt(video.bit_rate ?? "", 10);
+  const sampleRateRaw = Number.parseInt(audio?.sample_rate ?? "", 10);
+  const channelsRaw = Number.parseInt(audio?.channels ?? "", 10);
+
+  return {
+    format_name:
+      typeof format.format_name === "string"
+        ? format.format_name
+        : null,
+    size_bytes: sizeBytes,
+    duration_sec: Math.round(duration * 1000) / 1000,
+    video_codec:
+      typeof video.codec_name === "string"
+        ? video.codec_name
+        : null,
+    width: Number(video.width),
+    height: Number(video.height),
+    fps: Math.round(fps * 1000) / 1000,
+    pixel_format:
+      typeof video.pix_fmt === "string"
+        ? video.pix_fmt
+        : null,
+    video_bit_rate:
+      Number.isInteger(bitRateRaw) && bitRateRaw >= 0
+        ? bitRateRaw
+        : null,
+    has_audio: Boolean(audio),
+    audio_codec:
+      typeof audio?.codec_name === "string"
+        ? audio.codec_name
+        : null,
+    audio_sample_rate_hz:
+      Number.isInteger(sampleRateRaw) && sampleRateRaw > 0
+        ? sampleRateRaw
+        : null,
+    audio_channels:
+      Number.isInteger(channelsRaw) && channelsRaw > 0
+        ? channelsRaw
+        : null,
+  };
+};
 
 const renderJob = async (job) => {
   running += 1;
@@ -140,13 +238,17 @@ const renderJob = async (job) => {
       },
     });
 
-    const outputSha256 = await sha256File(outputLocation);
+    const [outputSha256, outputProbe] = await Promise.all([
+      sha256File(outputLocation),
+      probeMedia(outputLocation),
+    ]);
 
     updateJob(job, {
       status: "completed",
       progress: 1,
       output_url: `/api/media-renderer/renders/${filename}`,
       output_sha256: outputSha256,
+      output_probe: outputProbe,
     });
   } catch (error) {
     updateJob(job, {
@@ -313,6 +415,7 @@ const server = createServer(async (req, res) => {
         updated_at: now(),
         output_url: null,
         output_sha256: null,
+        output_probe: null,
         error: null,
       };
       jobs.set(job.id, job);
