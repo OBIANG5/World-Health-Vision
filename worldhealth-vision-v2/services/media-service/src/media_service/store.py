@@ -25,6 +25,7 @@ from media_service.models import (
     RenderJobRef,
     SelectHookRequest,
     StoryStatus,
+    VerificationReport,
 )
 from media_service.persistence import StoryPersistence, build_story_persistence
 from media_service.scoring import compute_editorial_score
@@ -289,6 +290,30 @@ class MediaStoryStore:
         story.score = compute_editorial_score(story.score.factors)
         return self._save(story)
 
+    def apply_verification(
+        self,
+        story_id: str,
+        report: VerificationReport,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        story.verification_report = report
+        story.verification_status = report.verdict
+        story.confidence_score = report.confidence_score
+        story.score.factors.source_confidence = report.confidence_score
+        story.score = compute_editorial_score(story.score.factors)
+
+        if report.verdict == "conflicting":
+            story.qa.facts = "fail"
+            story.qa.notes.append(
+                "VERIFY detected contradictory evidence; editorial approval is blocked."
+            )
+        elif report.verdict == "verified":
+            story.qa.facts = "pass"
+        else:
+            story.qa.facts = "pending"
+
+        return self._save(story)
+
     def select_hook(self, story_id: str, request: SelectHookRequest) -> MediaStory:
         story = self.get(story_id)
         if not any(hook.id == request.hook_id for hook in story.hooks):
@@ -348,6 +373,10 @@ class MediaStoryStore:
 
         if request.action == "approve":
             allowed = {"detected", "verifying", "candidate", "changes_requested"}
+            if story.verification_status != "verified":
+                raise MediaWorkflowConflictError(
+                    "Story must be fully verified before editorial approval."
+                )
             next_status: StoryStatus = "approved"
         elif request.action == "reject":
             allowed = {
