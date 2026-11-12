@@ -165,6 +165,7 @@ services:
       start_period: 45s
     networks:
       - whv-private
+      - whv-public
 
   media-service:
     container_name: whv-media
