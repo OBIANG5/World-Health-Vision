@@ -10,6 +10,10 @@ import {bundle} from "@remotion/bundler";
 import {renderMedia, selectComposition} from "@remotion/renderer";
 import {buildJobStore, renderFingerprint} from "./job-store.mjs";
 import {recoverMissingCompletedOutput as recoverMissingOutputPolicy} from "./job-recovery.mjs";
+import {
+  cleanupTemporaryRenders,
+  inventoryRendererStorage,
+} from "./storage-lifecycle.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -34,6 +38,18 @@ const maxAttempts = Math.max(
 const redisUrl = process.env.WHV_RENDER_REDIS_URL || "";
 const redisPrefix =
   process.env.WHV_RENDER_REDIS_PREFIX || "whv:media-renderer";
+const tempMaxAgeHours = Math.max(
+  1,
+  Number.parseFloat(process.env.WHV_RENDER_TEMP_MAX_AGE_HOURS || "6") || 6,
+);
+const tempMaxAgeMs = tempMaxAgeHours * 60 * 60 * 1000;
+const storageCleanupIntervalSeconds = Math.max(
+  60,
+  Number.parseInt(
+    process.env.WHV_RENDER_STORAGE_CLEANUP_INTERVAL_SECONDS || "3600",
+    10,
+  ) || 3600,
+);
 
 mkdirSync(outputDir, {recursive: true});
 mkdirSync(audioDir, {recursive: true});
@@ -42,6 +58,8 @@ let store;
 let running = 0;
 let draining = false;
 let bundlePromise;
+let storageCleanupTimer;
+let lastStorageCleanup = null;
 
 const now = () => new Date().toISOString();
 
@@ -442,6 +460,27 @@ const drain = async () => {
   }
 };
 
+const runStorageCleanup = async () => {
+  const jobs = await store.list();
+  const activeJobIds = new Set(
+    jobs
+      .filter((job) =>
+        ["bundling", "rendering", "normalizing"].includes(job.status),
+      )
+      .map((job) => job.id),
+  );
+  const result = await cleanupTemporaryRenders({
+    outputDir,
+    maxAgeMs: tempMaxAgeMs,
+    activeJobIds,
+  });
+  lastStorageCleanup = {
+    at: now(),
+    ...result,
+  };
+  return lastStorageCleanup;
+};
+
 const serveVideo = (req, res, filename) => {
   if (!/^[a-f0-9-]+\.mp4$/.test(filename)) {
     json(res, 400, {detail: "Invalid render filename."});
@@ -564,6 +603,24 @@ const server = createServer(async (req, res) => {
         persistence: store.mode,
         redis_configured: Boolean(redisUrl),
         audio_dir: audioDir,
+      });
+      return;
+    }
+
+    if (req.method === "GET" && url.pathname === "/api/media-renderer/storage") {
+      const inventory = await inventoryRendererStorage({
+        outputDir,
+        audioDir,
+      });
+      json(res, 200, {
+        ...inventory,
+        policy: {
+          final_renders: "retain",
+          voiceovers: "retain",
+          temporary_renders_max_age_hours: tempMaxAgeHours,
+          cleanup_interval_seconds: storageCleanupIntervalSeconds,
+        },
+        last_cleanup: lastStorageCleanup,
       });
       return;
     }
@@ -691,6 +748,7 @@ const server = createServer(async (req, res) => {
 
 const shutdown = async (signal) => {
   console.log(`World-Vision media-renderer received ${signal}; closing job store.`);
+  if (storageCleanupTimer) clearInterval(storageCleanupTimer);
   try {
     await store?.close();
   } finally {
@@ -710,6 +768,13 @@ const start = async () => {
   if (recovered > 0) {
     console.warn(`Recovered ${recovered} interrupted render job(s).`);
   }
+  await runStorageCleanup();
+  storageCleanupTimer = setInterval(() => {
+    void runStorageCleanup().catch((error) => {
+      console.error("World-Vision renderer storage cleanup failed:", error);
+    });
+  }, storageCleanupIntervalSeconds * 1000);
+  storageCleanupTimer.unref();
   void drain();
 
   server.listen(port, "0.0.0.0", () => {
