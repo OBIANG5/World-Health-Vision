@@ -1180,3 +1180,75 @@ def json_response(payload: dict) -> httpx.Response:
         headers={"Content-Type": "application/json"},
         content=json.dumps(payload).encode("utf-8"),
     )
+
+def test_country_indicator_overview_uses_latest_common_historical_year_for_confidence():
+    """The latest WEO estimate (2025) must not replace the IMF's 2024 actual.
+
+    Mock transport exercises the service -> time-series contracts, and ensures
+    an older common OBSERVED period is used in divergence and the source audit.
+    """
+    def different_latest_periods(request: httpx.Request) -> httpx.Response:
+        response = timeseries_handler(request)
+        if request.url.params.get("indicatorCode") != "FP.CPI.TOTL.ZG":
+            return response
+        if request.url.path not in {
+            "/api/timeseries/series",
+            "/api/timeseries/series/latest",
+            "/api/timeseries/series/availability",
+        }:
+            return response
+        payload = response.json()
+        for row in payload.get("items", []):
+            if row.get("sourceCode") != "IMF":
+                continue
+            if request.url.path == "/api/timeseries/series/availability":
+                row["latestPeriodStart"] = "2025-01-01"
+                row["latestPeriodEnd"] = "2025-12-31"
+                row["latestPeriodLabel"] = "2025"
+                continue
+            row["periodStart"] = "2025-01-01"
+            row["periodEnd"] = "2025-12-31"
+            row["periodLabel"] = "2025"
+            if request.url.path == "/api/timeseries/series":
+                previous = {**row,
+                    "periodStart": "2024-01-01",
+                    "periodEnd": "2024-12-31",
+                    "periodLabel": "2024",
+                    "numericValue": 3.0,
+                    "valueStatus": "OBSERVED",
+                }
+                payload["items"].append(previous)
+        payload["count"] = len(payload.get("items", []))
+        return json_response(payload)
+
+    async def run():
+        service = build_service()
+        await service._timeseries_client.aclose()
+        service._timeseries_client = TimeseriesClient(
+            base_url="http://timeseries.test",
+            timeout_seconds=5,
+            transport=httpx.MockTransport(different_latest_periods),
+        )
+        result = await service.get_country_indicator_overview(
+            country_iso3="FRA",
+            indicator_code="FP.CPI.TOTL.ZG",
+            source_code=None,
+            dataset_code=None,
+            period_granularity="ANNUAL",
+            include_missing=False,
+            series_limit=4,
+        )
+        await service.aclose()
+
+        assert result.divergence.latestComparablePeriodLabel == "2024"
+        assert result.divergence.comparableValueCount == 2
+        assert {item.sourceCode for item in result.alignedComparisonValues} == {"WORLD_BANK", "IMF"}
+        assert all(item.periodLabel == "2024" for item in result.alignedComparisonValues)
+        assert all(item.valueStatus == "OBSERVED" for item in result.alignedComparisonValues)
+        imf_latest = next(item for item in result.sourcePerspectives if item.sourceCode == "IMF")
+        assert imf_latest.periodLabel == "2025"
+        assert imf_latest.valueStatus == "ESTIMATED"
+        assert result.sourceAudit.comparableSourceCount == 2
+        assert result.confidence.observedSourceCount == 2
+
+    asyncio.run(run())
