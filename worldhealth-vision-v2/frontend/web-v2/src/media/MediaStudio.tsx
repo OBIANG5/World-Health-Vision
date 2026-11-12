@@ -440,6 +440,36 @@ export default function MediaStudio() {
     }
   }
 
+  async function runPublicationQa(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/qa/run`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ check_spelling: true }),
+        },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`QA impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function runRadar() {
     setRadarBusy(true);
     setError(null);
@@ -736,6 +766,7 @@ export default function MediaStudio() {
               onGenerateVoiceover={generateVoiceover}
               onLaunchRender={launchRender}
               onSyncRender={syncRender}
+              onRunQa={runPublicationQa}
             />
           ) : (
             <div className="wv-media-empty">Sélectionne une actualité.</div>
@@ -784,6 +815,7 @@ function StoryInspector({
   onGenerateVoiceover,
   onLaunchRender,
   onSyncRender,
+  onRunQa,
 }: {
   story: MediaStory;
   busy: boolean;
@@ -804,6 +836,7 @@ function StoryInspector({
   onGenerateVoiceover: (story: MediaStory) => Promise<void>;
   onLaunchRender: (story: MediaStory) => Promise<void>;
   onSyncRender: (story: MediaStory) => Promise<void>;
+  onRunQa: (story: MediaStory) => Promise<void>;
 }) {
   const scoreEntries = Object.entries(story.score.factors) as [
     keyof EditorialScoreFactors,
@@ -1250,6 +1283,52 @@ function StoryInspector({
         </section>
       )}
 
+      {story.qa_report && (
+        <section className="wv-media-panel">
+          <div className="wv-media-panel-title">
+            <span>Rapport QA · v{story.qa_report.version}</span>
+            <small>
+              {story.qa_report.all_passed
+                ? "7/7 contrôles validés"
+                : `${story.qa_report.issues.length} problème(s)`}
+              {story.qa_report.language_model
+                ? ` · ${story.qa_report.language_model}`
+                : ""}
+            </small>
+          </div>
+
+          <div
+            className={`wv-media-qa-report-summary ${
+              story.qa_report.all_passed ? "pass" : "fail"
+            }`}
+          >
+            {story.qa_report.all_passed
+              ? "✓ Le contenu peut passer à l’étape prêt à publier."
+              : "⚠ Le contenu reste bloqué tant que ces problèmes ne sont pas corrigés."}
+          </div>
+
+          {story.qa_report.issues.length > 0 && (
+            <div className="wv-media-qa-issues">
+              {story.qa_report.issues.map((issue, index) => (
+                <div className="wv-media-qa-issue" key={`${issue.check}-${index}`}>
+                  <div>
+                    <strong>{issue.check.replace("_", " ")}</strong>
+                    <span>{issue.severity}</span>
+                  </div>
+                  <p>{issue.message}</p>
+                  {issue.original_text && issue.suggested_text && (
+                    <div className="wv-media-qa-correction">
+                      <span>« {issue.original_text} »</span>
+                      <strong>→ « {issue.suggested_text} »</strong>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
       <section className="wv-media-panel">
         <div className="wv-media-panel-title">
           <span>Contrôle qualité</span>
@@ -1555,21 +1634,42 @@ function StoryInspector({
 
         {story.status === "qa" && (
           <>
-            <div className="wv-media-progress-note">
-              Montage validé. La publication reste bloquée tant que tous les contrôles QA ne sont pas au vert.
-            </div>
-            <button
-              className="wv-media-action primary"
-              disabled={
-                busy ||
-                Object.values(story.qa)
-                  .filter((value) => typeof value === "string")
-                  .some((value) => value !== "pass")
-              }
-              onClick={() => void onDecision(story, "mark_publish_ready")}
-            >
-              ✓ Marquer prêt à publier
-            </button>
+            {!story.qa_report || !story.qa_report.all_passed ? (
+              <>
+                <div className="wv-media-progress-note">
+                  Montage validé. Lance le QA final : faits, orthographe, safe zones, logo, sources, droits et audio.
+                </div>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy}
+                  onClick={() => void onRunQa(story)}
+                >
+                  ◎ Lancer le QA final
+                </button>
+                {story.qa_report && (
+                  <button
+                    className="wv-media-action secondary"
+                    disabled={busy}
+                    onClick={() => void onRunQa(story)}
+                  >
+                    ↻ Relancer le QA
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="wv-media-progress-note">
+                  Les 7 contrôles QA sont au vert. Cette version peut être marquée prête à publier.
+                </div>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy}
+                  onClick={() => void onDecision(story, "mark_publish_ready")}
+                >
+                  ✓ Marquer prêt à publier
+                </button>
+              </>
+            )}
             <button
               className="wv-media-action secondary"
               disabled={busy}
