@@ -54,6 +54,43 @@ export type HookOption = {
   rationale: string;
 };
 
+
+export type VideoScene = {
+  id: string;
+  order: number;
+  start_sec: number;
+  duration_sec: number;
+  purpose: string;
+  narration?: string | null;
+  on_screen_text: string;
+  visual_kind:
+    | "real_photo"
+    | "real_video"
+    | "map"
+    | "chart"
+    | "document"
+    | "typography"
+    | "source_card";
+  asset_query?: string | null;
+  source_ids: string[];
+};
+
+export type VideoDraft = {
+  version: number;
+  created_at: string;
+  format: "9:16";
+  width: 1080;
+  height: 1920;
+  fps: 30;
+  duration_sec: number;
+  rendering_engine: "remotion";
+  safe_zone_profile: string;
+  hook_id: string;
+  voiceover_script: string;
+  source_line: string;
+  scenes: VideoScene[];
+};
+
 export type QaState = {
   facts: "pending" | "pass" | "fail";
   spelling: "pending" | "pass" | "fail";
@@ -92,6 +129,7 @@ export type MediaStory = {
   hooks: HookOption[];
   selected_hook_id?: string | null;
   script?: string | null;
+  video_draft?: VideoDraft | null;
   target_duration_sec: number;
   assets: {
     photos: number;
