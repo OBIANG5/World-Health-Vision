@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     radar_model: str = "gpt-6-astra"
     radar_timeout_seconds: float = 120.0
+    verification_model: str = "gpt-6-astra"
+    verification_timeout_seconds: float = 120.0
     redis_url: str = "redis://localhost:6379/0"
     internal_api_base_url: str = "http://localhost:8000"
     radar_scheduler_enabled: bool = False
