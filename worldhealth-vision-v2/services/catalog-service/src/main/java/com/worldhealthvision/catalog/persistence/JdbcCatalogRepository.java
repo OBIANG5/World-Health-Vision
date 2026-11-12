@@ -22,6 +22,8 @@ des lectures dediees au catalogue des devises.
 
 import com.worldhealthvision.catalog.api.dto.CatalogReadinessResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDetailResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalSourceResponse;
+import com.worldhealthvision.catalog.api.dto.CountryDocumentedReleaseResponse;
 import com.worldhealthvision.catalog.api.dto.CountrySummaryResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencyDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencySummaryResponse;
@@ -268,6 +270,80 @@ public class JdbcCatalogRepository implements CatalogRepository {
                         rs.getShort("data_quality_tier")
                 ))
                 .optional();
+    }
+
+    @Override
+    public List<CountryLocalSourceResponse> listCountryLocalSources(String iso3) {
+        String sql = """
+                select country_iso3, source_code, display_name, organization_name,
+                       source_role, source_type, homepage_url, evidence_url,
+                       verification_state, last_reviewed_on, methodology_caveat,
+                       reuse_rights_note
+                from catalog.country_local_source
+                where country_iso3 = :iso3
+                order by
+                    case source_type
+                        when 'NATIONAL_OFFICIAL' then 0
+                        when 'LOCAL_RESEARCH' then 1
+                        when 'LOCAL_MEDIA' then 2
+                        else 3
+                    end,
+                    display_name
+                """;
+        return jdbcClient.sql(sql)
+                .param("iso3", iso3)
+                .query((rs, rowNum) -> new CountryLocalSourceResponse(
+                        rs.getString("country_iso3"),
+                        rs.getString("source_code"),
+                        rs.getString("display_name"),
+                        rs.getString("organization_name"),
+                        rs.getString("source_role"),
+                        rs.getString("source_type"),
+                        rs.getString("homepage_url"),
+                        rs.getString("evidence_url"),
+                        rs.getString("verification_state"),
+                        rs.getObject("last_reviewed_on", java.time.LocalDate.class),
+                        rs.getString("methodology_caveat"),
+                        rs.getString("reuse_rights_note")
+                ))
+                .list();
+    }
+
+    @Override
+    public List<CountryDocumentedReleaseResponse> listCountryDocumentedReleases(String iso3) {
+        String sql = """
+                select release_code, country_iso3, source_code, indicator_code,
+                       reference_year, value_numeric, unit_label, population_scope,
+                       method_kind, publication_status, release_date, title,
+                       primary_evidence_url, corroboration_url, methodology_caveat,
+                       international_comparison_note, verification_status, reviewed_on
+                from catalog.country_documented_release
+                where country_iso3 = :iso3
+                order by reference_year desc, release_date desc, release_code
+                """;
+        return jdbcClient.sql(sql)
+                .param("iso3", iso3)
+                .query((rs, rowNum) -> new CountryDocumentedReleaseResponse(
+                        rs.getString("release_code"),
+                        rs.getString("country_iso3"),
+                        rs.getString("source_code"),
+                        rs.getString("indicator_code"),
+                        rs.getInt("reference_year"),
+                        rs.getBigDecimal("value_numeric"),
+                        rs.getString("unit_label"),
+                        rs.getString("population_scope"),
+                        rs.getString("method_kind"),
+                        rs.getString("publication_status"),
+                        rs.getObject("release_date", java.time.LocalDate.class),
+                        rs.getString("title"),
+                        rs.getString("primary_evidence_url"),
+                        rs.getString("corroboration_url"),
+                        rs.getString("methodology_caveat"),
+                        rs.getString("international_comparison_note"),
+                        rs.getString("verification_status"),
+                        rs.getObject("reviewed_on", java.time.LocalDate.class)
+                ))
+                .list();
     }
 
     @Override
