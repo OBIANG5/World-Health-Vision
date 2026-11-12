@@ -107,3 +107,57 @@ def test_manual_story_ingestion():
     assert story["status"] == "candidate"
     assert story["country_iso3"] == "FRA"
     assert story["score"]["total"] > 0
+
+
+def test_prepare_video_draft_after_hook_and_approval():
+    selected = client.post(
+        "/api/media/stories/story-gab-rgpl-2026/hooks/select",
+        json={"hook_id": "hook-1"},
+    )
+    assert selected.status_code == 200
+
+    approved = client.post(
+        "/api/media/stories/story-gab-rgpl-2026/decision",
+        json={"action": "approve"},
+    )
+    assert approved.status_code == 200
+
+    draft = client.post(
+        "/api/media/stories/story-gab-rgpl-2026/draft/prepare",
+        json={},
+    )
+    assert draft.status_code == 200
+    body = draft.json()
+
+    assert body["status"] == "scripting"
+    assert body["video_draft"]["format"] == "9:16"
+    assert body["video_draft"]["width"] == 1080
+    assert body["video_draft"]["height"] == 1920
+    assert body["video_draft"]["fps"] == 30
+    assert body["video_draft"]["rendering_engine"] == "remotion"
+    assert len(body["video_draft"]["scenes"]) == 3
+    assert body["video_draft"]["source_line"].startswith("Sources :")
+
+
+def test_prepare_video_draft_requires_selected_hook():
+    approved = client.post(
+        "/api/media/stories/story-gab-rgpl-2026/decision",
+        json={"action": "approve"},
+    )
+    assert approved.status_code == 200
+
+    draft = client.post(
+        "/api/media/stories/story-gab-rgpl-2026/draft/prepare",
+        json={},
+    )
+    assert draft.status_code == 409
+    assert "hook" in draft.json()["detail"].lower()
+
+
+def test_candidate_can_request_another_angle():
+    response = client.post(
+        "/api/media/stories/story-gab-rgpl-2026/decision",
+        json={"action": "request_changes", "note": "Angle trop générique"},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "changes_requested"
