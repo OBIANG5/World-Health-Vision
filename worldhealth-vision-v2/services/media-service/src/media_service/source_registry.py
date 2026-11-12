@@ -13,7 +13,8 @@ class SourceRegistryEntry:
     scope: str
     country_iso3: str | None
     priority: int
-    note: str
+    is_primary: bool = False
+    note: str = ""
 
 
 # Seed registry only. The production objective is a country-by-country registry
@@ -78,6 +79,7 @@ SEED_SOURCES: tuple[SourceRegistryEntry, ...] = (
         scope="local",
         country_iso3="GAB",
         priority=100,
+        is_primary=True,
         note="Primary Gabonese constitutional institution.",
     ),
     SourceRegistryEntry(
