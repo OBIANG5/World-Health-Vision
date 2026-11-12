@@ -286,9 +286,10 @@ public class JdbcCatalogRepository implements CatalogRepository {
                 order by
                     case source_type
                         when 'NATIONAL_OFFICIAL' then 0
-                        when 'LOCAL_RESEARCH' then 1
-                        when 'LOCAL_MEDIA' then 2
-                        else 3
+                        when 'REGIONAL_OFFICIAL' then 1
+                        when 'LOCAL_RESEARCH' then 2
+                        when 'LOCAL_MEDIA' then 3
+                        else 4
                     end,
                     display_name
                 """;
