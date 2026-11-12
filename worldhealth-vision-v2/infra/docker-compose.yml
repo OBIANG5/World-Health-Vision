@@ -154,9 +154,11 @@ services:
     environment:
       WHV_RENDER_PORT: 8011
       WHV_RENDER_OUTPUT_DIR: /app/output
+      WHV_RENDER_AUDIO_DIR: /app/audio
       WHV_RENDER_CONCURRENCY: 1
     volumes:
       - whv_media_renders:/app/output
+      - whv_media_audio:/app/audio
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8011/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 5s
@@ -184,6 +186,8 @@ services:
       WHV_MEDIA_SEED_DEMO_STORY: "false"
       WHV_MEDIA_CATALOG_BASE_URL: http://catalog-service:8080
       WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
+      WHV_MEDIA_AUDIO_OUTPUT_DIR: /app/audio
+      WHV_MEDIA_AUDIO_RENDERER_URL_PREFIX: /api/media-renderer/audio
       WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
       WHV_MEDIA_REDIS_URL: redis://redis:6379/0
@@ -469,3 +473,4 @@ volumes:
   whv_grafana_data:
   whv_data_lake:
   whv_media_renders:
+  whv_media_audio:
