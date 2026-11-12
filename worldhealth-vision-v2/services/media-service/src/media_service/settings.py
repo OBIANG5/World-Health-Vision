@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     service_port: int = 8000
     default_language: str = "fr"
     repository_backend: str = "memory"
+    database_url: str = "postgresql://whv_user:whv_password@localhost:5432/whv"
+    database_pool_min_size: int = 1
+    database_pool_max_size: int = 5
+    seed_demo_story: bool = True
     renderer_base_url: str = "http://localhost:8011"
     renderer_timeout_seconds: float = 10.0
     openai_api_key: str | None = None
