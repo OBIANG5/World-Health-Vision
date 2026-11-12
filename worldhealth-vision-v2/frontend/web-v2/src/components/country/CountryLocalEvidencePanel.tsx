@@ -4,8 +4,8 @@
  * catalogue and does not call a curated claim a Timescale observation.
  */
 import { useEffect, useState } from "react";
-import { fetchCountryLocalContext } from "../../api/whvApi";
-import type { CountryLocalContext } from "../../api/types";
+import { fetchCountryLocalContext, fetchCountryNationalComparisons } from "../../api/whvApi";
+import type { CountryLocalContext, CountryNationalComparisons } from "../../api/types";
 
 type Props = {
   iso3: string;
@@ -38,6 +38,17 @@ const COPY = {
     verifiedAt: "Sources revues le",
     rights: "Réutilisation et licences",
     limitation: "L'inscription d'une source ne signifie ni qu'elle est parfaite, ni que toutes ses données sont collectées.",
+    comparisonLoading: "Recherche des chiffres réellement présents dans notre base statistique…",
+    comparisonUnavailable: "Impossible de vérifier actuellement les séries internationales : aucune comparaison chiffrée n'est affirmée.",
+    comparisonMissing: "Aucune observation internationale stockée et utilisable pour cet indicateur.",
+    comparisonUnaligned: "Les périodes de référence diffèrent — aucun écart chiffré interprétable n'est calculé.",
+    comparisonUnreviewed: "Même année, mais méthodes et périmètres non validés comme équivalents.",
+    comparisonNotReady: "Comparaison non disponible pour cette publication.",
+    internationalObserved: "Mesure observée",
+    internationalEstimated: "Estimation",
+    internationalHeading: "Organismes internationaux : données réellement enregistrées",
+    methodologicalWarning: "Même pour une année commune, un recensement et une estimation ne prouvent pas un accord ou une contradiction.",
+
   },
   en: {
     title: "National sources and local realities",
@@ -63,6 +74,17 @@ const COPY = {
     verifiedAt: "Sources reviewed on",
     rights: "Reuse and licences",
     limitation: "A listed source is not necessarily unbiased, methodologically validated or connected to ingestion.",
+    comparisonLoading: "Checking the actual international values stored in our statistical database…",
+    comparisonUnavailable: "International series could not be verified. No numerical comparison is asserted.",
+    comparisonMissing: "No usable international observations are currently stored for this indicator.",
+    comparisonUnaligned: "Reference periods differ — no interpreted numeric gap is computed.",
+    comparisonUnreviewed: "Same year, but scope and methodology are not yet verified as equivalent.",
+    comparisonNotReady: "No comparison is available for this documented release.",
+    internationalObserved: "Observed",
+    internationalEstimated: "Estimated",
+    internationalHeading: "International institutions: actually stored observations",
+    methodologicalWarning: "Even for a common year, a census and an estimate do not by themselves establish agreement or conflict.",
+
   },
 } as const;
 
@@ -78,6 +100,8 @@ function validExternalUrl(url: string): string | null {
 export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props) {
   const [data, setData] = useState<CountryLocalContext | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
+  const [comparisons, setComparisons] = useState<CountryNationalComparisons | null>(null);
+  const [comparisonStatus, setComparisonStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const copy = lang === "fr" ? COPY.fr : COPY.en;
 
   useEffect(() => {
@@ -97,6 +121,27 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
       });
     return () => { active = false; };
   }, [iso3, enabled]);
+
+  // The national registry remains visible if the analytics/timeseries
+  // backend is unavailable. Never claim 'no international observations' when
+  // it might be a network failure or a disconnected static preview.
+  useEffect(() => {
+    if (!enabled || data?.countryIso3 !== iso3 || !data.documentedReleases.length) return;
+    let active = true;
+    setComparisons(null);
+    setComparisonStatus("loading");
+    fetchCountryNationalComparisons(iso3)
+      .then((result) => {
+        if (!active) return;
+        setComparisons(result);
+        setComparisonStatus("ready");
+      })
+      .catch(() => {
+        if (!active) return;
+        setComparisonStatus("unavailable");
+      });
+    return () => { active = false; };
+  }, [iso3, enabled, data]);
 
   if (!enabled || !/^[A-Z]{3}$/.test(iso3)) return null;
 
@@ -148,6 +193,15 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
               const scope = item.populationScope === "ALL_RESIDENTS"
                 ? copy.scopeResidents : item.populationScope === "NATIONAL_CITIZENS"
                   ? copy.scopeNationals : item.indicatorCode;
+              const live = comparisons?.comparisons.find(
+                (record) => record.releaseCode === item.releaseCode && record.indicatorCode === item.indicatorCode,
+              );
+              const comparisonLabel = live?.status === "NO_INTERNATIONAL_OBSERVATIONS"
+                ? copy.comparisonMissing
+                : live?.status === "DIFFERENT_REFERENCE_PERIOD"
+                  ? copy.comparisonUnaligned
+                  : live?.status === "SAME_YEAR_METHOD_NOT_VERIFIED"
+                    ? copy.comparisonUnreviewed : copy.comparisonNotReady;
               return (
                 <article className="whv-national-evidence-release" key={item.releaseCode}>
                   <span className="whv-national-evidence-kind">{copy.record}</span>
@@ -163,6 +217,30 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
                     {item.verificationStatus === "DOCUMENTED_NOT_INGESTED" ? copy.status : copy.ingested}
                   </p>
                   <p><strong>{copy.methodology} :</strong> {item.methodologyCaveat}</p>
+                  <div className="whv-national-comparison" aria-live="polite">
+                    <strong className="whv-national-comparison-title">{copy.internationalHeading}</strong>
+                    {comparisonStatus === "loading" && <p role="status">{copy.comparisonLoading}</p>}
+                    {comparisonStatus === "unavailable" && <p role="status">{copy.comparisonUnavailable}</p>}
+                    {comparisonStatus === "ready" && (
+                      <>
+                        <p className="whv-national-evidence-caution">{comparisonLabel}</p>
+                        {live?.internationalLatest.map((external) => (
+                          <div className="whv-national-comparison-source" key={external.sourceCode}>
+                            <strong>{external.sourceDisplayName}</strong>
+                            <span>{numberFormatter.format(external.numericValue)} · {external.periodLabel}</span>
+                            <small>
+                              {external.valueStatus === "OBSERVED"
+                                ? copy.internationalObserved : copy.internationalEstimated}
+                              {" · "}{external.datasetCode}
+                            </small>
+                          </div>
+                        ))}
+                        {live && live.internationalLatest.length > 0 && (
+                          <p className="whv-national-evidence-footnote">{copy.methodologicalWarning}</p>
+                        )}
+                      </>
+                    )}
+                  </div>
                   <p><strong>{copy.comparison} :</strong> {item.internationalComparisonNote}</p>
                   <div className="whv-national-evidence-links">
                     {official && <a href={official} target="_blank" rel="noopener noreferrer">{copy.documentation}</a>}
