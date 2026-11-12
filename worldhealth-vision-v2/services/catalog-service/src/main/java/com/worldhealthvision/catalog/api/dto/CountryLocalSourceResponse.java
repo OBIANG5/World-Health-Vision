@@ -18,6 +18,10 @@ public record CountryLocalSourceResponse(
         String verificationState,
         LocalDate lastReviewedOn,
         String methodologyCaveat,
-        String reuseRightsNote
+        String reuseRightsNote,
+        String geographicScopeKind,
+        String connectionState,
+        int reviewIntervalDays,
+        LocalDate reviewDueOn
 ) {
 }
