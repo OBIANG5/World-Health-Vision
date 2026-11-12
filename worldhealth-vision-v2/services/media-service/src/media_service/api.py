@@ -5,6 +5,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from media_service.models import (
     CreateStoryRequest,
     DecisionRequest,
+    DiscoverAssetsRequest,
     GenerateCreativeRequest,
     MediaDashboard,
     MediaStory,
@@ -13,9 +14,14 @@ from media_service.models import (
     RadarScanRequest,
     RadarScanResult,
     RadarSchedulerStatus,
+    SelectAssetRequest,
     SelectHookRequest,
     StoryStatus,
     VerifyStoryRequest,
+)
+from media_service.asset_workflow import (
+    AssetWorkflowError,
+    discover_asset_bundle,
 )
 from media_service.editorial_creative import (
     CREATIVE_CLIENT,
@@ -35,6 +41,10 @@ from media_service.store import (
     MediaStoryNotFoundError,
     MediaWorkflowConflictError,
     STORE,
+)
+from media_service.wikimedia_assets import (
+    WIKIMEDIA_CLIENT,
+    AssetProviderError,
 )
 from media_service.verification import (
     VERIFICATION_CLIENT,
@@ -161,6 +171,42 @@ async def generate_story_creative(
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except CreativeProviderError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/assets/discover", response_model=MediaStory)
+async def discover_story_assets(
+    story_id: str,
+    request: DiscoverAssetsRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        bundle = await discover_asset_bundle(
+            story,
+            request,
+            asset_client=WIKIMEDIA_CLIENT,
+        )
+        return STORE.apply_asset_bundle(story_id, bundle)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except AssetWorkflowError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except AssetProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/assets/select", response_model=MediaStory)
+async def select_story_asset(
+    story_id: str,
+    request: SelectAssetRequest,
+) -> MediaStory:
+    try:
+        return STORE.select_asset(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @app.post("/api/media/stories/{story_id}/draft/prepare", response_model=MediaStory)
