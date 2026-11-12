@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     radar_timeout_seconds: float = 120.0
     verification_model: str = "gpt-6-astra"
     verification_timeout_seconds: float = 120.0
+    creative_model: str = "gpt-6-astra"
+    creative_timeout_seconds: float = 60.0
     redis_url: str = "redis://localhost:6379/0"
     internal_api_base_url: str = "http://localhost:8000"
     catalog_base_url: str = "http://localhost:8082"
