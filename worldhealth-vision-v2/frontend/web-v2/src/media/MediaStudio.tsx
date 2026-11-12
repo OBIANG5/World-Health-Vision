@@ -1609,6 +1609,12 @@ function StoryInspector({
               <span>MANIFESTE SHA-256</span>
               <code>{story.publication_package.manifest_sha256}</code>
             </div>
+            <div>
+              <span>FICHIER MP4 · SHA-256 · {story.publication_package.video_render_profile ?? "profil historique"}</span>
+              {story.publication_package.video_sha256
+                ? <code style={{ overflowWrap: "anywhere" }}>{story.publication_package.video_sha256}</code>
+                : <small>Ancien manifeste non lié aux octets du MP4 : préparer une nouvelle version avant toute publication.</small>}
+            </div>
             <a
               href={story.publication_package.video_url}
               target="_blank"
