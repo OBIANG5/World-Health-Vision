@@ -40,8 +40,26 @@ export type VideoDraft = {
   scenes: VideoScene[];
 };
 
+export type VoiceoverRef = {
+  id: string;
+  provider: "openai_realtime";
+  model: string;
+  voice: string;
+  format: "wav";
+  sample_rate_hz: 24000;
+  duration_sec: number;
+  generated_at: string;
+  renderer_url: string;
+  transcript: string;
+  transcript_match_score: number;
+  duration_fit: boolean;
+  qa_passed: boolean;
+  ai_generated_disclosure: string;
+};
+
 export type WorldVisionRenderProps = {
   draft: VideoDraft;
+  voiceover?: VoiceoverRef | null;
   story: {
     id: string;
     title: string;
