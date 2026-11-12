@@ -187,7 +187,10 @@ export type RadarScanHistoryItem = {
   requested_at: string;
   hours: number;
   country_iso3?: string | null;
+  max_candidates: number;
   model: string;
+  query: string;
+  retrieved_urls: string[];
   candidates_found: number;
   candidates_accepted: number;
   candidates_rejected_without_retrieved_source: number;
