@@ -3,6 +3,9 @@ package com.worldhealthvision.catalog.service;
 import com.worldhealthvision.catalog.api.dto.CatalogListResponse;
 import com.worldhealthvision.catalog.api.dto.CatalogReadinessResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDetailResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalContextResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalSourceResponse;
+import com.worldhealthvision.catalog.api.dto.CountryDocumentedReleaseResponse;
 import com.worldhealthvision.catalog.api.dto.CountrySummaryResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencyDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencySummaryResponse;
@@ -66,6 +69,16 @@ public class CatalogQueryService {
         String normalizedIso3 = iso3.trim().toUpperCase();
         return catalogRepository.findCountryByIso3(normalizedIso3)
                 .orElseThrow(() -> new CatalogNotFoundException("Unknown country: " + normalizedIso3));
+    }
+
+    public CountryLocalContextResponse getCountryLocalContext(String iso3) {
+        // Enforce the existing country registry and never fabricate coverage.
+        CountryDetailResponse country = getCountry(iso3);
+        List<CountryLocalSourceResponse> sources = catalogRepository.listCountryLocalSources(country.iso3());
+        List<CountryDocumentedReleaseResponse> releases = catalogRepository.listCountryDocumentedReleases(country.iso3());
+        return new CountryLocalContextResponse(
+                country.iso3(), sources.size(), sources, releases.size(), releases
+        );
     }
 
     public CatalogListResponse<CurrencySummaryResponse> listCurrencies(
