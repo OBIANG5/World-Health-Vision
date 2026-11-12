@@ -184,6 +184,8 @@ class MediaStory(BaseModel):
     assets: AssetInventory = Field(default_factory=AssetInventory)
     qa: QaState = Field(default_factory=QaState)
     approval_note: str | None = None
+    radar_scan_id: str | None = None
+    radar_fingerprint: str | None = None
 
 
 class MediaDashboard(BaseModel):
@@ -236,3 +238,53 @@ class CreateStoryRequest(BaseModel):
 
 class PrepareDraftRequest(BaseModel):
     script_override: str | None = Field(default=None, min_length=10, max_length=1200)
+
+
+class RadarSourceCandidate(BaseModel):
+    name: str
+    url: str
+    source_type: SourceType
+    scope: SourceScope
+    country_iso3: str | None = None
+    is_primary: bool
+    published_at: datetime | None = None
+    note: str
+
+
+class RadarHookCandidate(BaseModel):
+    text: str
+    score: int = Field(ge=0, le=100)
+    rationale: str
+
+
+class RadarCandidate(BaseModel):
+    title: str
+    summary: str
+    category: str
+    country_iso3: str | None = None
+    country_name: str | None = None
+    region: str | None = None
+    breaking: bool
+    event_at: datetime | None = None
+    confidence_score: int = Field(ge=0, le=100)
+    sources: list[RadarSourceCandidate]
+    factors: EditorialScoreFactors
+    hooks: list[RadarHookCandidate]
+
+
+class RadarScanRequest(BaseModel):
+    hours: int = Field(default=6, ge=1, le=48)
+    country_iso3: str | None = Field(default=None, min_length=3, max_length=3)
+    max_candidates: int = Field(default=12, ge=1, le=30)
+
+
+class RadarScanResult(BaseModel):
+    scan_id: str
+    query: str
+    model: str
+    retrieved_urls: list[str]
+    candidates_found: int
+    candidates_accepted: int
+    candidates_rejected_without_retrieved_source: int
+    stories_created: list[str]
+    stories_deduplicated: list[str]
