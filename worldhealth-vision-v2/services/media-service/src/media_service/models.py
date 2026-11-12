@@ -342,6 +342,10 @@ class PublicationPackage(BaseModel):
     story_id: str
     target_channels: list[PublicationChannel] = Field(min_length=1)
     video_url: str
+    # Legacy stored manifests may not yet have a byte-level artifact hash.
+    # Every NEW canonical package must contain the rendered MP4 SHA-256.
+    video_sha256: str | None = Field(default=None, min_length=64, max_length=64)
+    video_render_profile: RenderProfile = "canonical_newsroom_v1"
     title: str
     caption: str
     hashtags: list[str] = Field(default_factory=list)
