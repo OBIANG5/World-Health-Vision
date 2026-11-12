@@ -102,3 +102,68 @@ def test_verify_conflict_overrides_support_and_caps_confidence():
     assert report.claims[0].status == "conflicting"
     assert report.verdict == "conflicting"
     assert report.confidence_score <= 45
+
+
+def test_verify_does_not_count_two_pages_from_same_domain_as_two_sources():
+    story = build_seed_story().model_copy(
+        update={
+            "sources": [
+                source.model_copy(update={"is_primary": False})
+                for source in build_seed_story().sources
+                if "courconstitutionnelle.ga" not in source.url
+            ]
+        }
+    )
+    urls = [
+        "https://reuters.com/world/story-one",
+        "https://reuters.com/world/story-two",
+    ]
+
+    report = adjudicate_verification(
+        story=story,
+        raw_claims=[
+            {
+                "claim": "Une même affirmation est répétée sur deux pages Reuters.",
+                "supporting_urls": urls,
+                "contradicting_urls": [],
+                "explanation": "Deux URL ne représentent qu'une source éditoriale.",
+            }
+        ],
+        retrieved_urls=urls,
+        model="test-model",
+    )
+
+    assert report.distinct_supporting_sources == 1
+    assert report.has_primary_support is False
+    assert report.verdict == "partially_verified"
+
+
+def test_verify_recognizes_registered_primary_source_discovered_during_search():
+    story = build_seed_story().model_copy(
+        update={
+            "sources": [
+                source
+                for source in build_seed_story().sources
+                if "courconstitutionnelle.ga" not in source.url
+            ]
+        }
+    )
+    primary_url = "https://courconstitutionnelle.ga/decision/rgpl-2026"
+
+    report = adjudicate_verification(
+        story=story,
+        raw_claims=[
+            {
+                "claim": "La Cour constitutionnelle a homologué le résultat.",
+                "supporting_urls": [primary_url],
+                "contradicting_urls": [],
+                "explanation": "La vérification retrouve directement l'institution primaire.",
+            }
+        ],
+        retrieved_urls=[primary_url],
+        model="test-model",
+    )
+
+    assert report.distinct_supporting_sources == 1
+    assert report.has_primary_support is True
+    assert report.verdict == "verified"
