@@ -277,6 +277,26 @@ async def launch_preview_render(story_id: str) -> MediaStory:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
+@app.post("/api/media/stories/{story_id}/render-preview/retry", response_model=MediaStory)
+async def retry_preview_render(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        if story.render_job is None:
+            raise MediaWorkflowConflictError("Story has no render job.")
+        if story.render_job.status != "failed":
+            raise MediaWorkflowConflictError(
+                "Only a failed preview render can be retried."
+            )
+        render_job = await RENDERER_CLIENT.retry_job(story.render_job.id)
+        return STORE.sync_render_job(story_id, render_job)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
 @app.post("/api/media/stories/{story_id}/render-preview/sync", response_model=MediaStory)
 async def sync_preview_render(story_id: str) -> MediaStory:
     try:
@@ -316,6 +336,34 @@ async def launch_tiktok_clean_export(story_id: str) -> MediaStory:
             render_job=render_job,
         )
         return STORE.attach_channel_export(story_id, export)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/exports/tiktok/retry", response_model=MediaStory)
+async def retry_tiktok_clean_export(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        export = next(
+            (
+                candidate
+                for candidate in story.channel_exports
+                if candidate.channel == "tiktok"
+            ),
+            None,
+        )
+        if export is None:
+            raise MediaWorkflowConflictError("Story has no TikTok clean export.")
+        if export.render_job.status != "failed":
+            raise MediaWorkflowConflictError(
+                "Only a failed TikTok clean export can be retried."
+            )
+        render_job = await RENDERER_CLIENT.retry_job(export.render_job.id)
+        return STORE.sync_channel_export(story_id, "tiktok", render_job)
     except MediaStoryNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Story not found") from exc
     except MediaWorkflowConflictError as exc:
