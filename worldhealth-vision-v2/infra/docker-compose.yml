@@ -24,6 +24,7 @@ services:
       WHV_CATALOG_BASE_URL: http://catalog-service:8080
       WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
       WHV_ANALYTICS_BASE_URL: http://analytics-service:8000
+      WHV_MEDIA_BASE_URL: http://media-service:8000
     ports:
       - "8080:8080"
     depends_on:
@@ -33,6 +34,8 @@ services:
         condition: service_healthy
       analytics-service:
         condition: service_started
+      media-service:
+        condition: service_healthy
     networks:
       - whv-private
       - whv-public
@@ -135,6 +138,26 @@ services:
         condition: service_started
       timeseries-service:
         condition: service_healthy
+    networks:
+      - whv-private
+
+  media-service:
+    container_name: whv-media
+    build:
+      context: ..
+      dockerfile: services/media-service/Dockerfile
+    image: whv/media-service:local
+    restart: unless-stopped
+    environment:
+      WHV_MEDIA_SERVICE_PORT: 8000
+      WHV_MEDIA_DEFAULT_LANGUAGE: fr
+      WHV_MEDIA_REPOSITORY_BACKEND: memory
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
     networks:
       - whv-private
 
