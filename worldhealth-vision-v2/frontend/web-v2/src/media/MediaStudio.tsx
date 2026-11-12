@@ -168,7 +168,7 @@ export default function MediaStudio() {
         setRadarHistory([]);
       }
 
-      setSelectedId((current) => current ?? nextStories[0]?.id ?? null);
+      setSelectedId((current) => current ?? (previewMode ? nextStories.find((item) => item.video_draft)?.id : null) ?? nextStories[0]?.id ?? null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
     } finally {
