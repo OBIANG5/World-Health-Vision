@@ -17,6 +17,7 @@ from media_service.models import (
     MediaStory,
     PrepareDraftRequest,
     QaState,
+    RenderJobRef,
     SelectHookRequest,
     StoryStatus,
 )
@@ -212,6 +213,37 @@ class MediaStoryStore:
         story.video_draft = draft
         story.script = draft.voiceover_script
         story.status = "scripting"
+        return self._save(story)
+
+    def attach_render_job(self, story_id: str, render_job: RenderJobRef) -> MediaStory:
+        story = self.get(story_id)
+        if story.video_draft is None:
+            raise MediaWorkflowConflictError("A video draft is required before rendering.")
+        if story.status not in {"scripting", "assets", "rendering"}:
+            raise MediaWorkflowConflictError(
+                f"Render cannot start from status '{story.status}'."
+            )
+        story.render_job = render_job
+        story.status = "rendering"
+        return self._save(story)
+
+    def sync_render_job(self, story_id: str, render_job: RenderJobRef) -> MediaStory:
+        story = self.get(story_id)
+        if story.render_job is None:
+            raise MediaWorkflowConflictError("Story has no render job.")
+        if story.render_job.id != render_job.id:
+            raise MediaWorkflowConflictError("Render job does not match this story.")
+
+        story.render_job = render_job
+        if render_job.status == "completed":
+            story.status = "preview_ready"
+        elif render_job.status == "failed":
+            story.status = "changes_requested"
+            story.qa.notes.append(
+                f"Render failed: {render_job.error or 'unknown renderer error'}"
+            )
+        else:
+            story.status = "rendering"
         return self._save(story)
 
     def decide(self, story_id: str, request: DecisionRequest) -> MediaStory:
