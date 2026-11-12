@@ -15,6 +15,7 @@ from media_service.models import (
     AssetBundle,
     AssetInventory,
     AssetSelection,
+    ChannelExportRef,
     ConfirmPublicationRequest,
     CreateStoryRequest,
     CreativePackage,
@@ -648,9 +649,77 @@ class MediaStoryStore:
             raise MediaWorkflowConflictError(str(exc)) from exc
 
         story.publication_package = package
-        # A newly prepared immutable package invalidates receipts from any
-        # previous package version.
+        # A newly prepared immutable package invalidates channel derivatives
+        # and receipts from any previous package version.
+        story.channel_exports = []
         story.publication_receipts = []
+        return self._save(story)
+
+    def attach_channel_export(
+        self,
+        story_id: str,
+        export: ChannelExportRef,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        package = story.publication_package
+        if package is None:
+            raise MediaWorkflowConflictError(
+                "Prepare the canonical publication package before channel exports."
+            )
+        if story.status != "publish_ready":
+            raise MediaWorkflowConflictError(
+                f"Channel export cannot start from status '{story.status}'."
+            )
+        if export.channel not in package.target_channels:
+            raise MediaWorkflowConflictError(
+                f"Channel '{export.channel}' is not part of this publication package."
+            )
+        if export.canonical_manifest_sha256 != package.manifest_sha256:
+            raise MediaWorkflowConflictError(
+                "Channel export does not match the active publication manifest."
+            )
+
+        story.channel_exports = [
+            existing
+            for existing in story.channel_exports
+            if existing.channel != export.channel
+        ]
+        story.channel_exports.append(export)
+        return self._save(story)
+
+    def sync_channel_export(
+        self,
+        story_id: str,
+        channel: str,
+        render_job: RenderJobRef,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        export = next(
+            (
+                candidate
+                for candidate in story.channel_exports
+                if candidate.channel == channel
+            ),
+            None,
+        )
+        if export is None:
+            raise MediaWorkflowConflictError(
+                f"No channel export exists for '{channel}'."
+            )
+        if export.render_job.id != render_job.id:
+            raise MediaWorkflowConflictError(
+                "Renderer job does not match this channel export."
+            )
+        if render_job.render_profile != export.render_profile:
+            raise MediaWorkflowConflictError(
+                "Renderer profile does not match this channel export."
+            )
+
+        export.render_job = render_job
+        story.channel_exports = [
+            export if candidate.channel == channel else candidate
+            for candidate in story.channel_exports
+        ]
         return self._save(story)
 
     def confirm_publication(
