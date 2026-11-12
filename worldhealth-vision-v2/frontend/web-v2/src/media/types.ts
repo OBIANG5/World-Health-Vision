@@ -293,7 +293,44 @@ export type MediaStory = {
   asset_bundle?: AssetBundle | null;
   qa: QaState;
   qa_report?: QaReport | null;
+  publication_package?: PublicationPackage | null;
+  publication_receipts: PublicationReceipt[];
   approval_note?: string | null;
+};
+
+export type PublicationChannel =
+  | "tiktok"
+  | "whatsapp"
+  | "instagram_reels"
+  | "youtube_shorts"
+  | "manual";
+
+export type PublicationPackage = {
+  version: number;
+  created_at: string;
+  story_id: string;
+  target_channels: PublicationChannel[];
+  video_url: string;
+  title: string;
+  caption: string;
+  hashtags: string[];
+  tiktok_caption: string;
+  whatsapp_text: string;
+  source_names: string[];
+  source_urls: string[];
+  ai_disclosure?: string | null;
+  creative_version: number;
+  qa_version: number;
+  manifest_sha256: string;
+};
+
+export type PublicationReceipt = {
+  id: string;
+  channel: PublicationChannel;
+  published_at: string;
+  public_url?: string | null;
+  external_id?: string | null;
+  note?: string | null;
 };
 
 export type MediaDashboard = {
