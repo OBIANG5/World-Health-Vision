@@ -294,6 +294,9 @@ class StubRendererClient:
                     audio_codec="aac",
                     audio_sample_rate_hz=48_000,
                     audio_channels=2,
+                    integrated_lufs=-16.0,
+                    true_peak_dbfs=-1.5,
+                    loudness_range_lu=5.0,
                 ),
             }
         )
