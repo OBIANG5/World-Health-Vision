@@ -1,0 +1,45 @@
+name: WHV V2 globe mobile and desktop verification
+
+on:
+  push:
+    branches:
+      - 'feature/v2-interactive-globe-2026-11-12'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  globe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install exact V2 dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Compile the real V2 frontend
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx tsc -b --pretty false
+          npx vite build --base=./
+      - name: Install browser for iPhone and desktop smoke tests
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Verify globe rendering, rotation and preservation of Leaflet
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node globe-smoke.mjs
+      - name: Save actual browser screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: whv-v2-globe-iphone-desktop
+          path: worldhealth-vision-v2/frontend/web-v2/globe-artifacts/
+          if-no-files-found: ignore
