@@ -82,6 +82,12 @@ spring:
 
         # Only the data-grounded advisor chat may be submitted by the public
         # frontend. Keep ingestion and internal service mutation routes private.
+        - id: media-service-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/**
+            - Method=GET,POST,PATCH,PUT,DELETE
+
         - id: analytics-advisor-chat-route
           uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
           predicates:
