@@ -702,6 +702,15 @@ class MediaStoryStore:
             raise MediaWorkflowConflictError(
                 "Channel export does not match the active publication manifest."
             )
+        if (
+            not package.video_sha256
+            or story.render_job is None
+            or story.render_job.output_sha256 != package.video_sha256
+            or story.render_job.output_url != package.video_url
+        ):
+            raise MediaWorkflowConflictError(
+                "Canonical MP4 bytes do not match the active publication manifest."
+            )
 
         story.channel_exports = [
             existing
@@ -764,6 +773,16 @@ class MediaStoryStore:
         if request.channel not in package.target_channels:
             raise MediaWorkflowConflictError(
                 f"Channel '{request.channel}' is not part of this publication package."
+            )
+        if (
+            not package.video_sha256
+            or story.render_job is None
+            or story.render_job.output_sha256 != package.video_sha256
+            or story.render_job.output_url != package.video_url
+            or story.render_job.render_profile != package.video_render_profile
+        ):
+            raise MediaWorkflowConflictError(
+                "Publication is blocked: canonical video does not match its SHA-256 manifest."
             )
         if request.channel == "tiktok":
             export = next(
