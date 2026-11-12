@@ -4,6 +4,7 @@ import type {
   EditorialScoreFactors,
   MediaDashboard,
   MediaStory,
+  RadarScanResult,
   StoryStatus,
 } from "./types";
 
@@ -99,6 +100,10 @@ export default function MediaStudio() {
   const [filter, setFilter] = useState<"all" | "priority" | "production" | "ready">("all");
   const [loading, setLoading] = useState(true);
   const [actionBusy, setActionBusy] = useState(false);
+  const [radarBusy, setRadarBusy] = useState(false);
+  const [radarHours, setRadarHours] = useState(6);
+  const [radarCountry, setRadarCountry] = useState("");
+  const [radarResult, setRadarResult] = useState<RadarScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const selected = useMemo(
@@ -252,6 +257,46 @@ export default function MediaStudio() {
     }
   }
 
+  async function runRadar() {
+    setRadarBusy(true);
+    setError(null);
+    try {
+      const country = radarCountry.trim().toUpperCase();
+      if (country && country.length !== 3) {
+        throw new Error("Le filtre pays doit être un code ISO3 de 3 lettres, par exemple GAB ou COD.");
+      }
+
+      const response = await fetch(`${API_ROOT}/radar/scans`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hours: radarHours,
+          country_iso3: country || null,
+          max_candidates: 12,
+        }),
+      });
+
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`RADAR indisponible (HTTP ${response.status}) : ${detail}`);
+      }
+
+      const result = (await response.json()) as RadarScanResult;
+      setRadarResult(result);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setRadarBusy(false);
+    }
+  }
+
   return (
     <div className="wv-media-shell">
       <header className="wv-media-topbar">
@@ -298,6 +343,83 @@ export default function MediaStudio() {
             <Stat label="Prêts à publier" value={dashboard.publish_ready} />
             <Stat label="Publiés" value={dashboard.published} />
           </div>
+
+          <section className="wv-media-radar-box">
+            <div className="wv-media-radar-head">
+              <div>
+                <span className="wv-media-radar-kicker">WORLD-VISION RADAR</span>
+                <h2>Scanner les meilleures actualités du Web</h2>
+                <p>
+                  Le scan recherche des sources récentes, conserve les URL réellement consultées
+                  et n’ajoute à la newsroom que les candidats ayant une provenance retrouvée.
+                </p>
+              </div>
+              <div className="wv-media-radar-badge">
+                LIVE WEB
+              </div>
+            </div>
+
+            <div className="wv-media-radar-controls">
+              <label>
+                Fenêtre
+                <select
+                  value={radarHours}
+                  onChange={(event) => setRadarHours(Number(event.target.value))}
+                  disabled={radarBusy}
+                >
+                  <option value={1}>1 heure</option>
+                  <option value={3}>3 heures</option>
+                  <option value={6}>6 heures</option>
+                  <option value={12}>12 heures</option>
+                  <option value={24}>24 heures</option>
+                  <option value={48}>48 heures</option>
+                </select>
+              </label>
+
+              <label>
+                Pays ISO3 <span>(optionnel)</span>
+                <input
+                  value={radarCountry}
+                  onChange={(event) => setRadarCountry(event.target.value.toUpperCase().slice(0, 3))}
+                  placeholder="MONDE"
+                  maxLength={3}
+                  disabled={radarBusy}
+                />
+              </label>
+
+              <button
+                className="wv-media-radar-run"
+                onClick={() => void runRadar()}
+                disabled={radarBusy}
+              >
+                {radarBusy ? "Scan en cours…" : "⌁ Scanner le Web"}
+              </button>
+            </div>
+
+            {radarResult && (
+              <div className="wv-media-radar-result">
+                <div>
+                  <strong>{radarResult.candidates_accepted}</strong>
+                  <span>candidats acceptés</span>
+                </div>
+                <div>
+                  <strong>{radarResult.stories_created.length}</strong>
+                  <span>nouveaux sujets</span>
+                </div>
+                <div>
+                  <strong>{radarResult.stories_deduplicated.length}</strong>
+                  <span>doublons évités</span>
+                </div>
+                <div>
+                  <strong>{radarResult.retrieved_urls.length}</strong>
+                  <span>URL consultées</span>
+                </div>
+                <small>
+                  Scan {radarResult.scan_id} · {radarResult.model}
+                </small>
+              </div>
+            )}
+          </section>
 
           <div className="wv-media-toolbar">
             <div className="wv-media-tabs">
