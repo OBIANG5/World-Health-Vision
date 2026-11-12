@@ -37,6 +37,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Typecheck and compile original V2 React Media Studio
         working-directory: worldhealth-vision-v2/frontend/web-v2
+        env:
+          VITE_WHV_PREVIEW_MODE: 'true'
         run: npm run build -- --base=./
       - name: Add explicitly labelled fictional preview adapter
         run: |
