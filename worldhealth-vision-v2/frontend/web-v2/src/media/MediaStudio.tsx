@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import "./MediaStudio.css";
+import ProductionJourney from "./ProductionJourney";
 import type {
   EditorialScoreFactors,
   MediaDashboard,
@@ -96,6 +97,10 @@ function emptyDashboard(): MediaDashboard {
 }
 
 export default function MediaStudio() {
+  const [screen, setScreen] = useState<"journey" | "desk">(
+    () => new URLSearchParams(window.location.search).get("screen") === "desk" ? "desk" : "journey",
+  );
+  const previewMode = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
   const [stories, setStories] = useState<MediaStory[]>([]);
   const [dashboard, setDashboard] = useState<MediaDashboard>(emptyDashboard());
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -646,6 +651,17 @@ export default function MediaStudio() {
     }
   }
 
+  function changeScreen(next: "journey" | "desk") {
+    setScreen(next);
+    const url = new URL(window.location.href);
+    if (next === "desk") {
+      url.searchParams.set("screen", "desk");
+    } else {
+      url.searchParams.delete("screen");
+    }
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+  }
+
   return (
     <div className="wv-media-shell">
       <header className="wv-media-topbar">
@@ -665,14 +681,40 @@ export default function MediaStudio() {
           }
         >
           <span className="wv-media-live-dot" />
-          {schedulerStatus?.enabled ? "RADAR AUTO" : "RADAR MANUEL"}
+          {previewMode ? "APERÇU · DÉMO" : schedulerStatus?.enabled ? "RADAR AUTO" : "RADAR MANUEL"}
         </div>
 
-        <a className="wv-media-back" href="/">
-          ← Logiciel principal
-        </a>
+        <nav className="wv-media-viewnav" aria-label="Espace Media Studio">
+          <button type="button" className={screen === "journey" ? "active" : ""}
+            onClick={() => changeScreen("journey")}>◈ Parcours vidéo</button>
+          <button type="button" className={screen === "desk" ? "active" : ""}
+            onClick={() => changeScreen("desk")}>▤ Control Room</button>
+        </nav>
       </header>
 
+      {screen === "journey" ? (
+        <ProductionJourney
+          story={selected}
+          stories={stories}
+          selectedId={selectedId}
+          onSelectStory={setSelectedId}
+          previewMode={previewMode}
+          busy={actionBusy || radarBusy}
+          onOpenControlRoom={() => changeScreen("desk")}
+          onVerify={verifyStory}
+          onDecision={decision}
+          onGenerateCreative={generateCreative}
+          onDiscoverAssets={discoverAssets}
+          onPrepareDraft={prepareDraft}
+          onGenerateVoiceover={generateVoiceover}
+          onLaunchRender={launchRender}
+          onSyncRender={syncRender}
+          onRunQa={runPublicationQa}
+          onPreparePublication={preparePublication}
+          onLaunchTikTokCleanExport={launchTikTokCleanExport}
+          onSyncTikTokCleanExport={syncTikTokCleanExport}
+        />
+      ) : (
       <main className="wv-media-layout">
         <section className="wv-media-main">
           <div className="wv-media-hero">
@@ -914,6 +956,7 @@ export default function MediaStudio() {
           )}
         </aside>
       </main>
+      )}
     </div>
   );
 }
