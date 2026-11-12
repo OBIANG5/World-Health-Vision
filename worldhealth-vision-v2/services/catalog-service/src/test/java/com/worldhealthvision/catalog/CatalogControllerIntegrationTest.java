@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 @Testcontainers
 @SpringBootTest
@@ -26,6 +28,9 @@ class CatalogControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     void shouldExposeReadinessForSeededCatalog() throws Exception {
@@ -171,6 +176,36 @@ class CatalogControllerIntegrationTest {
                 .andExpect(jsonPath("$.items[0].listedSourceCount").value(greaterThanOrEqualTo(0)))
                 .andExpect(jsonPath("$.coverageInterpretation")
                     .value(org.hamcrest.Matchers.containsString("not exhaustive")));
+    }
+
+    @Test
+    void shouldScopeCountryResearchAuditByWorldBankRegion() throws Exception {
+        mockMvc.perform(get("/api/catalog/local-sources/coverage?regionCode=ssf&limit=250"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalCountryCount").value(greaterThanOrEqualTo(40)))
+                .andExpect(jsonPath("$.countriesWithCountrySpecificSources").value(2))
+                .andExpect(jsonPath("$.countriesWithRegionalReferencesOnly").value(5))
+                .andExpect(jsonPath("$.items[?(@.countryIso3 == 'GAB')].nationalOfficialCount")
+                    .value(org.hamcrest.Matchers.hasItem(1)))
+                .andExpect(jsonPath("$.items[?(@.countryIso3 == 'NGA')].nationalOfficialCount")
+                    .value(org.hamcrest.Matchers.hasItem(2)));
+    }
+
+    @Test
+    @Transactional
+    void shouldFlagOverdueEditorialReviewButNotPretendToHaveNewPublishedData() throws Exception {
+        // A real PostgreSQL date calculation; test-only update is rolled back.
+        jdbcTemplate.update("""
+                update catalog.country_local_source
+                set last_reviewed_on = date '2021-01-01'
+                where country_iso3 = 'FRA' and source_code = 'INSEE_FRANCE'
+                """);
+        mockMvc.perform(get("/api/catalog/local-sources/coverage?limit=500"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.overdueReviewLinks").value(greaterThanOrEqualTo(1)))
+                .andExpect(jsonPath("$.items[?(@.countryIso3 == 'FRA')].overdueReviewCount")
+                    .value(org.hamcrest.Matchers.hasItem(1)))
+                .andExpect(jsonPath("$.verifiedIngestionLinks").value(0));
     }
 
     @Test
