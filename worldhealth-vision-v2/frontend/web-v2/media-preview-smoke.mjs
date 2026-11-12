@@ -44,6 +44,16 @@ try {
   // Journey is now the first screen, not the old one-column newsroom.
   await page.getByRole("heading", {name: /De l'actualité/}).waitFor();
   assert.equal(await page.locator(".wvj-step-card").count(), 14);
+  const scrollState = await page.evaluate(() => ({
+    document: document.documentElement.scrollHeight,
+    body: document.body.scrollHeight,
+    viewport: window.innerHeight,
+    root: getComputedStyle(document.getElementById("root")).overflowY,
+  }));
+  assert.ok(
+    scrollState.document > scrollState.viewport * 2,
+    "Mobile journey must scroll beyond the first screen: " + JSON.stringify(scrollState),
+  );
   assert.equal(await page.getByText("MODE DÉMONSTRATION", {exact: false}).count() > 0, true);
   await page.getByRole("button", {name: /07.*STORYBOARD/}).click();
   await page.getByRole("heading", {name: /Chaque seconde a un rôle/}).waitFor();
@@ -55,6 +65,7 @@ try {
   await page.getByRole("heading", {name: /Publié signifie/}).waitFor();
   await page.getByText("Non publié", {exact: true}).waitFor();
   await page.getByRole("button", {name: /Vue d'ensemble/}).first().click();
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({path: path.join(dist, "media-studio-iphone.png"), fullPage: true});
   await page.getByRole("button", {name: /Control Room/}).first().click();
   assert.equal(await page.locator(".wv-media-story-card").count(), 3);
