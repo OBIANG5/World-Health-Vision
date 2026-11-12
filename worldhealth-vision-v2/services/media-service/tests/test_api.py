@@ -1,14 +1,50 @@
+from datetime import datetime, timezone
+
 from fastapi.testclient import TestClient
 
+import media_service.api as media_api
 from media_service.api import app
+from media_service.models import RenderJobRef
 from media_service.store import STORE
 
 
 client = TestClient(app)
 
 
+class StubRendererClient:
+    def __init__(self):
+        self.jobs: dict[str, RenderJobRef] = {}
+
+    async def create_job(self, story):
+        now = datetime.now(timezone.utc)
+        job = RenderJobRef(
+            id="render-test-1",
+            story_id=story.id,
+            status="queued",
+            progress=0,
+            created_at=now,
+            updated_at=now,
+        )
+        self.jobs[job.id] = job
+        return job
+
+    async def get_job(self, job_id: str):
+        previous = self.jobs[job_id]
+        completed = previous.model_copy(
+            update={
+                "status": "completed",
+                "progress": 1,
+                "updated_at": datetime.now(timezone.utc),
+                "output_url": f"/api/media-renderer/renders/{job_id}.mp4",
+            }
+        )
+        self.jobs[job_id] = completed
+        return completed
+
+
 def setup_function():
     STORE.reset()
+    media_api.RENDERER_CLIENT = StubRendererClient()
 
 
 def test_health_and_dashboard():
@@ -161,3 +197,35 @@ def test_candidate_can_request_another_angle():
     )
     assert response.status_code == 200
     assert response.json()["status"] == "changes_requested"
+
+
+def test_preview_render_lifecycle():
+    assert client.post(
+        "/api/media/stories/story-gab-rgpl-2026/hooks/select",
+        json={"hook_id": "hook-1"},
+    ).status_code == 200
+    assert client.post(
+        "/api/media/stories/story-gab-rgpl-2026/decision",
+        json={"action": "approve"},
+    ).status_code == 200
+    assert client.post(
+        "/api/media/stories/story-gab-rgpl-2026/draft/prepare",
+        json={},
+    ).status_code == 200
+
+    launched = client.post(
+        "/api/media/stories/story-gab-rgpl-2026/render-preview"
+    )
+    assert launched.status_code == 200
+    launched_story = launched.json()
+    assert launched_story["status"] == "rendering"
+    assert launched_story["render_job"]["status"] == "queued"
+
+    synced = client.post(
+        "/api/media/stories/story-gab-rgpl-2026/render-preview/sync"
+    )
+    assert synced.status_code == 200
+    story = synced.json()
+    assert story["status"] == "preview_ready"
+    assert story["render_job"]["status"] == "completed"
+    assert story["render_job"]["output_url"].endswith(".mp4")
