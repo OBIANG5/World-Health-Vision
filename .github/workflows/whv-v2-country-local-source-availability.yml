@@ -87,6 +87,10 @@ jobs:
           assert all(row['connectionState']=='CATALOG_ONLY' for row in data['checks'])
           print('Safe official-source site availability probe completed.')
           print('Different official site HTTP responses (not data quality):',data['statusCounts'])
+          for check in sorted(data['checks'],key=lambda x:x['sourceCode']):
+              print('OFFICIAL SOURCE CHECK:',check['sourceCode'],
+                    'HTTP',check['httpStatus'],'STATUS',check['status'],
+                    'countries',','.join(check['countryIso3s']))
           print('BEAC served six countries but was probed only once.')
           print('No site content or statistical values were fetched.')
           PY
