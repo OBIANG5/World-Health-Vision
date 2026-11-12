@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/01c5aacfabb48e2b094414b94bab7db987de223d/index.html";
+const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/d8739fdf9335debea598238b22c23b711c343ca8/index.html";
 const browser = await chromium.launch({headless: true, args: ["--no-sandbox"]});
 try {
   const page = await browser.newPage({viewport: {width:390,height:844}, isMobile:true,hasTouch:true});
@@ -35,6 +35,20 @@ try {
     throw error;
   }
   await page.locator(".eye-stage").waitFor({state:"visible"});
+  // New canonical V2 globe must really render and support country drill-down.
+  const globe=page.locator("canvas.whv-globe-canvas");
+  await globe.waitFor({state:"visible"});
+  await page.waitForFunction(()=>!document.querySelector(".whv-globe-status"),null,{timeout:25000});
+  const box=await globe.boundingBox();
+  assert(box&&box.width>250&&box.height>220,"Remote mobile interactive globe has invalid dimensions");
+  await page.touchscreen.tap(box.x+box.width*.5,box.y+box.height*.51);
+  await page.locator(".country-drawer.open").waitFor({state:"visible",timeout:15000});
+  await page.locator(".country-drawer.open .drawer-btn.close").click();
+  // The original Leaflet eye view must still work, then return to the globe.
+  await page.getByRole("button",{name:/Carte œil/}).click();
+  await page.locator(".eye-map-surface .leaflet-container").waitFor({state:"visible"});
+  await page.getByRole("button",{name:/Globe/}).click();
+  await globe.waitFor({state:"visible"});
   await page.locator(".whv-nav-btn--tools").click();
   await page.locator(".whv-tools-menu").waitFor({state:"visible"});
   await page.locator(".whv-tools-menu").getByText("Expat & Retraite").click();
