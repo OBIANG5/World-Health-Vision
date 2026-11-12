@@ -940,6 +940,12 @@ function StoryInspector({
     story.creative_package?.scene_plan.filter((scene) =>
       ["real_photo", "real_video"].includes(scene.visual_kind),
     ) ?? [];
+  const selectionByScene = new Map(
+    (story.asset_bundle?.selections ?? []).map((selection) => [
+      selection.scene_order,
+      selection,
+    ]),
+  );
   const selectedAssetByScene = new Map(
     (story.asset_bundle?.selections ?? []).map((selection) => [
       selection.scene_order,
@@ -1170,6 +1176,7 @@ function StoryInspector({
           ) : (
             <div className="wv-media-asset-scenes">
               {requiredAssetScenes.map((scene) => {
+                const selectedSelection = selectionByScene.get(scene.order);
                 const selectedAssetId = selectedAssetByScene.get(scene.order);
                 const selectedAsset = selectedAssetId
                   ? assetById.get(selectedAssetId)
@@ -1201,6 +1208,12 @@ function StoryInspector({
                         <span>Actuel</span>
                         <strong>{selectedAsset.title}</strong>
                         <small>{selectedAsset.attribution}</small>
+                        {selectedSelection && (
+                          <div className="wv-media-selected-score">
+                            <strong>{selectedSelection.selection_score}/100</strong>
+                            <span>{selectedSelection.selection_reason}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
