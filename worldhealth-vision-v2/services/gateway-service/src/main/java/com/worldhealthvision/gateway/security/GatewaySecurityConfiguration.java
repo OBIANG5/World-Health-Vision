@@ -31,7 +31,7 @@ public class GatewaySecurityConfiguration {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus")
                         .permitAll()
-                        .pathMatchers("/api/media/**").authenticated()
+                        .pathMatchers("/api/media/**", "/api/media-renderer/**").authenticated()
                         .pathMatchers(GET, "/api/**").authenticated()
                         .anyExchange().denyAll()
                 )
