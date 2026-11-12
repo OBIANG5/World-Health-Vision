@@ -192,6 +192,27 @@ export default function MediaStudio() {
     }
   }
 
+  async function prepareDraft(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_ROOT}/stories/${story.id}/draft/prepare`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(`Draft impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   return (
     <div className="wv-media-shell">
       <header className="wv-media-topbar">
@@ -304,6 +325,7 @@ export default function MediaStudio() {
               busy={actionBusy}
               onDecision={decision}
               onSelectHook={selectHook}
+              onPrepareDraft={prepareDraft}
             />
           ) : (
             <div className="wv-media-empty">Sélectionne une actualité.</div>
@@ -344,6 +366,7 @@ function StoryInspector({
   busy,
   onDecision,
   onSelectHook,
+  onPrepareDraft,
 }: {
   story: MediaStory;
   busy: boolean;
@@ -352,6 +375,7 @@ function StoryInspector({
     action: "approve" | "reject" | "request_changes" | "mark_publish_ready",
   ) => Promise<void>;
   onSelectHook: (story: MediaStory, hookId: string) => Promise<void>;
+  onPrepareDraft: (story: MediaStory) => Promise<void>;
 }) {
   const scoreEntries = Object.entries(story.score.factors) as [
     keyof EditorialScoreFactors,
@@ -450,6 +474,40 @@ function StoryInspector({
         </div>
       </section>
 
+      {story.video_draft && (
+        <section className="wv-media-panel">
+          <div className="wv-media-panel-title">
+            <span>Draft vidéo · v{story.video_draft.version}</span>
+            <small>
+              {story.video_draft.duration_sec}s · {story.video_draft.width}×{story.video_draft.height} · {story.video_draft.rendering_engine}
+            </small>
+          </div>
+
+          <div className="wv-media-draft-script">
+            <span>VOIX OFF</span>
+            <p>{story.video_draft.voiceover_script}</p>
+          </div>
+
+          <div className="wv-media-scenes">
+            {story.video_draft.scenes.map((scene) => (
+              <div className="wv-media-scene" key={scene.id}>
+                <div className="wv-media-scene-time">
+                  <strong>{scene.order}</strong>
+                  <span>{scene.start_sec.toFixed(1)}s → {(scene.start_sec + scene.duration_sec).toFixed(1)}s</span>
+                </div>
+                <div className="wv-media-scene-copy">
+                  <small>{scene.purpose} · {scene.visual_kind}</small>
+                  <strong>{scene.on_screen_text}</strong>
+                  {scene.asset_query && <span>Recherche média : {scene.asset_query}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="wv-media-source-line">{story.video_draft.source_line}</div>
+        </section>
+      )}
+
       <section className="wv-media-panel">
         <div className="wv-media-panel-title">
           <span>Inventaire médias</span>
@@ -482,27 +540,126 @@ function StoryInspector({
       <div className="wv-media-actions">
         {story.status === "candidate" && (
           <>
-            <button className="wv-media-action primary" disabled={busy} onClick={() => void onDecision(story, "approve")}>
+            <button
+              className="wv-media-action primary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "approve")}
+            >
               ✓ Valider l’idée
             </button>
-            <button className="wv-media-action secondary" disabled={busy} onClick={() => void onDecision(story, "request_changes")}>
-              ↻ Autre angle
+            <button
+              className="wv-media-action secondary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "request_changes")}
+            >
+              ↻ Demander un autre angle
             </button>
-            <button className="wv-media-action danger" disabled={busy} onClick={() => void onDecision(story, "reject")}>
+            <button
+              className="wv-media-action danger"
+              disabled={busy}
+              onClick={() => void onDecision(story, "reject")}
+            >
               Refuser
             </button>
           </>
         )}
 
-        {story.status !== "candidate" && story.status !== "rejected" && story.status !== "published" && (
+        {story.status === "changes_requested" && (
           <>
-            <button className="wv-media-action primary" disabled={busy} onClick={() => void onDecision(story, "mark_publish_ready")}>
+            <button
+              className="wv-media-action primary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "approve")}
+            >
+              ✓ Revalider l’angle
+            </button>
+            <button
+              className="wv-media-action danger"
+              disabled={busy}
+              onClick={() => void onDecision(story, "reject")}
+            >
+              Refuser
+            </button>
+          </>
+        )}
+
+        {story.status === "approved" && (
+          <>
+            <button
+              className="wv-media-action primary"
+              disabled={busy || !story.selected_hook_id}
+              onClick={() => void onPrepareDraft(story)}
+              title={!story.selected_hook_id ? "Choisis d’abord un hook." : undefined}
+            >
+              ▶ Préparer script + storyboard
+            </button>
+            {!story.selected_hook_id && (
+              <div className="wv-media-action-hint">Choisis d’abord un hook ci-dessus.</div>
+            )}
+            <button
+              className="wv-media-action secondary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "request_changes")}
+            >
+              Demander une correction
+            </button>
+            <button
+              className="wv-media-action danger"
+              disabled={busy}
+              onClick={() => void onDecision(story, "reject")}
+            >
+              Refuser
+            </button>
+          </>
+        )}
+
+        {["scripting", "assets", "rendering"].includes(story.status) && (
+          <>
+            {story.status === "scripting" && story.video_draft && (
+              <div className="wv-media-progress-note">
+                Draft structuré. Prochaine brique : sélection des médias et rendu.
+              </div>
+            )}
+            <button
+              className="wv-media-action secondary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "request_changes")}
+            >
+              Demander une correction
+            </button>
+            <button
+              className="wv-media-action danger"
+              disabled={busy}
+              onClick={() => void onDecision(story, "reject")}
+            >
+              Refuser
+            </button>
+          </>
+        )}
+
+        {["qa", "preview_ready"].includes(story.status) && (
+          <>
+            <button
+              className="wv-media-action primary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "mark_publish_ready")}
+            >
               ✓ Marquer prêt à publier
             </button>
-            <button className="wv-media-action secondary" disabled={busy} onClick={() => void onDecision(story, "request_changes")}>
+            <button
+              className="wv-media-action secondary"
+              disabled={busy}
+              onClick={() => void onDecision(story, "request_changes")}
+            >
               Demander une correction
             </button>
           </>
+        )}
+
+        {story.status === "publish_ready" && (
+          <div className="wv-media-progress-note">
+            Publication volontairement manuelle pendant la Phase 1.
+          </div>
         )}
 
         {story.status === "rejected" && (
