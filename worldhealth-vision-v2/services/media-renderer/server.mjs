@@ -439,6 +439,9 @@ const renderJob = async (job) => {
       error: error instanceof Error ? error.message : String(error),
     });
   } finally {
+    if (temporaryOutputLocation) {
+      await unlink(temporaryOutputLocation).catch(() => undefined);
+    }
     running -= 1;
     void drain();
   }
