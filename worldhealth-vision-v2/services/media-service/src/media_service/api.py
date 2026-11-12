@@ -15,6 +15,7 @@ from media_service.models import (
     RadarScanRequest,
     RadarScanResult,
     RadarSchedulerStatus,
+    RunQaRequest,
     SelectAssetRequest,
     SelectHookRequest,
     StoryStatus,
@@ -29,6 +30,12 @@ from media_service.editorial_creative import (
     CreativeConfigurationError,
     CreativeGroundingError,
     CreativeProviderError,
+)
+from media_service.qa import (
+    QA_LANGUAGE_CLIENT,
+    QaConfigurationError,
+    QaProviderError,
+    run_publication_qa,
 )
 from media_service.radar import (
     RADAR_CLIENT,
@@ -280,6 +287,29 @@ async def sync_preview_render(story_id: str) -> MediaStory:
     except MediaWorkflowConflictError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/qa/run", response_model=MediaStory)
+async def run_story_publication_qa(
+    story_id: str,
+    request: RunQaRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        state, report = await run_publication_qa(
+            story,
+            request,
+            language_client=QA_LANGUAGE_CLIENT,
+        )
+        return STORE.apply_qa_report(story_id, state, report)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except QaConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except QaProviderError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
