@@ -803,6 +803,16 @@ def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
     assert "Sources" in package_story["publication_package"]["whatsapp_text"]
     assert package_story["publication_package"]["ai_disclosure"] == "Voix générée par IA"
 
+    blocked_without_clean_export = client.post(
+        f"/api/media/stories/{story_id}/publication/confirm",
+        json={
+            "channel": "tiktok",
+            "external_id": "should-not-pass",
+        },
+    )
+    assert blocked_without_clean_export.status_code == 409
+    assert "clean export" in blocked_without_clean_export.json()["detail"].lower()
+
     tiktok_export = client.post(
         f"/api/media/stories/{story_id}/publication/exports/tiktok"
     )
