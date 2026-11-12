@@ -1174,8 +1174,12 @@ function StoryInspector({
                 const selectedAsset = selectedAssetId
                   ? assetById.get(selectedAssetId)
                   : undefined;
+                const expectedAssetKind =
+                  scene.visual_kind === "real_video" ? "video" : "image";
                 const candidates = story.asset_bundle?.assets.filter(
-                  (asset) => asset.query === scene.asset_query,
+                  (asset) =>
+                    asset.query === scene.asset_query &&
+                    asset.kind === expectedAssetKind,
                 ) ?? [];
                 const unresolved =
                   story.asset_bundle?.unresolved_scene_orders.includes(scene.order) ?? true;
@@ -1224,6 +1228,9 @@ function StoryInspector({
                               </span>
                             </div>
                             <div className="wv-media-asset-copy">
+                              <div className="wv-media-asset-kind">
+                                {asset.kind === "video" ? "VIDÉO" : "PHOTO"}
+                              </div>
                               <strong>{asset.title}</strong>
                               <span>{asset.author ?? "Auteur non renseigné"}</span>
                               <span>{asset.license_name ?? "Licence non renseignée"}</span>
