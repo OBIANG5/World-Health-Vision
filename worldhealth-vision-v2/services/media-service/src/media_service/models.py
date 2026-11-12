@@ -286,6 +286,10 @@ class VideoDraft(BaseModel):
 
 
 RenderJobStatus = Literal["queued", "bundling", "rendering", "completed", "failed"]
+RenderProfile = Literal[
+    "canonical_newsroom_v1",
+    "tiktok_api_clean_v1",
+]
 
 
 class VoiceoverRef(BaseModel):
@@ -363,12 +367,21 @@ class ConfirmPublicationRequest(BaseModel):
 class RenderJobRef(BaseModel):
     id: str
     story_id: str
+    render_profile: RenderProfile = "canonical_newsroom_v1"
     status: RenderJobStatus
     progress: float = Field(ge=0, le=1)
     created_at: datetime
     updated_at: datetime
     output_url: str | None = None
+    output_sha256: str | None = Field(default=None, min_length=64, max_length=64)
     error: str | None = None
+
+
+class ChannelExportRef(BaseModel):
+    channel: Literal["tiktok"]
+    render_profile: Literal["tiktok_api_clean_v1"] = "tiktok_api_clean_v1"
+    canonical_manifest_sha256: str = Field(min_length=64, max_length=64)
+    render_job: RenderJobRef
 
 
 class MediaStory(BaseModel):
@@ -404,6 +417,7 @@ class MediaStory(BaseModel):
     qa: QaState = Field(default_factory=QaState)
     qa_report: QaReport | None = None
     publication_package: PublicationPackage | None = None
+    channel_exports: list[ChannelExportRef] = Field(default_factory=list)
     publication_receipts: list[PublicationReceipt] = Field(default_factory=list)
     approval_note: str | None = None
     radar_scan_id: str | None = None
