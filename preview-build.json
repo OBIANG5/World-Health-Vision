@@ -1,7 +1,7 @@
 {
   "sourceBranch": "v2",
-  "sourceCommit": "8e434a50d9c3924b70f1a14b41f53975fd39412a",
-  "builtAtUtc": "2026-11-12T19:44:24.492964+00:00",
+  "sourceCommit": "ff2396c84d273d44e1575e36e88380f043d66fd2",
+  "builtAtUtc": "2026-11-12T19:45:47.987503+00:00",
   "previewMode": "STATIC_NO_PERSISTENT_BACKEND",
   "catalogSnapshots": "Existing versioned preview snapshots retained; not real-time ingestion"
 }
