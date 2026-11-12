@@ -17,12 +17,13 @@ class Settings(BaseSettings):
     radar_model: str = "gpt-6-astra"
     radar_timeout_seconds: float = 120.0
     redis_url: str = "redis://localhost:6379/0"
+    internal_api_base_url: str = "http://localhost:8000"
     radar_scheduler_enabled: bool = False
-    radar_scheduler_interval_seconds: int = 900
+    radar_scheduler_interval_seconds: int = 300
     radar_scheduler_initial_delay_seconds: int = 20
     radar_scheduler_scan_hours: int = 3
     radar_scheduler_max_candidates: int = 12
-    radar_scheduler_lock_ttl_seconds: int = 840
+    radar_scheduler_lock_ttl_seconds: int = 240
     radar_scheduler_heartbeat_ttl_seconds: int = 120
 
 
