@@ -309,6 +309,57 @@ class GenerateVoiceoverRequest(BaseModel):
     voice: str | None = None
 
 
+PublicationChannel = Literal[
+    "tiktok",
+    "whatsapp",
+    "instagram_reels",
+    "youtube_shorts",
+    "manual",
+]
+
+
+class PublicationPackage(BaseModel):
+    version: int = Field(ge=1)
+    created_at: datetime
+    story_id: str
+    target_channels: list[PublicationChannel] = Field(min_length=1)
+    video_url: str
+    title: str
+    caption: str
+    hashtags: list[str] = Field(default_factory=list)
+    tiktok_caption: str
+    whatsapp_text: str
+    source_names: list[str] = Field(default_factory=list)
+    source_urls: list[str] = Field(default_factory=list)
+    ai_disclosure: str | None = None
+    creative_version: int
+    qa_version: int
+    manifest_sha256: str = Field(min_length=64, max_length=64)
+
+
+class PublicationReceipt(BaseModel):
+    id: str
+    channel: PublicationChannel
+    published_at: datetime
+    public_url: str | None = None
+    external_id: str | None = None
+    note: str | None = None
+
+
+class PreparePublicationRequest(BaseModel):
+    target_channels: list[PublicationChannel] = Field(
+        default_factory=lambda: ["tiktok", "whatsapp"],
+        min_length=1,
+    )
+
+
+class ConfirmPublicationRequest(BaseModel):
+    channel: PublicationChannel
+    public_url: str | None = None
+    external_id: str | None = None
+    note: str | None = None
+
+
 class RenderJobRef(BaseModel):
     id: str
     story_id: str
@@ -352,6 +403,8 @@ class MediaStory(BaseModel):
     asset_bundle: AssetBundle | None = None
     qa: QaState = Field(default_factory=QaState)
     qa_report: QaReport | None = None
+    publication_package: PublicationPackage | None = None
+    publication_receipts: list[PublicationReceipt] = Field(default_factory=list)
     approval_note: str | None = None
     radar_scan_id: str | None = None
     radar_fingerprint: str | None = None
