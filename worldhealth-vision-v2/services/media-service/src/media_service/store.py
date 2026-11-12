@@ -10,6 +10,7 @@ from media_service.creative import build_video_draft
 from media_service.models import (
     AssetInventory,
     CreateStoryRequest,
+    CreativePackage,
     DecisionRequest,
     EditorialScoreFactors,
     HookOption,
@@ -313,6 +314,32 @@ class MediaStoryStore:
         else:
             story.qa.facts = "pending"
 
+        return self._save(story)
+
+    def apply_creative_package(
+        self,
+        story_id: str,
+        package: CreativePackage,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        if story.status != "approved":
+            raise MediaWorkflowConflictError(
+                "CREATIVE can only run after the story is editorially approved."
+            )
+        if story.verification_status != "verified":
+            raise MediaWorkflowConflictError(
+                "CREATIVE requires a fully verified story."
+            )
+
+        story.creative_package = package
+        story.hooks = [hook.model_copy(deep=True) for hook in package.hooks]
+        story.selected_hook_id = None
+        story.script = " ".join(
+            segment.text for segment in package.script_segments
+        )
+        story.target_duration_sec = package.target_duration_sec
+        story.video_draft = None
+        story.render_job = None
         return self._save(story)
 
     def select_hook(self, story_id: str, request: SelectHookRequest) -> MediaStory:
