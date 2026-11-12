@@ -48,6 +48,126 @@ export interface CountryDetail extends CountrySummary {
   dataQualityTier: number;
 }
 
+/** Country-local research registry. Verified organization is not verified data. */
+export interface CountryLocalSource {
+  countryIso3: string;
+  sourceCode: string;
+  displayName: string;
+  organizationName: string;
+  sourceRole: string;
+  sourceType: "NATIONAL_OFFICIAL" | "REGIONAL_OFFICIAL" | "LOCAL_MEDIA" | "LOCAL_RESEARCH" | "LOCAL_COMMUNITY";
+  homepageUrl: string;
+  evidenceUrl: string;
+  verificationState: "VERIFIED_ORGANIZATION" | "REVIEW_REQUIRED";
+  lastReviewedOn: string;
+  methodologyCaveat: string;
+  reuseRightsNote: string;
+  /** Jurisdiction is distinct from verification/connection status. */
+  geographicScopeKind?: "NATIONAL" | "SUBNATIONAL" | "REGIONAL_SHARED";
+  connectionState?: "CATALOG_ONLY" | "CONNECTOR_IN_REVIEW" | "INGESTION_VERIFIED";
+  reviewIntervalDays?: number;
+  reviewDueOn?: string;
+}
+
+/** A documented release is editorial evidence, NOT a canonical observation. */
+export interface CountryDocumentedRelease {
+  releaseCode: string;
+  countryIso3: string;
+  sourceCode: string;
+  indicatorCode: string;
+  referenceYear: number;
+  valueNumeric: number;
+  unitLabel: string;
+  populationScope: "ALL_RESIDENTS" | "NATIONAL_CITIZENS" | "NOT_APPLICABLE";
+  methodKind: string;
+  publicationStatus: string;
+  releaseDate: string;
+  title: string;
+  primaryEvidenceUrl: string;
+  corroborationUrl: string | null;
+  methodologyCaveat: string;
+  internationalComparisonNote: string;
+  verificationStatus: "DOCUMENTED_NOT_INGESTED" | "INGESTED_VERIFIED";
+  reviewedOn: string;
+}
+
+/** Canonical observations, not estimates copied from a press article. */
+export interface NationalInternationalReference {
+  sourceCode: string;
+  sourceDisplayName: string;
+  datasetCode: string;
+  periodStart: string;
+  periodEnd: string;
+  periodLabel: string;
+  numericValue: number;
+  valueStatus: "OBSERVED" | "ESTIMATED";
+  sourcePublishedAt: string | null;
+  fetchedAtUtc: string | null;
+}
+
+export type NationalComparisonStatus =
+  | "NO_INTERNATIONAL_OBSERVATIONS"
+  | "DIFFERENT_REFERENCE_PERIOD"
+  | "SAME_YEAR_METHOD_NOT_VERIFIED";
+
+export interface NationalReleaseComparison {
+  releaseCode: string;
+  indicatorCode: string;
+  localSourceCode: string;
+  localReferenceYear: number;
+  internationalLatest: NationalInternationalReference[];
+  status: NationalComparisonStatus;
+  comparableByMethod: boolean;
+  numericalDifference: number | null;
+  explanation: string;
+}
+
+export interface CountryNationalComparisons {
+  countryIso3: string;
+  comparisonCount: number;
+  comparisons: NationalReleaseComparison[];
+}
+
+/** Source directory coverage includes all active nonaggregate countries with zeros. */
+export interface CountryLocalCoverageItem {
+  countryIso3: string;
+  displayName: string;
+  regionCode: string | null;
+  listedSourceCount: number;
+  nationalOfficialCount: number;
+  regionalOfficialCount: number;
+  localMediaCount: number;
+  localResearchCount: number;
+  connectedSourceCount: number;
+  overdueReviewCount: number;
+  lastReviewedOn: string | null;
+  researchStatus: "NOT_RESEARCHED" | "REGIONAL_REFERENCE_ONLY" | "PARTIAL_CATALOGUED";
+}
+
+export interface CountryLocalCoverageOverview {
+  totalCountryCount: number;
+  countriesWithCountrySpecificSources: number;
+  countriesNotResearchedLocally: number;
+  countriesWithRegionalReferencesOnly: number;
+  cataloguedSourceLinks: number;
+  verifiedIngestionLinks: number;
+  overdueReviewLinks: number;
+  matchingCountryCount: number;
+  offset: number;
+  limit: number;
+  returnedCount: number;
+  coverageInterpretation: string;
+  items: CountryLocalCoverageItem[];
+}
+
+export interface CountryLocalContext {
+  countryIso3: string;
+  localSourceCount: number;
+  localSources: CountryLocalSource[];
+  documentedReleaseCount: number;
+  documentedReleases: CountryDocumentedRelease[];
+}
+
 export interface SourceAuditEvidence {
   code: string;
   severity: AuditEvidenceSeverity;
@@ -229,6 +349,8 @@ export interface IndicatorOverviewResponse {
   sourcePerspectives: SourcePerspective[];
   latestBySource: TimeseriesPoint[];
   selectedSeriesPreview: TimeseriesPoint[];
+  /** Values used in the cross-source comparison, sharing the exact same period. */
+  alignedComparisonValues?: TimeseriesPoint[];
   sourceAudit: SourceAuditView;
 }
 
