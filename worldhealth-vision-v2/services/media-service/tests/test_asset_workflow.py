@@ -68,7 +68,15 @@ def creative_story(*, visual_kind="real_photo"):
     return story
 
 
-def asset(asset_id: str, rights_status: str, *, kind="image"):
+def asset(
+    asset_id: str,
+    rights_status: str,
+    *,
+    kind="image",
+    width=None,
+    height=None,
+    size_bytes=None,
+):
     return MediaAsset(
         id=asset_id,
         provider="wikimedia_commons",
@@ -82,6 +90,9 @@ def asset(asset_id: str, rights_status: str, *, kind="image"):
         ),
         thumbnail_url=f"https://upload.wikimedia.org/{asset_id}-1080.jpg",
         mime_type="video/webm" if kind == "video" else "image/jpeg",
+        width=width,
+        height=height,
+        size_bytes=size_bytes,
         author="Jane Doe",
         license_name="CC BY 4.0" if rights_status == "approved" else "CC BY-SA 4.0",
         license_url="https://creativecommons.org/licenses/by/4.0/",
@@ -213,3 +224,41 @@ def test_recompute_keeps_video_scene_unresolved_with_selected_photo():
     )
 
     assert recompute_unresolved_scene_orders(story, bundle) == [1]
+
+
+
+def test_video_auto_selection_prefers_vertical_production_quality():
+    story = creative_story(visual_kind="real_video")
+    landscape_4k_heavy = asset(
+        "landscape-heavy",
+        "approved",
+        kind="video",
+        width=3840,
+        height=2160,
+        size_bytes=80_000_000,
+    )
+    portrait_1080_light = asset(
+        "portrait-light",
+        "approved",
+        kind="video",
+        width=1080,
+        height=1920,
+        size_bytes=10_000_000,
+    )
+    client = FakeAssets([
+        landscape_4k_heavy,
+        portrait_1080_light,
+    ])
+
+    bundle = asyncio.run(
+        discover_asset_bundle(
+            story,
+            DiscoverAssetsRequest(limit_per_scene=4),
+            asset_client=client,
+        )
+    )
+
+    assert bundle.unresolved_scene_orders == []
+    assert bundle.selections[0].asset_id == "portrait-light"
+    assert bundle.selections[0].selection_score == 100
+    assert "9:16" in bundle.selections[0].selection_reason
