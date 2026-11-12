@@ -1,3 +1,7 @@
+export type RenderProfile =
+  | "canonical_newsroom_v1"
+  | "tiktok_api_clean_v1";
+
 export type VisualKind =
   | "real_photo"
   | "real_video"
@@ -58,6 +62,7 @@ export type VoiceoverRef = {
 };
 
 export type WorldVisionRenderProps = {
+  render_profile?: RenderProfile;
   draft: VideoDraft;
   voiceover?: VoiceoverRef | null;
   story: {
