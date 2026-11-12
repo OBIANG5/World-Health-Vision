@@ -3,8 +3,8 @@
 // Ouvert depuis le bouton "Sources" dans la nav principale.
 
 import { useEffect, useRef, useState } from "react";
-import type { SourceDataCoverage, SourceDetail } from "../../api/types";
-import { fetchSourceDataCoverage, fetchSources } from "../../api/whvApi";
+import type { CountryLocalCoverageOverview, SourceDataCoverage, SourceDetail } from "../../api/types";
+import { fetchCountrySourceCoverage, fetchSourceDataCoverage, fetchSources } from "../../api/whvApi";
 import { useLang } from "../../context/LanguageContext";
 import type { Lang } from "../../context/LanguageContext";
 
@@ -47,6 +47,16 @@ const L = {
     estimatesOnly: "Estimations uniquement",
     notVerified: "Données non vérifiables",
     noMatch: "Aucune source ne correspond à cette recherche.",
+    localCoverageTitle: "Couverture des sources nationales — état réel",
+    localCoverageLoading: "Vérification du registre des pays et des sources nationales…",
+    localCoverageUnknown: "Couverture nationale non vérifiable : le catalogue connecté n'est pas disponible.",
+    localCoveragePreview: "En aperçu statique, aucune couverture nationale n'est confirmée.",
+    locallyStarted: "pays avec recherche locale partielle",
+    regionOnly: "pays avec uniquement une institution régionale partagée",
+    unresearched: "pays sans recherche locale dans le catalogue",
+    connected: "sources locales marquées comme connectées",
+    localCoverageCaution: "Un pays répertorié n'est pas un pays couvert exhaustivement. Une source identifiée ne signifie pas un connecteur actif ni une publication réutilisable.",
+
   },
   en: {
     title: "Sources & Methodology",
@@ -82,6 +92,16 @@ const L = {
     estimatesOnly: "Estimates only",
     notVerified: "Data not verifiable",
     noMatch: "No sources match this search.",
+    localCoverageTitle: "National source coverage — real status",
+    localCoverageLoading: "Checking country and national-source research coverage…",
+    localCoverageUnknown: "Country source coverage cannot be verified: the connected catalog is unavailable.",
+    localCoveragePreview: "Static preview cannot confirm country source research coverage.",
+    locallyStarted: "countries with partial local research",
+    regionOnly: "countries with a shared regional institution only",
+    unresearched: "countries without local research in the catalog",
+    connected: "local sources marked as connected",
+    localCoverageCaution: "A listed country is not exhaustively researched. A registered organization is not an active connector or permission to reuse its publications.",
+
   },
 } as const;
 
@@ -162,6 +182,10 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
   const [sources, setSources] = useState<SourceDetail[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [coverage, setCoverage] = useState<Map<string, SourceDataCoverage> | null>(null);
+  const [nationalCoverage, setNationalCoverage] = useState<CountryLocalCoverageOverview | null>(null);
+  const [nationalCoverageState, setNationalCoverageState] = useState<"loading" | "available" | "unavailable">(
+    isPreview ? "unavailable" : "loading",
+  );
   const [coverageState, setCoverageState] = useState<"loading" | "available" | "unavailable">(
     isPreview ? "unavailable" : "loading",
   );
@@ -187,6 +211,19 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
         setCoverageState("available");
       })
       .catch(() => { if (mounted) setCoverageState("unavailable"); });
+    return () => { mounted = false; };
+  }, [isPreview]);
+
+  useEffect(() => {
+    if (isPreview) return;
+    let mounted = true;
+    fetchCountrySourceCoverage()
+      .then((data) => {
+        if (!mounted) return;
+        setNationalCoverage(data);
+        setNationalCoverageState("available");
+      })
+      .catch(() => { if (mounted) setNationalCoverageState("unavailable"); });
     return () => { mounted = false; };
   }, [isPreview]);
 
@@ -263,6 +300,36 @@ export default function SourceMethodologyModal({ onClose }: { onClose: () => voi
                     : "Preview mode: entries are generated from V2 SQL migrations. A registered source does not mean its observations have been ingested or refreshed."}</span>
                 )}
               </p>
+              <details className="whv-national-coverage-overview">
+                <summary>{l.localCoverageTitle}</summary>
+                <div className="whv-national-coverage-overview-body" role="status">
+                  {nationalCoverageState === "loading" && <p>{l.localCoverageLoading}</p>}
+                  {nationalCoverageState === "unavailable" && (
+                    <p>{isPreview ? l.localCoveragePreview : l.localCoverageUnknown}</p>
+                  )}
+                  {nationalCoverageState === "available" && nationalCoverage && (
+                    <>
+                      <p>
+                        <strong>{nationalCoverage.totalCountryCount}</strong>{" "}
+                        {lang === "fr" ? "pays et territoires actifs du registre" : "active countries and territories in the registry"}.
+                      </p>
+                      <div className="whv-national-coverage-metrics">
+                        <span><strong>{nationalCoverage.countriesWithCountrySpecificSources}</strong> {l.locallyStarted}</span>
+                        <span><strong>{nationalCoverage.countriesWithRegionalReferencesOnly}</strong> {l.regionOnly}</span>
+                        <span><strong>{nationalCoverage.countriesNotResearchedLocally}</strong> {l.unresearched}</span>
+                        <span><strong>{nationalCoverage.verifiedIngestionLinks}</strong> {l.connected}</span>
+                      </div>
+                      <p className="whv-national-coverage-caution">{l.localCoverageCaution}</p>
+                      <p className="whv-national-coverage-country-names">
+                        {nationalCoverage.items
+                          .filter((country) => country.researchStatus === "PARTIAL_CATALOGUED")
+                          .map((country) => country.displayName).join(" · ")}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </details>
+
               <div className="whv-source-coverage-overview" role="status">
                 {coverageState === "available"
                   ? (lang === "fr"
