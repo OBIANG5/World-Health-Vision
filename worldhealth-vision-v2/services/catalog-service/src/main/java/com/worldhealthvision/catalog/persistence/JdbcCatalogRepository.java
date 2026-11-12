@@ -24,6 +24,7 @@ import com.worldhealthvision.catalog.api.dto.CatalogReadinessResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CountryLocalSourceResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDocumentedReleaseResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalCoverageResponse;
 import com.worldhealthvision.catalog.api.dto.CountrySummaryResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencyDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencySummaryResponse;
@@ -278,7 +279,8 @@ public class JdbcCatalogRepository implements CatalogRepository {
                 select country_iso3, source_code, display_name, organization_name,
                        source_role, source_type, homepage_url, evidence_url,
                        verification_state, last_reviewed_on, methodology_caveat,
-                       reuse_rights_note
+                       reuse_rights_note, geographic_scope_kind, connection_state,
+                       review_interval_days
                 from catalog.country_local_source
                 where country_iso3 = :iso3
                 order by
@@ -304,7 +306,79 @@ public class JdbcCatalogRepository implements CatalogRepository {
                         rs.getString("verification_state"),
                         rs.getObject("last_reviewed_on", java.time.LocalDate.class),
                         rs.getString("methodology_caveat"),
-                        rs.getString("reuse_rights_note")
+                        rs.getString("reuse_rights_note"),
+                        rs.getString("geographic_scope_kind"),
+                        rs.getString("connection_state"),
+                        rs.getInt("review_interval_days"),
+                        rs.getObject("last_reviewed_on", java.time.LocalDate.class)
+                                .plusDays(rs.getInt("review_interval_days"))
+                ))
+                .list();
+    }
+
+    @Override
+    public List<CountryLocalCoverageResponse> listCountryLocalCoverage(String regionCode) {
+        // Includes every real (nonaggregate) active country, even if zero
+        // sources are registered; regional BEAC-only entries must not
+        // masquerade as country-level institutional research.
+        String sql = """
+                select c.iso3 as country_iso3,
+                       c.display_name,
+                       c.region_code,
+                       count(s.source_code) as listed_count,
+                       count(s.source_code) filter (
+                           where s.source_type = 'NATIONAL_OFFICIAL'
+                       ) as national_official_count,
+                       count(s.source_code) filter (
+                           where s.source_type = 'REGIONAL_OFFICIAL'
+                       ) as regional_official_count,
+                       count(s.source_code) filter (
+                           where s.source_type = 'LOCAL_MEDIA'
+                       ) as local_media_count,
+                       count(s.source_code) filter (
+                           where s.source_type in ('LOCAL_RESEARCH', 'LOCAL_COMMUNITY')
+                       ) as local_research_count,
+                       count(s.source_code) filter (
+                           where s.connection_state = 'INGESTION_VERIFIED'
+                       ) as connected_count,
+                       count(s.source_code) filter (
+                           where s.last_reviewed_on + s.review_interval_days < current_date
+                       ) as overdue_review_count,
+                       max(s.last_reviewed_on) as last_reviewed_on,
+                       case
+                           when count(s.source_code) filter (
+                               where s.source_type <> 'REGIONAL_OFFICIAL'
+                           ) > 0 then 'PARTIAL_CATALOGUED'
+                           when count(s.source_code) filter (
+                               where s.source_type = 'REGIONAL_OFFICIAL'
+                           ) > 0 then 'REGIONAL_REFERENCE_ONLY'
+                           else 'NOT_RESEARCHED'
+                       end as research_status
+                from catalog.country c
+                left join catalog.country_local_source s
+                    on s.country_iso3 = c.iso3
+                where c.is_active = true
+                  and c.is_aggregate = false
+                  and (cast(:regionCode as varchar) is null
+                       or c.region_code = cast(:regionCode as varchar))
+                group by c.iso3, c.display_name, c.region_code
+                order by c.display_name, c.iso3
+                """;
+        return jdbcClient.sql(sql)
+                .param("regionCode", regionCode)
+                .query((rs, rowNum) -> new CountryLocalCoverageResponse(
+                        rs.getString("country_iso3"),
+                        rs.getString("display_name"),
+                        rs.getString("region_code"),
+                        rs.getInt("listed_count"),
+                        rs.getInt("national_official_count"),
+                        rs.getInt("regional_official_count"),
+                        rs.getInt("local_media_count"),
+                        rs.getInt("local_research_count"),
+                        rs.getInt("connected_count"),
+                        rs.getInt("overdue_review_count"),
+                        rs.getObject("last_reviewed_on", java.time.LocalDate.class),
+                        rs.getString("research_status")
                 ))
                 .list();
     }
