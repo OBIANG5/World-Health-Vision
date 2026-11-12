@@ -120,6 +120,8 @@ class MediaAsset(BaseModel):
 class AssetSelection(BaseModel):
     scene_order: int = Field(ge=1)
     asset_id: str
+    selection_score: int = Field(default=0, ge=0, le=100)
+    selection_reason: str = "legacy_or_manual_selection"
 
 
 class AssetBundle(BaseModel):
