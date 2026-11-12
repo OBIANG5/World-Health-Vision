@@ -5,6 +5,7 @@ from media_service.creative import build_video_draft
 from media_service.models import (
     PrepareDraftRequest,
     RenderJobRef,
+    RenderProbe,
     RunQaRequest,
 )
 from media_service.qa import (
@@ -33,6 +34,19 @@ def qa_ready_seed_story():
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
         output_url="/api/media-renderer/renders/render-qa-test.mp4",
+        output_sha256="a" * 64,
+        output_probe=RenderProbe(
+            format_name="mov,mp4,m4a,3gp,3g2,mj2",
+            size_bytes=1_100_000,
+            duration_sec=story.video_draft.duration_sec,
+            video_codec="h264",
+            width=story.video_draft.width,
+            height=story.video_draft.height,
+            fps=float(story.video_draft.fps),
+            pixel_format="yuv420p",
+            video_bit_rate=850_000,
+            has_audio=False,
+        ),
     )
     story.qa.audio = "pass"
     story.status = "qa"
@@ -50,6 +64,7 @@ def test_structural_qa_passes_fixed_design_source_card_and_safe_zones():
     assert state.safe_zones == "pass"
     assert state.logo_integrity == "pass"
     assert state.source_display == "pass"
+    assert state.render_integrity == "pass"
     assert not [
         issue
         for issue in issues
@@ -60,6 +75,7 @@ def test_structural_qa_passes_fixed_design_source_card_and_safe_zones():
             "safe_zones",
             "logo_integrity",
             "source_display",
+            "render_integrity",
         }
     ]
 
@@ -89,3 +105,26 @@ def test_publication_qa_marks_all_checks_pass_when_language_is_clean():
     assert report.all_passed is True
     assert report.language_model == "test-language-qa"
     assert report.issues == []
+
+
+
+def test_structural_qa_rejects_bad_encoded_render_geometry():
+    story = qa_ready_seed_story()
+    story.render_job.output_probe = story.render_job.output_probe.model_copy(
+        update={
+            "width": 720,
+            "height": 1280,
+            "fps": 29.0,
+        }
+    )
+
+    state, issues = evaluate_structural_qa(story)
+
+    assert state.render_integrity == "fail"
+    assert any(
+        issue.check == "render_integrity"
+        and "width" in issue.message
+        and "height" in issue.message
+        and "fps" in issue.message
+        for issue in issues
+    )
