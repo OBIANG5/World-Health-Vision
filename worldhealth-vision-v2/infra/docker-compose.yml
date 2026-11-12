@@ -156,6 +156,12 @@ services:
       WHV_RENDER_OUTPUT_DIR: /app/output
       WHV_RENDER_AUDIO_DIR: /app/audio
       WHV_RENDER_CONCURRENCY: 1
+      WHV_RENDER_JOB_MAX_ATTEMPTS: 3
+      WHV_RENDER_REDIS_URL: redis://redis:6379/1
+      WHV_RENDER_REDIS_PREFIX: whv:media-renderer
+    depends_on:
+      redis:
+        condition: service_healthy
     volumes:
       - whv_media_renders:/app/output
       - whv_media_audio:/app/audio
