@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 EXPOSE 8000
 
-ENTRYPOINT ["uvicorn", "media_service.api:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["sh", "-c", "python -m media_service.migrate && exec uvicorn media_service.api:app --host 0.0.0.0 --port 8000"]
