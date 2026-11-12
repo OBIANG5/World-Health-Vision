@@ -167,6 +167,23 @@ export type VideoDraft = {
 };
 
 
+export type VoiceoverRef = {
+  id: string;
+  provider: "openai_realtime";
+  model: string;
+  voice: string;
+  format: "wav";
+  sample_rate_hz: 24000;
+  duration_sec: number;
+  generated_at: string;
+  renderer_url: string;
+  transcript: string;
+  transcript_match_score: number;
+  duration_fit: boolean;
+  qa_passed: boolean;
+  ai_generated_disclosure: string;
+};
+
 export type RenderJobRef = {
   id: string;
   story_id: string;
@@ -239,6 +256,7 @@ export type MediaStory = {
   creative_package?: CreativePackage | null;
   script?: string | null;
   video_draft?: VideoDraft | null;
+  voiceover?: VoiceoverRef | null;
   render_job?: RenderJobRef | null;
   target_duration_sec: number;
   assets: {
