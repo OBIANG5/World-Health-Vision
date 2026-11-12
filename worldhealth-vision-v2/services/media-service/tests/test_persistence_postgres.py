@@ -1,12 +1,19 @@
 import os
 
 import psycopg
+import pytest
 
 from media_service.migrate import SCHEMA_SQL
 from media_service.models import RadarScanRequest, RadarScanResult
 from media_service.persistence import PostgresStoryPersistence
 from media_service.settings import Settings
 from media_service.store import build_seed_story
+
+
+pytestmark = pytest.mark.skipif(
+    "WHV_TEST_MEDIA_DATABASE_URL" not in os.environ,
+    reason="PostgreSQL integration database is only available in the dedicated CI job.",
+)
 
 
 def postgres_settings() -> Settings:
