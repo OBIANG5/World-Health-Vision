@@ -202,12 +202,21 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   schedule();return()=>{obs.disconnect();if(frame.current!==null)cancelAnimationFrame(frame.current);frame.current=null;};
  },[schedule]);
  useEffect(()=>{
-  const c=countriesMap.get(selectedCountryIso3);
-  if(c&&typeof c.longitude==="number"&&typeof c.latitude==="number"&&Math.abs(c.longitude)<=180&&Math.abs(c.latitude)<=90){
-   pose.current.lon=wrap(c.longitude);pose.current.lat=clamp(c.latitude,-75,75);
+  const feature=geo.current?.features.find(f=>iso(f)===selectedCountryIso3);
+  const mainRing=feature&&rings(feature.geometry).map(p=>p[0]).filter(Boolean).sort((a,b)=>b.length-a.length)[0];
+  if(mainRing&&mainRing.length>2){
+   const sum:Vec=[0,0,0];
+   for(const p of mainRing){
+    const v=vec(p);sum[0]+=v[0];sum[1]+=v[1];sum[2]+=v[2];
+   }
+   const norm=Math.hypot(...sum);
+   if(norm>1e-6){
+    pose.current.lon=wrap(Math.atan2(sum[1],sum[0])*DEG);
+    pose.current.lat=clamp(Math.asin(clamp(sum[2]/norm,-1,1))*DEG,-75,75);
+   }
   }
   schedule();
- },[selectedCountryIso3,countriesMap,schedule]);
+ },[selectedCountryIso3,status,schedule]);
  const location=(x:number,y:number)=>{
   const r=canvas.current?.getBoundingClientRect();if(!r)return null;
   const radius=Math.min(r.width*.39,r.height*.425)*pose.current.zoom;
