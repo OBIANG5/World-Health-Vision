@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     repository_backend: str = "memory"
     renderer_base_url: str = "http://localhost:8011"
     renderer_timeout_seconds: float = 10.0
+    openai_api_key: str | None = None
+    radar_model: str = "gpt-6-astra"
+    radar_timeout_seconds: float = 120.0
 
 
 def get_settings() -> Settings:
