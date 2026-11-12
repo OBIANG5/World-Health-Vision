@@ -211,6 +211,13 @@ class StubVoiceoverClient:
         )
 
 
+class StubLanguageQa:
+    model_name = "test-language-qa"
+
+    async def check(self, story):
+        return []
+
+
 class StubRendererClient:
     def __init__(self):
         self.jobs: dict[str, RenderJobRef] = {}
@@ -250,6 +257,7 @@ def setup_function():
     media_api.CREATIVE_CLIENT = StubCreativeClient()
     media_api.WIKIMEDIA_CLIENT = StubAssetsClient()
     media_api.VOICEOVER_CLIENT = StubVoiceoverClient()
+    media_api.QA_LANGUAGE_CLIENT = StubLanguageQa()
 
 
 def test_health_and_dashboard():
@@ -676,3 +684,93 @@ def test_creative_render_is_blocked_until_audio_qa_passes():
     )
     assert launched.status_code == 200
     assert launched.json()["status"] == "rendering"
+
+
+
+def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
+    scan = client.post(
+        "/api/media/radar/scans",
+        json={"hours": 3, "max_candidates": 10},
+    )
+    assert scan.status_code == 200
+    story_id = scan.json()["stories_created"][0]
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/verify",
+        json={"max_claims": 6},
+    ).status_code == 200
+    assert client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "approve"},
+    ).status_code == 200
+
+    creative = client.post(
+        f"/api/media/stories/{story_id}/creative/generate",
+        json={"target_duration_sec": 15, "max_hooks": 3},
+    )
+    assert creative.status_code == 200
+    hook_id = creative.json()["hooks"][0]["id"]
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/hooks/select",
+        json={"hook_id": hook_id},
+    ).status_code == 200
+    assert client.post(
+        f"/api/media/stories/{story_id}/draft/prepare",
+        json={},
+    ).status_code == 200
+    assert client.post(
+        f"/api/media/stories/{story_id}/audio/generate",
+        json={},
+    ).status_code == 200
+
+    launched = client.post(
+        f"/api/media/stories/{story_id}/render-preview"
+    )
+    assert launched.status_code == 200
+
+    synced = client.post(
+        f"/api/media/stories/{story_id}/render-preview/sync"
+    )
+    assert synced.status_code == 200
+    assert synced.json()["status"] == "preview_ready"
+
+    approved_preview = client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "approve_preview"},
+    )
+    assert approved_preview.status_code == 200
+    assert approved_preview.json()["status"] == "qa"
+
+    blocked = client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "mark_publish_ready"},
+    )
+    assert blocked.status_code == 409
+
+    qa = client.post(
+        f"/api/media/stories/{story_id}/qa/run",
+        json={"check_spelling": True},
+    )
+    assert qa.status_code == 200
+    qa_story = qa.json()
+    assert qa_story["qa_report"]["all_passed"] is True
+    assert all(
+        qa_story["qa"][name] == "pass"
+        for name in [
+            "facts",
+            "spelling",
+            "safe_zones",
+            "logo_integrity",
+            "source_display",
+            "rights",
+            "audio",
+        ]
+    )
+
+    ready = client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "mark_publish_ready"},
+    )
+    assert ready.status_code == 200
+    assert ready.json()["status"] == "publish_ready"
