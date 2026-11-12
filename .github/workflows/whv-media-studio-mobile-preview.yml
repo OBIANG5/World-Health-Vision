@@ -57,17 +57,37 @@ jobs:
           test -s worldhealth-vision-v2/frontend/web-v2/dist/media-studio-iphone.png
           test -s worldhealth-vision-v2/frontend/web-v2/dist/media-studio-desktop.png
           grep -q 'media-preview-bootstrap.js' worldhealth-vision-v2/frontend/web-v2/dist/index.html
-      - name: Publish only this separate static Media Studio demo branch
+      - name: Update SAME Media Studio preview branch without rewriting its history
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          mkdir -p /tmp/whv-media-studio-preview
+          # Preserve the existing branch and its permanent preview URL.
+          git clone --quiet --depth 1 --single-branch \
+            --branch whv-media-studio-browser-preview \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            /tmp/whv-media-studio-preview
+          # Refresh only the static build; never touch canonical V2 or media code.
+          find /tmp/whv-media-studio-preview \
+            -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a worldhealth-vision-v2/frontend/web-v2/dist/. /tmp/whv-media-studio-preview/
+          cat > /tmp/whv-media-studio-preview/preview-deployment.json <<EOF
+          {
+            "source_branch": "feature/world-vision-media-studio",
+            "source_commit": "${GITHUB_SHA}",
+            "preview_type": "STATIC_EXPLICIT_DEMO",
+            "backend_connected": false,
+            "generated_media_proof": false
+          }
+          EOF
           cd /tmp/whv-media-studio-preview
-          git init -b whv-media-studio-browser-preview
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Publish labelled Media Studio demo from ${GITHUB_SHA}"
-          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/whv-media-studio-browser-preview
+          if git diff --cached --quiet; then
+            echo "No static preview changes"
+          else
+            git commit -m "preview(media): update real UI from ${GITHUB_SHA::12}"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
+          echo "Stable preview: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/index.html?view=media"
