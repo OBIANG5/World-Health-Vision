@@ -5,6 +5,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from media_service.models import (
     CreateStoryRequest,
     DecisionRequest,
+    GenerateCreativeRequest,
     MediaDashboard,
     MediaStory,
     PrepareDraftRequest,
@@ -15,6 +16,12 @@ from media_service.models import (
     SelectHookRequest,
     StoryStatus,
     VerifyStoryRequest,
+)
+from media_service.editorial_creative import (
+    CREATIVE_CLIENT,
+    CreativeConfigurationError,
+    CreativeGroundingError,
+    CreativeProviderError,
 )
 from media_service.radar import (
     RADAR_CLIENT,
@@ -133,6 +140,27 @@ async def select_story_hook(story_id: str, request: SelectHookRequest) -> MediaS
         raise HTTPException(status_code=404, detail="Story not found") from exc
     except MediaWorkflowConflictError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/creative/generate", response_model=MediaStory)
+async def generate_story_creative(
+    story_id: str,
+    request: GenerateCreativeRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        package = await CREATIVE_CLIENT.generate(story, request)
+        return STORE.apply_creative_package(story_id, package)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except CreativeGroundingError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except CreativeConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except CreativeProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.post("/api/media/stories/{story_id}/draft/prepare", response_model=MediaStory)
