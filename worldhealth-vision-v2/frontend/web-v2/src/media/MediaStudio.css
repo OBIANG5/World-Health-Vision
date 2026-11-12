@@ -246,6 +246,31 @@ body{margin:0}
 .wv-media-evidence-links span{color:var(--wv-media-muted);border-color:var(--wv-media-line)}
 
 
+.wv-media-creative-angle{
+  padding:12px;border:1px solid rgba(255,122,0,.22);border-radius:12px;
+  background:linear-gradient(135deg,rgba(255,0,110,.04),rgba(255,122,0,.05))
+}
+.wv-media-creative-angle>span,.wv-media-creative-caption>span{
+  display:block;font-size:7px;font-weight:950;letter-spacing:.13em;color:#ffb13b;margin-bottom:6px
+}
+.wv-media-creative-angle strong{display:block;font-size:11px;line-height:1.45}
+.wv-media-creative-angle small{display:block;margin-top:6px;color:var(--wv-media-muted);font-size:7px}
+.wv-media-creative-script{display:flex;flex-direction:column;gap:6px;margin-top:9px}
+.wv-media-creative-script>div{
+  display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:start;
+  padding:9px;border-radius:10px;border:1px solid var(--wv-media-line);background:#08080a
+}
+.wv-media-creative-script>div>span{
+  width:21px;height:21px;border-radius:7px;display:grid;place-items:center;
+  background:rgba(255,122,0,.10);color:#ffb13b;font-size:8px;font-weight:900
+}
+.wv-media-creative-script p{margin:1px 0 0;font-size:9px;line-height:1.45;color:rgba(255,255,255,.86)}
+.wv-media-creative-script small{font-size:7px;color:var(--wv-media-muted);white-space:nowrap;margin-top:2px}
+.wv-media-creative-caption{margin-top:9px;padding:10px;border-top:1px solid var(--wv-media-line)}
+.wv-media-creative-caption p{margin:0;font-size:9px;line-height:1.45;color:var(--wv-media-muted)}
+.wv-media-creative-caption>div{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.wv-media-creative-caption small{font-size:7px;color:#ffd394;padding:3px 5px;border-radius:999px;background:rgba(255,177,59,.05)}
+
 .wv-media-hook{display:grid;grid-template-columns:38px 1fr 18px;gap:10px;align-items:start;width:100%;text-align:left;color:white;border:1px solid var(--wv-media-line);background:#0a0a0c;border-radius:12px;padding:11px;cursor:pointer}
 .wv-media-hook:hover,.wv-media-hook.selected{border-color:rgba(255,122,0,.55);background:rgba(255,122,0,.04)}
 .wv-media-hook-score{font-size:16px;font-weight:900;color:#ffb13b}
