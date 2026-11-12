@@ -146,10 +146,13 @@ jobs:
           gab = json.load(open('/tmp/whv-gabon-local-context.json'))
           fra = json.load(open('/tmp/whv-france-local-context.json'))
           assert gab['countryIso3'] == 'GAB'
-          assert gab['localSourceCount'] == 2
+          assert gab['localSourceCount'] == 3
           sources = {s['sourceCode']: s for s in gab['localSources']}
           assert sources['INSTAT_GABON']['sourceType'] == 'NATIONAL_OFFICIAL'
           assert sources['AGP_GABON']['sourceType'] == 'LOCAL_MEDIA'
+          assert sources['BEAC_CEMAC']['sourceType'] == 'REGIONAL_OFFICIAL'
+          assert sources['BEAC_CEMAC']['geographicScopeKind'] == 'REGIONAL_SHARED'
+          assert all(s['connectionState'] == 'CATALOG_ONLY' for s in gab['localSources'])
           assert gab['documentedReleaseCount'] == 1
           census = gab['documentedReleases'][0]
           assert census['indicatorCode'] == 'SP.POP.TOTL'
@@ -158,9 +161,33 @@ jobs:
           assert census['populationScope'] == 'ALL_RESIDENTS'
           assert census['publicationStatus'] == 'PRELIMINARY_HOMOLOGATED'
           assert census['verificationStatus'] == 'DOCUMENTED_NOT_INGESTED'
-          assert fra['localSourceCount'] == 0
+          assert fra['localSourceCount'] == 2
+          assert {s['sourceCode'] for s in fra['localSources']} == {'INSEE_FRANCE', 'BANQUE_DE_FRANCE'}
           assert fra['documentedReleaseCount'] == 0
-          print('Country-specific Gabon institutions, caveated national census and unresearched France verified')
+          print('Gabon, France and regional shared BEAC organization scope verified; no source falsely connected')
+          PY
+          echo "World-wide country-specific source coverage must reveal missing research:"
+          curl -fsS --max-time 20 \
+            'http://localhost:8080/api/catalog/local-sources/coverage?limit=500' \
+            > /tmp/whv-national-source-coverage.json
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/whv-national-source-coverage.json'))
+          assert d['totalCountryCount'] >= 200, d
+          assert d['countriesWithCountrySpecificSources'] == 4, d
+          assert d['countriesWithRegionalReferencesOnly'] == 5, d
+          assert d['verifiedIngestionLinks'] == 0, d
+          assert d['countriesNotResearchedLocally'] > 190, d
+          by_code={c['countryIso3']:c for c in d['items']}
+          assert by_code['GAB']['researchStatus'] == 'PARTIAL_CATALOGUED', by_code['GAB']
+          assert by_code['CMR']['researchStatus'] == 'REGIONAL_REFERENCE_ONLY', by_code['CMR']
+          assert by_code['JPN']['researchStatus'] == 'NOT_RESEARCHED', by_code['JPN']
+          assert by_code['USA']['nationalOfficialCount'] == 2
+          assert by_code['NGA']['nationalOfficialCount'] == 2
+          print('Country-source research gap measured from real catalogue: ', d['totalCountryCount'],
+                'country-specific partial:',d['countriesWithCountrySpecificSources'],
+                'regional only:',d['countriesWithRegionalReferencesOnly'],
+                'automated:', d['verifiedIngestionLinks'])
           PY
           echo "Prove national publications are compared ONLY with actually stored international observations:"
           curl -fsS --max-time 20 \
