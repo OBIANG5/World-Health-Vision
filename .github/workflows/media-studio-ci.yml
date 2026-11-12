@@ -1,17 +1,6 @@
 name: World-Vision Media Studio CI
 
 on:
-  push:
-    branches:
-      - feature/world-vision-media-studio
-    paths:
-      - "worldhealth-vision-v2/frontend/web-v2/**"
-      - "worldhealth-vision-v2/services/media-service/**"
-      - "worldhealth-vision-v2/services/media-renderer/**"
-      - "worldhealth-vision-v2/services/gateway-service/**"
-      - "worldhealth-vision-v2/infra/**"
-      - "worldhealth-vision-v2/docs/media/**"
-      - ".github/workflows/media-studio-ci.yml"
   pull_request:
     branches:
       - v2
