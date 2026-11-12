@@ -138,6 +138,30 @@ jobs:
           if [ "$ready" -ne 1 ]; then echo "Timeseries readiness failure"; cat /tmp/ts-readiness.json || true; exit 1; fi
           head -c 500 /tmp/ts-readiness.json
           echo
+          echo "Verify country-local official source and independent local reporting layers:"
+          curl -fsS --max-time 20 http://localhost:8080/api/catalog/countries/GAB/local-context > /tmp/whv-gabon-local-context.json
+          curl -fsS --max-time 20 http://localhost:8080/api/catalog/countries/FRA/local-context > /tmp/whv-france-local-context.json
+          python3 - <<'PY'
+          import json
+          gab = json.load(open('/tmp/whv-gabon-local-context.json'))
+          fra = json.load(open('/tmp/whv-france-local-context.json'))
+          assert gab['countryIso3'] == 'GAB'
+          assert gab['localSourceCount'] == 2
+          sources = {s['sourceCode']: s for s in gab['localSources']}
+          assert sources['INSTAT_GABON']['sourceType'] == 'NATIONAL_OFFICIAL'
+          assert sources['AGP_GABON']['sourceType'] == 'LOCAL_MEDIA'
+          assert gab['documentedReleaseCount'] == 1
+          census = gab['documentedReleases'][0]
+          assert census['indicatorCode'] == 'SP.POP.TOTL'
+          assert census['referenceYear'] == 2026
+          assert float(census['valueNumeric']) == 3518621
+          assert census['populationScope'] == 'ALL_RESIDENTS'
+          assert census['publicationStatus'] == 'PRELIMINARY_HOMOLOGATED'
+          assert census['verificationStatus'] == 'DOCUMENTED_NOT_INGESTED'
+          assert fra['localSourceCount'] == 0
+          assert fra['documentedReleaseCount'] == 0
+          print('Country-specific Gabon institutions, caveated national census and unresearched France verified')
+          PY
           echo "Verify catalogue registration is not confused with real observations:"
           curl -fsS --max-time 20 http://localhost:8080/api/timeseries/sources/coverage > /tmp/whv-source-coverage.json
           python3 - <<'PY'
