@@ -7,6 +7,10 @@ from statistics import median
 import httpx
 
 from analytics_service.clients.catalog_client import CatalogClient
+from analytics_service.national_comparisons import (
+    CountryNationalComparisons,
+    compare_national_release,
+)
 from analytics_service.clients.timeseries_client import TimeseriesClient
 from analytics_service.config import Settings
 from analytics_service.models import (
@@ -217,6 +221,65 @@ class AnalyticsService:
             include_missing=include_missing,
             series_limit=series_limit or self._settings.default_country_overview_series_limit,
             resolution_cache=ResolutionCache(),
+        )
+
+    async def get_country_national_comparisons(
+        self, country_iso3: str
+    ) -> CountryNationalComparisons:
+        """One read-only contract for future country UI and supervised media.
+
+        The catalog holds researched local publications; TimescaleDB alone
+        provides external observations. If the database lacks them, return
+        NO_INTERNATIONAL_OBSERVATIONS rather than silently fall back to a
+        hardcoded or web-scraped number. Fail visibly on dependency outages.
+        """
+        iso3 = self._normalize_required_code(country_iso3)
+        if len(iso3) != 3 or not iso3.isalpha():
+            raise ValueError("country_iso3 must be a three-letter ISO3 code")
+        context = await self._call_catalog(
+            lambda: self._catalog_client.get_country_local_context(iso3)
+        )
+        if context.countryIso3 != iso3:
+            raise AnalyticsDependencyError("Catalog returned another country's local evidence")
+        releases = context.documentedReleases
+        for record in releases:
+            if record.countryIso3 != iso3:
+                raise AnalyticsDependencyError("National release country mismatch")
+
+        # Query only the indicators for which a national publication is
+        # *actually documented*. Never scan all world indicators on opening a
+        # country drawer. Bounded concurrency protects the Timescale pool.
+        indicator_codes = sorted({record.indicatorCode for record in releases})
+        limiter = asyncio.Semaphore(4)
+
+        async def fetch(code: str):
+            async with limiter:
+                rows = await self._call_timeseries(
+                    lambda: self._timeseries_client.list_latest_by_source(
+                        country_iso3=iso3,
+                        indicator_code=code,
+                        source_code=None,
+                        dataset_code=None,
+                        period_granularity="ANNUAL",
+                        include_missing=False,
+                    )
+                )
+                return code, rows
+
+        observations = dict(await asyncio.gather(*[
+            fetch(code) for code in indicator_codes
+        ]))
+        comparisons = [
+            compare_national_release(
+                record,
+                observations.get(record.indicatorCode, []),
+            )
+            for record in releases
+        ]
+        return CountryNationalComparisons(
+            countryIso3=iso3,
+            comparisonCount=len(comparisons),
+            comparisons=comparisons,
         )
 
     async def get_country_source_audit(
