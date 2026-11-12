@@ -101,6 +101,9 @@ def test_commons_parser_accepts_supported_webm_video():
                             "thumburl": "https://upload.wikimedia.org/example/libreville-video.jpg",
                             "mime": "video/webm",
                             "mediatype": "VIDEO",
+                            "width": 1280,
+                            "height": 720,
+                            "size": 229792,
                             "extmetadata": {
                                 "Artist": {"value": "Video Author"},
                                 "LicenseShortName": {"value": "CC BY 4.0"},
@@ -125,6 +128,9 @@ def test_commons_parser_accepts_supported_webm_video():
     asset = assets[0]
     assert asset.kind == "video"
     assert asset.mime_type == "video/webm"
+    assert asset.width == 1280
+    assert asset.height == 720
+    assert asset.size_bytes == 229792
     assert asset.rights_status == "approved"
     assert asset.media_url.endswith(".webm")
 
