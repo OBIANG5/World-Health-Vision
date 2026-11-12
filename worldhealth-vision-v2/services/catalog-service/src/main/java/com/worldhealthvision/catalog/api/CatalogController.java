@@ -19,6 +19,7 @@ import com.worldhealthvision.catalog.api.dto.CatalogListResponse;
 import com.worldhealthvision.catalog.api.dto.CatalogReadinessResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CountryLocalContextResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalCoverageOverviewResponse;
 import com.worldhealthvision.catalog.api.dto.CountrySummaryResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencyDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencySummaryResponse;
@@ -87,6 +88,20 @@ public class CatalogController {
     @GetMapping("/countries/{iso3}/local-context")
     public CountryLocalContextResponse getCountryLocalContext(@PathVariable String iso3) {
         return catalogQueryService.getCountryLocalContext(iso3);
+    }
+
+    /** Country-wide audit, including every unresearched country in the registry.
+     * "Regional reference only" is not a substitute for country-level sourcing.
+     */
+    @GetMapping("/local-sources/coverage")
+    public CountryLocalCoverageOverviewResponse getCountryLocalCoverage(
+            @RequestParam(required = false) String regionCode,
+            @RequestParam(defaultValue = "false") boolean onlyWithoutLocalSources,
+            @RequestParam(defaultValue = "0") @Min(0) int offset,
+            @RequestParam(defaultValue = "250") @Min(1) @Max(500) int limit
+    ) {
+        return catalogQueryService.getCountryLocalCoverage(
+                regionCode, onlyWithoutLocalSources, offset, limit);
     }
 
     @GetMapping("/currencies")
