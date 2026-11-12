@@ -921,6 +921,34 @@ def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
     assert package_story["status"] == "publish_ready"
     assert len(package_story["publication_package"]["manifest_sha256"]) == 64
     assert package_story["publication_package"]["video_url"].endswith(".mp4")
+    assert package_story["publication_package"]["video_sha256"] == "a" * 64
+    assert package_story["publication_package"]["video_render_profile"] == "canonical_newsroom_v1"
+
+    # Different MP4 bytes must produce a different manifest, even if the
+    # title, URL, captions, source links and QA versions are unchanged.
+    from media_service.models import PreparePublicationRequest
+    from media_service.publication import (
+        PublicationWorkflowError,
+        build_publication_package,
+    )
+
+    package_story_model = STORE.get(story_id)
+    modified_story = package_story_model.model_copy(deep=True)
+    modified_story.publication_package = None  # Keep both hashes on version 1.
+    modified_story.render_job.output_sha256 = "c" * 64
+    changed_package = build_publication_package(
+        modified_story, PreparePublicationRequest(target_channels=["tiktok", "whatsapp"])
+    )
+    assert changed_package.video_sha256 == "c" * 64
+    assert changed_package.manifest_sha256 != package_story["publication_package"]["manifest_sha256"]
+
+    # A completed renderer job without an actual MP4 digest is not evidence.
+    import pytest
+    modified_story.render_job.output_sha256 = None
+    with pytest.raises(PublicationWorkflowError, match="SHA-256"):
+        build_publication_package(
+            modified_story, PreparePublicationRequest(target_channels=["tiktok", "whatsapp"])
+        )
     assert "Sources" in package_story["publication_package"]["whatsapp_text"]
     assert package_story["publication_package"]["ai_disclosure"] == "Voix générée par IA"
 
