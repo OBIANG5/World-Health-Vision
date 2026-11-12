@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     audio_model: str = "gpt-realtime-2.1-mini"
     audio_voice: str = "marin"
     audio_timeout_seconds: float = 90.0
+    audio_output_dir: str = "/app/audio"
+    audio_renderer_url_prefix: str = "/api/media-renderer/audio"
     redis_url: str = "redis://localhost:6379/0"
     internal_api_base_url: str = "http://localhost:8000"
     catalog_base_url: str = "http://localhost:8082"
