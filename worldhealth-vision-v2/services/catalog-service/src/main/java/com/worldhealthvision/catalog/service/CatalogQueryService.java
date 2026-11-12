@@ -6,6 +6,8 @@ import com.worldhealthvision.catalog.api.dto.CountryDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CountryLocalContextResponse;
 import com.worldhealthvision.catalog.api.dto.CountryLocalSourceResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDocumentedReleaseResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalCoverageResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalCoverageOverviewResponse;
 import com.worldhealthvision.catalog.api.dto.CountrySummaryResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencyDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencySummaryResponse;
@@ -78,6 +80,38 @@ public class CatalogQueryService {
         List<CountryDocumentedReleaseResponse> releases = catalogRepository.listCountryDocumentedReleases(country.iso3());
         return new CountryLocalContextResponse(
                 country.iso3(), sources.size(), sources, releases.size(), releases
+        );
+    }
+
+    public CountryLocalCoverageOverviewResponse getCountryLocalCoverage(
+            String regionCode, boolean onlyWithoutLocalSources, int offset, int limit
+    ) {
+        String normalizedRegion = normalizeOptionalCode(regionCode);
+        List<CountryLocalCoverageResponse> all =
+                catalogRepository.listCountryLocalCoverage(normalizedRegion);
+        int withLocal = (int) all.stream()
+                .filter(CountryLocalCoverageResponse::hasCountrySpecificSources)
+                .count();
+        int regionOnly = (int) all.stream()
+                .filter(item -> "REGIONAL_REFERENCE_ONLY".equals(item.researchStatus()))
+                .count();
+        int links = all.stream().mapToInt(CountryLocalCoverageResponse::listedSourceCount).sum();
+        int connected = all.stream().mapToInt(CountryLocalCoverageResponse::connectedSourceCount).sum();
+        int overdue = all.stream().mapToInt(CountryLocalCoverageResponse::overdueReviewCount).sum();
+        List<CountryLocalCoverageResponse> matching = onlyWithoutLocalSources
+                ? all.stream().filter(item -> !item.hasCountrySpecificSources()).toList()
+                : all;
+        int from = Math.min(offset, matching.size());
+        int to = (int) Math.min((long) from + limit, matching.size());
+        List<CountryLocalCoverageResponse> page = matching.subList(from, to);
+        return new CountryLocalCoverageOverviewResponse(
+                all.size(), withLocal, all.size() - withLocal,
+                regionOnly, links, connected, overdue,
+                matching.size(), offset, limit, page.size(),
+                "Source coverage is an incomplete research directory, not exhaustive national media coverage. "
+                    + "Shared regional institutions do not count as country-specific research. "
+                    + "A listed source is not necessarily a configured or verified data connector.",
+                page
         );
     }
 
