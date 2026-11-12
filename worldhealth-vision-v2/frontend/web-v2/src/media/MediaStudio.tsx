@@ -220,6 +220,76 @@ export default function MediaStudio() {
     }
   }
 
+  async function discoverAssets(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/assets/discover`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ limit_per_scene: 4 }),
+        },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`Recherche médias impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function selectAsset(
+    story: MediaStory,
+    sceneOrder: number,
+    assetId: string,
+  ) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${API_ROOT}/stories/${story.id}/assets/select`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scene_order: sceneOrder,
+            asset_id: assetId,
+          }),
+        },
+      );
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`Sélection média impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      const updated = (await response.json()) as MediaStory;
+      setStories((items) =>
+        items.map((item) => (item.id === updated.id ? updated : item)),
+      );
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function prepareDraft(story: MediaStory) {
     setActionBusy(true);
     setError(null);
@@ -629,6 +699,8 @@ export default function MediaStudio() {
               onDecision={decision}
               onVerify={verifyStory}
               onGenerateCreative={generateCreative}
+              onDiscoverAssets={discoverAssets}
+              onSelectAsset={selectAsset}
               onSelectHook={selectHook}
               onPrepareDraft={prepareDraft}
               onLaunchRender={launchRender}
@@ -674,6 +746,8 @@ function StoryInspector({
   onDecision,
   onVerify,
   onGenerateCreative,
+  onDiscoverAssets,
+  onSelectAsset,
   onSelectHook,
   onPrepareDraft,
   onLaunchRender,
@@ -687,6 +761,12 @@ function StoryInspector({
   ) => Promise<void>;
   onVerify: (story: MediaStory) => Promise<void>;
   onGenerateCreative: (story: MediaStory) => Promise<void>;
+  onDiscoverAssets: (story: MediaStory) => Promise<void>;
+  onSelectAsset: (
+    story: MediaStory,
+    sceneOrder: number,
+    assetId: string,
+  ) => Promise<void>;
   onSelectHook: (story: MediaStory, hookId: string) => Promise<void>;
   onPrepareDraft: (story: MediaStory) => Promise<void>;
   onLaunchRender: (story: MediaStory) => Promise<void>;
@@ -696,6 +776,23 @@ function StoryInspector({
     keyof EditorialScoreFactors,
     number,
   ][];
+
+  const requiredAssetScenes =
+    story.creative_package?.scene_plan.filter((scene) =>
+      ["real_photo", "real_video"].includes(scene.visual_kind),
+    ) ?? [];
+  const selectedAssetByScene = new Map(
+    (story.asset_bundle?.selections ?? []).map((selection) => [
+      selection.scene_order,
+      selection.asset_id,
+    ]),
+  );
+  const assetById = new Map(
+    (story.asset_bundle?.assets ?? []).map((asset) => [asset.id, asset]),
+  );
+  const assetsResolved =
+    requiredAssetScenes.length === 0 ||
+    (story.asset_bundle?.unresolved_scene_orders.length ?? requiredAssetScenes.length) === 0;
 
   return (
     <>
@@ -893,6 +990,122 @@ function StoryInspector({
         </div>
       </section>
 
+      {story.creative_package && requiredAssetScenes.length > 0 && (
+        <section className="wv-media-panel">
+          <div className="wv-media-panel-title">
+            <span>ASSETS · médias sous licence</span>
+            <small>
+              {story.asset_bundle
+                ? `v${story.asset_bundle.version} · ${story.asset_bundle.unresolved_scene_orders.length} scène(s) à résoudre`
+                : "Wikimedia Commons · provenance + droits"}
+            </small>
+          </div>
+
+          {!story.asset_bundle ? (
+            <div className="wv-media-assets-empty">
+              Les scènes photo/vidéo ont besoin de médias réels traçables avant le storyboard final.
+            </div>
+          ) : (
+            <div className="wv-media-asset-scenes">
+              {requiredAssetScenes.map((scene) => {
+                const selectedAssetId = selectedAssetByScene.get(scene.order);
+                const selectedAsset = selectedAssetId
+                  ? assetById.get(selectedAssetId)
+                  : undefined;
+                const candidates = story.asset_bundle?.assets.filter(
+                  (asset) => asset.query === scene.asset_query,
+                ) ?? [];
+                const unresolved =
+                  story.asset_bundle?.unresolved_scene_orders.includes(scene.order) ?? true;
+
+                return (
+                  <div className="wv-media-asset-scene" key={scene.order}>
+                    <div className="wv-media-asset-scene-head">
+                      <div>
+                        <strong>Scène {scene.order} · {scene.purpose}</strong>
+                        <span>{scene.asset_query ?? "recherche média automatique"}</span>
+                      </div>
+                      <span className={unresolved ? "pending" : "ready"}>
+                        {unresolved ? "DROITS À RÉSOUDRE" : "✓ PRÊT"}
+                      </span>
+                    </div>
+
+                    {selectedAsset && (
+                      <div className="wv-media-selected-asset">
+                        <span>Actuel</span>
+                        <strong>{selectedAsset.title}</strong>
+                        <small>{selectedAsset.attribution}</small>
+                      </div>
+                    )}
+
+                    <div className="wv-media-asset-grid">
+                      {candidates.map((asset) => {
+                        const selected = selectedAssetId === asset.id;
+                        const canUse = asset.rights_status === "approved";
+                        return (
+                          <div
+                            className={`wv-media-asset-card ${selected ? "selected" : ""}`}
+                            key={asset.id}
+                          >
+                            <div className="wv-media-asset-thumb">
+                              <img
+                                src={asset.thumbnail_url ?? asset.media_url}
+                                alt={asset.title}
+                                loading="lazy"
+                              />
+                              <span className={`rights-${asset.rights_status}`}>
+                                {asset.rights_status === "approved"
+                                  ? "LICENCE OK"
+                                  : asset.rights_status === "review_required"
+                                    ? "REVUE DROITS"
+                                    : "REFUSÉ"}
+                              </span>
+                            </div>
+                            <div className="wv-media-asset-copy">
+                              <strong>{asset.title}</strong>
+                              <span>{asset.author ?? "Auteur non renseigné"}</span>
+                              <span>{asset.license_name ?? "Licence non renseignée"}</span>
+                              <small>{asset.rights_note}</small>
+                            </div>
+                            <div className="wv-media-asset-card-actions">
+                              <a
+                                href={asset.source_page_url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Source ↗
+                              </a>
+                              <button
+                                disabled={busy || !canUse || selected}
+                                onClick={() =>
+                                  void onSelectAsset(story, scene.order, asset.id)
+                                }
+                              >
+                                {selected
+                                  ? "✓ Sélectionné"
+                                  : canUse
+                                    ? "Utiliser"
+                                    : "Revue requise"}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {candidates.length === 0 && (
+                      <div className="wv-media-assets-empty">
+                        Aucun média candidat pour cette scène. Relance la recherche ou utilise une scène typographique.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
       {story.video_draft && (
         <section className="wv-media-panel">
           <div className="wv-media-panel-title">
@@ -917,7 +1130,11 @@ function StoryInspector({
                 <div className="wv-media-scene-copy">
                   <small>{scene.purpose} · {scene.visual_kind}</small>
                   <strong>{scene.on_screen_text}</strong>
-                  {scene.asset_query && <span>Recherche média : {scene.asset_query}</span>}
+                  {scene.asset_url ? (
+                    <span>Asset : {scene.asset_license ?? "licence"} · {scene.asset_attribution ?? "attribution"}</span>
+                  ) : scene.asset_query ? (
+                    <span>Recherche média : {scene.asset_query}</span>
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -1072,18 +1289,43 @@ function StoryInspector({
               </>
             ) : (
               <>
-                <button
-                  className="wv-media-action primary"
-                  disabled={busy || !story.selected_hook_id}
-                  onClick={() => void onPrepareDraft(story)}
-                  title={!story.selected_hook_id ? "Choisis d’abord un hook CREATIVE." : undefined}
-                >
-                  ▶ Préparer le storyboard vidéo
-                </button>
-                {!story.selected_hook_id && (
-                  <div className="wv-media-action-hint">
-                    Choisis l’un des hooks CREATIVE ci-dessus avant le storyboard.
-                  </div>
+                {requiredAssetScenes.length > 0 && !story.asset_bundle ? (
+                  <>
+                    <button
+                      className="wv-media-action primary"
+                      disabled={busy || !story.selected_hook_id}
+                      onClick={() => void onDiscoverAssets(story)}
+                    >
+                      ◫ Rechercher les médias sous licence
+                    </button>
+                    <div className="wv-media-action-hint">
+                      {story.selected_hook_id
+                        ? "ASSETS cherchera les médias réels et conservera licence + attribution."
+                        : "Choisis d’abord un hook CREATIVE, puis recherche les médias."}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="wv-media-action primary"
+                      disabled={busy || !story.selected_hook_id || !assetsResolved}
+                      onClick={() => void onPrepareDraft(story)}
+                      title={
+                        !story.selected_hook_id
+                          ? "Choisis d’abord un hook CREATIVE."
+                          : !assetsResolved
+                            ? "Résous les droits médias avant le storyboard."
+                            : undefined
+                      }
+                    >
+                      ▶ Préparer le storyboard vidéo
+                    </button>
+                    {!story.selected_hook_id && (
+                      <div className="wv-media-action-hint">
+                        Choisis l’un des hooks CREATIVE ci-dessus avant le storyboard.
+                      </div>
+                    )}
+                  </>
                 )}
                 <button
                   className="wv-media-action secondary"
@@ -1160,9 +1402,34 @@ function StoryInspector({
         )}
 
         {story.status === "assets" && (
-          <div className="wv-media-progress-note">
-            Sélection média en cours. Cette étape sera connectée au moteur d’assets au prochain incrément.
-          </div>
+          <>
+            <div className="wv-media-progress-note">
+              {assetsResolved
+                ? "Tous les médias requis ont une sélection aux droits approuvés."
+                : `Il reste ${story.asset_bundle?.unresolved_scene_orders.length ?? 0} scène(s) média à résoudre.`}
+            </div>
+            <button
+              className="wv-media-action primary"
+              disabled={busy || !story.selected_hook_id || !assetsResolved}
+              onClick={() => void onPrepareDraft(story)}
+            >
+              ▶ Préparer le storyboard avec ces médias
+            </button>
+            <button
+              className="wv-media-action secondary"
+              disabled={busy}
+              onClick={() => void onDiscoverAssets(story)}
+            >
+              ↻ Relancer la recherche médias
+            </button>
+            <button
+              className="wv-media-action danger"
+              disabled={busy}
+              onClick={() => void onDecision(story, "reject")}
+            >
+              Refuser
+            </button>
+          </>
         )}
 
         {story.status === "preview_ready" && (
