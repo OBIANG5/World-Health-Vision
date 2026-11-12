@@ -11,6 +11,7 @@ from media_service.models import (
     RadarScanHistoryItem,
     RadarScanRequest,
     RadarScanResult,
+    RadarSchedulerStatus,
     SelectHookRequest,
     StoryStatus,
 )
@@ -20,6 +21,7 @@ from media_service.radar import (
     RadarProviderError,
 )
 from media_service.radar_workflow import execute_radar_scan
+from media_service.scheduler_state import read_scheduler_status
 from media_service.renderer_client import RENDERER_CLIENT, RendererDependencyError
 from media_service.store import (
     MediaStoryNotFoundError,
@@ -65,6 +67,11 @@ async def list_radar_scan_history(
     limit: int = Query(default=20, ge=1, le=100),
 ) -> list[RadarScanHistoryItem]:
     return STORE.list_radar_scans(limit=limit)
+
+
+@app.get("/api/media/radar/scheduler", response_model=RadarSchedulerStatus)
+async def radar_scheduler_status() -> RadarSchedulerStatus:
+    return await read_scheduler_status()
 
 
 @app.get("/api/media/stories", response_model=list[MediaStory])
