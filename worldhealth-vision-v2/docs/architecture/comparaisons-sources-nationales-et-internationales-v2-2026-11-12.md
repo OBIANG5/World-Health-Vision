@@ -72,6 +72,27 @@ statuts non publiables, fuseaux horaires. Test API asynchrone avec connecteurs
 simulés, tests Gateway Java et test Docker V2 sur base réelle **initialement
 vide**, où la réponse doit rester `NO_INTERNATIONAL_OBSERVATIONS`.
 
+## Première preuve de collecte officielle intégrée (12 novembre 2026)
+
+[Exécution GitHub Actions — population du Gabon, WDI et fiche nationale](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43262518055)
+: exécution **réussie** avec l'API officielle Banque mondiale, stockage
+des séries en PostgreSQL/TimescaleDB, relecture par les endpoints de séries
+et par `/api/product/countries/GAB/national-comparisons`.
+
+- INSTAT Gabon, RGPL 2026 : **3 518 621 résidents**, publication
+  documentée dans le catalogue national, **non auto-ingérée** ;
+- Banque mondiale WDI, `SP.POP.TOTL`, millésime **2025** :
+  **2 593 130 résidents**, observation **réellement ingérée** ;
+- résultat du comparateur : `DIFFERENT_REFERENCE_PERIOD` ;
+- `comparableByMethod=false` et `numericalDifference=null` ;
+- aucune contradiction automatiquement inférée ;
+- artefact de preuve JSON téléchargeable depuis l'exécution (conservation
+  limitée à 14 jours).
+
+**Attention :** les conteneurs et la base du test ont été volontairement
+détruits. Ce résultat **ne prouve pas** la présence de données durables sur un
+serveur de production ni la récupération automatique du RGPL national.
+
 **Ce qui reste à faire avant un usage médiatique autonome :**
 vérification systématique des licences, cycle de validation humaine,
 suivi des révisions et des décisions éditoriales, collecte publique des
