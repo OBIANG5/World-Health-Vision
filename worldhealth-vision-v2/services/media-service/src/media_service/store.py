@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import re
+import unicodedata
 from copy import deepcopy
 from datetime import datetime, timezone
 from threading import RLock
@@ -17,6 +19,7 @@ from media_service.models import (
     MediaStory,
     PrepareDraftRequest,
     QaState,
+    RadarCandidate,
     RenderJobRef,
     SelectHookRequest,
     StoryStatus,
@@ -41,6 +44,20 @@ def _slugify(value: str) -> str:
     lowered = value.lower()
     lowered = re.sub(r"[^a-z0-9]+", "-", lowered)
     return lowered.strip("-")[:96] or "story"
+
+
+def _radar_fingerprint(candidate: RadarCandidate) -> str:
+    normalized = unicodedata.normalize("NFKD", candidate.title)
+    normalized = normalized.encode("ascii", "ignore").decode("ascii").lower()
+    normalized = re.sub(r"[^a-z0-9]+", " ", normalized)
+    normalized = " ".join(normalized.split())
+    country = (candidate.country_iso3 or "WORLD").upper()
+    raw = f"{country}|{normalized}".encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()[:24]
+
+
+def _source_id(url: str) -> str:
+    return "src-" + hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
 
 
 def build_seed_story() -> MediaStory:
@@ -186,6 +203,73 @@ class MediaStoryStore:
         with self._lock:
             self._stories[story.id] = deepcopy(story)
         return story
+
+    def create_from_radar(
+        self,
+        candidate: RadarCandidate,
+        scan_id: str,
+    ) -> tuple[MediaStory, bool]:
+        fingerprint = _radar_fingerprint(candidate)
+
+        with self._lock:
+            for existing in self._stories.values():
+                if existing.radar_fingerprint == fingerprint:
+                    return deepcopy(existing), False
+
+        now = datetime.now(timezone.utc)
+        story_id = f"story-{uuid4().hex[:12]}"
+        sources = [
+            MediaSource(
+                id=_source_id(source.url),
+                name=source.name,
+                url=source.url,
+                source_type=source.source_type,
+                scope=source.scope,
+                country_iso3=source.country_iso3,
+                is_primary=source.is_primary,
+                published_at=source.published_at,
+                note=source.note,
+            )
+            for source in candidate.sources
+        ]
+        hooks = [
+            HookOption(
+                id=f"hook-{index + 1}-{story_id[-4:]}",
+                text=hook.text,
+                score=hook.score,
+                rationale=hook.rationale,
+            )
+            for index, hook in enumerate(candidate.hooks[:3])
+        ]
+
+        story = MediaStory(
+            id=story_id,
+            slug=f"{_slugify(candidate.title)}-{story_id[-6:]}",
+            status="candidate",
+            title=candidate.title,
+            summary=candidate.summary,
+            category=candidate.category,
+            language="fr",
+            country_iso3=candidate.country_iso3.upper() if candidate.country_iso3 else None,
+            country_name=candidate.country_name,
+            region=candidate.region,
+            breaking=candidate.breaking,
+            detected_at=now,
+            event_at=candidate.event_at,
+            updated_at=now,
+            verification_status="partially_verified",
+            confidence_score=candidate.confidence_score,
+            sources=sources,
+            score=compute_editorial_score(candidate.factors),
+            hooks=hooks,
+            target_duration_sec=15,
+            radar_scan_id=scan_id,
+            radar_fingerprint=fingerprint,
+        )
+
+        with self._lock:
+            self._stories[story.id] = deepcopy(story)
+        return story, True
 
     def recompute_score(self, story_id: str) -> MediaStory:
         story = self.get(story_id)
