@@ -69,6 +69,18 @@ jobs:
   media-renderer:
     name: Remotion renderer checks
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      WHV_RENDER_TEST_REDIS_URL: redis://127.0.0.1:6379/15
     defaults:
       run:
         working-directory: worldhealth-vision-v2/services/media-renderer
@@ -79,6 +91,8 @@ jobs:
           node-version: "22"
       - name: Install exact renderer dependencies
         run: npm install --no-audit --no-fund
+      - name: Test persistent renderer store
+        run: npm run test-store
       - name: Typecheck Remotion composition
         run: npm run typecheck
       - name: Check render server syntax
