@@ -318,6 +318,27 @@ const probeMedia = async (filePath) => {
   };
 };
 
+const finalOutputPathForJob = (jobId) =>
+  path.join(outputDir, `${jobId}.mp4`);
+
+const recoverMissingCompletedOutput = async (job) => {
+  if (job.status !== "completed") return false;
+  const filePath = finalOutputPathForJob(job.id);
+  if (existsSync(filePath)) return false;
+
+  await updateJob(job, {
+    status: "queued",
+    progress: 0,
+    output_url: null,
+    output_sha256: null,
+    output_probe: null,
+    error: "Completed render metadata existed but the MP4 file was missing; rerender queued.",
+    recovered_at: now(),
+  });
+  await store.enqueue(job.id);
+  return true;
+};
+
 const renderJob = async (job) => {
   running += 1;
   let temporaryOutputLocation = null;
@@ -360,7 +381,7 @@ const renderJob = async (job) => {
     });
 
     const filename = `${job.id}.mp4`;
-    const outputLocation = path.join(outputDir, filename);
+    const outputLocation = finalOutputPathForJob(job.id);
     temporaryOutputLocation = voiceover
       ? path.join(outputDir, `${job.id}.raw.mp4`)
       : null;
@@ -380,7 +401,7 @@ const renderJob = async (job) => {
     });
 
     if (temporaryOutputLocation) {
-      updateJob(job, {status: "normalizing", progress: 0.995});
+      await updateJob(job, {status: "normalizing", progress: 0.995});
       await normalizeNarration(
         temporaryOutputLocation,
         outputLocation,
@@ -569,7 +590,18 @@ const server = createServer(async (req, res) => {
       const fingerprint = renderFingerprint(payload, renderProfile);
       const existing = await store.getByFingerprint(fingerprint);
       if (existing) {
-        json(res, existing.status === "completed" ? 200 : 202, publicJob(existing));
+        const recoveredMissingOutput =
+          await recoverMissingCompletedOutput(existing);
+        if (recoveredMissingOutput) {
+          void drain();
+          json(res, 202, publicJob(existing));
+          return;
+        }
+        json(
+          res,
+          existing.status === "completed" ? 200 : 202,
+          publicJob(existing),
+        );
         return;
       }
 
