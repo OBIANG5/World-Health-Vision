@@ -390,6 +390,49 @@ body{margin:0}
 .wv-media-publication-channels span{font-size:7px}
 .wv-media-publication-channels span.published{color:#9ff6c5}
 .wv-media-publication-channels span.pending{color:#ffd394}
+.wv-media-tiktok-export{
+  margin-top:8px;padding:10px;border:1px solid rgba(130,206,249,.22);
+  border-radius:11px;background:rgba(130,206,249,.035)
+}
+.wv-media-tiktok-export-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:9px}
+.wv-media-tiktok-export-head>div>span{
+  display:block;font-size:6.5px;font-weight:950;letter-spacing:.1em;color:#a9dcfa
+}
+.wv-media-tiktok-export-head strong{display:block;margin-top:4px;font-size:8px;line-height:1.35}
+.wv-media-tiktok-export-head>span{
+  flex:none;padding:4px 6px;border-radius:999px;font-size:6px;font-weight:950;letter-spacing:.06em
+}
+.wv-media-tiktok-export-head>span.ready{
+  color:#9ff6c5;border:1px solid rgba(69,228,138,.25);background:rgba(69,228,138,.05)
+}
+.wv-media-tiktok-export-head>span.pending{
+  color:#ffd394;border:1px solid rgba(255,177,59,.25);background:rgba(255,177,59,.05)
+}
+.wv-media-tiktok-export-head>span.missing{
+  color:var(--wv-media-muted);border:1px solid var(--wv-media-line);background:rgba(255,255,255,.025)
+}
+.wv-media-tiktok-export-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.wv-media-tiktok-export-meta span{
+  padding:4px 6px;border:1px solid var(--wv-media-line);border-radius:999px;
+  font-size:6.5px;color:var(--wv-media-muted)
+}
+.wv-media-inline-action{
+  margin-top:8px;border:1px solid var(--wv-media-line);border-radius:9px;
+  background:#111114;color:white;padding:8px 10px;font-size:7px;font-weight:900;cursor:pointer
+}
+.wv-media-inline-action.primary{
+  color:#050505;border:0;background:linear-gradient(90deg,var(--wv-media-pink),var(--wv-media-orange),var(--wv-media-yellow))
+}
+.wv-media-inline-action:disabled{opacity:.5;cursor:default}
+.wv-media-tiktok-export-ready{
+  display:grid;grid-template-columns:86px 1fr;gap:9px;align-items:center;margin-top:9px
+}
+.wv-media-tiktok-export-ready video{
+  display:block;width:86px;aspect-ratio:9/16;object-fit:contain;background:#000;
+  border:1px solid var(--wv-media-line);border-radius:9px
+}
+.wv-media-tiktok-export-ready a{font-size:7px;color:#a9dcfa;text-decoration:none;font-weight:900}
+
 .wv-media-publication-copy{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .wv-media-publication-copy>div{
   min-width:0;padding:9px;border:1px solid var(--wv-media-line);border-radius:10px;background:#08080a
