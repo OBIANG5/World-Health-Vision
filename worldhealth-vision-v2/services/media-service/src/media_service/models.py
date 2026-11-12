@@ -137,6 +137,37 @@ class SelectAssetRequest(BaseModel):
     asset_id: str
 
 
+QaCheckName = Literal[
+    "facts",
+    "spelling",
+    "safe_zones",
+    "logo_integrity",
+    "source_display",
+    "rights",
+    "audio",
+]
+
+
+class QaIssue(BaseModel):
+    check: QaCheckName
+    severity: Literal["warning", "error"]
+    message: str
+    original_text: str | None = None
+    suggested_text: str | None = None
+
+
+class QaReport(BaseModel):
+    version: int = Field(ge=1)
+    checked_at: datetime
+    language_model: str | None = None
+    all_passed: bool
+    issues: list[QaIssue] = Field(default_factory=list)
+
+
+class RunQaRequest(BaseModel):
+    check_spelling: bool = True
+
+
 class QaState(BaseModel):
     facts: Literal["pending", "pass", "fail"] = "pending"
     spelling: Literal["pending", "pass", "fail"] = "pending"
@@ -320,6 +351,7 @@ class MediaStory(BaseModel):
     assets: AssetInventory = Field(default_factory=AssetInventory)
     asset_bundle: AssetBundle | None = None
     qa: QaState = Field(default_factory=QaState)
+    qa_report: QaReport | None = None
     approval_note: str | None = None
     radar_scan_id: str | None = None
     radar_fingerprint: str | None = None
