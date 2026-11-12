@@ -259,6 +259,27 @@ class VideoDraft(BaseModel):
 RenderJobStatus = Literal["queued", "bundling", "rendering", "completed", "failed"]
 
 
+class VoiceoverRef(BaseModel):
+    id: str
+    provider: Literal["openai_realtime"] = "openai_realtime"
+    model: str
+    voice: str
+    format: Literal["wav"] = "wav"
+    sample_rate_hz: Literal[24000] = 24000
+    duration_sec: float = Field(gt=0)
+    generated_at: datetime
+    renderer_url: str
+    transcript: str
+    transcript_match_score: int = Field(ge=0, le=100)
+    duration_fit: bool
+    qa_passed: bool
+    ai_generated_disclosure: str = "Voix générée par IA"
+
+
+class GenerateVoiceoverRequest(BaseModel):
+    voice: str | None = None
+
+
 class RenderJobRef(BaseModel):
     id: str
     story_id: str
