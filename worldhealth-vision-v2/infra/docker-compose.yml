@@ -185,10 +185,19 @@ services:
       WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
       WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
+      WHV_MEDIA_REDIS_URL: redis://redis:6379/0
+      WHV_MEDIA_RADAR_SCHEDULER_ENABLED: ${WHV_MEDIA_RADAR_SCHEDULER_ENABLED:-true}
+      WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS: ${WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS:-300}
+      WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS: ${WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS:-3}
+      WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES: ${WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES:-12}
+      WHV_MEDIA_RADAR_SCHEDULER_HEARTBEAT_TTL_SECONDS: 120
+      WHV_MEDIA_RADAR_SCHEDULER_LOCK_TTL_SECONDS: 240
     depends_on:
       media-renderer:
         condition: service_healthy
       whv-timescaledb:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
@@ -230,6 +239,47 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
+    networks:
+      - whv-private
+      - whv-public
+
+  media-scheduler:
+    container_name: whv-media-scheduler
+    build:
+      context: ..
+      dockerfile: services/media-service/Dockerfile
+    image: whv/media-service:local
+    restart: unless-stopped
+    command: ["python", "-m", "media_service.scheduler"]
+    environment:
+      WHV_MEDIA_REPOSITORY_BACKEND: postgres
+      WHV_MEDIA_DATABASE_URL: postgresql://whv_user:whv_password@whv-timescaledb:5432/whv
+      WHV_MEDIA_DATABASE_POOL_MIN_SIZE: 1
+      WHV_MEDIA_DATABASE_POOL_MAX_SIZE: 3
+      WHV_MEDIA_SEED_DEMO_STORY: "false"
+      WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
+      WHV_MEDIA_REDIS_URL: redis://redis:6379/0
+      WHV_MEDIA_RADAR_SCHEDULER_ENABLED: ${WHV_MEDIA_RADAR_SCHEDULER_ENABLED:-true}
+      WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS: ${WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS:-300}
+      WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS: ${WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS:-3}
+      WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES: ${WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES:-12}
+      WHV_MEDIA_RADAR_SCHEDULER_INITIAL_DELAY_SECONDS: 15
+      WHV_MEDIA_RADAR_SCHEDULER_HEARTBEAT_TTL_SECONDS: 120
+      WHV_MEDIA_RADAR_SCHEDULER_LOCK_TTL_SECONDS: 240
+    depends_on:
+      media-service:
+        condition: service_healthy
+      whv-timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "media_service.scheduler_health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
     networks:
       - whv-private
       - whv-public
