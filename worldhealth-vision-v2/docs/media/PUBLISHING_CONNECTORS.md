@@ -94,6 +94,32 @@ World-Vision policy:
 If Meta later exposes an official Channels API, re-evaluate this decision and
 implement it behind the same publication-package/receipt contract.
 
+## Two independent SHA-256 integrity proofs
+
+A publication has two distinct cryptographic checks:
+
+1. **Canonical newsroom MP4 SHA-256**: `PublicationPackage.video_sha256` is
+   copied from the *completed, encoded MP4 file*, and
+   `video_render_profile=canonical_newsroom_v1` records its Remotion profile.
+2. **Publication manifest SHA-256**: `PublicationPackage.manifest_sha256`
+   hashes the selected video URL, the **canonical MP4 SHA-256**, the rendering
+   profile, claims/copy, source URLs, channel list and approved CREATIVE/QA versions.
+
+The channel-specific TikTok derivative has its own *distinct*
+`ChannelExportRef.render_job.output_sha256` and profile
+`tiktok_api_clean_v1`. Its `canonical_manifest_sha256` points back to the
+approved newsroom manifest. **These two video hashes should normally differ**;
+they describe different encoded bytes for the same verified editorial content.
+
+A missing or stale canonical MP4 digest blocks new packages, new channel
+derivatives and publication receipts. Older database packages without
+`video_sha256` are readable for history but cannot be used as publication
+proofs; generate a fresh canonical package after inspecting a real MP4.
+
+The hashes document byte identity; they do not replace human visual review,
+license validation, platform approval or checking that a publicly served
+file actually matches the recorded digest after storage/copy/transfer.
+
 ## Why receipts remain mandatory
 
 A platform API accepting an upload is not proof that users can see the post.
