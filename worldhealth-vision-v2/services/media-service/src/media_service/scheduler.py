@@ -68,9 +68,10 @@ async def _write_status(
 async def run_scheduler_cycle(
     client: redis.Redis,
     settings: Settings,
+    *,
+    radar_client=RADAR_CLIENT,
+    store=STORE,
 ) -> str:
-    await _write_heartbeat(client, settings)
-
     if not settings.radar_scheduler_enabled:
         await _write_status(client, last_run_status="disabled")
         return "disabled"
@@ -103,8 +104,8 @@ async def run_scheduler_cycle(
         )
         result = await execute_radar_scan(
             request,
-            radar_client=RADAR_CLIENT,
-            store=STORE,
+            radar_client=radar_client,
+            store=store,
         )
         await _write_status(
             client,
@@ -150,6 +151,28 @@ async def run_scheduler_cycle(
             LOGGER.exception("Could not release RADAR scheduler lock")
 
 
+async def _heartbeat_loop(
+    client: redis.Redis,
+    settings: Settings,
+    stop_event: asyncio.Event,
+) -> None:
+    refresh_seconds = max(
+        10,
+        min(30, settings.radar_scheduler_heartbeat_ttl_seconds // 3),
+    )
+    while not stop_event.is_set():
+        try:
+            await client.ping()
+            await _write_heartbeat(client, settings)
+        except Exception:
+            LOGGER.exception("Could not refresh RADAR scheduler heartbeat")
+
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=refresh_seconds)
+        except asyncio.TimeoutError:
+            continue
+
+
 async def run_forever(settings: Settings | None = None) -> None:
     resolved = settings or get_settings()
     client = redis.from_url(resolved.redis_url, decode_responses=True)
@@ -179,6 +202,10 @@ async def run_forever(settings: Settings | None = None) -> None:
         resolved.radar_scheduler_scan_hours,
     )
 
+    heartbeat_task = asyncio.create_task(
+        _heartbeat_loop(client, resolved, stop_event)
+    )
+
     try:
         while not stop_event.is_set():
             try:
@@ -193,6 +220,12 @@ async def run_forever(settings: Settings | None = None) -> None:
             except asyncio.TimeoutError:
                 continue
     finally:
+        stop_event.set()
+        heartbeat_task.cancel()
+        try:
+            await heartbeat_task
+        except asyncio.CancelledError:
+            pass
         try:
             await client.delete(HEARTBEAT_KEY)
         except Exception:
