@@ -6,7 +6,8 @@
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "typecheck": "tsc --noEmit",
-    "check-server": "node --check server.mjs"
+    "check-server": "node --check server.mjs",
+    "test-store": "node --test job-store.test.mjs"
   },
   "dependencies": {
     "@remotion/bundler": "4.0.542",
@@ -14,6 +15,7 @@
     "@remotion/renderer": "4.0.542",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "redis": "6.3.1",
     "remotion": "4.0.542"
   },
   "devDependencies": {
