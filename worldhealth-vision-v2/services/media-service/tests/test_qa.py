@@ -7,6 +7,7 @@ from media_service.models import (
     RenderJobRef,
     RenderProbe,
     RunQaRequest,
+    VoiceoverRef,
 )
 from media_service.qa import (
     evaluate_structural_qa,
@@ -50,6 +51,34 @@ def qa_ready_seed_story():
     )
     story.qa.audio = "pass"
     story.status = "qa"
+    return story
+
+
+def attach_test_voiceover(story):
+    story.voiceover = VoiceoverRef(
+        id="voice-qa-test",
+        model="test-audio",
+        voice="marin",
+        duration_sec=min(10.0, story.video_draft.duration_sec),
+        generated_at=datetime.now(timezone.utc),
+        renderer_url="/api/media-renderer/audio/voice-qa-test.wav",
+        transcript=story.video_draft.voiceover_script,
+        transcript_match_score=100,
+        duration_fit=True,
+        qa_passed=True,
+    )
+    story.render_job.output_probe = story.render_job.output_probe.model_copy(
+        update={
+            "has_audio": True,
+            "audio_codec": "aac",
+            "audio_sample_rate_hz": 48_000,
+            "audio_channels": 2,
+            "integrated_lufs": -16.0,
+            "true_peak_dbfs": -1.5,
+            "loudness_range_lu": 5.0,
+        }
+    )
+    story.qa.audio = "pass"
     return story
 
 
@@ -128,3 +157,37 @@ def test_structural_qa_rejects_bad_encoded_render_geometry():
         and "fps" in issue.message
         for issue in issues
     )
+
+
+
+def test_structural_qa_rejects_out_of_range_final_loudness():
+    story = attach_test_voiceover(qa_ready_seed_story())
+    story.render_job.output_probe = story.render_job.output_probe.model_copy(
+        update={
+            "integrated_lufs": -20.5,
+            "true_peak_dbfs": -0.4,
+            "loudness_range_lu": 15.0,
+        }
+    )
+
+    state, issues = evaluate_structural_qa(story)
+
+    assert state.audio == "fail"
+    assert any(
+        issue.check == "audio"
+        and "loudness" in issue.message.lower()
+        for issue in issues
+    )
+
+
+def test_structural_qa_accepts_normalized_final_loudness():
+    story = attach_test_voiceover(qa_ready_seed_story())
+
+    state, issues = evaluate_structural_qa(story)
+
+    assert state.audio == "pass"
+    assert not [
+        issue
+        for issue in issues
+        if issue.check == "audio"
+    ]
