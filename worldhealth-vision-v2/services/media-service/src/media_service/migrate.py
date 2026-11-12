@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS media.radar_scan (
     requested_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     hours INTEGER NOT NULL CHECK (hours BETWEEN 1 AND 48),
     country_iso3 CHAR(3),
+    max_candidates INTEGER NOT NULL CHECK (max_candidates BETWEEN 1 AND 30),
     model TEXT NOT NULL,
     query TEXT NOT NULL,
     retrieved_urls JSONB NOT NULL,
@@ -49,6 +50,16 @@ CREATE TABLE IF NOT EXISTS media.radar_scan (
     stories_created JSONB NOT NULL,
     stories_deduplicated JSONB NOT NULL
 );
+
+ALTER TABLE media.radar_scan
+    ADD COLUMN IF NOT EXISTS max_candidates INTEGER;
+
+UPDATE media.radar_scan
+SET max_candidates = 12
+WHERE max_candidates IS NULL;
+
+ALTER TABLE media.radar_scan
+    ALTER COLUMN max_candidates SET NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_media_radar_scan_requested
     ON media.radar_scan (requested_at DESC);
