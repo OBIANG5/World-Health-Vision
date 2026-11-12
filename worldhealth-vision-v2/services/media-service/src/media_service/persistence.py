@@ -16,6 +16,7 @@ class StoryPersistence(Protocol):
     def list(self, status: StoryStatus | None = None) -> list[MediaStory]: ...
     def get(self, story_id: str) -> MediaStory | None: ...
     def save(self, story: MediaStory) -> MediaStory: ...
+    def save_radar_if_absent(self, story: MediaStory) -> tuple[MediaStory, bool]: ...
     def find_by_radar_fingerprint(self, fingerprint: str) -> MediaStory | None: ...
     def reset(self) -> None: ...
     def close(self) -> None: ...
@@ -43,6 +44,16 @@ class MemoryStoryPersistence:
         with self._lock:
             self._stories[story.id] = deepcopy(story)
             return deepcopy(story)
+
+    def save_radar_if_absent(self, story: MediaStory) -> tuple[MediaStory, bool]:
+        if not story.radar_fingerprint:
+            raise ValueError("Radar story must have a radar_fingerprint.")
+        with self._lock:
+            for existing in self._stories.values():
+                if existing.radar_fingerprint == story.radar_fingerprint:
+                    return deepcopy(existing), False
+            self._stories[story.id] = deepcopy(story)
+            return deepcopy(story), True
 
     def find_by_radar_fingerprint(self, fingerprint: str) -> MediaStory | None:
         with self._lock:
@@ -140,6 +151,63 @@ class PostgresStoryPersistence:
                 ),
             )
         return story.model_copy(deep=True)
+
+    def save_radar_if_absent(self, story: MediaStory) -> tuple[MediaStory, bool]:
+        if not story.radar_fingerprint:
+            raise ValueError("Radar story must have a radar_fingerprint.")
+
+        payload = story.model_dump(mode="json")
+        with self._pool.connection() as conn:
+            inserted = conn.execute(
+                """
+                INSERT INTO media.story_state (
+                    id,
+                    status,
+                    score,
+                    country_iso3,
+                    radar_fingerprint,
+                    detected_at,
+                    updated_at,
+                    payload
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (radar_fingerprint)
+                    WHERE radar_fingerprint IS NOT NULL
+                DO NOTHING
+                RETURNING payload
+                """,
+                (
+                    story.id,
+                    story.status,
+                    story.score.total,
+                    story.country_iso3,
+                    story.radar_fingerprint,
+                    story.detected_at,
+                    story.updated_at,
+                    Jsonb(payload),
+                ),
+            ).fetchone()
+
+            if inserted is not None:
+                persisted = self._story_from_row(inserted)
+                if persisted is None:
+                    raise RuntimeError("PostgreSQL returned an empty inserted media story.")
+                return persisted, True
+
+            existing = conn.execute(
+                """
+                SELECT payload
+                FROM media.story_state
+                WHERE radar_fingerprint = %s
+                LIMIT 1
+                """,
+                (story.radar_fingerprint,),
+            ).fetchone()
+
+        persisted = self._story_from_row(existing)
+        if persisted is None:
+            raise RuntimeError("Radar fingerprint conflict occurred without an existing row.")
+        return persisted, False
 
     def find_by_radar_fingerprint(self, fingerprint: str) -> MediaStory | None:
         with self._pool.connection() as conn:
