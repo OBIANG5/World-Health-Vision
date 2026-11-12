@@ -200,7 +200,13 @@ class MediaDashboard(BaseModel):
 
 
 class DecisionRequest(BaseModel):
-    action: Literal["approve", "reject", "request_changes", "mark_publish_ready"]
+    action: Literal[
+        "approve",
+        "reject",
+        "request_changes",
+        "approve_preview",
+        "mark_publish_ready",
+    ]
     note: str | None = None
 
 
