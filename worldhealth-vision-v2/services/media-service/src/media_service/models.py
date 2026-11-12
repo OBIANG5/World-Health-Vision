@@ -81,6 +81,7 @@ class HookOption(BaseModel):
     text: str
     score: int = Field(ge=0, le=100)
     rationale: str
+    claim_indexes: list[int] = Field(default_factory=list)
 
 
 class AssetInventory(BaseModel):
@@ -137,6 +138,38 @@ VisualKind = Literal[
     "typography",
     "source_card",
 ]
+
+
+class CreativeScriptSegment(BaseModel):
+    text: str
+    claim_indexes: list[int] = Field(default_factory=list)
+
+
+class CreativeScenePlan(BaseModel):
+    order: int = Field(ge=1)
+    purpose: str
+    on_screen_text: str
+    visual_kind: VisualKind
+    asset_query: str | None = None
+    claim_indexes: list[int] = Field(default_factory=list)
+
+
+class CreativePackage(BaseModel):
+    version: int = Field(ge=1)
+    created_at: datetime
+    model: str
+    angle: str
+    target_duration_sec: int = Field(ge=5, le=60)
+    hooks: list[HookOption] = Field(min_length=1, max_length=3)
+    script_segments: list[CreativeScriptSegment] = Field(min_length=1)
+    caption: str
+    hashtags: list[str] = Field(default_factory=list, max_length=12)
+    scene_plan: list[CreativeScenePlan] = Field(min_length=2)
+
+
+class GenerateCreativeRequest(BaseModel):
+    target_duration_sec: int = Field(default=15, ge=8, le=45)
+    max_hooks: int = Field(default=3, ge=1, le=3)
 
 
 class VideoScene(BaseModel):
@@ -205,6 +238,7 @@ class MediaStory(BaseModel):
     score: EditorialScore
     hooks: list[HookOption] = Field(default_factory=list)
     selected_hook_id: str | None = None
+    creative_package: CreativePackage | None = None
     script: str | None = None
     video_draft: VideoDraft | None = None
     render_job: RenderJobRef | None = None
