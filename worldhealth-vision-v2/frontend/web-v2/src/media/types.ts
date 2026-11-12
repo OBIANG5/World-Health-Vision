@@ -117,6 +117,8 @@ export type MediaAsset = {
 export type AssetSelection = {
   scene_order: number;
   asset_id: string;
+  selection_score: number;
+  selection_reason: string;
 };
 
 export type AssetBundle = {
