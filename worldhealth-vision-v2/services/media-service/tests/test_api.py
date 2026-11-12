@@ -249,8 +249,26 @@ class StubRendererClient:
         self.draft_durations[job.id] = story.video_draft.duration_sec
         return job
 
+    async def retry_job(self, job_id: str):
+        previous = self.jobs[job_id]
+        if previous.status != "failed":
+            raise RuntimeError("Stub retry requires a failed job.")
+        retried = previous.model_copy(
+            update={
+                "status": "queued",
+                "progress": 0,
+                "attempts": previous.attempts + 1,
+                "updated_at": datetime.now(timezone.utc),
+                "error": None,
+            }
+        )
+        self.jobs[job_id] = retried
+        return retried
+
     async def get_job(self, job_id: str):
         previous = self.jobs[job_id]
+        if previous.status == "failed":
+            return previous
         completed = previous.model_copy(
             update={
                 "status": "completed",
@@ -721,6 +739,83 @@ def test_creative_render_is_blocked_until_audio_qa_passes():
 
 
 
+def test_failed_preview_render_can_be_retried_without_new_job():
+    scan = client.post(
+        "/api/media/radar/scans",
+        json={"hours": 3, "max_candidates": 10},
+    )
+    assert scan.status_code == 200
+    story_id = scan.json()["stories_created"][0]
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/verify",
+        json={"max_claims": 6},
+    ).status_code == 200
+    assert client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "approve"},
+    ).status_code == 200
+
+    creative = client.post(
+        f"/api/media/stories/{story_id}/creative/generate",
+        json={"target_duration_sec": 15, "max_hooks": 3},
+    )
+    hook_id = creative.json()["hooks"][0]["id"]
+    assert client.post(
+        f"/api/media/stories/{story_id}/hooks/select",
+        json={"hook_id": hook_id},
+    ).status_code == 200
+    assert client.post(
+        f"/api/media/stories/{story_id}/draft/prepare",
+        json={},
+    ).status_code == 200
+    assert client.post(
+        f"/api/media/stories/{story_id}/audio/generate",
+        json={},
+    ).status_code == 200
+
+    launched = client.post(
+        f"/api/media/stories/{story_id}/render-preview"
+    )
+    assert launched.status_code == 200
+    job_id = launched.json()["render_job"]["id"]
+
+    renderer = media_api.RENDERER_CLIENT
+    renderer.jobs[job_id] = renderer.jobs[job_id].model_copy(
+        update={
+            "status": "failed",
+            "progress": 0.42,
+            "attempts": 1,
+            "error": "simulated renderer crash",
+        }
+    )
+
+    failed_sync = client.post(
+        f"/api/media/stories/{story_id}/render-preview/sync"
+    )
+    assert failed_sync.status_code == 200
+    failed_story = failed_sync.json()
+    assert failed_story["status"] == "changes_requested"
+    assert failed_story["render_job"]["id"] == job_id
+    assert failed_story["render_job"]["attempts"] == 1
+
+    retried = client.post(
+        f"/api/media/stories/{story_id}/render-preview/retry"
+    )
+    assert retried.status_code == 200
+    retried_story = retried.json()
+    assert retried_story["status"] == "rendering"
+    assert retried_story["render_job"]["id"] == job_id
+    assert retried_story["render_job"]["status"] == "queued"
+    assert retried_story["render_job"]["attempts"] == 2
+    assert retried_story["render_job"]["error"] is None
+
+    duplicate_retry = client.post(
+        f"/api/media/stories/{story_id}/render-preview/retry"
+    )
+    assert duplicate_retry.status_code == 409
+
+
 def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
     scan = client.post(
         "/api/media/radar/scans",
@@ -850,6 +945,35 @@ def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
     assert (
         export_story["channel_exports"][0]["render_job"]["render_profile"]
         == "tiktok_api_clean_v1"
+    )
+
+    renderer = media_api.RENDERER_CLIENT
+    tiktok_job_id = export_story["channel_exports"][0]["render_job"]["id"]
+    renderer.jobs[tiktok_job_id] = renderer.jobs[tiktok_job_id].model_copy(
+        update={
+            "status": "failed",
+            "progress": 0.25,
+            "attempts": 1,
+            "error": "simulated TikTok derivative failure",
+        }
+    )
+
+    failed_export_sync = client.post(
+        f"/api/media/stories/{story_id}/publication/exports/tiktok/sync"
+    )
+    assert failed_export_sync.status_code == 200
+    assert (
+        failed_export_sync.json()["channel_exports"][0]["render_job"]["status"]
+        == "failed"
+    )
+
+    retry_tiktok_export = client.post(
+        f"/api/media/stories/{story_id}/publication/exports/tiktok/retry"
+    )
+    assert retry_tiktok_export.status_code == 200
+    assert (
+        retry_tiktok_export.json()["channel_exports"][0]["render_job"]["status"]
+        == "queued"
     )
 
     synced_export = client.post(
