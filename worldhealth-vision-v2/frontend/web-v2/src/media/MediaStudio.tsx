@@ -4,6 +4,7 @@ import type {
   EditorialScoreFactors,
   MediaDashboard,
   MediaStory,
+  RadarScanHistoryItem,
   RadarScanResult,
   RadarSchedulerStatus,
   StoryStatus,
@@ -105,6 +106,7 @@ export default function MediaStudio() {
   const [radarHours, setRadarHours] = useState(6);
   const [radarCountry, setRadarCountry] = useState("");
   const [radarResult, setRadarResult] = useState<RadarScanResult | null>(null);
+  const [radarHistory, setRadarHistory] = useState<RadarScanHistoryItem[]>([]);
   const [schedulerStatus, setSchedulerStatus] = useState<RadarSchedulerStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -130,10 +132,11 @@ export default function MediaStudio() {
     setLoading(true);
     setError(null);
     try {
-      const [storiesResponse, dashboardResponse, schedulerResponse] = await Promise.all([
+      const [storiesResponse, dashboardResponse, schedulerResponse, historyResponse] = await Promise.all([
         fetch(`${API_ROOT}/stories`),
         fetch(`${API_ROOT}/dashboard`),
         fetch(`${API_ROOT}/radar/scheduler`),
+        fetch(`${API_ROOT}/radar/scans/history?limit=5`),
       ]);
       if (!storiesResponse.ok || !dashboardResponse.ok) {
         throw new Error("Le Media Studio ne répond pas correctement.");
@@ -150,6 +153,14 @@ export default function MediaStudio() {
         );
       } else {
         setSchedulerStatus(null);
+      }
+
+      if (historyResponse.ok) {
+        setRadarHistory(
+          (await historyResponse.json()) as RadarScanHistoryItem[],
+        );
+      } else {
+        setRadarHistory([]);
       }
 
       setSelectedId((current) => current ?? nextStories[0]?.id ?? null);
@@ -490,6 +501,31 @@ export default function MediaStudio() {
                 <small>
                   Scan {radarResult.scan_id} · {radarResult.model}
                 </small>
+              </div>
+            )}
+
+            {radarHistory.length > 0 && (
+              <div className="wv-media-radar-history">
+                <div className="wv-media-radar-history-title">
+                  <span>Derniers scans enregistrés</span>
+                  <small>{radarHistory.length} affichés</small>
+                </div>
+                {radarHistory.map((scan) => (
+                  <div className="wv-media-radar-history-row" key={scan.scan_id}>
+                    <div className="wv-media-radar-history-identity">
+                      <strong>{dateLabel(scan.requested_at)}</strong>
+                      <span>
+                        {scan.country_iso3 ?? "MONDE"} · fenêtre {scan.hours}h · {scan.model}
+                      </span>
+                    </div>
+                    <div className="wv-media-radar-history-metrics">
+                      <span><b>{scan.candidates_accepted}</b> retenus</span>
+                      <span><b>{scan.stories_created.length}</b> créés</span>
+                      <span><b>{scan.stories_deduplicated.length}</b> doublons</span>
+                      <span><b>{scan.retrieved_urls.length}</b> URL</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </section>
