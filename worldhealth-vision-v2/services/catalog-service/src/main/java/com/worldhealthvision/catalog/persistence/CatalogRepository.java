@@ -2,6 +2,8 @@ package com.worldhealthvision.catalog.persistence;
 
 import com.worldhealthvision.catalog.api.dto.CatalogReadinessResponse;
 import com.worldhealthvision.catalog.api.dto.CountryDetailResponse;
+import com.worldhealthvision.catalog.api.dto.CountryLocalSourceResponse;
+import com.worldhealthvision.catalog.api.dto.CountryDocumentedReleaseResponse;
 import com.worldhealthvision.catalog.api.dto.CountrySummaryResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencyDetailResponse;
 import com.worldhealthvision.catalog.api.dto.CurrencySummaryResponse;
@@ -32,6 +34,12 @@ public interface CatalogRepository {
     );
 
     Optional<CountryDetailResponse> findCountryByIso3(String iso3);
+
+    /** National institutions and local media indexed per ISO3, whether ingested or not. */
+    List<CountryLocalSourceResponse> listCountryLocalSources(String iso3);
+
+    /** Curated published claims, never silently inserted into canonical time series. */
+    List<CountryDocumentedReleaseResponse> listCountryDocumentedReleases(String iso3);
 
     List<CurrencySummaryResponse> listCurrencies(
             boolean activeOnly,
