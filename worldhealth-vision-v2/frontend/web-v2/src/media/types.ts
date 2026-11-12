@@ -184,14 +184,20 @@ export type VoiceoverRef = {
   ai_generated_disclosure: string;
 };
 
+export type RenderProfile =
+  | "canonical_newsroom_v1"
+  | "tiktok_api_clean_v1";
+
 export type RenderJobRef = {
   id: string;
   story_id: string;
+  render_profile: RenderProfile;
   status: "queued" | "bundling" | "rendering" | "completed" | "failed";
   progress: number;
   created_at: string;
   updated_at: string;
   output_url?: string | null;
+  output_sha256?: string | null;
   error?: string | null;
 };
 
@@ -294,6 +300,7 @@ export type MediaStory = {
   qa: QaState;
   qa_report?: QaReport | null;
   publication_package?: PublicationPackage | null;
+  channel_exports: ChannelExportRef[];
   publication_receipts: PublicationReceipt[];
   approval_note?: string | null;
 };
@@ -322,6 +329,13 @@ export type PublicationPackage = {
   creative_version: number;
   qa_version: number;
   manifest_sha256: string;
+};
+
+export type ChannelExportRef = {
+  channel: "tiktok";
+  render_profile: "tiktok_api_clean_v1";
+  canonical_manifest_sha256: string;
+  render_job: RenderJobRef;
 };
 
 export type PublicationReceipt = {
