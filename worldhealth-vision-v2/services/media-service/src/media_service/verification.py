@@ -17,6 +17,7 @@ from media_service.radar import (
     canonical_url,
 )
 from media_service.settings import Settings, get_settings
+from media_service.source_registry import normalized_domain, resolve_source
 
 
 class VerificationConfigurationError(RuntimeError):
@@ -172,21 +173,38 @@ def adjudicate_verification(
         for claim in claims
         for url in claim.supporting_urls
     }
-    primary_urls = {
+    support_domains = {
+        domain
+        for url in support_urls
+        if (domain := normalized_domain(url))
+    }
+    attached_primary_urls = {
         canonical_url(source.url)
         for source in story.sources
         if source.is_primary
     }
-    has_primary_support = bool(support_urls.intersection(primary_urls))
+    registry_primary_urls = {
+        url
+        for url in support_urls
+        if (
+            (registered := resolve_source(url)) is not None
+            and registered.is_primary
+        )
+    }
+    has_primary_support = bool(
+        support_urls.intersection(attached_primary_urls)
+        or registry_primary_urls
+    )
 
     conflicting = sum(claim.status == "conflicting" for claim in claims)
     verified = sum(claim.status == "verified" for claim in claims)
     unresolved = sum(claim.status == "unresolved" for claim in claims)
+    distinct_supporting_sources = len(support_domains)
 
     if conflicting:
         verdict = "conflicting"
     elif claims and unresolved == 0 and (
-        len(support_urls) >= 2 or has_primary_support
+        distinct_supporting_sources >= 2 or has_primary_support
     ):
         verdict = "verified"
     elif verified:
@@ -200,7 +218,7 @@ def adjudicate_verification(
         verified_ratio = verified / len(claims)
         confidence = round(
             verified_ratio * 70
-            + min(len(support_urls), 3) * 7
+            + min(distinct_supporting_sources, 3) * 7
             + (9 if has_primary_support else 0)
         )
         if conflicting:
@@ -219,7 +237,7 @@ def adjudicate_verification(
         model=model,
         retrieved_urls=retrieved_urls,
         claims=claims,
-        distinct_supporting_sources=len(support_urls),
+        distinct_supporting_sources=distinct_supporting_sources,
         has_primary_support=has_primary_support,
         verdict=verdict,
         confidence_score=confidence,
