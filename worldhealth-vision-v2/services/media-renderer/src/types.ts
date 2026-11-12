@@ -18,6 +18,10 @@ export type VideoScene = {
   visual_kind: VisualKind;
   asset_query?: string | null;
   source_ids: string[];
+  asset_id?: string | null;
+  asset_url?: string | null;
+  asset_attribution?: string | null;
+  asset_license?: string | null;
 };
 
 export type VideoDraft = {
