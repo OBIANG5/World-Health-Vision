@@ -3,6 +3,7 @@ from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from media_service.models import (
+    ChannelExportRef,
     ConfirmPublicationRequest,
     CreateStoryRequest,
     DecisionRequest,
@@ -284,6 +285,67 @@ async def sync_preview_render(story_id: str) -> MediaStory:
             raise MediaWorkflowConflictError("Story has no render job.")
         render_job = await RENDERER_CLIENT.get_job(story.render_job.id)
         return STORE.sync_render_job(story_id, render_job)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/exports/tiktok", response_model=MediaStory)
+async def launch_tiktok_clean_export(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        package = story.publication_package
+        if package is None:
+            raise MediaWorkflowConflictError(
+                "Prepare the canonical publication package first."
+            )
+        if "tiktok" not in package.target_channels:
+            raise MediaWorkflowConflictError(
+                "TikTok is not part of the active publication package."
+            )
+        render_job = await RENDERER_CLIENT.create_job(
+            story,
+            render_profile="tiktok_api_clean_v1",
+        )
+        export = ChannelExportRef(
+            channel="tiktok",
+            canonical_manifest_sha256=package.manifest_sha256,
+            render_job=render_job,
+        )
+        return STORE.attach_channel_export(story_id, export)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/exports/tiktok/sync", response_model=MediaStory)
+async def sync_tiktok_clean_export(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        export = next(
+            (
+                candidate
+                for candidate in story.channel_exports
+                if candidate.channel == "tiktok"
+            ),
+            None,
+        )
+        if export is None:
+            raise MediaWorkflowConflictError(
+                "Story has no TikTok clean export."
+            )
+        render_job = await RENDERER_CLIENT.get_job(export.render_job.id)
+        return STORE.sync_channel_export(
+            story_id,
+            "tiktok",
+            render_job,
+        )
     except MediaStoryNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Story not found") from exc
     except MediaWorkflowConflictError as exc:
