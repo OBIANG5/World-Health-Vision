@@ -80,7 +80,10 @@ class MemoryStoryPersistence:
             requested_at=datetime.now(timezone.utc),
             hours=request.hours,
             country_iso3=request.country_iso3.upper() if request.country_iso3 else None,
+            max_candidates=request.max_candidates,
             model=result.model,
+            query=result.query,
+            retrieved_urls=result.retrieved_urls,
             candidates_found=result.candidates_found,
             candidates_accepted=result.candidates_accepted,
             candidates_rejected_without_retrieved_source=result.candidates_rejected_without_retrieved_source,
@@ -265,6 +268,7 @@ class PostgresStoryPersistence:
                     scan_id,
                     hours,
                     country_iso3,
+                    max_candidates,
                     model,
                     query,
                     retrieved_urls,
@@ -274,13 +278,14 @@ class PostgresStoryPersistence:
                     stories_created,
                     stories_deduplicated
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (scan_id) DO NOTHING
                 """,
                 (
                     result.scan_id,
                     request.hours,
                     request.country_iso3.upper() if request.country_iso3 else None,
+                    request.max_candidates,
                     result.model,
                     result.query,
                     Jsonb(result.retrieved_urls),
@@ -301,7 +306,10 @@ class PostgresStoryPersistence:
                     requested_at,
                     hours,
                     country_iso3,
+                    max_candidates,
                     model,
+                    query,
+                    retrieved_urls,
                     candidates_found,
                     candidates_accepted,
                     candidates_rejected_without_retrieved_source,
