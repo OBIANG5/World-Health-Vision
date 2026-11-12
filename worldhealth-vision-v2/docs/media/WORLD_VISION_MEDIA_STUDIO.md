@@ -17,8 +17,8 @@ Implemented on `feature/world-vision-media-studio`:
 - renderer-ready `VideoDraft` (1080x1920, 30 fps, timed scenes) with selected licensed imagery;
 - OpenAI Realtime voice-over generation using PCM 24 kHz, WAV persistence, transcript comparison, duration QA and visible AI disclosure;
 - asynchronous Remotion renderer with queue, progress, H.264 output, real imagery, attribution, narration and browser range streaming;
-- final explainable QA report for facts, spelling, safe-zone preflight, logo/design-system integrity, source display, rights and audio;
-- canonical Publication Package for TikTok + WhatsApp text/video/source metadata with SHA-256 manifest;
+- final explainable QA report for facts, spelling, safe-zone preflight, logo/design-system integrity, source display, rights, audio and encoded MP4 integrity;
+- canonical Publication Package for TikTok + WhatsApp text/video/source metadata, SHA-256 of the actual encoded MP4 and an independent SHA-256 manifest that includes the file digest and render profile;
 - proof-based publication receipts: a story cannot become `published` until all requested channels have real receipt evidence;
 - Prometheus monitoring and six-job CI covering media service, PostgreSQL integration, renderer, frontend, gateway and Compose;
 - draft pull request #5 used as a non-merge validation surface.
@@ -29,7 +29,7 @@ Deliberately not implemented yet:
 - official WhatsApp Channel publishing connector;
 - broader production-scale country source packs beyond the current canonical catalogue coverage;
 - automated acquisition/licensing of arbitrary news video footage (ASSETS currently automates rights-aware Wikimedia image discovery);
-- music beds and final broadcast-style loudness normalization;
+- music beds, manual listening validation on a real device and independent broadcast-style acceptance; FFmpeg final-loudness normalization and AAC 48 kHz checks are now coded;
 - pixel-level computer-vision QA of rendered frames (current safe-zone/logo checks are deterministic structural preflight plus fixed Remotion contracts);
 - autonomous publishing without human approval or explicit channel allow-lists.
 
