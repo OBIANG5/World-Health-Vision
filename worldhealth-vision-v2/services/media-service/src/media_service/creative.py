@@ -45,6 +45,20 @@ def _creative_video_draft(
     source_line = _source_line(story)
     source_ids = [source.id for source in story.sources[:3]]
 
+    assets_by_id = (
+        {asset.id: asset for asset in story.asset_bundle.assets}
+        if story.asset_bundle is not None
+        else {}
+    )
+    selected_asset_ids = (
+        {
+            selection.scene_order: selection.asset_id
+            for selection in story.asset_bundle.selections
+        }
+        if story.asset_bundle is not None
+        else {}
+    )
+
     if request.script_override:
         max_words = max(18, math.floor(duration * WORDS_PER_SECOND))
         voiceover = _truncate_words(request.script_override.strip(), max_words)
@@ -102,6 +116,23 @@ def _creative_video_draft(
         elif is_source:
             on_screen_text = source_line
 
+        selected_asset = assets_by_id.get(
+            selected_asset_ids.get(plan.order, "")
+        )
+        scene_visual_kind = plan.visual_kind
+        asset_url = None
+        asset_attribution = None
+        asset_license = None
+        asset_id = None
+
+        if selected_asset is not None:
+            asset_id = selected_asset.id
+            asset_url = selected_asset.thumbnail_url or selected_asset.media_url
+            asset_attribution = selected_asset.attribution
+            asset_license = selected_asset.license_name
+            if selected_asset.kind == "image":
+                scene_visual_kind = "real_photo"
+
         scenes.append(
             VideoScene(
                 id=f"scene-{len(scenes) + 1}",
@@ -111,9 +142,13 @@ def _creative_video_draft(
                 purpose=plan.purpose,
                 narration=narration,
                 on_screen_text=on_screen_text,
-                visual_kind=plan.visual_kind,
+                visual_kind=scene_visual_kind,
                 asset_query=plan.asset_query,
                 source_ids=source_ids,
+                asset_id=asset_id,
+                asset_url=asset_url,
+                asset_attribution=asset_attribution,
+                asset_license=asset_license,
             )
         )
         cursor += scene_duration
