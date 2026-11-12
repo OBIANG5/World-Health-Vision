@@ -328,3 +328,10 @@ def test_radar_scan_creates_and_then_deduplicates_story():
     second_body = second.json()
     assert second_body["stories_created"] == []
     assert second_body["stories_deduplicated"] == [created_id]
+
+    history = client.get("/api/media/radar/scans?limit=10")
+    assert history.status_code == 200
+    scans = history.json()
+    assert len(scans) == 2
+    assert scans[0]["scan_id"] == "radar-test-1"
+    assert scans[0]["candidates_accepted"] == 1
