@@ -1,0 +1,109 @@
+name: WHV V2 safe national institution website availability audit
+
+on:
+  push:
+    branches:
+      - 'v2'
+      - 'improve/v2-local-source-availability-*'
+    paths:
+      - '.github/workflows/whv-v2-country-local-source-availability.yml'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/source_availability_audit.py'
+      - 'worldhealth-vision-v2/services/ingestion-service/tests/test_source_availability_audit.py'
+      - 'worldhealth-vision-v2/services/catalog-service/src/main/resources/db/migration/V26*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-v2-safe-source-availability-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reviewed-source-availability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Boot the REAL V2 catalog and public gateway in isolated Docker
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml up --build -d \
+            catalog-service gateway-service
+
+      - name: Await canonical source coverage endpoint and preserve HTTP errors
+        shell: bash
+        run: |
+          set -euo pipefail
+          ready=0
+          for i in $(seq 1 75); do
+            if curl -fsS --max-time 3 \
+              'http://localhost:8080/api/catalog/local-sources/coverage?limit=500' \
+              >/tmp/whv-registry.json; then
+              ready=1
+              break
+            fi
+            sleep 4
+          done
+          test "$ready" = 1
+          python3 - <<'PY'
+          import json
+          data=json.load(open('/tmp/whv-registry.json'))
+          assert data['totalCountryCount'] >= 200
+          assert data['countriesWithCountrySpecificSources'] >= 4
+          print('Real country registry ready:',data['totalCountryCount'],
+                'partial country research:',data['countriesWithCountrySpecificSources'])
+          PY
+
+      - name: Test request boundaries and official host allowlist in isolation
+        run: |
+          pip install -e './worldhealth-vision-v2/services/ingestion-service[dev]'
+          python -m pytest -q \
+            worldhealth-vision-v2/services/ingestion-service/tests/test_source_availability_audit.py
+
+      - name: Perform one safe HEAD probe per registered institution
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          python -m ingestion_service.source_availability_audit \
+            --catalog-base-url http://localhost:8080 \
+            --output reports/country-source-homepage-availability.json
+          python3 - <<'PY'
+          import json
+          p='reports/country-source-homepage-availability.json'
+          data=json.load(open(p,encoding='utf-8'))
+          assert data['auditType']=='COUNTRY_SOURCE_HOME_PAGE_AVAILABILITY_ONLY'
+          assert data['uniqueOrganizationCount']==9, data
+          assert data['applicableCountryCount']==9, data
+          assert len(data['checks'])==9
+          assert sum(data['statusCounts'].values())==9
+          assert data['statusCounts'].get('UNAPPROVED_HOST',0)==0, data
+          beac=next(s for s in data['checks'] if s['sourceCode']=='BEAC_CEMAC')
+          assert len(beac['countryIso3s'])==6
+          assert all(row['connectionState']=='CATALOG_ONLY' for row in data['checks'])
+          print('Safe official-source site availability probe completed.')
+          print('Different official site HTTP responses (not data quality):',data['statusCounts'])
+          print('BEAC served six countries but was probed only once.')
+          print('No site content or statistical values were fetched.')
+          PY
+
+      - name: Retain read-only evidence as a downloadable audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-country-source-homepage-availability
+          path: reports/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Error diagnostics (no secret content)
+        if: failure()
+        run: docker compose -f worldhealth-vision-v2/infra/docker-compose.yml logs --no-color --tail 70 catalog-service gateway-service || true
+
+      - name: Destroy ephemeral infrastructure
+        if: always()
+        run: docker compose -f worldhealth-vision-v2/infra/docker-compose.yml down -v --remove-orphans || true
