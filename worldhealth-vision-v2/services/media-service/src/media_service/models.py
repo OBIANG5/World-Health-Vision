@@ -292,7 +292,14 @@ class VideoDraft(BaseModel):
     scenes: list[VideoScene] = Field(min_length=2)
 
 
-RenderJobStatus = Literal["queued", "bundling", "rendering", "completed", "failed"]
+RenderJobStatus = Literal[
+    "queued",
+    "bundling",
+    "rendering",
+    "normalizing",
+    "completed",
+    "failed",
+]
 RenderProfile = Literal[
     "canonical_newsroom_v1",
     "tiktok_api_clean_v1",
@@ -385,6 +392,9 @@ class RenderProbe(BaseModel):
     audio_codec: str | None = None
     audio_sample_rate_hz: int | None = Field(default=None, gt=0)
     audio_channels: int | None = Field(default=None, gt=0)
+    integrated_lufs: float | None = None
+    true_peak_dbfs: float | None = None
+    loudness_range_lu: float | None = None
 
 
 class RenderJobRef(BaseModel):
