@@ -3,13 +3,13 @@ import {
   AbsoluteFill,
   Audio,
   Img,
-  OffthreadVideo,
   Sequence,
   interpolate,
   spring,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
+import {Video} from "@remotion/media";
 import type {VideoScene, WorldVisionRenderProps} from "./types";
 
 const accents = {
@@ -60,7 +60,7 @@ const PreviewBackdrop: React.FC<{scene: VideoScene}> = ({scene}) => {
       {scene.asset_url && (
         <>
           {scene.visual_kind === "real_video" ? (
-            <OffthreadVideo
+            <Video
               src={scene.asset_url}
               muted
               loop
