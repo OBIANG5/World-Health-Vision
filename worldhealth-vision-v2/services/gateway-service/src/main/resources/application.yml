@@ -91,6 +91,15 @@ spring:
             response-timeout: 130000
             connect-timeout: 5000
 
+        - id: media-verify-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/stories/*/verify
+            - Method=POST
+          metadata:
+            response-timeout: 130000
+            connect-timeout: 5000
+
         - id: media-service-route
           uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
           predicates:
