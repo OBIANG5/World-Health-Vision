@@ -2120,3 +2120,30 @@
   font-size: 11px;
   color: rgba(216, 238, 253, .75);
 }
+
+
+.whv-national-evidence-connection {
+  font-size: 11px;
+  color: #ffdf9c;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.whv-national-evidence-restrictions {
+  border-top: 1px solid rgba(134, 192, 230, .16);
+  padding: 7px 0 2px;
+}
+.whv-national-evidence-restrictions > summary {
+  cursor: pointer;
+  color: #bfddf1;
+  font-size: 11px;
+}
+.whv-national-evidence-restrictions > summary:focus-visible {
+  outline: 2px solid #9bd7ff;
+  outline-offset: 3px;
+}
+.whv-national-evidence-restrictions > p {
+  font-size: 11px;
+  color: rgba(211, 232, 246, .79);
+  line-height: 1.65;
+  margin: 8px 0 0;
+}
