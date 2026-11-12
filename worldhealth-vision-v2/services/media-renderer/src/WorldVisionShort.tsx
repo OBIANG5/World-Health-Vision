@@ -3,6 +3,7 @@ import {
   AbsoluteFill,
   Audio,
   Img,
+  OffthreadVideo,
   Sequence,
   interpolate,
   spring,
@@ -58,18 +59,35 @@ const PreviewBackdrop: React.FC<{scene: VideoScene}> = ({scene}) => {
     <>
       {scene.asset_url && (
         <>
-          <Img
-            src={scene.asset_url}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              filter: "brightness(.52) saturate(.92) contrast(1.04)",
-              transform: `scale(${assetScale})`,
-            }}
-          />
+          {scene.visual_kind === "real_video" ? (
+            <OffthreadVideo
+              src={scene.asset_url}
+              muted
+              loop
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "brightness(.52) saturate(.92) contrast(1.04)",
+                transform: `scale(${assetScale})`,
+              }}
+            />
+          ) : (
+            <Img
+              src={scene.asset_url}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "brightness(.52) saturate(.92) contrast(1.04)",
+                transform: `scale(${assetScale})`,
+              }}
+            />
+          )}
           <AbsoluteFill
             style={{
               background:
