@@ -4,6 +4,7 @@ import type {
   CompareCountriesResponse,
   CountryDetail,
   CountryLocalContext,
+  CountryLocalCoverageOverview,
   CountryNationalComparisons,
   CountryEconomicSnapshotResponse,
   CountryRelativeCostSnapshotResponse,
@@ -98,6 +99,7 @@ const overviewCache = new AsyncCache<IndicatorOverviewResponse>();
 const historyCache = new AsyncCache<TimeseriesSeriesResponse>();
 const sourceCoverageCache = new AsyncCache<SourceDataCoverage[]>(2 * 60 * 1000);
 const countryLocalContextCache = new AsyncCache<CountryLocalContext>(2 * 60 * 1000);
+const countrySourceCoverageCache = new AsyncCache<CountryLocalCoverageOverview>(2 * 60 * 1000);
 const nationalComparisonCache = new AsyncCache<CountryNationalComparisons>(2 * 60 * 1000);
 
 export async function fetchCountries(): Promise<CountrySummary[]> {
@@ -151,6 +153,30 @@ export async function fetchCountryLocalContext(iso3: string): Promise<CountryLoc
       return data;
     } catch (error) {
       throw new Error(`Unable to verify local country sources: ${extractErrorMessage(error)}`);
+    }
+  });
+}
+
+/** World-wide source research audit from the real country registry, including gaps. */
+export async function fetchCountrySourceCoverage(): Promise<CountryLocalCoverageOverview> {
+  return countrySourceCoverageCache.get("all", async () => {
+    try {
+      const response = await whvApi.get<CountryLocalCoverageOverview>(
+        "/api/catalog/local-sources/coverage",
+        { params: { limit: 500, offset: 0 }, timeout: 20000 },
+      );
+      const data = response.data;
+      if (!Array.isArray(data.items)
+          || !Number.isInteger(data.totalCountryCount)
+          || !Number.isInteger(data.countriesNotResearchedLocally)
+          || data.totalCountryCount < 0
+          || data.returnedCount !== data.items.length
+          || data.totalCountryCount < data.returnedCount) {
+        throw new Error("Unexpected country coverage response");
+      }
+      return data;
+    } catch (error) {
+      throw new Error(`Unable to verify national source research: ${extractErrorMessage(error)}`);
     }
   });
 }
