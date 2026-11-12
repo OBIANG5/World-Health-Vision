@@ -8,6 +8,7 @@ from media_service.models import (
     MediaDashboard,
     MediaStory,
     PrepareDraftRequest,
+    RadarScanHistoryItem,
     RadarScanRequest,
     RadarScanResult,
     SelectHookRequest,
@@ -18,6 +19,7 @@ from media_service.radar import (
     RadarConfigurationError,
     RadarProviderError,
 )
+from media_service.radar_workflow import execute_radar_scan
 from media_service.renderer_client import RENDERER_CLIENT, RendererDependencyError
 from media_service.store import (
     MediaStoryNotFoundError,
@@ -47,32 +49,22 @@ async def media_dashboard() -> MediaDashboard:
 @app.post("/api/media/radar/scans", response_model=RadarScanResult)
 async def run_radar_scan(request: RadarScanRequest) -> RadarScanResult:
     try:
-        discovery = await RADAR_CLIENT.scan(request)
+        return await execute_radar_scan(
+            request,
+            radar_client=RADAR_CLIENT,
+            store=STORE,
+        )
     except RadarConfigurationError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except RadarProviderError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    created: list[str] = []
-    deduplicated: list[str] = []
-    for candidate in discovery.candidates:
-        story, was_created = STORE.create_from_radar(candidate, discovery.scan_id)
-        if was_created:
-            created.append(story.id)
-        else:
-            deduplicated.append(story.id)
 
-    return RadarScanResult(
-        scan_id=discovery.scan_id,
-        query=discovery.query,
-        model=discovery.model,
-        retrieved_urls=discovery.retrieved_urls,
-        candidates_found=discovery.raw_candidate_count,
-        candidates_accepted=len(discovery.candidates),
-        candidates_rejected_without_retrieved_source=discovery.rejected_without_retrieved_source,
-        stories_created=created,
-        stories_deduplicated=deduplicated,
-    )
+@app.get("/api/media/radar/scans", response_model=list[RadarScanHistoryItem])
+async def list_radar_scan_history(
+    limit: int = Query(default=20, ge=1, le=100),
+) -> list[RadarScanHistoryItem]:
+    return STORE.list_radar_scans(limit=limit)
 
 
 @app.get("/api/media/stories", response_model=list[MediaStory])
