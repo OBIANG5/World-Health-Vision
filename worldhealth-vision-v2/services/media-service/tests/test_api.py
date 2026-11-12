@@ -6,11 +6,15 @@ import media_service.api as media_api
 from media_service.api import app
 from media_service.models import (
     ClaimVerification,
+    CreativePackage,
+    CreativeScenePlan,
+    CreativeScriptSegment,
     EditorialScoreFactors,
     RadarCandidate,
     RadarHookCandidate,
     RadarSourceCandidate,
     RenderJobRef,
+    HookOption,
     VerificationReport,
 )
 from media_service.radar import RadarDiscovery
@@ -109,6 +113,54 @@ class StubVerificationClient:
         )
 
 
+class StubCreativeClient:
+    async def generate(self, story, request):
+        return CreativePackage(
+            version=1,
+            created_at=datetime.now(timezone.utc),
+            model="test-creative",
+            angle="Trois cas signalés dans une riposte sanitaire.",
+            angle_claim_indexes=[1],
+            target_duration_sec=request.target_duration_sec,
+            hooks=[
+                HookOption(
+                    id="creative-v1-hook-1",
+                    text="🇨🇩 Trois nouveaux cas viennent d’être signalés.",
+                    score=94,
+                    rationale="Le chiffre est immédiatement compréhensible.",
+                    claim_indexes=[1],
+                )
+            ],
+            script_segments=[
+                CreativeScriptSegment(
+                    text="Trois nouveaux cas ont été signalés en RDC.",
+                    claim_indexes=[1],
+                )
+            ],
+            caption="Trois nouveaux cas ont été signalés en RDC.",
+            caption_claim_indexes=[1],
+            hashtags=["#RDC", "#Actualité"],
+            scene_plan=[
+                CreativeScenePlan(
+                    order=1,
+                    purpose="hook",
+                    on_screen_text="3 NOUVEAUX CAS",
+                    visual_kind="typography",
+                    asset_query="RDC riposte sanitaire",
+                    claim_indexes=[1],
+                ),
+                CreativeScenePlan(
+                    order=2,
+                    purpose="source_and_brand",
+                    on_screen_text="Sources",
+                    visual_kind="source_card",
+                    asset_query=None,
+                    claim_indexes=[],
+                ),
+            ],
+        )
+
+
 class StubRendererClient:
     def __init__(self):
         self.jobs: dict[str, RenderJobRef] = {}
@@ -145,6 +197,7 @@ def setup_function():
     media_api.RENDERER_CLIENT = StubRendererClient()
     media_api.RADAR_CLIENT = StubRadarClient()
     media_api.VERIFICATION_CLIENT = StubVerificationClient()
+    media_api.CREATIVE_CLIENT = StubCreativeClient()
 
 
 def test_health_and_dashboard():
@@ -402,3 +455,49 @@ def test_radar_story_must_be_verified_before_approval():
     )
     assert approved.status_code == 200
     assert approved.json()["status"] == "approved"
+
+
+
+def test_verified_approved_story_can_generate_creative_and_prepare_draft():
+    scan = client.post(
+        "/api/media/radar/scans",
+        json={"hours": 3, "max_candidates": 10},
+    )
+    assert scan.status_code == 200
+    story_id = scan.json()["stories_created"][0]
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/verify",
+        json={"max_claims": 6},
+    ).status_code == 200
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "approve"},
+    ).status_code == 200
+
+    creative = client.post(
+        f"/api/media/stories/{story_id}/creative/generate",
+        json={"target_duration_sec": 15, "max_hooks": 3},
+    )
+    assert creative.status_code == 200
+    creative_story = creative.json()
+    assert creative_story["creative_package"]["model"] == "test-creative"
+    assert creative_story["hooks"][0]["claim_indexes"] == [1]
+    hook_id = creative_story["hooks"][0]["id"]
+
+    selected = client.post(
+        f"/api/media/stories/{story_id}/hooks/select",
+        json={"hook_id": hook_id},
+    )
+    assert selected.status_code == 200
+
+    draft = client.post(
+        f"/api/media/stories/{story_id}/draft/prepare",
+        json={},
+    )
+    assert draft.status_code == 200
+    body = draft.json()
+    assert body["status"] == "scripting"
+    assert body["video_draft"]["hook_id"] == hook_id
+    assert body["video_draft"]["scenes"][0]["on_screen_text"].startswith("🇨🇩")
