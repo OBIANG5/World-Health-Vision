@@ -91,6 +91,52 @@ class AssetInventory(BaseModel):
     maps_or_charts: int = Field(default=0, ge=0)
 
 
+AssetRightsStatus = Literal["approved", "review_required", "rejected"]
+AssetKind = Literal["image", "video"]
+
+
+class MediaAsset(BaseModel):
+    id: str
+    provider: Literal["wikimedia_commons"]
+    title: str
+    kind: AssetKind
+    source_page_url: str
+    media_url: str
+    thumbnail_url: str | None = None
+    mime_type: str | None = None
+    author: str | None = None
+    license_name: str | None = None
+    license_url: str | None = None
+    attribution: str
+    rights_status: AssetRightsStatus
+    rights_note: str
+    query: str
+    discovered_at: datetime
+
+
+class AssetSelection(BaseModel):
+    scene_order: int = Field(ge=1)
+    asset_id: str
+
+
+class AssetBundle(BaseModel):
+    version: int = Field(ge=1)
+    discovered_at: datetime
+    provider: Literal["wikimedia_commons"] = "wikimedia_commons"
+    assets: list[MediaAsset] = Field(default_factory=list)
+    selections: list[AssetSelection] = Field(default_factory=list)
+    unresolved_scene_orders: list[int] = Field(default_factory=list)
+
+
+class DiscoverAssetsRequest(BaseModel):
+    limit_per_scene: int = Field(default=4, ge=1, le=8)
+
+
+class SelectAssetRequest(BaseModel):
+    scene_order: int = Field(ge=1)
+    asset_id: str
+
+
 class QaState(BaseModel):
     facts: Literal["pending", "pass", "fail"] = "pending"
     spelling: Literal["pending", "pass", "fail"] = "pending"
@@ -185,6 +231,10 @@ class VideoScene(BaseModel):
     visual_kind: VisualKind
     asset_query: str | None = None
     source_ids: list[str] = Field(default_factory=list)
+    asset_id: str | None = None
+    asset_url: str | None = None
+    asset_attribution: str | None = None
+    asset_license: str | None = None
 
 
 class VideoDraft(BaseModel):
@@ -246,6 +296,7 @@ class MediaStory(BaseModel):
     render_job: RenderJobRef | None = None
     target_duration_sec: int = Field(ge=5, le=60, default=15)
     assets: AssetInventory = Field(default_factory=AssetInventory)
+    asset_bundle: AssetBundle | None = None
     qa: QaState = Field(default_factory=QaState)
     approval_note: str | None = None
     radar_scan_id: str | None = None
