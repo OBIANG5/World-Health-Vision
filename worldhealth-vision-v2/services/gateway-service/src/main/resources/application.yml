@@ -109,6 +109,15 @@ spring:
             response-timeout: 70000
             connect-timeout: 5000
 
+        - id: media-audio-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/stories/*/audio/generate
+            - Method=POST
+          metadata:
+            response-timeout: 100000
+            connect-timeout: 5000
+
         - id: media-service-route
           uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
           predicates:
