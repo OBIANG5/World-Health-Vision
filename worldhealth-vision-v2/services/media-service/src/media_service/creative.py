@@ -23,7 +23,124 @@ def _source_line(story: MediaStory) -> str:
     return "Sources : " + " · ".join(names)
 
 
-def build_video_draft(story: MediaStory, request: PrepareDraftRequest) -> VideoDraft:
+def _creative_video_draft(
+    story: MediaStory,
+    request: PrepareDraftRequest,
+) -> VideoDraft:
+    package = story.creative_package
+    if package is None:
+        raise ValueError("Creative package is missing.")
+
+    if not story.selected_hook_id:
+        raise ValueError("A hook must be selected before preparing a video draft.")
+
+    hook = next(
+        (candidate for candidate in package.hooks if candidate.id == story.selected_hook_id),
+        None,
+    )
+    if hook is None:
+        raise ValueError("The selected creative hook no longer exists.")
+
+    duration = float(package.target_duration_sec)
+    source_line = _source_line(story)
+    source_ids = [source.id for source in story.sources[:3]]
+
+    if request.script_override:
+        max_words = max(18, math.floor(duration * WORDS_PER_SECOND))
+        voiceover = _truncate_words(request.script_override.strip(), max_words)
+    else:
+        voiceover = " ".join(
+            segment.text.strip()
+            for segment in package.script_segments
+            if segment.text.strip()
+        )
+
+    plans = list(package.scene_plan)
+    if not plans:
+        raise ValueError("Creative scene plan is empty.")
+
+    source_scene_count = sum(
+        plan.visual_kind == "source_card"
+        for plan in plans
+    )
+    source_duration = (
+        min(2.8, max(2.0, duration * 0.16))
+        if source_scene_count
+        else 0.0
+    )
+    content_plans = [
+        plan
+        for plan in plans
+        if plan.visual_kind != "source_card"
+    ]
+    available_content = max(
+        2.0 * max(1, len(content_plans)),
+        duration - source_duration * source_scene_count,
+    )
+    content_duration = (
+        available_content / len(content_plans)
+        if content_plans
+        else 0.0
+    )
+
+    scenes: list[VideoScene] = []
+    cursor = 0.0
+    narration_index = 0
+
+    for plan in plans:
+        is_source = plan.visual_kind == "source_card"
+        scene_duration = source_duration if is_source else content_duration
+
+        narration = None
+        if not is_source and narration_index < len(package.script_segments):
+            narration = package.script_segments[narration_index].text
+            narration_index += 1
+
+        on_screen_text = plan.on_screen_text
+        if plan.purpose.lower() == "hook":
+            on_screen_text = hook.text
+        elif is_source:
+            on_screen_text = source_line
+
+        scenes.append(
+            VideoScene(
+                id=f"scene-{len(scenes) + 1}",
+                order=len(scenes) + 1,
+                start_sec=round(cursor, 2),
+                duration_sec=round(scene_duration, 2),
+                purpose=plan.purpose,
+                narration=narration,
+                on_screen_text=on_screen_text,
+                visual_kind=plan.visual_kind,
+                asset_query=plan.asset_query,
+                source_ids=source_ids,
+            )
+        )
+        cursor += scene_duration
+
+    if scenes:
+        correction = duration - cursor
+        scenes[-1].duration_sec = round(
+            max(0.1, scenes[-1].duration_sec + correction),
+            2,
+        )
+
+    previous_version = story.video_draft.version if story.video_draft else 0
+    return VideoDraft(
+        version=previous_version + 1,
+        created_at=datetime.now(timezone.utc),
+        duration_sec=duration,
+        hook_id=hook.id,
+        voiceover_script=voiceover,
+        source_line=source_line,
+        scenes=scenes,
+    )
+
+
+def _fallback_video_draft(
+    story: MediaStory,
+    request: PrepareDraftRequest,
+) -> VideoDraft:
     if not story.selected_hook_id:
         raise ValueError("A hook must be selected before preparing a video draft.")
 
@@ -45,9 +162,6 @@ def build_video_draft(story: MediaStory, request: PrepareDraftRequest) -> VideoD
         voiceover = f"{hook.text} {context}".strip()
 
     source_line = _source_line(story)
-
-    # The contract is deliberately deterministic for Phase 1. AI-assisted creative
-    # generation will plug into the same VideoDraft model later.
     hook_duration = round(max(3.2, min(4.8, duration * 0.28)), 2)
     source_duration = round(max(2.2, min(3.0, duration * 0.18)), 2)
     context_duration = round(max(2.0, duration - hook_duration - source_duration), 2)
@@ -105,3 +219,9 @@ def build_video_draft(story: MediaStory, request: PrepareDraftRequest) -> VideoD
         source_line=source_line,
         scenes=scenes,
     )
+
+
+def build_video_draft(story: MediaStory, request: PrepareDraftRequest) -> VideoDraft:
+    if story.creative_package is not None:
+        return _creative_video_draft(story, request)
+    return _fallback_video_draft(story, request)
