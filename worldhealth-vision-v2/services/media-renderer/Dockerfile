@@ -33,6 +33,7 @@ RUN npm install --omit=dev --no-audit --no-fund \
 COPY services/media-renderer/server.mjs ./server.mjs
 COPY services/media-renderer/job-store.mjs ./job-store.mjs
 COPY services/media-renderer/job-recovery.mjs ./job-recovery.mjs
+COPY services/media-renderer/storage-lifecycle.mjs ./storage-lifecycle.mjs
 COPY services/media-renderer/src ./src
 
 RUN mkdir -p /app/output
