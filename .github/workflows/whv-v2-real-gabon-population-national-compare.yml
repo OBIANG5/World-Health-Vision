@@ -1,0 +1,126 @@
+name: WHV V2 Gabon population official WDI vs documented national census
+
+on:
+  push:
+    branches:
+      - 'improve/v2-country-national-comparisons-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-v2-gabon-national-evidence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  official-gabon-national-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Launch only real canonical V2 services and ephemeral database
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml up --build -d \
+            gateway-service catalog-service timeseries-service analytics-service ingestion-service
+
+      - name: Await canonical gateway and TimeSeries readiness
+        run: |
+          set -euo pipefail
+          ready=0
+          for i in $(seq 1 85); do
+            if curl -fsS --max-time 3 http://localhost:8080/api/timeseries/readiness > /tmp/whv-ready.json; then
+              ready=1
+              break
+            fi
+            sleep 4
+          done
+          test "$ready" = 1
+          echo 'Real catalog and timeseries service ready'
+
+      - name: Ingest ONLY official World Bank population observations for Gabon
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml exec -T ingestion-service \
+            python - > reports/real-gabon-population-ingestion.json <<'PY'
+          import json
+          from ingestion_service.runtime import build_worldbank_service
+
+          service = build_worldbank_service()
+          if service._timeseries_client is None:
+              raise RuntimeError("Publish-to-timeseries is disabled; refusing simulated success")
+          manifests = service.fetch_core_indicators(
+              indicator_codes={"SP.POP.TOTL"},
+              country_iso3s={"GAB"},
+          )
+          assert len(manifests) == 1
+          manifest = manifests[0]
+          publication = manifest.notes.get("timeseriesPublication") or {}
+          assert publication.get("upsertedCount", 0) > 0, publication
+          print(json.dumps({
+              "source": "WORLD_BANK",
+              "indicator": "SP.POP.TOTL",
+              "country": "GAB",
+              "recordCount": manifest.record_count,
+              "persistedCount": publication["upsertedCount"],
+              "acquisitionFormat": manifest.notes.get("acquisitionFormat"),
+              "sourceRunKey": manifest.run_id,
+          }, indent=2))
+          PY
+
+      - name: Verify local census and REAL stored WDI are represented separately
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 25 \
+            http://localhost:8080/api/product/countries/GAB/national-comparisons \
+            >reports/real-gabon-national-comparison.json
+          curl -fsS --max-time 25 \
+            'http://localhost:8080/api/timeseries/series/latest?countryIso3=GAB&indicatorCode=SP.POP.TOTL' \
+            >reports/real-gabon-canonical-series.json
+          python3 - <<'PY'
+          import json
+          comparison=json.load(open("reports/real-gabon-national-comparison.json"))
+          series=json.load(open("reports/real-gabon-canonical-series.json"))
+          assert comparison["countryIso3"] == "GAB"
+          assert comparison["comparisonCount"] == 1
+          release=comparison["comparisons"][0]
+          assert release["releaseCode"] == "GAB-RGPL-2026-RESIDENTS"
+          assert release["localReferenceYear"] == 2026
+          assert release["comparableByMethod"] is False
+          assert release["numericalDifference"] is None
+          actual=series["items"]
+          assert any(r["sourceCode"] == "WORLD_BANK" and r["numericValue"] is not None for r in actual), actual
+          international=release["internationalLatest"]
+          assert any(r["sourceCode"] == "WORLD_BANK" and r["numericValue"] is not None for r in international), release
+          wb=next(r for r in international if r["sourceCode"] == "WORLD_BANK")
+          assert wb["valueStatus"] in {"OBSERVED", "ESTIMATED"}
+          if wb["periodLabel"] == "2026":
+              assert release["status"] == "SAME_YEAR_METHOD_NOT_VERIFIED"
+          else:
+              assert release["status"] == "DIFFERENT_REFERENCE_PERIOD"
+          print("REAL GABON NATIONAL-EVIDENCE COMPARISON VERIFIED")
+          print("National RGPL reference year:", release["localReferenceYear"])
+          print("WDI latest stored year:", wb["periodLabel"])
+          print("WDI actual stored value:", wb["numericValue"])
+          print("Methodological comparison state:", release["status"])
+          print("No numeric gap or conflict invented:", release["numericalDifference"] is None)
+          PY
+
+      - name: Upload real evidence and provenance reports (14 days)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-gabon-real-national-comparison-evidence
+          path: reports/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Log service errors on failure
+        if: failure()
+        run: docker compose -f worldhealth-vision-v2/infra/docker-compose.yml logs --no-color --tail=120 ingestion-service timeseries-service analytics-service gateway-service catalog-service || true
+
+      - name: Destroy temporary database and containers (not production)
+        if: always()
+        run: docker compose -f worldhealth-vision-v2/infra/docker-compose.yml down -v --remove-orphans || true
