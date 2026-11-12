@@ -247,8 +247,6 @@ class VideoDraft(BaseModel):
     duration_sec: float = Field(ge=5, le=60)
     rendering_engine: Literal["remotion"] = "remotion"
     design_system_id: str = "wv-pilot-editorial-dark-v1"
-    audio_url: str | None = None
-    audio_disclosure: str | None = None
     safe_zone_profile: str = "tiktok-conservative-v1"
     hook_id: str
     voiceover_script: str
@@ -291,23 +289,6 @@ class RenderJobRef(BaseModel):
     error: str | None = None
 
 
-class AudioTrack(BaseModel):
-    version: int = Field(ge=1)
-    created_at: datetime
-    model: str
-    voice: str
-    ai_generated: Literal[True] = True
-    format: Literal["wav"] = "wav"
-    sample_rate_hz: Literal[24000] = 24000
-    duration_sec: float = Field(gt=0)
-    storage_url: str
-    transcript: str
-
-
-class GenerateAudioRequest(BaseModel):
-    voice: str | None = None
-
-
 class MediaStory(BaseModel):
     id: str
     slug: str
@@ -333,7 +314,7 @@ class MediaStory(BaseModel):
     creative_package: CreativePackage | None = None
     script: str | None = None
     video_draft: VideoDraft | None = None
-    audio_track: AudioTrack | None = None
+    voiceover: VoiceoverRef | None = None
     render_job: RenderJobRef | None = None
     target_duration_sec: int = Field(ge=5, le=60, default=15)
     assets: AssetInventory = Field(default_factory=AssetInventory)
