@@ -19,6 +19,8 @@ const COPY = {
     subtitle: "Publications du pays, institutions et médias locaux — sans effacer les séries internationales.",
     loading: "Vérification des publications locales…",
     unknown: "Sources locales non vérifiables : le catalogue connecté n'est pas accessible.",
+    snapshotNote: "APERÇU STATIQUE · Ces institutions et cette publication proviennent des migrations SQL V24–V26 du projet. Aucun accès aux données nationales ou internationales en temps réel n'est activé ici.",
+    snapshotComparisonUnavailable: "Comparaison internationale en direct indisponible dans l'aperçu. Le dernier chiffre Banque mondiale ne doit pas être inventé ou supposé identique à celui d'un test antérieur.",
     empty: "Aucune source locale documentée pour ce pays dans notre catalogue pour le moment. Cela ne signifie pas qu'il n'en existe pas.",
     official: "Institution nationale",
     press: "Média local",
@@ -61,6 +63,8 @@ const COPY = {
     subtitle: "Local institutions, publications and reporting — without hiding international series.",
     loading: "Checking local publications…",
     unknown: "Local evidence cannot be verified: the connected catalog is unavailable.",
+    snapshotNote: "STATIC PREVIEW · These institutions and the documented release come from the project's versioned V24–V26 SQL migrations. Live national and international statistical collection is not enabled here.",
+    snapshotComparisonUnavailable: "Live international comparison is unavailable in this preview. Historical World Bank numbers must not be invented or mistaken for a current dataset.",
     empty: "No researched local sources have yet been recorded for this country. This does not mean none exist.",
     official: "National institution",
     press: "Local media",
@@ -115,6 +119,7 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   const [comparisons, setComparisons] = useState<CountryNationalComparisons | null>(null);
   const [comparisonStatus, setComparisonStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const copy = lang === "fr" ? COPY.fr : COPY.en;
+  const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
 
   useEffect(() => {
     if (!enabled || !/^[A-Z]{3}$/.test(iso3)) return;
@@ -174,6 +179,7 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
         )}
       </summary>
       <div className="whv-national-evidence-body">
+        {isPreview && <p className="whv-national-evidence-footnote">{copy.snapshotNote}</p>}
         {status === "loading" && <p role="status">{copy.loading}</p>}
         {status === "unavailable" && <p role="status">{copy.unknown}</p>}
         {status === "ready" && data?.localSourceCount === 0 && <p>{copy.empty}</p>}
@@ -249,7 +255,7 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
                   <div className="whv-national-comparison" aria-live="polite">
                     <strong className="whv-national-comparison-title">{copy.internationalHeading}</strong>
                     {comparisonStatus === "loading" && <p role="status">{copy.comparisonLoading}</p>}
-                    {comparisonStatus === "unavailable" && <p role="status">{copy.comparisonUnavailable}</p>}
+                    {comparisonStatus === "unavailable" && <p role="status">{isPreview ? copy.snapshotComparisonUnavailable : copy.comparisonUnavailable}</p>}
                     {comparisonStatus === "ready" && (
                       <>
                         <p className="whv-national-evidence-caution">{comparisonLabel}</p>
