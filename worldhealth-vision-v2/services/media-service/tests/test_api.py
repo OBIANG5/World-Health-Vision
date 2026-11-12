@@ -222,11 +222,22 @@ class StubRendererClient:
     def __init__(self):
         self.jobs: dict[str, RenderJobRef] = {}
 
-    async def create_job(self, story):
+    async def create_job(
+        self,
+        story,
+        *,
+        render_profile="canonical_newsroom_v1",
+    ):
         now = datetime.now(timezone.utc)
+        job_id = (
+            "render-tiktok-test-1"
+            if render_profile == "tiktok_api_clean_v1"
+            else "render-test-1"
+        )
         job = RenderJobRef(
-            id="render-test-1",
+            id=job_id,
             story_id=story.id,
+            render_profile=render_profile,
             status="queued",
             progress=0,
             created_at=now,
@@ -243,6 +254,11 @@ class StubRendererClient:
                 "progress": 1,
                 "updated_at": datetime.now(timezone.utc),
                 "output_url": f"/api/media-renderer/renders/{job_id}.mp4",
+                "output_sha256": (
+                    "b" * 64
+                    if previous.render_profile == "tiktok_api_clean_v1"
+                    else "a" * 64
+                ),
             }
         )
         self.jobs[job_id] = completed
@@ -786,6 +802,32 @@ def test_full_verified_media_pipeline_reaches_publish_ready_only_after_qa():
     assert package_story["publication_package"]["video_url"].endswith(".mp4")
     assert "Sources" in package_story["publication_package"]["whatsapp_text"]
     assert package_story["publication_package"]["ai_disclosure"] == "Voix générée par IA"
+
+    tiktok_export = client.post(
+        f"/api/media/stories/{story_id}/publication/exports/tiktok"
+    )
+    assert tiktok_export.status_code == 200
+    export_story = tiktok_export.json()
+    assert export_story["channel_exports"][0]["channel"] == "tiktok"
+    assert export_story["channel_exports"][0]["render_profile"] == "tiktok_api_clean_v1"
+    assert (
+        export_story["channel_exports"][0]["canonical_manifest_sha256"]
+        == export_story["publication_package"]["manifest_sha256"]
+    )
+    assert (
+        export_story["channel_exports"][0]["render_job"]["render_profile"]
+        == "tiktok_api_clean_v1"
+    )
+
+    synced_export = client.post(
+        f"/api/media/stories/{story_id}/publication/exports/tiktok/sync"
+    )
+    assert synced_export.status_code == 200
+    synced_export_story = synced_export.json()
+    clean_job = synced_export_story["channel_exports"][0]["render_job"]
+    assert clean_job["status"] == "completed"
+    assert clean_job["output_url"].endswith(".mp4")
+    assert clean_job["output_sha256"] == "b" * 64
 
     missing_proof = client.post(
         f"/api/media/stories/{story_id}/publication/confirm",
