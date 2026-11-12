@@ -283,13 +283,43 @@ def evaluate_structural_qa(
         else:
             state.render_integrity = "pass"
 
-        if story.voiceover is not None and not probe.has_audio:
-            state.audio = "fail"
-            _append_issue(
-                issues,
-                "audio",
-                "The approved voiceover exists, but the encoded MP4 has no audio stream.",
-            )
+        if story.voiceover is not None:
+            if not probe.has_audio:
+                state.audio = "fail"
+                _append_issue(
+                    issues,
+                    "audio",
+                    "The approved voiceover exists, but the encoded MP4 has no audio stream.",
+                )
+            else:
+                loudness_values_present = (
+                    probe.integrated_lufs is not None
+                    and probe.true_peak_dbfs is not None
+                    and probe.loudness_range_lu is not None
+                )
+                loudness_ok = (
+                    loudness_values_present
+                    and -17.0 <= probe.integrated_lufs <= -15.0
+                    and probe.true_peak_dbfs <= -1.0
+                    and probe.loudness_range_lu <= 12.0
+                )
+                if not loudness_ok:
+                    state.audio = "fail"
+                    measured = (
+                        f"{probe.integrated_lufs:.2f} LUFS, "
+                        f"{probe.true_peak_dbfs:.2f} dBTP, "
+                        f"LRA {probe.loudness_range_lu:.2f} LU"
+                        if loudness_values_present
+                        else "mesures de loudness absentes"
+                    )
+                    _append_issue(
+                        issues,
+                        "audio",
+                        "Final narration loudness is outside the World-Vision "
+                        f"delivery envelope ({measured}). Expected integrated "
+                        "loudness between -17 and -15 LUFS, true peak <= -1 dBTP "
+                        "and LRA <= 12 LU.",
+                    )
 
     return state, issues
 
