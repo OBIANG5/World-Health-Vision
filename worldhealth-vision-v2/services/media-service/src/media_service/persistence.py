@@ -9,7 +9,13 @@ from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 from psycopg_pool import ConnectionPool
 
-from media_service.models import MediaStory, StoryStatus
+from media_service.models import (
+    MediaStory,
+    RadarScanHistoryItem,
+    RadarScanRequest,
+    RadarScanResult,
+    StoryStatus,
+)
 from media_service.settings import Settings, get_settings
 
 
@@ -19,6 +25,8 @@ class StoryPersistence(Protocol):
     def save(self, story: MediaStory) -> MediaStory: ...
     def save_radar_if_absent(self, story: MediaStory) -> tuple[MediaStory, bool]: ...
     def find_by_radar_fingerprint(self, fingerprint: str) -> MediaStory | None: ...
+    def save_radar_scan(self, request: RadarScanRequest, result: RadarScanResult) -> None: ...
+    def list_radar_scans(self, limit: int = 20) -> list[RadarScanHistoryItem]: ...
     def reset(self) -> None: ...
     def close(self) -> None: ...
 
@@ -27,6 +35,7 @@ class MemoryStoryPersistence:
     def __init__(self) -> None:
         self._lock = RLock()
         self._stories: dict[str, MediaStory] = {}
+        self._radar_scans: list[RadarScanHistoryItem] = []
 
     def list(self, status: StoryStatus | None = None) -> list[MediaStory]:
         with self._lock:
@@ -63,9 +72,33 @@ class MemoryStoryPersistence:
                     return deepcopy(story)
         return None
 
+    def save_radar_scan(self, request: RadarScanRequest, result: RadarScanResult) -> None:
+        from datetime import datetime, timezone
+
+        item = RadarScanHistoryItem(
+            scan_id=result.scan_id,
+            requested_at=datetime.now(timezone.utc),
+            hours=request.hours,
+            country_iso3=request.country_iso3.upper() if request.country_iso3 else None,
+            model=result.model,
+            candidates_found=result.candidates_found,
+            candidates_accepted=result.candidates_accepted,
+            candidates_rejected_without_retrieved_source=result.candidates_rejected_without_retrieved_source,
+            stories_created=result.stories_created,
+            stories_deduplicated=result.stories_deduplicated,
+        )
+        with self._lock:
+            self._radar_scans.append(item)
+            self._radar_scans.sort(key=lambda scan: scan.requested_at, reverse=True)
+
+    def list_radar_scans(self, limit: int = 20) -> list[RadarScanHistoryItem]:
+        with self._lock:
+            return deepcopy(self._radar_scans[:max(1, limit)])
+
     def reset(self) -> None:
         with self._lock:
             self._stories = {}
+            self._radar_scans = []
 
     def close(self) -> None:
         return None
@@ -223,6 +256,68 @@ class PostgresStoryPersistence:
                 (fingerprint,),
             ).fetchone()
         return self._story_from_row(row)
+
+    def save_radar_scan(self, request: RadarScanRequest, result: RadarScanResult) -> None:
+        with self._pool.connection() as conn:
+            conn.execute(
+                """
+                INSERT INTO media.radar_scan (
+                    scan_id,
+                    hours,
+                    country_iso3,
+                    model,
+                    query,
+                    retrieved_urls,
+                    candidates_found,
+                    candidates_accepted,
+                    candidates_rejected_without_retrieved_source,
+                    stories_created,
+                    stories_deduplicated
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (scan_id) DO NOTHING
+                """,
+                (
+                    result.scan_id,
+                    request.hours,
+                    request.country_iso3.upper() if request.country_iso3 else None,
+                    result.model,
+                    result.query,
+                    Jsonb(result.retrieved_urls),
+                    result.candidates_found,
+                    result.candidates_accepted,
+                    result.candidates_rejected_without_retrieved_source,
+                    Jsonb(result.stories_created),
+                    Jsonb(result.stories_deduplicated),
+                ),
+            )
+
+    def list_radar_scans(self, limit: int = 20) -> list[RadarScanHistoryItem]:
+        with self._pool.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT
+                    scan_id,
+                    requested_at,
+                    hours,
+                    country_iso3,
+                    model,
+                    candidates_found,
+                    candidates_accepted,
+                    candidates_rejected_without_retrieved_source,
+                    stories_created,
+                    stories_deduplicated
+                FROM media.radar_scan
+                ORDER BY requested_at DESC
+                LIMIT %s
+                """,
+                (max(1, min(limit, 100)),),
+            ).fetchall()
+
+        return [
+            RadarScanHistoryItem.model_validate(row)
+            for row in rows
+        ]
 
     def reset(self) -> None:
         raise RuntimeError("Refusing to reset the PostgreSQL newsroom repository.")
