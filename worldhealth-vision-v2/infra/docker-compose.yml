@@ -42,7 +42,6 @@ services:
     networks:
       - whv-private
       - whv-public
-      - whv-public
 
   catalog-service:
     container_name: whv-catalog
@@ -192,6 +191,7 @@ services:
       start_period: 10s
     networks:
       - whv-private
+      - whv-public
 
   whv-timescaledb:
     image: timescale/timescaledb:2.15.3-pg16
