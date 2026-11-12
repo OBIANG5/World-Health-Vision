@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.data_loader import load_silver_df
 from app.schemas import HealthResponse
 from app.routers.worldbank import router as worldbank_router, set_dataframe
-from app.routers.media import router as media_router
 from app.utils.trend import compute_trend_from_df
 
 app = FastAPI(title="WorldHealth Vision API - V0")
@@ -33,9 +32,8 @@ def health():
     return HealthResponse(status="ok", rows=int(len(DF)))
 
 
-# Routes data + Media Studio
+# Brancher les routes WorldBank
 app.include_router(worldbank_router)
-app.include_router(media_router)
 
 
 @app.get("/trend/country/{country_iso3}/indicator/{indicator}")
