@@ -2,7 +2,7 @@ import {createServer} from "node:http";
 import {createReadStream, existsSync, mkdirSync, statSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import path from "node:path";
-import {randomUUID} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 import {bundle} from "@remotion/bundler";
 import {renderMedia, selectComposition} from "@remotion/renderer";
 
@@ -42,7 +42,9 @@ const publicJob = (job) => ({
   progress: job.progress,
   created_at: job.created_at,
   updated_at: job.updated_at,
+  render_profile: job.render_profile,
   output_url: job.output_url,
+  output_sha256: job.output_sha256,
   error: job.error,
 });
 
@@ -77,6 +79,15 @@ const updateJob = (job, patch) => {
   Object.assign(job, patch, {updated_at: now()});
 };
 
+const sha256File = async (filePath) =>
+  await new Promise((resolve, reject) => {
+    const hash = createHash("sha256");
+    const stream = createReadStream(filePath);
+    stream.on("data", (chunk) => hash.update(chunk));
+    stream.on("error", reject);
+    stream.on("end", () => resolve(hash.digest("hex")));
+  });
+
 const renderJob = async (job) => {
   running += 1;
   try {
@@ -97,6 +108,7 @@ const renderJob = async (job) => {
       : rawVoiceover;
 
     const inputProps = {
+      render_profile: job.render_profile,
       draft: job.payload.draft,
       voiceover,
       story: job.payload.story,
@@ -128,10 +140,13 @@ const renderJob = async (job) => {
       },
     });
 
+    const outputSha256 = await sha256File(outputLocation);
+
     updateJob(job, {
       status: "completed",
       progress: 1,
       output_url: `/api/media-renderer/renders/${filename}`,
+      output_sha256: outputSha256,
     });
   } catch (error) {
     updateJob(job, {
@@ -282,15 +297,22 @@ const server = createServer(async (req, res) => {
         return;
       }
 
+      const renderProfile =
+        payload.render_profile === "tiktok_api_clean_v1"
+          ? "tiktok_api_clean_v1"
+          : "canonical_newsroom_v1";
+
       const job = {
         id: randomUUID(),
         story_id: payload.story.id,
         payload,
+        render_profile: renderProfile,
         status: "queued",
         progress: 0,
         created_at: now(),
         updated_at: now(),
         output_url: null,
+        output_sha256: null,
         error: null,
       };
       jobs.set(job.id, job);
