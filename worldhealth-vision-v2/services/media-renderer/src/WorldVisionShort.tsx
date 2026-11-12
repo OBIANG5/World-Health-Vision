@@ -41,9 +41,17 @@ const fontSizeFor = (text: string, purpose: string) => {
 
 const PreviewBackdrop: React.FC<{scene: VideoScene}> = ({scene}) => {
   const frame = useCurrentFrame();
+  const {fps} = useVideoConfig();
   const pulse = interpolate(frame, [0, 45], [0.35, 0.7], {
     extrapolateRight: "clamp",
   });
+
+  const assetScale = interpolate(
+    frame,
+    [0, Math.max(1, Math.round(scene.duration_sec * fps))],
+    [1.025, 1.095],
+    {extrapolateRight: "clamp"},
+  );
 
   return (
     <>
@@ -57,8 +65,8 @@ const PreviewBackdrop: React.FC<{scene: VideoScene}> = ({scene}) => {
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              filter: "brightness(.52) saturate(.88)",
-              transform: "scale(1.03)",
+              filter: "brightness(.52) saturate(.92) contrast(1.04)",
+              transform: `scale(${assetScale})`,
             }}
           />
           <AbsoluteFill
@@ -221,7 +229,7 @@ const SceneView: React.FC<{
               color: accents.muted,
             }}
           >
-            Aperçu structurel · média réel à valider : {scene.asset_query}
+            Média réel non résolu : {scene.asset_query}
           </div>
         )}
       </div>
