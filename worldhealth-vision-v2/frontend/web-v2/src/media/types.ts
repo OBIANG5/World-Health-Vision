@@ -207,13 +207,16 @@ export type RenderProbe = {
   audio_codec?: string | null;
   audio_sample_rate_hz?: number | null;
   audio_channels?: number | null;
+  integrated_lufs?: number | null;
+  true_peak_dbfs?: number | null;
+  loudness_range_lu?: number | null;
 };
 
 export type RenderJobRef = {
   id: string;
   story_id: string;
   render_profile: RenderProfile;
-  status: "queued" | "bundling" | "rendering" | "completed" | "failed";
+  status: "queued" | "bundling" | "rendering" | "normalizing" | "completed" | "failed";
   progress: number;
   created_at: string;
   updated_at: string;
