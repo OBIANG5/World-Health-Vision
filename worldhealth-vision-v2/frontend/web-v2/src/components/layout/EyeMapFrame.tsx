@@ -2,8 +2,9 @@
 // Contient la carte interactive clippée en forme d'œil.
 // Design inspiré du logo officiel : bordure épaisse navy, globe en pupille.
 
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import WorldMap from "../map/WorldMap";
+import GlobeMap from "../map/GlobeMap";
 import type { CountrySummary } from "../../api/types";
 import "../../styles/eye.css";
 
@@ -36,13 +37,19 @@ function EyeMapFrame({
   selectedCountryIso3,
   onCountryClick,
 }: EyeMapFrameProps) {
+  const [mapMode, setMapMode] = useState<"globe" | "eye">("globe");
   const activeIso3Set = useMemo(() => new Set(countries.map((c) => c.iso3)), [countries]);
 
   // Dictionnaire iso3 → CountrySummary pour les tooltips enrichis de WorldMap
   const countriesMap = useMemo(() => new Map(countries.map((c) => [c.iso3, c])), [countries]);
 
   return (
-    <section className={`eye-stage ${drawerOpen ? "drawer-open" : ""}`}>
+    <section className={"eye-stage " + (drawerOpen ? "drawer-open " : "") + (mapMode === "globe" ? "globe-mode" : "eye-mode")}>
+      <div className="whv-map-mode-switch" role="group" aria-label="Choisir la représentation du monde">
+        <button type="button" aria-pressed={mapMode === "globe"} onClick={() => setMapMode("globe")}>🌐 Globe</button>
+        <button type="button" aria-pressed={mapMode === "eye"} onClick={() => setMapMode("eye")}>◉ Carte œil</button>
+      </div>
+      {mapMode === "globe" ? <GlobeMap countriesMap={countriesMap} selectedCountryIso3={selectedCountryIso3} onCountryClick={onCountryClick}/> : (
       <div className="eye-scene">
         {/* Définition clipPath invisible */}
         <svg width="0" height="0" className="eye-defs-svg" aria-hidden="true">
@@ -152,6 +159,7 @@ function EyeMapFrame({
           />
         </svg>
       </div>
+      )}
     </section>
   );
 }
