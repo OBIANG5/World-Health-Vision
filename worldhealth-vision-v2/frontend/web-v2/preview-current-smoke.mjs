@@ -64,6 +64,17 @@ try {
     assert((await phone.locator(".whv-modal-body").innerText()).includes(source),
       "Missing original V2 catalogue source " + source);
   }
+  // Country-first sourcing in the preview comes from versioned migrations.
+  const nationalCoverage=phone.locator(".whv-national-coverage-overview");
+  await nationalCoverage.locator("summary").click();
+  await nationalCoverage.locator(".whv-national-coverage-metrics").waitFor({state:"visible"});
+  const coverageText=await nationalCoverage.innerText();
+  for(const expected of ["217","4","5","0","APERÇU STATIQUE"]){
+    assert(coverageText.includes(expected),"Missing source coverage snapshot evidence: "+expected);
+  }
+  assert(coverageText.includes("Gabon") && coverageText.includes("Nigeria"),
+    "Source research snapshot does not list the actual partially researched countries");
+  await phone.screenshot({path:"dist/preview-mobile-national-sources.png"});
   // A static preview must NEVER display invented coverage as observed data.
   assert((await phone.locator(".whv-source-coverage-overview").innerText()).includes("aperçu"),
     "Static preview must disclose that live observation coverage is unavailable");
@@ -95,6 +106,30 @@ try {
   await phone.locator(".country-drawer.open").waitFor({ state: "visible" });
   assert(await phone.locator(".region-drawer.open").count() === 0,
     "Region drawer should close when a member country is selected");
+
+  // Exercise the real country drawer on a mobile viewport. The RGPL number
+  // is an explicitly documented SQL release, NOT a fetched economic series.
+  await phone.locator(".country-drawer.open #country-select").selectOption("GAB");
+  const evidence=phone.locator(".country-drawer.open .whv-national-evidence");
+  await evidence.waitFor({state:"visible"});
+  assert(await evidence.evaluate(el=>el.hasAttribute("open")),
+    "Gabon local sources should be discoverable when opening its country sheet");
+  await evidence.locator(".whv-national-evidence-source").first().waitFor({state:"visible"});
+  assert(await evidence.locator(".whv-national-evidence-source").count()===3,
+    "Gabon must show INSTAT, BEAC and local press from versioned SQL");
+  const gabText=(await evidence.innerText()).replace(/[\\s\\u202f]/g,"");
+  for(const expected of ["INSTATGabon","BEAC","Agenc gabonaise".replace(" ","")]){
+    // Different national institutions may use different accented spellings.
+    if(expected==="Agencegabonaise")continue;
+    assert(gabText.includes(expected),"Missing Gabon source "+expected);
+  }
+  assert(gabText.includes("3518621"),"Documented RGPL release missing from Gabon mobile card");
+  assert(gabText.includes("APERÇUSTATIQUE"),"Preview source provenance must be disclosed");
+  assert(gabText.includes("aucunconnecteurdecollecteopérationnel"),
+    "A listed national institution may not pretend to be ingested");
+  await evidence.getByText("Comparaison internationale en direct indisponible", {exact:false})
+    .waitFor({state:"visible"});
+  await phone.screenshot({path:"dist/preview-mobile-gabon-sources.png"});
   await phone.locator(".country-drawer.open .drawer-btn.close").click();
 
   assert(errors.length === 0, "Frontend JS exceptions: " + errors.slice(0, 5).join("; "));
@@ -104,7 +139,7 @@ try {
   assert(!(await desktop.locator(".whv-mobile-overview").isVisible()),
     "Mobile explorer leaked into desktop layout");
   await desktop.screenshot({ path: "dist/preview-desktop-current.png" });
-  console.log("PASS: V2 mobile/desktop, 9 tools, 22 sources, regions and country navigation.");
+  console.log("PASS: V2 mobile/desktop, 9 tools, 22 global sources, 217-country national source coverage and Gabon RGPL provenance (static preview).");
 } finally {
   if (browser) await browser.close();
   server.kill("SIGTERM");
