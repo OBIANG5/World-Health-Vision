@@ -162,6 +162,30 @@ jobs:
           assert fra['documentedReleaseCount'] == 0
           print('Country-specific Gabon institutions, caveated national census and unresearched France verified')
           PY
+          echo "Prove national publications are compared ONLY with actually stored international observations:"
+          curl -fsS --max-time 20 \
+            http://localhost:8080/api/product/countries/GAB/national-comparisons \
+            >/tmp/whv-gab-national-comparisons.json
+          curl -fsS --max-time 20 \
+            http://localhost:8080/api/product/countries/FRA/national-comparisons \
+            >/tmp/whv-fra-national-comparisons.json
+          python3 - <<'PY'
+          import json
+          gab=json.load(open('/tmp/whv-gab-national-comparisons.json'))
+          fra=json.load(open('/tmp/whv-fra-national-comparisons.json'))
+          assert gab['countryIso3'] == 'GAB', gab
+          assert gab['comparisonCount'] == 1, gab
+          evidence=gab['comparisons'][0]
+          assert evidence['releaseCode'] == 'GAB-RGPL-2026-RESIDENTS'
+          assert evidence['localReferenceYear'] == 2026
+          assert evidence['status'] == 'NO_INTERNATIONAL_OBSERVATIONS'
+          assert evidence['internationalLatest'] == []
+          assert evidence['numericalDifference'] is None
+          assert evidence['comparableByMethod'] is False
+          assert fra['countryIso3'] == 'FRA'
+          assert fra['comparisonCount'] == 0
+          print('Live gateway national comparisons truthful: no Timescale series means no invented WB/IMF numbers.')
+          PY
           echo "Verify catalogue registration is not confused with real observations:"
           curl -fsS --max-time 20 http://localhost:8080/api/timeseries/sources/coverage > /tmp/whv-source-coverage.json
           python3 - <<'PY'
