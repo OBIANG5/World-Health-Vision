@@ -4,6 +4,7 @@ import {WorldVisionShort} from "./WorldVisionShort";
 import type {WorldVisionRenderProps} from "./types";
 
 const defaultProps: WorldVisionRenderProps = {
+  voiceover: null,
   draft: {
     version: 1,
     created_at: "2026-11-12T00:00:00Z",
