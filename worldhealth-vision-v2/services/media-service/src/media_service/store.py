@@ -3,11 +3,10 @@ from __future__ import annotations
 import hashlib
 import re
 import unicodedata
-from copy import deepcopy
 from datetime import datetime, timezone
-from threading import RLock
 from uuid import uuid4
 
+from media_service.creative import build_video_draft
 from media_service.models import (
     AssetInventory,
     CreateStoryRequest,
@@ -24,8 +23,9 @@ from media_service.models import (
     SelectHookRequest,
     StoryStatus,
 )
-from media_service.creative import build_video_draft
+from media_service.persistence import StoryPersistence, build_story_persistence
 from media_service.scoring import compute_editorial_score
+from media_service.settings import get_settings
 
 
 class MediaStoryNotFoundError(KeyError):
@@ -149,30 +149,35 @@ def build_seed_story() -> MediaStory:
 
 
 class MediaStoryStore:
-    def __init__(self) -> None:
-        self._lock = RLock()
-        self._stories: dict[str, MediaStory] = {}
-        self.reset()
+    def __init__(
+        self,
+        persistence: StoryPersistence | None = None,
+        *,
+        seed_demo: bool | None = None,
+    ) -> None:
+        settings = get_settings()
+        self._persistence = persistence or build_story_persistence(settings)
+        self._seed_demo = settings.seed_demo_story if seed_demo is None else seed_demo
+
+        if self._seed_demo and not self._persistence.list():
+            self._persistence.save(build_seed_story())
 
     def reset(self) -> None:
-        with self._lock:
-            seed = build_seed_story()
-            self._stories = {seed.id: seed}
+        self._persistence.reset()
+        if self._seed_demo:
+            self._persistence.save(build_seed_story())
+
+    def close(self) -> None:
+        self._persistence.close()
 
     def list(self, status: StoryStatus | None = None) -> list[MediaStory]:
-        with self._lock:
-            stories = list(self._stories.values())
-            if status is not None:
-                stories = [story for story in stories if story.status == status]
-            stories.sort(key=lambda story: (story.score.total, story.detected_at), reverse=True)
-            return deepcopy(stories)
+        return self._persistence.list(status=status)
 
     def get(self, story_id: str) -> MediaStory:
-        with self._lock:
-            story = self._stories.get(story_id)
-            if story is None:
-                raise MediaStoryNotFoundError(story_id)
-            return deepcopy(story)
+        story = self._persistence.get(story_id)
+        if story is None:
+            raise MediaStoryNotFoundError(story_id)
+        return story
 
     def create(self, request: CreateStoryRequest) -> MediaStory:
         now = datetime.now(timezone.utc)
@@ -200,9 +205,7 @@ class MediaStoryStore:
             target_duration_sec=request.target_duration_sec,
             assets=request.assets,
         )
-        with self._lock:
-            self._stories[story.id] = deepcopy(story)
-        return story
+        return self._persistence.save(story)
 
     def create_from_radar(
         self,
@@ -211,10 +214,9 @@ class MediaStoryStore:
     ) -> tuple[MediaStory, bool]:
         fingerprint = _radar_fingerprint(candidate)
 
-        with self._lock:
-            for existing in self._stories.values():
-                if existing.radar_fingerprint == fingerprint:
-                    return deepcopy(existing), False
+        existing = self._persistence.find_by_radar_fingerprint(fingerprint)
+        if existing is not None:
+            return existing, False
 
         now = datetime.now(timezone.utc)
         story_id = f"story-{uuid4().hex[:12]}"
@@ -267,9 +269,7 @@ class MediaStoryStore:
             radar_fingerprint=fingerprint,
         )
 
-        with self._lock:
-            self._stories[story.id] = deepcopy(story)
-        return story, True
+        return self._persistence.save_radar_if_absent(story)
 
     def recompute_score(self, story_id: str) -> MediaStory:
         story = self.get(story_id)
@@ -338,14 +338,29 @@ class MediaStoryStore:
             next_status: StoryStatus = "approved"
         elif request.action == "reject":
             allowed = {
-                "detected", "verifying", "candidate", "approved", "scripting", "assets",
-                "rendering", "qa", "preview_ready", "changes_requested", "publish_ready",
+                "detected",
+                "verifying",
+                "candidate",
+                "approved",
+                "scripting",
+                "assets",
+                "rendering",
+                "qa",
+                "preview_ready",
+                "changes_requested",
+                "publish_ready",
             }
             next_status = "rejected"
         elif request.action == "request_changes":
             allowed = {
-                "candidate", "approved", "scripting", "assets", "rendering",
-                "qa", "preview_ready", "publish_ready",
+                "candidate",
+                "approved",
+                "scripting",
+                "assets",
+                "rendering",
+                "qa",
+                "preview_ready",
+                "publish_ready",
             }
             next_status = "changes_requested"
         elif request.action == "approve_preview":
@@ -381,30 +396,32 @@ class MediaStoryStore:
         return self._save(story)
 
     def dashboard(self) -> MediaDashboard:
-        with self._lock:
-            stories = list(self._stories.values())
-            statuses = [story.status for story in stories]
-            production = {
-                "approved", "scripting", "assets", "rendering", "qa", "changes_requested",
-            }
-            return MediaDashboard(
-                total=len(stories),
-                detected=statuses.count("detected"),
-                verifying=statuses.count("verifying"),
-                candidates=statuses.count("candidate"),
-                in_production=sum(1 for status in statuses if status in production),
-                preview_ready=statuses.count("preview_ready"),
-                publish_ready=statuses.count("publish_ready"),
-                published=statuses.count("published"),
-                rejected=statuses.count("rejected"),
-                top_score=max((story.score.total for story in stories), default=0),
-            )
+        stories = self._persistence.list()
+        statuses = [story.status for story in stories]
+        production = {
+            "approved",
+            "scripting",
+            "assets",
+            "rendering",
+            "qa",
+            "changes_requested",
+        }
+        return MediaDashboard(
+            total=len(stories),
+            detected=statuses.count("detected"),
+            verifying=statuses.count("verifying"),
+            candidates=statuses.count("candidate"),
+            in_production=sum(1 for status in statuses if status in production),
+            preview_ready=statuses.count("preview_ready"),
+            publish_ready=statuses.count("publish_ready"),
+            published=statuses.count("published"),
+            rejected=statuses.count("rejected"),
+            top_score=max((story.score.total for story in stories), default=0),
+        )
 
     def _save(self, story: MediaStory) -> MediaStory:
         story.updated_at = datetime.now(timezone.utc)
-        with self._lock:
-            self._stories[story.id] = deepcopy(story)
-        return deepcopy(story)
+        return self._persistence.save(story)
 
 
 STORE = MediaStoryStore()
