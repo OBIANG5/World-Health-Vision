@@ -1,0 +1,73 @@
+name: World-Vision Media Studio real-UI mobile preview
+
+on:
+  push:
+    branches:
+      - 'improve/media-studio-mobile-preview-2026-11-12'
+      - 'feature/world-vision-media-studio'
+    paths:
+      - '.github/workflows/whv-media-studio-mobile-preview.yml'
+      - 'worldhealth-vision-v2/frontend/web-v2/**'
+      - 'worldhealth-vision-v2/scripts/media-preview-bootstrap.js'
+      - 'worldhealth-vision-v2/scripts/build-media-preview.mjs'
+  workflow_dispatch:
+
+concurrency:
+  group: world-vision-media-mobile-preview
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout actual V2 Media Studio source
+        uses: actions/checkout@v4
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install canonical React frontend dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck and compile original V2 React Media Studio
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build -- --base=./
+      - name: Add explicitly labelled fictional preview adapter
+        run: |
+          node --check worldhealth-vision-v2/scripts/media-preview-bootstrap.js
+          node worldhealth-vision-v2/scripts/build-media-preview.mjs
+      - name: Install browser smoke-test dependency
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+      - name: Verify the real Media Studio on iPhone and desktop
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node media-preview-smoke.mjs
+      - name: Verify public artifact is transparently labelled and independent
+        run: |
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/index.html
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/media-preview-bootstrap.js
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/media-studio-iphone.png
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/media-studio-desktop.png
+          grep -q 'media-preview-bootstrap.js' worldhealth-vision-v2/frontend/web-v2/dist/index.html
+      - name: Publish only this separate static Media Studio demo branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/whv-media-studio-preview
+          cp -a worldhealth-vision-v2/frontend/web-v2/dist/. /tmp/whv-media-studio-preview/
+          cd /tmp/whv-media-studio-preview
+          git init -b whv-media-studio-browser-preview
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish labelled Media Studio demo from ${GITHUB_SHA}"
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/whv-media-studio-browser-preview
