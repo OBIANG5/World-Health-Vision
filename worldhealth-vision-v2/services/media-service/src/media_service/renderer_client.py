@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import httpx
 
-from media_service.models import MediaStory, RenderJobRef
+from media_service.models import MediaStory, RenderJobRef, RenderProfile
 from media_service.settings import Settings, get_settings
 
 
@@ -15,11 +15,17 @@ class RendererClient:
         self.settings = settings or get_settings()
         self.base_url = self.settings.renderer_base_url.rstrip("/")
 
-    async def create_job(self, story: MediaStory) -> RenderJobRef:
+    async def create_job(
+        self,
+        story: MediaStory,
+        *,
+        render_profile: RenderProfile = "canonical_newsroom_v1",
+    ) -> RenderJobRef:
         if story.video_draft is None:
             raise ValueError("Story has no video draft.")
 
         payload = {
+            "render_profile": render_profile,
             "story": {
                 "id": story.id,
                 "title": story.title,
