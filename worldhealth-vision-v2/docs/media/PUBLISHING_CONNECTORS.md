@@ -40,19 +40,23 @@ https://developers.tiktok.com/docs/en/content-sharing-guidelines
 TikTok's sharing guidelines prohibit integrations from superimposing unwanted
 app branding, logos, watermarks, links or promotional text onto shared media.
 
-The current World-Vision newsroom render intentionally contains the
-WORLD-VISION brand header. Therefore **the current canonical preview must not be
-wired directly into the TikTok Direct Post API**.
+The canonical World-Vision newsroom render intentionally contains the
+WORLD-VISION brand header. **It must not be wired directly into TikTok Direct
+Post.** The Remotion renderer now provides a separate
+`tiktok_api_clean_v1` profile and a channel-specific render job whose SHA-256
+output hash is linked to the canonical Publication Package.
 
-Before the connector is enabled, the renderer must create a dedicated
-`tiktok-api-clean-v1` export profile that:
+Before enabling the *official publishing connector*, the dedicated export still
+needs human review against TikTok's current rules using real approved samples:
 
-- removes app/integration watermarks and promotional overlays;
-- preserves factual source disclosure;
-- preserves the AI-voice disclosure where required;
-- keeps the same approved narration, assets, claims and publication manifest;
-- creates a channel-specific derivative hash linked back to the canonical
-  Publication Package.
+- confirm that app/integration watermarks and promotional overlays are absent;
+- confirm factual source disclosure and the required AI-voice disclosure remain;
+- inspect rendered pixels and audible track, not just structured scene metadata;
+- verify that the clean file corresponds to the approved narration, claims,
+  assets and immutable publication manifest;
+- obtain scope approval, OAuth authorization, creator consent and client audit.
+
+**A technically available clean export is not an approved TikTok integration.**
 
 ### Planned Direct Post state machine
 
