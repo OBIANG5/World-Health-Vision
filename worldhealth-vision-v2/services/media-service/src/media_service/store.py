@@ -15,10 +15,12 @@ from media_service.models import (
     MediaDashboard,
     MediaSource,
     MediaStory,
+    PrepareDraftRequest,
     QaState,
     SelectHookRequest,
     StoryStatus,
 )
+from media_service.creative import build_video_draft
 from media_service.scoring import compute_editorial_score
 
 
@@ -196,6 +198,22 @@ class MediaStoryStore:
         story.selected_hook_id = request.hook_id
         return self._save(story)
 
+    def prepare_draft(self, story_id: str, request: PrepareDraftRequest) -> MediaStory:
+        story = self.get(story_id)
+        if story.status not in {"approved", "changes_requested", "scripting"}:
+            raise MediaWorkflowConflictError(
+                f"Video draft cannot be prepared from status '{story.status}'."
+            )
+        try:
+            draft = build_video_draft(story, request)
+        except ValueError as exc:
+            raise MediaWorkflowConflictError(str(exc)) from exc
+
+        story.video_draft = draft
+        story.script = draft.voiceover_script
+        story.status = "scripting"
+        return self._save(story)
+
     def decide(self, story_id: str, request: DecisionRequest) -> MediaStory:
         story = self.get(story_id)
 
@@ -209,10 +227,13 @@ class MediaStoryStore:
             }
             next_status = "rejected"
         elif request.action == "request_changes":
-            allowed = {"approved", "scripting", "assets", "rendering", "qa", "preview_ready", "publish_ready"}
+            allowed = {
+                "candidate", "approved", "scripting", "assets", "rendering",
+                "qa", "preview_ready", "publish_ready",
+            }
             next_status = "changes_requested"
         else:
-            allowed = {"qa", "preview_ready", "changes_requested"}
+            allowed = {"qa", "preview_ready"}
             next_status = "publish_ready"
 
         if story.status not in allowed:
