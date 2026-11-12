@@ -147,10 +147,6 @@ export type VideoScene = {
   asset_url?: string | null;
   asset_attribution?: string | null;
   asset_license?: string | null;
-  asset_id?: string | null;
-  asset_url?: string | null;
-  asset_attribution?: string | null;
-  asset_license?: string | null;
 };
 
 export type VideoDraft = {
@@ -200,39 +196,6 @@ export type VerificationReport = {
   has_primary_support: boolean;
   verdict: VerificationStatus;
   confidence_score: number;
-};
-
-export type MediaAsset = {
-  id: string;
-  provider: "wikimedia_commons";
-  title: string;
-  kind: "image" | "video";
-  source_page_url: string;
-  media_url: string;
-  thumbnail_url?: string | null;
-  mime_type?: string | null;
-  author?: string | null;
-  license_name?: string | null;
-  license_url?: string | null;
-  attribution: string;
-  rights_status: "approved" | "review_required" | "rejected";
-  rights_note: string;
-  query: string;
-  discovered_at: string;
-};
-
-export type AssetSelection = {
-  scene_order: number;
-  asset_id: string;
-};
-
-export type AssetBundle = {
-  version: number;
-  discovered_at: string;
-  provider: "wikimedia_commons";
-  assets: MediaAsset[];
-  selections: AssetSelection[];
-  unresolved_scene_orders: number[];
 };
 
 export type QaState = {
