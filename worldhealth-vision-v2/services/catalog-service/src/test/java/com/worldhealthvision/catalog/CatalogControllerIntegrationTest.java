@@ -78,6 +78,43 @@ class CatalogControllerIntegrationTest {
     }
 
     @Test
+    void shouldExposeGabonNationalEvidenceWithoutPretendingToIngestIt() throws Exception {
+        mockMvc.perform(get("/api/catalog/countries/GAB/local-context"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.countryIso3").value("GAB"))
+                .andExpect(jsonPath("$.localSourceCount").value(2))
+                .andExpect(jsonPath("$.localSources[0].sourceCode").value("INSTAT_GABON"))
+                .andExpect(jsonPath("$.localSources[0].sourceType").value("NATIONAL_OFFICIAL"))
+                .andExpect(jsonPath("$.localSources[0].verificationState").value("VERIFIED_ORGANIZATION"))
+                .andExpect(jsonPath("$.localSources[1].sourceCode").value("AGP_GABON"))
+                .andExpect(jsonPath("$.localSources[1].sourceType").value("LOCAL_MEDIA"))
+                .andExpect(jsonPath("$.documentedReleaseCount").value(1))
+                .andExpect(jsonPath("$.documentedReleases[0].indicatorCode").value("SP.POP.TOTL"))
+                .andExpect(jsonPath("$.documentedReleases[0].referenceYear").value(2026))
+                .andExpect(jsonPath("$.documentedReleases[0].valueNumeric").value(3518621.0))
+                .andExpect(jsonPath("$.documentedReleases[0].populationScope").value("ALL_RESIDENTS"))
+                .andExpect(jsonPath("$.documentedReleases[0].publicationStatus").value("PRELIMINARY_HOMOLOGATED"))
+                .andExpect(jsonPath("$.documentedReleases[0].verificationStatus").value("DOCUMENTED_NOT_INGESTED"))
+                .andExpect(jsonPath("$.documentedReleases[0].internationalComparisonNote")
+                        .value(org.hamcrest.Matchers.containsString("different year and method")));
+    }
+
+    @Test
+    void shouldNotInventNationalSourcesForOtherCountries() throws Exception {
+        mockMvc.perform(get("/api/catalog/countries/FRA/local-context"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.countryIso3").value("FRA"))
+                .andExpect(jsonPath("$.localSourceCount").value(0))
+                .andExpect(jsonPath("$.documentedReleaseCount").value(0));
+    }
+
+    @Test
+    void shouldRejectUnknownCountryForLocalContext() throws Exception {
+        mockMvc.perform(get("/api/catalog/countries/ZZZ/local-context"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void shouldExposeCurrencyCatalog() throws Exception {
         mockMvc.perform(get("/api/catalog/currencies/EUR"))
                 .andExpect(status().isOk())
