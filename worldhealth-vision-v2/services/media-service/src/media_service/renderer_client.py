@@ -27,6 +27,11 @@ class RendererClient:
                 "category": story.category,
             },
             "draft": story.video_draft.model_dump(mode="json"),
+            "voiceover": (
+                story.voiceover.model_dump(mode="json")
+                if story.voiceover is not None
+                else None
+            ),
             "brand": {
                 "name": "WORLD-VISION",
                 "tagline": "Voir le monde, le comprendre.",
