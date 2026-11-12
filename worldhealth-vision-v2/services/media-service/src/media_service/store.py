@@ -19,6 +19,9 @@ from media_service.models import (
     PrepareDraftRequest,
     QaState,
     RadarCandidate,
+    RadarScanHistoryItem,
+    RadarScanRequest,
+    RadarScanResult,
     RenderJobRef,
     SelectHookRequest,
     StoryStatus,
@@ -270,6 +273,16 @@ class MediaStoryStore:
         )
 
         return self._persistence.save_radar_if_absent(story)
+
+    def record_radar_scan(
+        self,
+        request: RadarScanRequest,
+        result: RadarScanResult,
+    ) -> None:
+        self._persistence.save_radar_scan(request, result)
+
+    def list_radar_scans(self, limit: int = 20) -> list[RadarScanHistoryItem]:
+        return self._persistence.list_radar_scans(limit=limit)
 
     def recompute_score(self, story_id: str) -> MediaStory:
         story = self.get(story_id)
