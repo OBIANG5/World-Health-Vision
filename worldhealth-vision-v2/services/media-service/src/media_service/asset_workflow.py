@@ -54,12 +54,24 @@ def recompute_unresolved_scene_orders(
 ) -> list[int]:
     required = set(required_asset_scene_orders(story))
     assets_by_id = {asset.id: asset for asset in bundle.assets}
+    package = story.creative_package
+    expected_kind_by_order = {
+        scene.order: (
+            "video"
+            if scene.visual_kind == "real_video"
+            else "image"
+        )
+        for scene in (package.scene_plan if package is not None else [])
+        if scene.visual_kind in EXTERNAL_VISUAL_KINDS
+    }
     approved_selected = {
         selection.scene_order
         for selection in bundle.selections
         if (
             selection.asset_id in assets_by_id
             and assets_by_id[selection.asset_id].rights_status == "approved"
+            and assets_by_id[selection.asset_id].kind
+            == expected_kind_by_order.get(selection.scene_order)
         )
     }
     return sorted(required.difference(approved_selected))
