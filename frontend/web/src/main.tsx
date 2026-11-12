@@ -2,22 +2,23 @@
 Ce fichier est responsable de:
 - initialiser le runtime React du front
 - importer les styles globaux et les styles Leaflet obligatoires
-- monter le composant racine adapté au chemin courant
-- exposer /media-studio comme Control Room isolé de la V2 principale
+- monter le composant racine App dans #root
+- activer StrictMode pour le controle des effets en developpement
 */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+// Importe le reset global et les styles de base de l application.
 import './index.css'
+// Composant racine de l interface.
 import App from './App.tsx'
-import MediaStudio from './media/MediaStudio.tsx'
+// Feuille de style Leaflet necessaire (tuiles, controles, panes).
 import "leaflet/dist/leaflet.css";
 
-const isMediaStudio =
-  window.location.pathname.startsWith('/media-studio') ||
-  new URLSearchParams(window.location.search).get('view') === 'media';
 
+// Monte l application React dans la balise #root de index.html.
 createRoot(document.getElementById('root')!).render(
+  // StrictMode aide a detecter les effets secondaires en dev.
   <StrictMode>
-    {isMediaStudio ? <MediaStudio /> : <App />}
+    <App />
   </StrictMode>,
 )
