@@ -269,6 +269,33 @@ export default function MediaStudio() {
     }
   }
 
+  async function verifyStory(story: MediaStory) {
+    setActionBusy(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_ROOT}/stories/${story.id}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ max_claims: 6 }),
+      });
+      if (!response.ok) {
+        let detail = await response.text();
+        try {
+          const parsed = JSON.parse(detail) as { detail?: string };
+          detail = parsed.detail ?? detail;
+        } catch {
+          // Keep raw body.
+        }
+        throw new Error(`Vérification impossible (HTTP ${response.status}) : ${detail}`);
+      }
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : String(caught));
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
   async function runRadar() {
     setRadarBusy(true);
     setError(null);
@@ -531,6 +558,7 @@ export default function MediaStudio() {
               story={selected}
               busy={actionBusy}
               onDecision={decision}
+              onVerify={verifyStory}
               onSelectHook={selectHook}
               onPrepareDraft={prepareDraft}
               onLaunchRender={launchRender}
@@ -574,6 +602,7 @@ function StoryInspector({
   story,
   busy,
   onDecision,
+  onVerify,
   onSelectHook,
   onPrepareDraft,
   onLaunchRender,
@@ -585,6 +614,7 @@ function StoryInspector({
     story: MediaStory,
     action: "approve" | "reject" | "request_changes" | "approve_preview" | "mark_publish_ready",
   ) => Promise<void>;
+  onVerify: (story: MediaStory) => Promise<void>;
   onSelectHook: (story: MediaStory, hookId: string) => Promise<void>;
   onPrepareDraft: (story: MediaStory) => Promise<void>;
   onLaunchRender: (story: MediaStory) => Promise<void>;
@@ -659,6 +689,71 @@ function StoryInspector({
           ))}
         </div>
       </section>
+
+      {story.verification_report && (
+        <section className="wv-media-panel">
+          <div className="wv-media-panel-title">
+            <span>Rapport VERIFY · v{story.verification_report.version}</span>
+            <small>
+              {story.verification_report.distinct_supporting_sources} preuves distinctes · confiance {story.verification_report.confidence_score}%
+            </small>
+          </div>
+
+          <div className="wv-media-verification-summary">
+            <span className={`verdict verdict-${story.verification_report.verdict}`}>
+              {story.verification_report.verdict === "verified"
+                ? "✓ Vérifié"
+                : story.verification_report.verdict === "conflicting"
+                  ? "⚠ Contradiction"
+                  : story.verification_report.verdict === "partially_verified"
+                    ? "◐ Partiellement vérifié"
+                    : "○ Non vérifié"}
+            </span>
+            <span>
+              {story.verification_report.has_primary_support
+                ? "source primaire confirmante"
+                : "pas de source primaire confirmante détectée"}
+            </span>
+          </div>
+
+          <div className="wv-media-claim-list">
+            {story.verification_report.claims.map((claim, index) => (
+              <div
+                className={`wv-media-claim claim-${claim.status}`}
+                key={`${claim.claim}-${index}`}
+              >
+                <div className="wv-media-claim-head">
+                  <strong>{claim.claim}</strong>
+                  <span>{claim.status}</span>
+                </div>
+                <p>{claim.explanation}</p>
+                <div className="wv-media-evidence-links">
+                  {claim.supporting_urls.map((url) => (
+                    <a key={`support-${url}`} href={url} target="_blank" rel="noreferrer">
+                      ✓ preuve ↗
+                    </a>
+                  ))}
+                  {claim.contradicting_urls.map((url) => (
+                    <a
+                      className="contradiction"
+                      key={`contradict-${url}`}
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      ⚠ contradiction ↗
+                    </a>
+                  ))}
+                  {claim.supporting_urls.length === 0 &&
+                    claim.contradicting_urls.length === 0 && (
+                      <span>aucune URL récupérée ne confirme encore ce fait</span>
+                    )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="wv-media-panel">
         <div className="wv-media-panel-title">
@@ -781,13 +876,28 @@ function StoryInspector({
       <div className="wv-media-actions">
         {story.status === "candidate" && (
           <>
-            <button
-              className="wv-media-action primary"
-              disabled={busy}
-              onClick={() => void onDecision(story, "approve")}
-            >
-              ✓ Valider l’idée
-            </button>
+            {story.verification_status !== "verified" ? (
+              <>
+                <button
+                  className="wv-media-action primary"
+                  disabled={busy}
+                  onClick={() => void onVerify(story)}
+                >
+                  ⌕ Vérifier les faits
+                </button>
+                <div className="wv-media-action-hint">
+                  La validation éditoriale est bloquée jusqu’à un verdict VERIFY « vérifié ».
+                </div>
+              </>
+            ) : (
+              <button
+                className="wv-media-action primary"
+                disabled={busy}
+                onClick={() => void onDecision(story, "approve")}
+              >
+                ✓ Valider l’idée
+              </button>
+            )}
             <button
               className="wv-media-action secondary"
               disabled={busy}
@@ -807,13 +917,23 @@ function StoryInspector({
 
         {story.status === "changes_requested" && (
           <>
-            <button
-              className="wv-media-action primary"
-              disabled={busy}
-              onClick={() => void onDecision(story, "approve")}
-            >
-              ✓ Revalider l’angle
-            </button>
+            {story.verification_status !== "verified" ? (
+              <button
+                className="wv-media-action primary"
+                disabled={busy}
+                onClick={() => void onVerify(story)}
+              >
+                ⌕ Revérifier les faits
+              </button>
+            ) : (
+              <button
+                className="wv-media-action primary"
+                disabled={busy}
+                onClick={() => void onDecision(story, "approve")}
+              >
+                ✓ Revalider l’angle
+              </button>
+            )}
             <button
               className="wv-media-action danger"
               disabled={busy}
