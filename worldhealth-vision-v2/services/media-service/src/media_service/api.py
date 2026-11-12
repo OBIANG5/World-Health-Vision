@@ -3,6 +3,7 @@ from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from media_service.models import (
+    ConfirmPublicationRequest,
     CreateStoryRequest,
     DecisionRequest,
     DiscoverAssetsRequest,
@@ -11,6 +12,7 @@ from media_service.models import (
     MediaDashboard,
     MediaStory,
     PrepareDraftRequest,
+    PreparePublicationRequest,
     RadarScanHistoryItem,
     RadarScanRequest,
     RadarScanResult,
@@ -288,6 +290,32 @@ async def sync_preview_render(story_id: str) -> MediaStory:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except RendererDependencyError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/prepare", response_model=MediaStory)
+async def prepare_story_publication(
+    story_id: str,
+    request: PreparePublicationRequest,
+) -> MediaStory:
+    try:
+        return STORE.prepare_publication_package(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/confirm", response_model=MediaStory)
+async def confirm_story_publication(
+    story_id: str,
+    request: ConfirmPublicationRequest,
+) -> MediaStory:
+    try:
+        return STORE.confirm_publication(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @app.post("/api/media/stories/{story_id}/qa/run", response_model=MediaStory)
