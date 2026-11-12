@@ -102,7 +102,7 @@ spring:
             - Path=/api/product/countries/*/national-comparisons
             - Method=GET
           filters:
-            - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/national-comparisons, /api/analytics/countries/$\\{countryIso3}/national-comparisons
+            - RewritePath=/api/product/countries/(?<countryIso3>[^/]+)/national-comparisons, /api/analytics/countries/$\{countryIso3}/national-comparisons
 
         - id: product-country-indicator-overview-route
           uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
