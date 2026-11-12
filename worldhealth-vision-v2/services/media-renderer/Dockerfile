@@ -31,6 +31,7 @@ RUN npm install --omit=dev --no-audit --no-fund \
     && npx remotion browser ensure
 
 COPY services/media-renderer/server.mjs ./server.mjs
+COPY services/media-renderer/job-store.mjs ./job-store.mjs
 COPY services/media-renderer/src ./src
 
 RUN mkdir -p /app/output
