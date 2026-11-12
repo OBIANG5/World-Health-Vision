@@ -264,14 +264,33 @@ class MediaStoryStore:
                 "qa", "preview_ready", "publish_ready",
             }
             next_status = "changes_requested"
+        elif request.action == "approve_preview":
+            allowed = {"preview_ready"}
+            next_status = "qa"
         else:
-            allowed = {"qa", "preview_ready"}
+            allowed = {"qa"}
             next_status = "publish_ready"
 
         if story.status not in allowed:
             raise MediaWorkflowConflictError(
                 f"Action '{request.action}' is not allowed from status '{story.status}'."
             )
+
+        if request.action == "mark_publish_ready":
+            checks = {
+                "facts": story.qa.facts,
+                "spelling": story.qa.spelling,
+                "safe_zones": story.qa.safe_zones,
+                "logo_integrity": story.qa.logo_integrity,
+                "source_display": story.qa.source_display,
+                "rights": story.qa.rights,
+                "audio": story.qa.audio,
+            }
+            pending = [name for name, value in checks.items() if value != "pass"]
+            if pending:
+                raise MediaWorkflowConflictError(
+                    "QA is incomplete: " + ", ".join(pending)
+                )
 
         story.status = next_status
         story.approval_note = request.note
