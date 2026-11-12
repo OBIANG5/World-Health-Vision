@@ -1,0 +1,74 @@
+name: World-Vision Media Studio CI
+
+on:
+  push:
+    branches:
+      - feature/world-vision-media-studio
+    paths:
+      - "frontend/web/**"
+      - "services/api-service/**"
+      - "docs/media/**"
+      - ".github/workflows/media-studio-ci.yml"
+  pull_request:
+    branches:
+      - v2
+    paths:
+      - "frontend/web/**"
+      - "services/api-service/**"
+      - "docs/media/**"
+
+jobs:
+  backend:
+    name: Backend syntax and media domain
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        run: pip install -r requirements.txt
+
+      - name: Compile backend
+        run: python -m compileall -q app main.py
+
+      - name: Smoke-test editorial scoring
+        run: |
+          python - <<'PY'
+          from app.media_store import STORE
+          from app.media_scoring import compute_editorial_score
+
+          stories = STORE.list()
+          assert stories, "Media Studio needs at least one seed story"
+          story = stories[0]
+          recomputed = compute_editorial_score(story.score.factors)
+          assert 0 <= recomputed.total <= 100
+          assert story.sources, "Story provenance must never be empty"
+          print(f"story={story.id} score={recomputed.total} sources={len(story.sources)}")
+          PY
+
+  frontend:
+    name: Frontend TypeScript build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/web/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
