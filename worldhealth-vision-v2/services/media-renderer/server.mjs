@@ -7,6 +7,7 @@ import {execFile} from "node:child_process";
 import {promisify} from "node:util";
 import {bundle} from "@remotion/bundler";
 import {renderMedia, selectComposition} from "@remotion/renderer";
+import {buildJobStore, renderFingerprint} from "./job-store.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -18,13 +19,20 @@ const maxConcurrency = Math.max(
   1,
   Number.parseInt(process.env.WHV_RENDER_CONCURRENCY || "1", 10) || 1,
 );
+const maxAttempts = Math.max(
+  1,
+  Number.parseInt(process.env.WHV_RENDER_JOB_MAX_ATTEMPTS || "3", 10) || 3,
+);
+const redisUrl = process.env.WHV_RENDER_REDIS_URL || "";
+const redisPrefix =
+  process.env.WHV_RENDER_REDIS_PREFIX || "whv:media-renderer";
 
 mkdirSync(outputDir, {recursive: true});
 mkdirSync(audioDir, {recursive: true});
 
-const jobs = new Map();
-const queue = [];
+let store;
 let running = 0;
+let draining = false;
 let bundlePromise;
 
 const now = () => new Date().toISOString();
@@ -50,6 +58,9 @@ const publicJob = (job) => ({
   output_url: job.output_url,
   output_sha256: job.output_sha256,
   output_probe: job.output_probe,
+  attempts: job.attempts || 0,
+  max_attempts: job.max_attempts || maxAttempts,
+  recovered_at: job.recovered_at || null,
   error: job.error,
 });
 
@@ -80,8 +91,9 @@ const getBundle = () => {
   return bundlePromise;
 };
 
-const updateJob = (job, patch) => {
+const updateJob = async (job, patch) => {
   Object.assign(job, patch, {updated_at: now()});
+  await store.save(job);
 };
 
 const sha256File = async (filePath) =>
@@ -189,10 +201,14 @@ const probeMedia = async (filePath) => {
 const renderJob = async (job) => {
   running += 1;
   try {
-    updateJob(job, {status: "bundling", progress: 0.02});
+    await updateJob(job, {
+      status: "bundling",
+      progress: 0.02,
+      attempts: (job.attempts || 0) + 1,
+    });
     const serveUrl = await getBundle();
 
-    updateJob(job, {status: "rendering", progress: 0.05});
+    await updateJob(job, {status: "rendering", progress: 0.05});
     const rawVoiceover = job.payload.voiceover || null;
     const voiceover = rawVoiceover?.renderer_url
       ? {
@@ -232,7 +248,7 @@ const renderJob = async (job) => {
       outputLocation,
       inputProps,
       onProgress: ({progress}) => {
-        updateJob(job, {
+        void updateJob(job, {
           progress: Math.min(0.99, Math.max(0.05, progress)),
         });
       },
@@ -243,7 +259,7 @@ const renderJob = async (job) => {
       probeMedia(outputLocation),
     ]);
 
-    updateJob(job, {
+    await updateJob(job, {
       status: "completed",
       progress: 1,
       output_url: `/api/media-renderer/renders/${filename}`,
@@ -251,20 +267,29 @@ const renderJob = async (job) => {
       output_probe: outputProbe,
     });
   } catch (error) {
-    updateJob(job, {
+    await updateJob(job, {
       status: "failed",
       error: error instanceof Error ? error.message : String(error),
     });
   } finally {
     running -= 1;
-    drain();
+    void drain();
   }
 };
 
-const drain = () => {
-  while (running < maxConcurrency && queue.length > 0) {
-    const job = queue.shift();
-    void renderJob(job);
+const drain = async () => {
+  if (draining) return;
+  draining = true;
+  try {
+    while (running < maxConcurrency) {
+      const jobId = await store.dequeue();
+      if (!jobId) break;
+      const job = await store.get(jobId);
+      if (!job || job.status !== "queued") continue;
+      void renderJob(job);
+    }
+  } finally {
+    draining = false;
   }
 };
 
@@ -385,8 +410,10 @@ const server = createServer(async (req, res) => {
         status: "ok",
         service: "media-renderer",
         running,
-        queued: queue.length,
+        queued: await store.queueLength(),
         concurrency: maxConcurrency,
+        persistence: store.mode,
+        redis_configured: Boolean(redisUrl),
         audio_dir: audioDir,
       });
       return;
@@ -404,6 +431,13 @@ const server = createServer(async (req, res) => {
           ? "tiktok_api_clean_v1"
           : "canonical_newsroom_v1";
 
+      const fingerprint = renderFingerprint(payload, renderProfile);
+      const existing = await store.getByFingerprint(fingerprint);
+      if (existing) {
+        json(res, existing.status === "completed" ? 200 : 202, publicJob(existing));
+        return;
+      }
+
       const job = {
         id: randomUUID(),
         story_id: payload.story.id,
@@ -411,6 +445,10 @@ const server = createServer(async (req, res) => {
         render_profile: renderProfile,
         status: "queued",
         progress: 0,
+        attempts: 0,
+        max_attempts: maxAttempts,
+        recovered_at: null,
+        idempotency_key: fingerprint,
         created_at: now(),
         updated_at: now(),
         output_url: null,
@@ -418,26 +456,56 @@ const server = createServer(async (req, res) => {
         output_probe: null,
         error: null,
       };
-      jobs.set(job.id, job);
-      queue.push(job);
-      drain();
+      await store.save(job);
+      await store.bindIdempotency(fingerprint, job.id);
+      await store.enqueue(job.id);
+      void drain();
       json(res, 202, publicJob(job));
       return;
     }
 
     if (req.method === "GET" && url.pathname === "/api/media-renderer/jobs") {
-      json(res, 200, [...jobs.values()].map(publicJob));
+      json(res, 200, (await store.list()).map(publicJob));
       return;
     }
 
     const jobMatch = /^\/api\/media-renderer\/jobs\/([a-f0-9-]+)$/.exec(url.pathname);
     if (req.method === "GET" && jobMatch) {
-      const job = jobs.get(jobMatch[1]);
+      const job = await store.get(jobMatch[1]);
       if (!job) {
         json(res, 404, {detail: "Render job not found."});
         return;
       }
       json(res, 200, publicJob(job));
+      return;
+    }
+
+    const retryMatch = /^\/api\/media-renderer\/jobs\/([a-f0-9-]+)\/retry$/.exec(
+      url.pathname,
+    );
+    if (req.method === "POST" && retryMatch) {
+      const job = await store.get(retryMatch[1]);
+      if (!job) {
+        json(res, 404, {detail: "Render job not found."});
+        return;
+      }
+      if (job.status !== "failed") {
+        json(res, 409, {detail: "Only failed render jobs can be retried."});
+        return;
+      }
+      if ((job.attempts || 0) >= (job.max_attempts || maxAttempts)) {
+        json(res, 409, {detail: "Render job retry limit has been reached."});
+        return;
+      }
+
+      await updateJob(job, {
+        status: "queued",
+        progress: 0,
+        error: null,
+      });
+      await store.enqueue(job.id);
+      void drain();
+      json(res, 202, publicJob(job));
       return;
     }
 
@@ -461,6 +529,40 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(port, "0.0.0.0", () => {
-  console.log(`World-Vision media-renderer listening on :${port}`);
+const shutdown = async (signal) => {
+  console.log(`World-Vision media-renderer received ${signal}; closing job store.`);
+  try {
+    await store?.close();
+  } finally {
+    process.exit(0);
+  }
+};
+
+const start = async () => {
+  store = await buildJobStore({
+    redisUrl,
+    prefix: redisPrefix,
+    onRedisError: (error) => {
+      console.error("World-Vision renderer Redis error:", error);
+    },
+  });
+  const recovered = await store.recover();
+  if (recovered > 0) {
+    console.warn(`Recovered ${recovered} interrupted render job(s).`);
+  }
+  void drain();
+
+  server.listen(port, "0.0.0.0", () => {
+    console.log(
+      `World-Vision media-renderer listening on :${port} · persistence=${store.mode}`,
+    );
+  });
+};
+
+process.on("SIGTERM", () => void shutdown("SIGTERM"));
+process.on("SIGINT", () => void shutdown("SIGINT"));
+
+start().catch((error) => {
+  console.error("World-Vision media-renderer failed to start:", error);
+  process.exit(1);
 });
