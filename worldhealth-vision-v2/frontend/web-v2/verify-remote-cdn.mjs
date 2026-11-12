@@ -48,6 +48,13 @@ try {
   await page.locator(".whv-source-card").first().waitFor({state:"visible"});
   assert(await page.locator(".whv-source-card").count() === 22,
     "Remote preview does not expose all 22 registered V2 sources");
+  // Cross-check the actual CURRENT published mobile preview snapshot,
+  // rather than passing only on the previous 22-source global catalogue.
+  await page.locator(".whv-national-coverage-overview summary").click();
+  await page.locator(".whv-national-coverage-metrics").waitFor({state:"visible"});
+  const coverage=await page.locator(".whv-national-coverage-overview").innerText();
+  for(const n of ["217","4","5","0","APERÇU STATIQUE"])
+    assert(coverage.includes(n),"Public CDN missing genuine V24–V26 source coverage: "+n);
   // Verify the NEW public build, not a previously pinned snapshot.
   assert(await page.locator(".whv-source-coverage[data-coverage='unknown']").count() === 22,
     "Static preview must not claim actual observed source data");
@@ -63,7 +70,19 @@ try {
   await page.locator(".region-drawer.open").waitFor({state:"visible"});
   await page.locator(".whv-region-members-toggle").click();
   await page.locator(".whv-region-member").first().waitFor({state:"visible"});
+  await page.locator(".whv-region-member").first().click();
+  await page.locator(".country-drawer.open #country-select").selectOption("GAB");
+  const gab=page.locator(".country-drawer.open .whv-national-evidence");
+  await gab.locator(".whv-national-evidence-source").first().waitFor({state:"visible"});
+  assert(await gab.locator(".whv-national-evidence-source").count()===3,
+    "Published country drawer must show three genuine V24–V26 Gabon references");
+  const gabText=(await gab.innerText()).replace(/\\s/g,"");
+  assert(gabText.includes("3518621"),"Published Gabon census number missing");
+  assert(gabText.includes("APERÇUSTATIQUE"),"Published Gabon panel must disclose static provenance");
+  await gab.getByText("Comparaison internationale en direct indisponible",{exact:false})
+    .waitFor({state:"visible"});
+
   assert(errors.length === 0, "Remote JS errors: "+errors.join("; "));
   assert(failures.length === 0, "Remote static asset failures: "+failures.join("; "));
-  console.log("PASS remote pinned V2: Mobile overview, eye, tools, retirement and advisor.");
+  console.log("PASS remote pinned V2: mobile eye, 9 tools, 22 global sources, 217-country local registry and documented Gabon census with NO fake live comparison.");
 } finally { await browser.close(); }
