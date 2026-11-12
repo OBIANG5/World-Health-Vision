@@ -9,6 +9,7 @@ import {promisify} from "node:util";
 import {bundle} from "@remotion/bundler";
 import {renderMedia, selectComposition} from "@remotion/renderer";
 import {buildJobStore, renderFingerprint} from "./job-store.mjs";
+import {recoverMissingCompletedOutput as recoverMissingOutputPolicy} from "./job-recovery.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -321,23 +322,14 @@ const probeMedia = async (filePath) => {
 const finalOutputPathForJob = (jobId) =>
   path.join(outputDir, `${jobId}.mp4`);
 
-const recoverMissingCompletedOutput = async (job) => {
-  if (job.status !== "completed") return false;
-  const filePath = finalOutputPathForJob(job.id);
-  if (existsSync(filePath)) return false;
-
-  await updateJob(job, {
-    status: "queued",
-    progress: 0,
-    output_url: null,
-    output_sha256: null,
-    output_probe: null,
-    error: "Completed render metadata existed but the MP4 file was missing; rerender queued.",
-    recovered_at: now(),
+const recoverMissingCompletedOutput = async (job) =>
+  recoverMissingOutputPolicy({
+    job,
+    outputExists: (jobId) => existsSync(finalOutputPathForJob(jobId)),
+    persist: (candidate) => store.save(candidate),
+    enqueue: (jobId) => store.enqueue(jobId),
+    now,
   });
-  await store.enqueue(job.id);
-  return true;
-};
 
 const renderJob = async (job) => {
   running += 1;
@@ -347,6 +339,7 @@ const renderJob = async (job) => {
       status: "bundling",
       progress: 0.02,
       attempts: (job.attempts || 0) + 1,
+      error: null,
     });
     const serveUrl = await getBundle();
 
