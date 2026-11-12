@@ -17,6 +17,7 @@ from media_service.models import (
     HookOption,
     MediaAsset,
     VerificationReport,
+    VoiceoverRef,
 )
 from media_service.radar import RadarDiscovery
 from media_service.store import STORE
@@ -194,6 +195,22 @@ class StubAssetsClient:
         ][:limit]
 
 
+class StubVoiceoverClient:
+    async def generate(self, story, request):
+        return VoiceoverRef(
+            id="voice-test-1",
+            model="gpt-realtime-2.1-mini",
+            voice=request.voice or "marin",
+            duration_sec=min(10.0, story.video_draft.duration_sec),
+            generated_at=datetime.now(timezone.utc),
+            renderer_url="/api/media-renderer/audio/story-test.wav",
+            transcript=story.video_draft.voiceover_script,
+            transcript_match_score=100,
+            duration_fit=True,
+            qa_passed=True,
+        )
+
+
 class StubRendererClient:
     def __init__(self):
         self.jobs: dict[str, RenderJobRef] = {}
@@ -232,6 +249,7 @@ def setup_function():
     media_api.VERIFICATION_CLIENT = StubVerificationClient()
     media_api.CREATIVE_CLIENT = StubCreativeClient()
     media_api.WIKIMEDIA_CLIENT = StubAssetsClient()
+    media_api.VOICEOVER_CLIENT = StubVoiceoverClient()
 
 
 def test_health_and_dashboard():
@@ -600,3 +618,61 @@ def test_real_photo_creative_requires_licensed_assets_before_final_draft():
     assert scene["asset_url"].endswith("1080px-kinshasa.jpg")
     assert "Test Photographer" in scene["asset_attribution"]
     assert scene["asset_license"] == "CC BY 4.0"
+
+
+
+def test_creative_render_is_blocked_until_audio_qa_passes():
+    scan = client.post(
+        "/api/media/radar/scans",
+        json={"hours": 3, "max_candidates": 10},
+    )
+    assert scan.status_code == 200
+    story_id = scan.json()["stories_created"][0]
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/verify",
+        json={"max_claims": 6},
+    ).status_code == 200
+    assert client.post(
+        f"/api/media/stories/{story_id}/decision",
+        json={"action": "approve"},
+    ).status_code == 200
+
+    creative = client.post(
+        f"/api/media/stories/{story_id}/creative/generate",
+        json={"target_duration_sec": 15, "max_hooks": 3},
+    )
+    assert creative.status_code == 200
+    hook_id = creative.json()["hooks"][0]["id"]
+
+    assert client.post(
+        f"/api/media/stories/{story_id}/hooks/select",
+        json={"hook_id": hook_id},
+    ).status_code == 200
+    assert client.post(
+        f"/api/media/stories/{story_id}/draft/prepare",
+        json={},
+    ).status_code == 200
+
+    blocked = client.post(
+        f"/api/media/stories/{story_id}/render-preview"
+    )
+    assert blocked.status_code == 409
+    assert "audio" in blocked.json()["detail"].lower()
+
+    audio = client.post(
+        f"/api/media/stories/{story_id}/audio/generate",
+        json={},
+    )
+    assert audio.status_code == 200
+    audio_story = audio.json()
+    assert audio_story["qa"]["audio"] == "pass"
+    assert audio_story["voiceover"]["qa_passed"] is True
+    assert audio_story["voiceover"]["transcript_match_score"] == 100
+    assert audio_story["voiceover"]["ai_generated_disclosure"] == "Voix générée par IA"
+
+    launched = client.post(
+        f"/api/media/stories/{story_id}/render-preview"
+    )
+    assert launched.status_code == 200
+    assert launched.json()["status"] == "rendering"
