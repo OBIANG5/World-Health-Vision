@@ -1483,3 +1483,57 @@ button, input, select, textarea {
   .whv-source-coverage-detail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .whv-source-controls > input { font-size: 16px; }
 }
+
+
+/* Country-first source audit — actual database coverage, never a made-up
+   percentage of the world's national sources. Collapsed by default. */
+.whv-national-coverage-overview {
+  margin-bottom: 13px;
+  border: 1px solid rgba(119, 199, 244, .27);
+  border-radius: 11px;
+  background: rgba(15, 62, 95, .17);
+  color: #dceefb;
+}
+.whv-national-coverage-overview > summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.whv-national-coverage-overview > summary:focus-visible {
+  outline: 2px solid #8acdf7;
+  outline-offset: 3px;
+}
+.whv-national-coverage-overview-body {
+  padding: 0 14px 14px;
+  display: grid;
+  gap: 10px;
+}
+.whv-national-coverage-overview-body p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.whv-national-coverage-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.whv-national-coverage-metrics span {
+  padding: 9px 10px;
+  background: rgba(52, 113, 157, .13);
+  border: 1px solid rgba(109, 174, 221, .15);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.whv-national-coverage-metrics strong {
+  display: block;
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+.whv-national-coverage-caution { color: #c9d9e6; }
+.whv-national-coverage-country-names { color: #a3d8f5; }
+@media (max-width: 580px) {
+  .whv-national-coverage-metrics { grid-template-columns: 1fr; }
+}
