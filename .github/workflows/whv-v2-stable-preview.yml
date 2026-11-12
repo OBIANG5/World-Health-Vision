@@ -120,6 +120,23 @@ jobs:
           print("Preview published from V2, with original evidence snapshots preserved")
           PY
 
+      - name: Install Chromium for real iPhone and desktop browser acceptance
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Block publishing if the generated V2 phone preview fails
+        run: node source/worldhealth-vision-v2/frontend/web-v2/preview-smoke.mjs
+
+      - name: Save actual phone and desktop browser screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: whv-v2-stable-preview-browser-evidence
+          path: preview-artifacts/
+          if-no-files-found: ignore
+
       - name: Commit and update SAME existing preview branch URL
         working-directory: preview
         run: |
