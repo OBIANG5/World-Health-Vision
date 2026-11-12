@@ -24,6 +24,7 @@ from media_service.models import (
     MediaSource,
     MediaStory,
     PrepareDraftRequest,
+    QaReport,
     QaState,
     RadarCandidate,
     RadarScanHistoryItem,
@@ -537,6 +538,21 @@ class MediaStoryStore:
             )
         else:
             story.status = "rendering"
+        return self._save(story)
+
+    def apply_qa_report(
+        self,
+        story_id: str,
+        state: QaState,
+        report: QaReport,
+    ) -> MediaStory:
+        story = self.get(story_id)
+        if story.status != "qa":
+            raise MediaWorkflowConflictError(
+                f"Publication QA can only run from status 'qa', not '{story.status}'."
+            )
+        story.qa = state
+        story.qa_report = report
         return self._save(story)
 
     def decide(self, story_id: str, request: DecisionRequest) -> MediaStory:
