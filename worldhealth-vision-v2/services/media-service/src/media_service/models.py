@@ -396,6 +396,9 @@ class RenderJobRef(BaseModel):
     output_url: str | None = None
     output_sha256: str | None = Field(default=None, min_length=64, max_length=64)
     output_probe: RenderProbe | None = None
+    attempts: int = Field(default=0, ge=0)
+    max_attempts: int = Field(default=3, ge=1)
+    recovered_at: datetime | None = None
     error: str | None = None
 
 
