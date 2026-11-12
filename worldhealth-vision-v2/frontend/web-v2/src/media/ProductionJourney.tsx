@@ -104,7 +104,6 @@ type Props = {
   onSyncTikTokCleanExport: (story: MediaStory) => Promise<void>;
 };
 const formatPercent = (n: number) => `${Math.max(0, Math.min(n, 100))}%`;
-const trimHash = (hash?: string | null) => hash ? `${hash.slice(0, 12)}…${hash.slice(-8)}` : "Non disponible";
 function evidenceStatus(story: MediaStory, id: ProductionStageId): boolean {
   switch (id) {
     case "radar": return Boolean(story.detected_at);
