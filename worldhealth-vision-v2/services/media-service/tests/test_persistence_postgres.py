@@ -93,7 +93,10 @@ def test_postgres_persists_radar_scan_audit_history():
         assert scan.scan_id == "radar-postgres-audit"
         assert scan.hours == 3
         assert scan.country_iso3 == "GAB"
+        assert scan.max_candidates == 12
         assert scan.model == "test-model"
+        assert scan.query == "test query"
+        assert scan.retrieved_urls == ["https://agpgabon.ga/test"]
         assert scan.candidates_found == 2
         assert scan.candidates_accepted == 1
         assert scan.stories_created == ["story-created"]
