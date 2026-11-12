@@ -6,8 +6,13 @@ Asynchronous Remotion render worker for Media Studio.
 - One worker renders one job at a time by default.
 - Increase `WHV_RENDER_CONCURRENCY` carefully or scale containers horizontally.
 - The first bundle is cached in-process.
-- Phase 1 previews are structural: they deliberately label unresolved real-media slots.
-- Final asset composition, audio and voice-over are later increments.
+- The Remotion composition supports selected licensed imagery, attribution and QA-checked AI voice-over.
+- Scenes lacking approved real-media assets remain explicitly unresolved rather than fabricated.
+- Two render profiles exist: `canonical_newsroom_v1` (branded) and
+  `tiktok_api_clean_v1` (separate export; not proof of platform approval).
+- Completed jobs expose `output_sha256` and a browser-streamable H.264 MP4.
+- Full production readiness still requires persistent queue storage, rendered-frame visual QA,
+  loudness normalization, approved publishing connectors and deployed infrastructure.
 
 Endpoints:
 
