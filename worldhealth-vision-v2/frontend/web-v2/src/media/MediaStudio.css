@@ -552,3 +552,17 @@ body{margin:0}
   .wv-media-viewnav{margin-left:auto}
   .wv-media-viewnav button{font-size:9px;padding:9px 9px}
 }
+
+/* The economic V2 app imports mobile.css globally, which locks html/body/root
+   to one viewport. The editorial Media Studio needs full-document scrolling.
+   Scope this override ONLY to a document that actually renders Media Studio. */
+html:has(.wv-media-shell),
+body:has(.wv-media-shell),
+#root:has(.wv-media-shell){
+  height:auto!important;
+  min-height:100%!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:auto;
+}
