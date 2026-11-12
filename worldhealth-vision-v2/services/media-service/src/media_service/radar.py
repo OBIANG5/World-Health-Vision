@@ -27,6 +27,7 @@ class RadarDiscovery:
     query: str
     model: str
     retrieved_urls: list[str]
+    raw_candidate_count: int
     candidates: list[RadarCandidate]
     rejected_without_retrieved_source: int
 
@@ -379,6 +380,7 @@ class OpenAIRadarClient:
             query=prompt,
             model=self.settings.radar_model,
             retrieved_urls=retrieved_urls,
+            raw_candidate_count=len(raw_candidates),
             candidates=accepted,
             rejected_without_retrieved_source=rejected,
         )
