@@ -56,6 +56,7 @@ export default function CinematicMotionReview(){
     {state==="available"&&report?
       <div className="wv-motion-review-player">
         <video controls playsInline preload="metadata" src={CLIP}
+          poster="./media-lab/review/frame-start.jpg"
           aria-label="Quatre secondes de rotation du globe World-Vision vers le Gabon"
           onError={()=>setState("error")}>
           Ton navigateur ne permet pas de lire cette vidéo MP4.
@@ -65,6 +66,7 @@ export default function CinematicMotionReview(){
           <span>{report.duration_seconds?.toFixed(1)} s · {report.width}×{report.height} · {report.fps} images/s · {report.target_iso3}</span>
           <a href={CLIP} download="world-vision-gabon-cgi-technique-4s.mp4">Ouvrir le MP4 de démonstration</a>
           <a href={REPORT} target="_blank" rel="noreferrer">Provenance et empreinte SHA-256</a>
+          <a href="./media-lab/review/contact-sheet.jpg" target="_blank" rel="noreferrer">Voir les trois photogrammes de contrôle (début, milieu, fin)</a>
         </div>
       </div>:
       <p className="wv-motion-review-pending" role="status">
