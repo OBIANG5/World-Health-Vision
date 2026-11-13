@@ -238,3 +238,18 @@ Après présentation du laboratoire Canvas de rotation, le propriétaire a signa
 
 **MAINTENIR LES GATES:** une compilation réussie n'est pas une validation artistique, le CGI interactif n'est pas encore un master 1080×1920 Remotion ni un MP4. L'original D00-v6 a SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2` et n'a pas encore son PNG dans GitHub. **Prochaine étape** : revue visuelle de cette vraie capture, ajustements de la signature œil/atmosphère/pays, puis premier micro-clip D01 3–6 s et intégration Remotion/FFmpeg. **Ne pas revenir à la carte vectorielle plate ni déclarer D00 validé sans l'utilisateur.** Conserver le plan audiovisuel complet de 137 pages.
 
+
+
+---
+
+## D01 : PREMIER MICRO-CLIP CGI RÉEL DE 4 SECONDES (13 NOVEMBRE 2026)
+
+**Nouveau jalon techniquement atteint, sans validation artistique implicite.** Une véritable vidéo H.264 **1080×1920 / 24 fps / 4 s / 96 images** a été rendue depuis le **même shader WebGL `CinematicEarth.tsx`** et le **même moteur géographique `geoTargeting.mjs`** que le site. La rotation pilote la Terre vers le Gabon (`GAB`) en utilisant un point de pays issu du GeoJSON, non la localisation d'une vraie actualité.
+
+**Preuves vérifiées** : workflow GitHub [#43466731755](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755) **completed/success**, tous tests passés. MP4 présent sur `whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4`, SHA-256 `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a` ; blob Git `8dd35afc5f5ef56eae1b40b72208dfc19380cb78`. Manifeste `media-lab/wv-d01-gab-technical-4s.json`; branche preview HEAD initial de livraison `e6022b36c4bcdc368fae71d52f92a817a21ca3cb`.
+
+**Lien vidéo** : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4
+
+**Code du nouvel export** : `frontend/web-v2/src/media/CinematicCapture.tsx`, `frontend/web-v2/render-cinematic-d01.mjs`, `.github/workflows/whv-cinematic-motion-d01.yml`. La branche d'aperçu préserve `media-lab/` lors de ses prochains builds. Document canonique : [CINEMATIC_D01_MICROCLIP_2026-11-13.md](../media/CINEMATIC_D01_MICROCLIP_2026-11-13.md).
+
+**À NE PAS CONFONDRE** : ce MP4 est un **prototype de mouvement technique**, pas un reportage, pas une vidéo finale, pas une approbation G1/D00/D01, pas un vrai événement Gabon, pas de voix, pas de publication TikTok/WhatsApp. D00-v6 original reste la référence artistique incomplètement archivée (PNG non committé). La suite doit se concentrer sur **la fidélité artistique de l'œil, de la texture, de la couche atmosphérique et des frontières**, puis sur les cartes/cadrages véritablement liés à une actualité, les vraies séquences et les 14 étapes de production du manuel de 137 pages.
