@@ -7,7 +7,7 @@
 import {createHash} from "node:crypto";
 import {execFileSync} from "node:child_process";
 import {createReadStream, existsSync} from "node:fs";
-import {mkdir, readFile, writeFile} from "node:fs/promises";
+import {mkdir, readFile, writeFile, unlink} from "node:fs/promises";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 import {bundle} from "@remotion/bundler";
@@ -61,6 +61,7 @@ fail(composition.width===1080&&composition.height===1920&&composition.fps===30,
 const rawMp4=path.join(pilotDir,".pilot-render-raw.mp4");
 const finalMp4=path.join(pilotDir,"world-vision-cop31-master.mp4");
 const posterFile=path.join(pilotDir,"poster.png");
+const posterJpeg=path.join(pilotDir,"poster-preview.jpg");
 let previousMilestone=-1;
 await renderMedia({
   codec:"h264",composition,serveUrl,outputLocation:rawMp4,inputProps,
@@ -86,6 +87,8 @@ await renderStill({
   output:posterFile,
   imageFormat:"png",
 });
+execFileSync("ffmpeg",["-hide_banner","-loglevel","error","-y","-i",posterFile,"-q:v","7",posterJpeg],{stdio:"inherit"});
+await unlink(rawMp4);
 const p=probe(finalMp4);
 const video=p.streams?.find(x=>x.codec_type==="video");
 const audio=p.streams?.find(x=>x.codec_type==="audio");
@@ -245,7 +248,7 @@ const realArchive={
 await writeFile(path.join(pilotDir,"story.json"),JSON.stringify(realArchive,null,2)+"\n");
 const provenance={
  schema_version:1,type:"WORLD_VISION_REAL_NEWSROOM_PILOT",
- source_case:storyFile,
+ source_case:"worldhealth-vision-v2/docs/media/pilots/cop31-risk-finance-2026-11-12.json",
  story_id:story.story_id,event_date:story.event_date,
  source_urls:story.sources.map(s=>s.url),
  video_filename:path.basename(finalMp4),video_sha256:mp4Sha,
