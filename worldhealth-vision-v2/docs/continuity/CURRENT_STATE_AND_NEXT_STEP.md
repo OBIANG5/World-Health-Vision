@@ -1,6 +1,17 @@
 # World-Vision — état actuel, blocages et prochaine action
 
 
+## PROCHAINE ÉTAPE — REPORTAGE COMPLET AVEC CONDUCTEUR MULTI-OUTILS
+
+**L'objectif est maintenant de terminer UN vrai reportage d'actualité (script + voix + médias authentiques + montage 9:16 + MP4) au lieu d'accumuler des expériences de globe.** Procédure : [conducteur multi-outils](../media/WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md), [fiche d'épisode](../media/WORLD_VISION_EPISODE_TEMPLATE.md).
+
+Le manuel original de 137 pages reste le cadre méthodologique (9 parties) ; nous conservons les 14 étapes du Media Studio. Affectation cible : ChatGPT/Gemini = faits, contre-lecture, scénarios ; Google Flow = **plans d'illustration ciblés** ; **Google Vids, inclus dans Google AI Pro = montage portrait et voix off FR** ; FFmpeg/Remotion = précision géographique, SRT et contrôle automatisé, pas reconstruction systématique de toutes les scènes ; Drive = binaires ; GitHub = scripts, décisions et traçabilité.
+
+**Faits vérifiés** : Google Vids peut exporter MP4 et travailler en 9:16 ; la voix off AI en français est officiellement listée. En revanche, la **génération automatique de captions Google Vids est documentée pour l'anglais** ; gérer l'alignement français autrement. Flow nécessite les actions de l'utilisateur dans son compte : aucun connecteur direct ici. Les API Google/OpenAI ne sont pas financées automatiquement par les abonnements.
+
+**État actuel** : seuls les documents d'orchestration et templates sont créés ; **aucune vidéo complète produite dans le nouveau processus**. Ne pas confondre avec MP4 CGI Gabon 4 s, qui reste une démo technique artistiquement refusée et non publiée. La vraie création commence à la prochaine actualité choisie/sourcée ; fournir immédiatement le script provisoire, les sources et le montage papier, sans obliger l'utilisateur à inventer des réponses.
+
+
 ## PRIORITÉ ACTUELLE — PIVOT QUALITÉ FLOW + GIS (13/11/2026)
 
 **Retour explicite du propriétaire :** la vidéo technique D01 est décevante, la Terre n'est pas centrée comme l'œil, le CGI perd la beauté du concept et le rythme des développements a été trop lent. **Ne pas relancer sans raison de nouveaux rendus WebGL**. Les résultats techniques et le MP4 sont conservés pour la géographie, pas comme identité visuelle approuvée.
