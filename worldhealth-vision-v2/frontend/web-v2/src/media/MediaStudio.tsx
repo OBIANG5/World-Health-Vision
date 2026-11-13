@@ -653,6 +653,13 @@ export default function MediaStudio() {
     }
   }
 
+  function openReviewGate(gate: "identite" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video") {
+    const url = new URL(window.location.href);
+    url.searchParams.set("gate", gate);
+    window.history.replaceState({}, "", url.pathname + url.search + url.hash);
+    changeScreen("review");
+  }
+
   function changeScreen(next: "journey" | "review" | "desk") {
     setScreen(next);
     const url = new URL(window.location.href);
@@ -711,6 +718,7 @@ export default function MediaStudio() {
           previewMode={previewMode}
           busy={actionBusy || radarBusy}
           onOpenControlRoom={() => changeScreen("desk")}
+          onOpenReview={openReviewGate}
           onVerify={verifyStory}
           onDecision={decision}
           onGenerateCreative={generateCreative}
