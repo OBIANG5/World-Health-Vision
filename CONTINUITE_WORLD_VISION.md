@@ -1,6 +1,21 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 
+## 13 NOV 2026 — CONDUCTEUR MULTI-OUTILS PRIORITAIRE POUR LA PREMIÈRE VIDÉO COMPLÈTE
+
+**Nouvelle décision stratégique :** le propriétaire ne veut plus de prototypes CGI isolés. Il demande un système fidèle au manuel original de 137 pages, utilisant les **meilleurs outils réellement accessibles** à chaque étape via **ChatGPT Plus + Google AI Pro** : choix d'un fait réel → script sourcé → storyboard → véritables rushes → voix française naturelle → plans illustratifs Flow si utiles → **montage complet dans Google Vids 9:16** → SRT/FFmpeg → contrôle iPhone → MP4 et archivage. **Ne pas passer du temps à réécrire un moteur de montage complet tant que cette filière suffit.**
+
+**Guides canoniques créés :**
+- [Conducteur complet multi-outils, 9 parties du PDF, 14 étapes de production, outils, critères, coûts, limites](worldhealth-vision-v2/docs/media/WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md).
+- [Modèle à dupliquer pour chaque nouvelle vidéo, script, storyboard, voix, preuves, médias et étapes](worldhealth-vision-v2/docs/media/WORLD_VISION_EPISODE_TEMPLATE.md).
+
+**Capacités officiellement vérifiées, mais aucun accès personnel à supposer :** Google AI Pro inclut Google Vids avec voix IA FR et projets 9:16, Flow 1 000 crédits/mois (+ crédits quotidiens selon source Google), AI Studio Gemini indépendant pour API ; **ChatGPT Plus n'inclut pas automatiquement l'API OpenAI**. Google Vids s'exporte en MP4, mais **ses sous-titres automatiques documentés sont en anglais** ; pour le français, envisager SRT aligné par Whisper et QA. Ne pas imposer ElevenLabs payant à la première vidéo.
+
+**Statut :** conducteur créé/archivé dans GitHub, **pas encore de reportage complet produit par ce processus**. La vidéo technique D01-Gabon existe mais n'a pas de faits, de voix, de montage ni d'approbation artistique. **Prochain vrai objectif : UN épisode d'actualité réel et complet de 40 à 50 s**. L'épisode commence avec son sujet sourcé et le montage papier ; l'intro 3D définitive n'est plus un blocage pour livrer une première vidéo journalistique.
+
+---
+
+
 ## REPRISE PRIORITAIRE D01 — VRAI CLIP GABON 4S (13 novembre 2026)
 
 **Dernier livrable vérifié** : véritable MP4 H.264 de 4 secondes, 1080×1920 à 24 fps (96 images), produit par WebGL NASA + moteur géographique, dirigé vers GABON (GAB) en démonstration. **Ne pas recommencer le moteur à zéro.**
