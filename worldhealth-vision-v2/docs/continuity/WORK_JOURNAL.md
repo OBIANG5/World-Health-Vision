@@ -2,6 +2,33 @@
 
 **Principe :** journal **append-only**. Ajouter une entrée par session ou incrément utile. **Ne pas effacer les entrées anciennes** au prochain chat. Chaque entrée distingue code, tests, déploiement et approbation humaine.
 
+## 2026-11-13 — reprise de l'identité géographique après rejet d'A/B/C
+
+**Demande de l'utilisateur :** continuer le logiciel sans perdre le fil ; les trois directions initiales A/B/C sont jugées « moches » et rejetées. Les deux anciennes vidéos TikTok inspiraient un globe terrestre tournant vers le pays de l'actualité, suivi du zoom et d'images/vidéos réelles. Les nouveaux rendus doivent être magnifiques, minutieux et évaluables à **chaque étape**, jamais entièrement montés d'un coup. Le prompt historique exact reste inaccessible, malgré la récupération du contexte.
+
+**Source pédagogique retrouvée :** `monter-et-animer-vos-videos-avec-claude-v2.pdf`, **137 pages**. Chapitres sur design systems, outils, mémoire des décisions, motion design, dérushage, voix, alignement et QA consultés. L'adaptation technique est dans `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md`.
+
+**Code ajouté ou modifié :**
+- `docs/media/art-direction/WORLD_VISION_GLOBE_SIGNATURE_DIRECTIVE_2026-11-13.md` : règles de la nouvelle identité, rejet A/B/C sans scores inventés, porte d'approbation.
+- `frontend/web-v2/src/media/GeoGlobe.tsx` : projection géographique orthographique depuis `public/countries.geojson`, effet de lumière/atmosphère et ciblage Turquie/Antalya pour un exemple déjà sourcé.
+- `frontend/web-v2/src/media/GlobeDirection.tsx` + CSS : six maquettes fixes D00–D05 avec contrôle individuel, note 1–10, commentaire et lien d'avis GitHub. Aucun nouveau MP4 généré.
+- `CreativeDirections.tsx`, `ReviewStudio.tsx` : remplacement des anciennes propositions A/B/C par la direction globe ; scores anciens encore conservés dans le stockage local lorsqu'ils existent.
+- `ProductionJourney.tsx`, `MediaStudio.tsx` : mise à jour de l'accès depuis le lien permanent pour montrer clairement le nouveau travail.
+- `frontend/web-v2/media-preview-smoke.mjs` : tests iPhone sur les six plans, vraie source GeoJSON, persistance d'avis D00 et captures par plan.
+
+**Observation technique et design des premières captures :**
+- CI/frontend et preview iPhone ont passé les tests sur le commit `728b1a504581`.
+- Les images initiales `style-frame-globe-d00.png`, `...d02.png`, `...d03.png` et `...d04.png` ont été inspectées : le globe est géographiquement lisible, mais la composition présentait un titre trop encombrant et des marqueurs techniques visibles dans le cadre. Correctifs : titre plus court, suppression des mentions de production à l'écran. Ces corrections sont en attente d'une nouvelle preview après les derniers commits documentaires.
+- **Ce rendu vectoriel n'est pas encore le globe 3D/satellite premium demandé** et le plan D03 n'a pas encore d'extrait de reportage authentique licencié ; le site le signale honnêtement.
+- La première voix Piper reste rejetée ; aucun accès API Gemini/ElevenLabs/Flow, n8n ou Make n'a été configuré.
+
+**Droits et véracité :** ne pas rediffuser la vidéo TikTok de référence ni copier ses textures/audio. Cartes : fichiers géographiques intégrés à la V2. Sujet d'exemple : COP31/Antalya sourcé UNICEF/FAO. Les vrais plans de terrain devront être trouvés, autorisés et approuvés indépendamment.
+
+**Statut de cette session :** logiciel modifié et documentation commitée ; nouvelle direction D **NON approuvée**. A/B/C sont refusées. Aucune publication.
+**Action suivante :** vérifier le run de preview au dernier HEAD, les captures d'images D00–D05 sur téléphone, corriger toute faute de composition puis soumettre le plan D00 à l'utilisateur. Ne pas passer au court mouvement de 3–6 secondes avant validation du style correspondant.
+
+---
+
 ## 2026-11-13 — vidéo géopolitique renvoyée, analyse réelle et traçabilité
 
 **Entrée utilisateur :** une vidéo MP4 a été remise afin de retrouver l'inspiration pour la signature géographique World-Vision et d'éviter de perdre ce travail si le chat bloque.
