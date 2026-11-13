@@ -204,3 +204,24 @@ Prochaine action soumise à validation :
 **Limitation de sauvegarde :** le PNG D00-v4 est un fichier généré dans la session ChatGPT ; **son binaire n'a pas été envoyé sur GitHub**. Son hash et ses caractéristiques y sont inscrits pour éviter les confusions de version. Le PNG source officiel du logo reste inchangé. Aucun nouveau build du site d'aperçu, aucun MP4 et aucun rendu Three.js/Blender/Remotion n'ont été exécutés ici.
 
 **Prochaine étape après avis humain :** corriger les défauts éventuels de cette proposition, puis réaliser un vrai globe 3D reproductible avec frontières GeoJSON, émission atmosphérique contrôlée et arcs paramétriques, d'abord en still vertical 1080×1920 ; ne passer aux mouvements caméra/globe de 3–6 s qu'après validation.
+
+
+---
+
+## 13 novembre 2026 — D00-v6 et conservation intégrale du parcours vidéo 137 pages
+
+**Retour de l'utilisateur :** D00-v5 est jugée « très belle », mais il faut un **blanc d'œil réellement blanc**, une **lumière de l'atmosphère terrestre plus claire que les deux arcs**, et des **frontières nationales mieux tracées** (notamment Afrique/Sahara), sans changer la bonne taille actuelle de la Terre. L'étape suivante sera de **transformer le globe en vidéo** : le globe doit se tourner à chaque nouvelle pertinente vers **le pays** où se situe l'événement ; ce n'est pas toujours un format multi-pays. Le propriétaire rappelle de ne perdre **aucune** étape du PDF, en particulier les futures voix, le montage et l'habillage discret avec le véritable logo (éventuellement en haut à gauche, lieu non validé).
+
+**Production réalisée dans le chat :** D00-v6, image de conception `a_crisp_ultra_detailed_high_contrast_digital_ill.png`, 1086×1448, 2 296 765 octets, hash réel SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. **Pas de retour utilisateur sur v6 à cette étape. Aucun MP4 codé, aucune vidéo animée, aucune validation D00.** Le concept image peut présenter des frontières de pays non exactes ; le moteur futur devra projeter de vrais polygones GIS. Les PNG originaux v5/v6 restent hors GitHub ; metadata et exigences enregistrées seulement.
+
+**Vérification de la formation source :** fichier original `monter-et-animer-vos-videos-avec-claude-v2.pdf` retrouvé dans la Library (137 pages) ; texte des neuf parties consulté de la page 1 à 137. Accès au binaire intégral de la Library par materialize indisponible. Le document GitHub `TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md` a été enrichi des sections et des quatre skills. **Cet examen du cours ne constitue pas un audit complet/exécuté de tout le code.**
+
+**Nouveaux livrables GitHub :**
+- `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md` : neuf parties du manuel, 14 étapes du produit, géociblage, test moteur 3D, trois voix, alignement, montage rushes, SRT, rendu long, position logo, qa et publications.
+- `docs/media/art-direction/d00-eye-globe-visual-contract-v6.json` : contrat structuré pour le code futur, statut d'approbation et empreinte de la v6.
+- `docs/media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md` complété pour les images v5 et v6 avec retours exacts.
+- `docs/continuity/DECISION_REGISTER.md` étendu avec D-023–D-026, `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md` enrichi.
+
+**Travail non réalisé :** pas de connexion Flow/ElevenLabs/Gemini/n8n/Make, pas de voix auditionnée, pas de scène de reportage intégrée, pas de rendu Remotion 3D/Blender, pas de nouvelle preview GitHack publiée et pas d'export TikTok/WhatsApp. **Ne pas fusionner la PR #5 ni publier un contenu.**
+
+**Prochaine décision :** validation ou correction D00-v6 par le propriétaire. Ensuite image finale 9:16 calculée (atmosphère, frontières fiables, œil), QA mobile, puis D01 et micro-clip 3–6 s ; conserver les gates du PDF pour la voix et le montage.
