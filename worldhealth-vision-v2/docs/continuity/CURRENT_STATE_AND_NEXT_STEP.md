@@ -208,3 +208,16 @@ Le workflow [World-Vision Media Studio real-UI mobile preview #43457606661](http
 
 **Prochaine étape intelligente** : utiliser ce moteur comme **moteur de géographie pour une future vraie 3D**, mais reconstruire le plan D00 selon la charte toujours en cours de validation (Terre immense, frontières sahariennes exactes, blanc pur dans l'œil à deux arcs, atmosphère cyan mieux éclairée). Livrer le prototype CGI 1080×1920 et obtenir validation humaine avant micro-clip 3–6 s, voix, montage complet. Se référer aux 9 parties du manuel de 137 pages sauvegardées dans `AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`.
 
+
+
+---
+
+## ALERTE VISUELLE PRIORITAIRE — LE GLOBE SIMPLIFIÉ NE REMPLACE PAS D00-v6
+
+Après présentation du laboratoire Canvas de rotation, le propriétaire a signalé que la carte du site n'avait **plus la qualité visuelle du concept World-Vision déjà travaillé**. Il a raison : le moteur géographique était un prototype technique, et son exposition sans séparation assez nette créait une confusion de direction artistique.
+
+**État officiel :** référence actuelle `D00-v6`, image d'origine `a_crisp_ultra_detailed_high_contrast_digital_ill.png` 1086×1448 (SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`). Elle a été retrouvée dans le contexte fichier du chat et inspectée ; son **PNG original n'est toujours pas dans GitHub**, seulement les spécifications/hashes. Son statut est encore **en attente d'approbation finale**. Le G0 logo bleu officiel reste accepté, inchangé.
+
+**Distinction code** : `GlobeDirection.tsx` affiche en priorité un rappel `data-art-direction-ref="D00-v6"`, puis les anciennes maquettes D00–D05 ; le laboratoire schématique `GeoTargetingLab` est replié par défaut dans `<details id="wv-globe-tech">`. Test dans `media-preview-smoke.mjs`. Le simulateur sert uniquement à la rotation et aux frontières, **jamais à définir l'esthétique de l'image finale**.
+
+**Prochaine vraie étape artistique** : reconstruire avec un moteur CGI 3D la Terre détaillée, grande, naturelle et atmosphérique, les blancs purs dans les deux arcs de l'œil, la couche atmosphérique cyan plus lumineuse que les arcs, et des frontières exactes, notamment au Sahara. Un prototype photo-CGI 1080×1920 doit être présenté et corrigé avant d'animer D01. Préserver le moteur pays ISO3 développé mais dissocier son rendu de l'identité visuelle. Le futur montage/voix/QA suit `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`.
