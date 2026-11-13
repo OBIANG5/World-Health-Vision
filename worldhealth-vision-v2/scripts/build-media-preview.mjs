@@ -1,4 +1,4 @@
-import {copyFileSync, existsSync, readFileSync, writeFileSync} from "node:fs";
+import {copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync} from "node:fs";
 import path from "node:path";
 import {writeRealEditorialCase} from "./media-preview-real-case.mjs";
 import {fileURLToPath} from "node:url";
@@ -34,6 +34,12 @@ html = html.replace(
 writeFileSync(indexPath, html, "utf8");
 copyFileSync(adapter, path.join(dist, "media-preview-bootstrap.js"));
 writeRealEditorialCase(dist);
+// Display durable, user-submitted reviews on the same stable phone site.
+const reviewSource = path.resolve(scriptsDir,"../docs/media/reviews/2026-11-13-cop31-video-5e62e2f0.json");
+const reviewDest = path.join(dist,"review-archive");
+if(!existsSync(reviewSource))throw new Error("Missing authoritative COP31 user review — cannot silently erase it.");
+mkdirSync(reviewDest,{recursive:true});
+copyFileSync(reviewSource,path.join(reviewDest,"cop31-video.json"));
 html = readFileSync(indexPath, "utf8").replace("<title>World Health Vision</title>", "<title>World-Vision Media Studio · reportage réel</title>");
 writeFileSync(indexPath, html, "utf8");
 console.log("Prepared authentic UN newsroom dossier + isolated read-only archive adapter.");
