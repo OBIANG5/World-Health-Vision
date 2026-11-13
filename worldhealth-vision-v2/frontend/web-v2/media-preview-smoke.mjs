@@ -153,8 +153,16 @@ try {
     const ctx=el?.getContext("2d");
     return Boolean(ctx&&el.width>200&&ctx.getImageData(el.width/2|0,el.height/2|0,1,1).data[3]===255);
   });
-  // The new country-motion engineering lab is real and country-driven.
-  // It does not turn the previously rejected static designs into approved art.
+  // Protect the real D00-v6 art reference from accidental replacement by a
+  // schematic geography lab. The lab must be folded until explicitly opened.
+  await page.locator('[data-art-direction-ref="D00-v6"]').waitFor();
+  assert.match(await page.locator('[data-art-direction-ref="D00-v6"]').textContent(),/n’a pas été remplacée/);
+  const technicalFold=page.locator("#wv-globe-tech");
+  assert.equal(await technicalFold.evaluate(element=>element.open),false,
+    "Simplified lab must not appear as the default artistic shot.");
+  await technicalFold.locator("summary").click();
+  assert.equal(await technicalFold.evaluate(element=>element.open),true);
+  // The country-motion lab is real and country-driven, not final cinematic art.
   await page.locator("#wv-geotarget").waitFor();
   await page.waitForFunction(()=>document.querySelectorAll("#wv-geotarget-country option").length>190);
   await page.locator("#wv-geotarget-country").selectOption("GAB");
