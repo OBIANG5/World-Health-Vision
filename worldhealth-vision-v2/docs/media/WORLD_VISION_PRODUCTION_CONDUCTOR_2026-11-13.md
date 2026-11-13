@@ -1,5 +1,13 @@
 # WORLD-VISION — Conducteur de production multi-outils, du sujet au MP4 complet
 
+## RECTIFICATION PRIORITAIRE — PILOTAGE AUTOMATISÉ ET IDENTITÉ AVANT UNE VIDÉO
+
+Le passage historique du présent document recommandant « une vidéo avant toute automatisation » est **remplacé par le choix du propriétaire** : une **chaîne de production cohérente et automatisable d'abord**, avec ses capacités et frais clairement établis ; **pas d'actualité imposée** ni de montage sans notre identité visuelle. Lire [`../../automation/WORLD_VISION_AUTOMATION_COCKPIT.md`](../../automation/WORLD_VISION_AUTOMATION_COCKPIT.md).
+
+Le sujet NASA mangroves a été rejeté et le document d'épisode a été marqué refusé. Le nouveau pilote doit être choisi à partir d'un petit classement d'actualités **majeures**, en expliquant les effets concrets, l'intérêt public, les sources et la pertinence visuelle. Un **vrai compte n8n** n'est pas encore connecté ; le fichier workflow Radar dans GitHub est une configuration importable et non un service actif. Aucun achat/API n'est présumé.
+
+---
+
 **Version : 1.0 — 13 novembre 2026.** Décision de méthode après retour utilisateur sur les limitations du rendu D00/D01. **Statut : workflow formalisé, NON encore exécuté de bout en bout sur une nouvelle actualité.**
 
 > Objectif : produire des reportages vidéo crédibles, courts et professionnels en français en utilisant le meilleur outil **déjà accessible** par étape, plutôt que de tout coder. Appliquer ce guide en parallèle du manuel original de 137 pages, conserver les 14 étapes Media Studio, les décisions humaines et les preuves dans GitHub. L'outil le plus complexe n'est pas automatiquement le meilleur. La vérification journalistique et la qualité du montage comptent plus que les prouesses graphiques.
