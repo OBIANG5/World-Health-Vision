@@ -1,6 +1,18 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 
+## REPRISE PRIORITAIRE — prototype de rotation vers les pays réellement livré (13/11/2026)
+
+**Ne pas recommencer de zéro :** le laboratoire technique qui fait tourner la Terre vers un pays est **codé et accessible** dans le Media Studio. Il repose sur `geoTargeting.mjs` (SLERP, code ISO3, données GeoJSON), `GeoTargetingLab.tsx` et `GeoGlobe.tsx`; une actualité avec `country_iso3` exploitable présélectionne son pays, sinon aucun pays n'est inventé. Rotation manuelle sur 4 s, curseur et reset. **Il s'agit d'une carte Canvas 2.5D de laboratoire, pas de la future vidéo 3D professionnelle.**
+
+**Preuve :** [workflow de preview mobile réussi](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43461296086) ; manifeste de site `source_commit=f0b281889676a20fbefba62fd45cf1fd5c2856ed` ; screenshots iPhone publiés dont [arrivée au Gabon](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-globe-motion-arrival-gabon-iphone.png). [Lien Media Studio permanent](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/index.html?view=media&screen=review&gate=direction), bouton « Tester le nouveau moteur : la Terre tourne vers un pays ».
+
+**Les validations existantes ne changent pas :** G0 logo bleu officiel, D00-v6 concept art non approuvé, A/B/C rejetées, MP4 COP31 refusé, D01 seulement prototype technique. **Étape suivante :** obtenir le master D00 photoréaliste 3D en vrai 9:16 avec frontières Sahara fiables, halo atmosphérique cyan dominant, blanc d'œil pur et exactement deux arcs hors écran ; le faire approuver, puis le connecter à la rotation mathématique. Ensuite voix naturelle à auditionner, montage rushes authentiques, sous-titres, audio, QA, exports. Le PDF 137 pages et les 14 étapes du Media Studio restent documentés [dans le plan directeur](worldhealth-vision-v2/docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md) et [l'audit d'ingénierie](worldhealth-vision-v2/docs/media/engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md).
+
+---
+
+
+
 ## POINT ACTUEL — 13 NOVEMBRE, NOUVELLE IMAGE D00-v6 ET PLAN COMPLET
 
 **Ce paragraphe est prioritaire sur les récapitulatifs antérieurs v4/D00 du fichier.** Le propriétaire aime la direction de D00-v5 mais a demandé blanc d'œil **pur**, diffusion atmosphérique **plus claire que les deux arcs** et **frontières des pays du Sahara** beaucoup plus lisibles. Une nouvelle **image fixe D00-v6** existe dans la conversation, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. **Elle n'est pas encore validée et son binaire n'a pas été enregistré sur GitHub.**
