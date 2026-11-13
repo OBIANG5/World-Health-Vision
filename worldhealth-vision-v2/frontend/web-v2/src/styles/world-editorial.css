@@ -247,10 +247,22 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
  .whv-nav-btn--mobile-hub{display:inline-flex;align-items:center;background:#e6efe3;border-color:#d5e4d4;color:#244c3b;order:-1;position:sticky;left:0;z-index:1152;box-shadow:4px 0 9px #fffefa}
 }
 @media (max-width:1080px) and (min-width:721px){
+ /* Two-row tablet masthead, no nav labels overlapping the brand. */
+ .whv-header{height:115px;display:flex;flex-direction:column;align-items:flex-start;
+   justify-content:center;gap:5px;padding:10px 20px}
+ .whv-brand{height:41px;min-height:41px}
+ .whv-brand-logo{width:42px;height:37px;flex:0 0 42px}
+ .whv-brand-text h1{font-size:16px}
+ .whv-nav{flex:0 0 auto;display:flex;width:100%;min-height:37px;
+   align-items:center;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;
+   scrollbar-width:none;gap:3px}
+ .whv-nav::-webkit-scrollbar{display:none}
+ .whv-nav-btn{font-size:11px;padding:7px 9px}
  .whv-nav-btn--profile,.whv-nav-btn--lang{display:none}
- .whv-desktop-story{left:32px;width:36vw;max-width:36vw}
+ .whv-desktop-story{left:32px;width:35vw;max-width:35vw;top:clamp(178px,23vh,230px)}
  .whv-desktop-story h2{font-size:clamp(36px,4vw,56px)}
- .whv-page .eye-stage.globe-mode{left:42%;right:20px}
+ .whv-page .eye-stage.globe-mode,.whv-page .eye-stage.globe-mode.drawer-open{
+   left:42%;right:20px;top:145px;bottom:auto;height:min(67vh,625px)}
 }
 @media (max-width:720px){
  html,body,#root{background:var(--whv-paper)}
@@ -287,13 +299,13 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
  .whv-service-status{padding:8px!important}
  .whv-page .eye-stage.globe-mode,.whv-page .eye-stage.globe-mode.drawer-open{
    top:145px!important;left:12px!important;right:12px!important;bottom:auto!important;
-   width:calc(100% - 24px)!important;height:clamp(238px,70vw,292px)!important;
+   width:calc(100% - 24px)!important;height:clamp(190px,65vw,265px)!important;
    max-width:none;border-radius:19px;border:1px solid rgba(85,109,99,.18);
    box-shadow:0 15px 34px rgba(41,66,52,.13);margin:0;overflow:hidden
  }
  .whv-page .eye-stage.eye-mode,.whv-page .eye-stage.eye-mode.drawer-open{
    top:145px!important;left:12px!important;right:12px!important;
-   width:calc(100% - 24px);height:clamp(230px,70vw,292px)
+   width:calc(100% - 24px);height:clamp(190px,65vw,265px)
  }
  .whv-page .whv-map-mode-switch{top:7px;right:8px;padding:3px}
  .whv-page .whv-map-mode-switch button{font-size:10px;padding:7px 9px}
@@ -303,7 +315,7 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
  .whv-desktop-story{display:none}
  .whv-page:has(.eye-stage.globe-mode) .whv-mobile-overview,
  .whv-page .whv-mobile-overview {
-   display:flex;position:absolute;top:calc(145px + clamp(238px,70vw,292px) + 12px)!important;
+   display:flex;position:absolute;top:calc(145px + clamp(190px,65vw,265px) + 12px)!important;
    left:14px;right:14px;bottom:max(9px,env(safe-area-inset-bottom,0px));
    padding:5px 2px 22px;gap:12px;overflow-y:auto;
    scrollbar-width:thin;scrollbar-color:#cedbcd transparent
