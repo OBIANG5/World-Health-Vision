@@ -2,6 +2,21 @@
 
 **Date de rédaction : 13 novembre 2026.** Ce document est un **état de reprise vivant**, à actualiser après chaque incrément. Les preuves de changement et les dates des commits sont dans [COMMIT_HISTORY_INDEX.md](COMMIT_HISTORY_INDEX.md).
 
+## Nouvel élément confirmé le 13 novembre 2026 : référence vidéo originale réexpédiée
+
+Une des deux vidéos TikTok mentionnées dans la conversation disparue vient d'être **réellement reçue et inspectée**. Il s'agit d'une vidéo de ~64,9 s en 512×910 H.264 avec globe terrestre et cinq sujets géographiques (Mexique, Royaume-Uni, Riyad/Bruxelles, Soudan du Sud, Turquie/Chine), filigrane `@focus.geopolitique`.
+
+- **Analyse vérifiée et chronométrée :** `docs/media/references/2026-11-13-focus-geopolitique-video-reference.md`
+- **JSON de preuve :** `docs/media/references/2026-11-13-focus-geopolitique-video-reference.json`
+- **Empreinte du MP4 remis :** `4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb`
+- **Conservation :** les observations/empreintes sont commités dans GitHub ; le **fichier vidéo tiers n'a pas été ajouté au dépôt** et reste une pièce reçue en conversation. Droits de rediffusion non établis.
+- **Nouvelle piste G1 :** **D — « Le globe raconte l'actualité »** (globe → zoom pays → marqueur/contour → vraie information). **CONCEPT PROPOSÉ, PAS une maquette réalisée, PAS une validation utilisateur.** Les directions A/B/C précédentes restent non approuvées.
+- **Aucun changement automatique de montage :** conserver l'exigence de validation de l'ouverture avant animation 3–6 s, puis de la voix et du montage.
+
+Ce nouvel élément documentaire **complète**, mais ne supprime pas, la priorité de l'avis humain G1. La seconde vidéo évoquée précédemment n'a pas été remise dans ce tour.
+
+---
+
 ## Ce qu'il faut ouvrir d'abord
 
 | Rôle | Référence |
