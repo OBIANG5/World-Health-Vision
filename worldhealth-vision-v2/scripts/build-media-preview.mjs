@@ -1,5 +1,6 @@
 import {copyFileSync, existsSync, readFileSync, writeFileSync} from "node:fs";
 import path from "node:path";
+import {writeRealEditorialCase} from "./media-preview-real-case.mjs";
 import {fileURLToPath} from "node:url";
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
@@ -32,4 +33,5 @@ html = html.replace(
 );
 writeFileSync(indexPath, html, "utf8");
 copyFileSync(adapter, path.join(dist, "media-preview-bootstrap.js"));
-console.log("Prepared the exact Media Studio frontend with isolated fictional adapter.");
+writeRealEditorialCase(dist);
+console.log("Prepared authentic UN newsroom dossier + isolated read-only archive adapter.");
