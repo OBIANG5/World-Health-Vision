@@ -1,7 +1,7 @@
 name: World Health Vision V2 editorial UX review
 on:
   push:
-    branches: ['design/v2-world-explorer-editorial-2026-11-13']
+    branches: ['design/v2-world-explorer-editorial-2026-11-13', 'fix/v2-editorial-responsive-*']
   workflow_dispatch:
 permissions:
   contents: read
