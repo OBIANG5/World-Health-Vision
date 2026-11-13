@@ -314,3 +314,14 @@ Build GitHub Actions modifié pour embarquer une source NASA avec provenance, co
 **Limites non masquées :** ce n'est pas une vidéo exportée, le design n'a pas encore la validation artistique du propriétaire et le PNG d'origine D00-v6 n'a pas été committé. L'outil est un premier CGI contrôlable. Ne pas substituer un dessin plat ni chercher à prétendre que la référence IA et le shader sont pixel-identiques.
 
 **Reprise suivante :** inspection esthétique du CGI avec le propriétaire ; calage fidèle aux deux arcs/au halo du D00-v6 ; puis D01 au pays ciblé et micro-clip de 3–6 secondes, montage et voix selon `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`. Document technique [CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md](../media/CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md).
+
+
+---
+
+## 13 novembre 2026 — Export CGI D01 / 4 s : image vers vidéo, sans perte du projet
+
+**Développement effectif** : `CinematicCapture.tsx` (route de rendu plein écran et pilotage déterministe same-origin par frame), `render-cinematic-d01.mjs` (96 captures Playwright, vraie texture NASA, coordination avec interpolation sphérique, encodage FFmpeg H.264, vérification FFprobe) et `.github/workflows/whv-cinematic-motion-d01.yml` (build, tests, rendu, archivage artifact et GitHub Preview). `.github/workflows/whv-media-studio-mobile-preview.yml` modifié pour préserver `media-lab/` à chaque mise à jour.
+
+**Résultat vérifié en ligne** : Workflow https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755 completed/success ; manifest JSON déclare **GAB, 4 s, 24fps, 1080×1920, 96 frames**, technique non approuvée. SHA-256 du vrai MP4 `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a`, blob Git `8dd35afc5f5ef56eae1b40b72208dfc19380cb78`. Lien durable : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4.
+
+**Important** : cette réalisation n'est pas une nouvelle validation artistique de D00-v6 et n'est pas un film sur une véritable actualité du Gabon : ce pays sert de cible géographique d'essai. Voix, actualité sourcée, photos sous droits, sous-titres, montage et contrôles finaux restent à venir. **Ne pas publier sur un réseau social.** Plus de détails dans [CINEMATIC_D01_MICROCLIP_2026-11-13.md](../media/CINEMATIC_D01_MICROCLIP_2026-11-13.md). Reprendre la revue de la vidéo et de la fidélité à l'image D00-v6, puis le storyboard et la voix de qualité.
