@@ -1,0 +1,11 @@
+{
+  "asset": "blue-marble-topography-nasa.jpg",
+  "source": "https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography/january/world.topo.200401.3x5400x2700.jpg",
+  "source_page": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography/",
+  "credit": "NASA Earth Observatory / Reto Stöckli et al. (Blue Marble Next Generation)",
+  "month": "January",
+  "type": "global equirectangular daytime land/topography mosaic",
+  "night_city_lights": false,
+  "country_borders": "supplied separately via V2 countries.geojson, not part of imagery",
+  "sha256": "9743175942473681d78838ca1042553dab4779cf957fb6d8f22a81fb796f7797"
+}
