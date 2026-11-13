@@ -2,8 +2,9 @@
 // Contient la carte interactive clippée en forme d'œil.
 // Design inspiré du logo officiel : bordure épaisse navy, globe en pupille.
 
-import { memo, useMemo, useState } from "react";
-import WorldMap from "../map/WorldMap";
+import { lazy, memo, Suspense, useMemo, useState } from "react";
+// Leaflet is heavy: do not download its JS/CSS until the user opens the eye-map mode.
+const WorldMap = lazy(() => import("../map/WorldMap"));
 import GlobeMap from "../map/GlobeMap";
 import type { CountrySummary } from "../../api/types";
 import "../../styles/eye.css";
@@ -65,12 +66,14 @@ function EyeMapFrame({
 
         {/* Couche 2 : carte Leaflet masquée en iris (globe central) */}
         <div className="eye-map-surface">
-          <WorldMap
-            activeIso3Set={activeIso3Set}
-            selectedCountryIso3={selectedCountryIso3}
-            onCountryClick={onCountryClick}
-            countriesMap={countriesMap}
-          />
+          <Suspense fallback={<div className="whv-eye-map-loading" role="status">Chargement de la carte détaillée…</div>}>
+            <WorldMap
+              activeIso3Set={activeIso3Set}
+              selectedCountryIso3={selectedCountryIso3}
+              onCountryClick={onCountryClick}
+              countriesMap={countriesMap}
+            />
+          </Suspense>
         </div>
 
         {/* Couche 3 : SVG décoratif — bordure épaisse + bague limbique */}
