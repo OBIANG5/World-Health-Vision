@@ -79,7 +79,7 @@ jobs:
         run: npm run typecheck
       - name: Prepare Chromium render browser
         working-directory: worldhealth-vision-v2/services/media-renderer
-        run: npx --yes @remotion/cli@4.0.542 browser ensure
+        run: node --input-type=module -e 'import {ensureBrowser} from "@remotion/renderer"; await ensureBrowser();'
       - name: Render REAL branded 9:16 MP4, poster, SHA-256 and archive
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: node render-first-report.mjs
