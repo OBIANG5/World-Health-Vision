@@ -323,13 +323,11 @@ export default function ProductionJourney({
     <section className="wvj-current-release" aria-label="Nouveautés du Media Studio">
       <div className="wvj-current-release-copy">
         <div className="wvj-current-kicker">PROCHAINE VALIDATION · DIRECTION ARTISTIQUE</div>
-        <h2>Les trois nouvelles ouvertures sont disponibles ici.</h2>
-        <p>Le logo bleu officiel est approuvé. Compare les propositions A (documentaire),
-          B (chiffres) et C (explication), puis note seulement celle que tu choisis.
-          Le montage COP31 original reste refusé 1/10.</p>
+        <h2>Le globe raconte le monde — six plans à juger.</h2>
+        <p>Tu as rejeté les trois anciennes maquettes A/B/C. Nous sommes maintenant sur une autre approche : Terre entière → pays → ville → sources → explication → transition. Chaque image se note séparément. Le logo bleu actuel est conservé, et l’ancien MP4 COP31 reste refusé 1/10.</p>
       </div>
       <button type="button" onClick={()=>onOpenReview("direction")}>
-        Voir A, B et C · noter une proposition ↗
+        Examiner les 6 plans du globe · noter plan par plan ↗
       </button>
     </section>
     <div className="wvj-controls">
