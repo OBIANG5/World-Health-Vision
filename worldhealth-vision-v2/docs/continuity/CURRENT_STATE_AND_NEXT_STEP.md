@@ -1,6 +1,22 @@
 # World-Vision — état actuel, blocages et prochaine action
 
 
+## POINT DE REPRISE LE PLUS RÉCENT — moteur de rotation géographique codé et visible
+
+**Le code a changé, pas l'approbation artistique.** Le 13 novembre 2026, un premier moteur de **rotation vers le pays de l'actualité** a été développé dans `frontend/web-v2/src/media/geoTargeting.mjs` avec les types, le laboratoire React et les tests, basé sur le GeoJSON du produit et le `country_iso3` du dossier. Il est intégré sous la direction artistique des six étapes. Le labo permet de choisir le Gabon/Mali ou d'autres pays, faire tourner le globe en 4 s, ajuster la progression, et revenir au départ. Le rendu est une **simulation technique Canvas/2.5D**, pas la Terre photographique D00-v6 ni une vidéo.
+
+**Preuves officielles de livraison :** [GitHub Actions preview #43461296086](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43461296086) **success**, tests Node/TypeScript/Playwright sur iPhone/desktop, manifeste de preview `source_commit=f0b281889676a20fbefba62fd45cf1fd5c2856ed`, captures réelles `media-globe-motion-lab-iphone.png` et `media-globe-motion-arrival-gabon-iphone.png`. `backend_connected=false` et `channel_published=false` restent vrais.
+
+**Lien utilisable :** https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/index.html?view=media&screen=review&gate=direction → bouton **« Tester le nouveau moteur : la Terre tourne vers un pays »**. Il ne remplace pas les frames originales D00–D05 ni leurs avis.
+
+**Le statut d'approbation reste :** G0 logo bleu approuvé ; MP4 COP31 refusé 1/10 ; A/B/C refusées ; D00-v5 appréciée avec corrections ; D00-v6 image **non encore approuvée**, PNG non commité ; 3D photoréaliste, scène Remotion, voix et montage final non réalisés. Préserver toute la formation originale de 137 pages dans le [plan directeur](../media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md) et l'[audit de géociblage](../media/engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md).
+
+**Action de développement suivante, sans revenir en arrière :** master artistique D00 reproductible en **vraie 3D 1080×1920** (frontières géographiques exactes, atmosphère cyan, deux arcs et vrai blanc d'œil, textures sous droits vérifiés), test image sur iPhone et avis humain. Le **mouvement géographique existe** désormais en code et doit être réutilisé, puis raccordé à la 3D et testé 3–6 s. Ne pas sauter auditions de voix, alignement, montage des vrais plans et QA. Chaque itération : code GitHub, tests, SHA preview, journal et décision.
+
+---
+
+
+
 ## POINT ACTIF — D00-v6 après retour positif conditionnel sur v5 (13 novembre 2026)
 
 **NOUVELLE RÉFÉRENCE (priorité sur les anciennes sections v4) :** l'utilisateur a trouvé **très belle** D00-v5 mais demandé vrai blanc de l'œil (#FFFFFF), halo atmosphérique bleu plus lumineux que les deux arcs et frontières nationales (notamment Sahara) plus marquées ; conserver la taille de Terre. Une image **D00-v6 a été créée**, `a_crisp_ultra_detailed_high_contrast_digital_ill.png`, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`, 1086×1448, **EN ATTENTE DE L'AVIS HUMAIN, PAS ENCORE UNE VIDÉO**. Les bytes du PNG ne sont **pas versés à GitHub**, seul le contrat et son empreinte y figurent. Ne pas prétendre qu'un aperçu du site montre v6 : le build statique n'a pas été relancé dans cette session.
