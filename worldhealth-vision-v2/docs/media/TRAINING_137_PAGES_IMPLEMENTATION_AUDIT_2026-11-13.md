@@ -3,6 +3,18 @@
 **Date de lecture et croisement avec le projet : 13 novembre 2026.**  
 **Fichier transmis par l'utilisateur :** `monter-et-animer-vos-videos-avec-claude-v2.pdf` ; **137 pages**. Ce document est une source de méthode et de choix techniques ; il ne donne pas accès au compte Claude ni à un moteur de création d'images. Le projet doit réaliser la même ambition **avec ChatGPT et le code GitHub**, sans prétendre que Claude est indispensable.
 
+## Portée réelle de cet audit (mise au point 13 novembre)
+
+Ce document est un **audit thématique** de plusieurs sections de la formation de 137 pages, et non une relecture certifiée de chaque ligne du PDF ni un audit intégral des fichiers du projet. La documentation du manuel a été extraite pour les chapitres moteur, design system, voix, motion, dérushage, studio, contrôle qualité et animations ; le code inspecté inclut `GeoGlobe.tsx`, `GlobeDirection.tsx`, `ReviewStudio.tsx`, `WorldVisionShort.tsx`, `WorldVisionFirstReport.tsx`, `media-renderer/server.mjs`, `media-service/voiceover.py` et leurs packages. D'autres fichiers et tests restent à examiner avant un avis d'implémentation complète.
+
+**Écart concret :** les frames D00–D05 sont actuellement Canvas/React et ne sont **pas intégrées à une nouvelle composition Remotion animée**, alors que les compositions historiques de Remotion produisaient le premier MP4, rejeté. Le service vocal consulté fait appel à **OpenAI Realtime**, pas à ElevenLabs ou Gemini. Il ne faut pas déclarer ces dernières voix testées sur la base de leur existence dans le cours.
+
+**Distinction éditoriale :** les cinq pays de la vidéo d'inspiration ne sont pas le modèle obligatoire. Le nouveau [contrat des formats de récit](art-direction/EDITORIAL_GLOBE_FORMATS_AND_REVIEW_CONTRACT_2026-11-13.md) définit **un seul pays pour une actualité localisée**, une relation à deux ou plusieurs lieux seulement si l'histoire le nécessite, et un vrai tour du monde seulement lorsqu'il s'agit de ce format.
+
+**État du déploiement :** les CI sont des preuves de compilation/test, pas des confirmations d'un aperçu visible sur iPhone ni des validations artistiques. Il faut comparer le HEAD source au `source_commit` du manifeste de preview.
+
+---
+
 ## Ce que la formation demande effectivement
 
 | Pages | Méthode | Adaptation vérifiable pour World-Vision | État |
