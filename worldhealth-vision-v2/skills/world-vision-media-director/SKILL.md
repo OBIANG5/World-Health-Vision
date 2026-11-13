@@ -68,3 +68,15 @@ Ne jamais répondre « tout est terminé » en lisant un ancien résumé. Recher
 **Après G1 (et seulement après approbation)** : construire en 9:16 un globe réellement 3D, avec frontière GeoJSON vérifiée et rotation vers les coordonnées `lat/lon` de la **nouvelle actuelle** ; un seul pays si le sujet est localisé. Tester séparément une micro-animation de 3–6 secondes. Puis D02–D05, vrais rushes, 3 voix comparées sur même phrase, transcription/alignement, SRT, montage, QA et export. Un **petit logo officiel** en coin d'écran est une hypothèse de design à tester sur fonds variés, pas un emplacement déjà validé.
 
 **Important sur les images** : v5 et v6 ont un hash/document GitHub, **mais pas leurs PNG binaires dans le repo ni dans la preview statique**. Le site affiche les six maquettes vectorielles précédentes et le nouveau statut/plan, pas la nouvelle image ou une vraie vidéo. Ne jamais présenter des frontières inventées par l'illustration IA comme des frontières géographiques exactes.
+
+
+## INCRÉMENT GÉOGRAPHIQUE RÉEL : moteur ISO3/SLERP + labo navigateur (13 novembre 2026)
+
+**Lire** `docs/media/engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md` **avant** de recommencer une animation de globe, en plus de `AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`.
+
+- `frontend/web-v2/src/media/geoTargeting.mjs` + `.d.mts` : **source mathématique de référence** pour les rotations courtes sur sphère, passage antiméridien, validation longitude/latitude, choix de pays depuis la géographie réelle `public/countries.geojson` et correspondance `MediaStory.country_iso3`.
+- `GeoTargetingLab.tsx/.css` : laboratoire interactif dans la vraie **page de direction artistique** ; changement manuel de pays, rotation 4 s, curseur et bouton reset. L'ISO3 du dossier éditorial, si présent, présélectionne le pays. **La sélection manuelle est une simulation, pas une correction des faits journalistiques.**
+- `GeoGlobe.tsx` : rendu Canvas technique avec thème spatial et frontières à fort contraste à l'arrivée, mais **pas** la Terre photoréaliste du concept D00-v6. Les six images fixes antérieures et leurs retours historiques ne sont pas remplacés.
+- `geoTargeting.test.mjs` est exécuté en CI avant compilation ET publication de l'aperçu. La capture iPhone géographique est produite par `media-preview-smoke.mjs`.
+- Ne jamais prétendre que le **centroïde représentatif** d'un pays est la ville de l'événement. Pour rendre un vrai reportage, fournir coordonnées explicites + source et régler correctement les territoires géopolitiques contestés.
+- **Prochaine étape artistique** : recréer la belle Terre D00-v6 de manière réellement reproductible (atmosphère/yeux/white matte/satellite et GIS) et la faire approuver en vrai 9:16 ; puis fusionner mouvement et style, tester micro-clip et seulement ensuite les autres plans/voix/montage. Aucune vidéo finale n'est approuvée.
