@@ -1,0 +1,61 @@
+name: WHV V2 initial load lazy feature performance
+on:
+  push:
+    branches:
+      - 'improve/v2-first-load-speed-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fast-start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install exact V2 dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Build with strict TypeScript checks
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx tsc -b --pretty false
+          npx vite build --base=./
+      - name: Audit initial HTML preload graph and asset bytes
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync,statSync} from 'node:fs';
+          import {join} from 'node:path';
+          const html=readFileSync('dist/index.html','utf8');
+          const refs=[...html.matchAll(/<(?:script|link)\b[^>]*\b(?:src|href)="(\.\/assets\/[^"]+)"/g)].map(m=>m[1]);
+          const unique=[...new Set(refs)];
+          const report=unique.map(path=>({path,bytes:statSync(join('dist',path)).size}));
+          const bytes=report.reduce((n,r)=>n+r.bytes,0);
+          console.log('STARTUP_ASSET_MANIFEST',JSON.stringify({count:report.length,bytes,files:report}));
+          for(const forbidden of ['vendor-pdf','vendor-charts','vendor-leaflet']){
+            if(unique.some(path=>path.includes(forbidden)))throw Error('Unexpected eager dependency: '+forbidden);
+          }
+          if(!unique.some(path=>path.endsWith('.js')))throw Error('No app JavaScript');
+          JS
+      - name: Install browser
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+      - name: Verify genuine mobile and desktop globe plus on-demand original Leaflet
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node globe-smoke.mjs
+      - name: Upload actual device screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-lazy-map-mobile-desktop
+          path: worldhealth-vision-v2/frontend/web-v2/globe-artifacts/
+          if-no-files-found: ignore
