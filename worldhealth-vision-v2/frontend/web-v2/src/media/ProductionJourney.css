@@ -282,3 +282,15 @@ radial-gradient(ellipse at 10% 85%,rgba(151,102,80,.5),transparent 48%),linear-g
   .wvj-current-release{flex-direction:column;align-items:stretch;padding:24px 19px}
   .wvj-current-release button{min-width:0;max-width:none;width:100%}
 }
+
+
+/* Media direction continuity: visible on the REAL mobile preview without pretending
+   that the current generated D00-v6 image is already in the static site. */
+.wvj-direction-status{margin-top:15px;padding:12px 14px;border-left:3px solid #1d8497;border-radius:6px;background:rgba(14,101,120,.075)}
+.wvj-direction-status strong{display:block;font-size:10px;letter-spacing:.08em;color:#145f70;font-weight:850;margin-bottom:5px}
+.wvj-current-release .wvj-direction-status p{line-height:1.7}
+.wvj-next-production{margin-top:15px;padding-top:13px;border-top:1px solid rgba(20,113,130,.2)}
+.wvj-next-production>strong{display:block;color:#1f6b7c;font-size:10px;letter-spacing:.12em;font-weight:900;margin-bottom:7px}
+.wvj-current-release .wvj-next-production p{margin:0 0 8px}
+.wvj-next-production a{display:inline-block;color:#125b75;font-size:12px;font-weight:780;line-height:1.5;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.wvj-next-production a:hover{color:#0a455c}
