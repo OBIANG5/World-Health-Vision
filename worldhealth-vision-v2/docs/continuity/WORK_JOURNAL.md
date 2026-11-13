@@ -225,3 +225,11 @@ Prochaine action soumise à validation :
 **Travail non réalisé :** pas de connexion Flow/ElevenLabs/Gemini/n8n/Make, pas de voix auditionnée, pas de scène de reportage intégrée, pas de rendu Remotion 3D/Blender, pas de nouvelle preview GitHack publiée et pas d'export TikTok/WhatsApp. **Ne pas fusionner la PR #5 ni publier un contenu.**
 
 **Prochaine décision :** validation ou correction D00-v6 par le propriétaire. Ensuite image finale 9:16 calculée (atmosphère, frontières fiables, œil), QA mobile, puis D01 et micro-clip 3–6 s ; conserver les gates du PDF pour la voix et le montage.
+
+
+### Complément — visibilité du plan sur le site (après le plan directeur D00-v6)
+
+- **Code frontend modifié :** `ProductionJourney.tsx` (commit `fa26c788b463269f64afbb760a4099d8e2498f35`) et `ProductionJourney.css` (commit `00224feaaffb97c13a65e2518ee301d7aaefa910`). L'accueil du Media Studio montre un **statut D00-v6 non validé**, les prochaines étapes du parcours vidéo et un lien clair vers le plan directeur du manuel, en précisant que les six captures du laboratoire sont **plus anciennes**.
+- **CI de compilation** pour le commit source `00224fea...` : succès [run #43457617960](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457617960).
+- **Workflow de preview** [run #43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661), statut **in_progress** lors du contrôle initial. Ne pas prétendre à une livraison CDN réussie tant que le manifeste n'est pas actualisé et que le run n'est pas vert.
+- **Image D00-v6** : toujours absente des fichiers publiés dans GitHack ; le site ne contient que le **statut et les instructions**, pas les pixels de ce visuel. Aucune vidéo CGI tournante n'a été produite.
