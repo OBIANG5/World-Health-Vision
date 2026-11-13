@@ -424,7 +424,7 @@ export default function ReviewStudio({story,onOpenJourney,previewMode}:{
           </div>
           <button type="button" onClick={()=>setGate("direction")}>Étape suivante : explorer le globe plan par plan →</button>
         </div></>:<>
-          {gate==="direction"&&<CreativeDirections selected={style} onSelect={setStyle}/>}
+          {gate==="direction"&&<CreativeDirections selected={style} onSelect={setStyle} story={story}/>}
           <ReviewForm key={`${story.id}:${gate}:${evidence||"missing"}`}
             story={story} gate={gate} style={style} previewMode={previewMode}/>
         </>}
