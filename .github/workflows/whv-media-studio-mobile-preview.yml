@@ -60,6 +60,37 @@ jobs:
           mkdir -p worldhealth-vision-v2/frontend/web-v2/dist/media-pilots
           cp -a existing-real-media/media-pilots/. \
             worldhealth-vision-v2/frontend/web-v2/dist/media-pilots/
+      - name: Bundle credited historical photograph for documentary style frame
+        run: |
+          set -euo pipefail
+          DEST=worldhealth-vision-v2/frontend/web-v2/dist/editorial
+          mkdir -p "$DEST"
+          # A 2017 public-domain U.S. Army archive is illustrative of
+          # disaster risk. It is NOT footage of COP31 2026.
+          URLS=(
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg/960px-Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg'
+            'https://commons.wikimedia.org/wiki/Special:FilePath/Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg?width=960'
+            'https://media.defense.gov/2017/Aug/27/2002037959/-1/-1/0/170827-A-ZW944-005A.JPG'
+          )
+          ok=0
+          for u in "${URLS[@]}"; do
+            echo "Retrieving licensed source from ${u%%/*}//... "
+            if curl -L --fail --silent --show-error --retry 2 \
+              --max-time 25 -A 'WorldVisionNewsroom/1.0 (editorial source QA)' \
+              "$u" -o "$DEST/harvey-rescue-2017.jpg" && \
+              test "$(stat -c %s "$DEST/harvey-rescue-2017.jpg")" -gt 25000 && \
+              test "$(file -b --mime-type "$DEST/harvey-rescue-2017.jpg")" = "image/jpeg"; then
+              ok=1
+              break
+            fi
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo "A photographic design without its verified archival photo is NOT publishable."
+            exit 1
+          fi
+          sha256sum "$DEST/harvey-rescue-2017.jpg"
+          echo "Source credit: US Army photographer 1st Lt. Zachary West, 2017 Houston, public domain US federal work."
+          test -s worldhealth-vision-v2/docs/media/art-direction/cop31-opening-directions-v1.json
       - name: Install browser smoke-test dependency
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
