@@ -15,17 +15,20 @@ type GeoFeature={
   geometry?:{type:string;coordinates:unknown}|null;
 };
 type FeatureCollection={type:"FeatureCollection";features:GeoFeature[]};
-type GlobePose={
+export type GlobePose={
   centerLon:number;centerLat:number;
   radiusRatio?:number;
   target?:Position;
   label?:string;
   highlightTurkey?:boolean;
+  highlightCountryIso3?:string;
+  preciseBorders?:boolean;
+  theme?:"newsroom"|"space";
 };
 
 let cachedFeatures:FeatureCollection|null=null;
 let fetchPromise:Promise<FeatureCollection>|null=null;
-function loadCountries():Promise<FeatureCollection>{
+export function loadCountries():Promise<FeatureCollection>{
   if(cachedFeatures)return Promise.resolve(cachedFeatures);
   if(!fetchPromise)fetchPromise=fetch("./countries.geojson")
     .then(async response=>{
@@ -183,13 +186,19 @@ function drawLandOnSphere(
 function paint(
  ctx:CanvasRenderingContext2D,w:number,h:number,pose:GlobePose,data:FeatureCollection|null
 ){
+  const space=pose.theme==="space";
   const ratio=pose.radiusRatio??0.42;
   const r=Math.min(w*ratio,h*.395);
   const cx=w*.5,cy=h*.49;
   ctx.clearRect(0,0,w,h);
-  // Full-bleed warm newsroom backdrop; no lifeless black void.
+  // The earlier editorial board keeps its pale newsroom look. The
+  // geographic motion lab uses restrained space colours (not final D00 art).
   const bg=ctx.createLinearGradient(0,0,w,h);
-  bg.addColorStop(0,"#f1f9fa");bg.addColorStop(.54,"#d9e9ef");bg.addColorStop(1,"#bcd6e5");
+  if(space){
+    bg.addColorStop(0,"#030f23");bg.addColorStop(.54,"#061c3e");bg.addColorStop(1,"#061429");
+  }else{
+    bg.addColorStop(0,"#f1f9fa");bg.addColorStop(.54,"#d9e9ef");bg.addColorStop(1,"#bcd6e5");
+  }
   ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
   const outer=ctx.createRadialGradient(cx-r*.17,cy-r*.22,r*.53,cx,cy,r*1.22);
   outer.addColorStop(0,"rgba(76,159,185,0)");outer.addColorStop(.72,"rgba(58,134,178,.16)");
@@ -197,12 +206,14 @@ function paint(
   ctx.fillStyle=outer;ctx.fillRect(0,0,w,h);
 
   // Soft atmospheric rim.
-  ctx.save();ctx.shadowColor="rgba(26,121,166,.33)";ctx.shadowBlur=r*.15;
-  ctx.fillStyle="#d1f0fa";ctx.beginPath();ctx.arc(cx,cy,r+1,0,2*Math.PI);ctx.fill();ctx.restore();
+  ctx.save();ctx.shadowColor=space?"rgba(14,228,255,.88)":"rgba(26,121,166,.33)";
+  ctx.shadowBlur=r*(space?.23:.15);
+  ctx.fillStyle=space?"#42d9fc":"#d1f0fa";
+  ctx.beginPath();ctx.arc(cx,cy,r+1,0,2*Math.PI);ctx.fill();ctx.restore();
   ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
   const sea=ctx.createRadialGradient(cx-r*.49,cy-r*.5,r*.06,cx+r*.18,cy+r*.18,r*1.6);
-  sea.addColorStop(0,"#95cedd");sea.addColorStop(.34,"#3d9bb7");
-  sea.addColorStop(.68,"#126887");sea.addColorStop(1,"#17465f");
+  sea.addColorStop(0,space?"#1d80cf":"#95cedd");sea.addColorStop(.34,space?"#0852a8":"#3d9bb7");
+  sea.addColorStop(.68,space?"#063c7b":"#126887");sea.addColorStop(1,space?"#03214d":"#17465f");
   ctx.fillStyle=sea;ctx.fillRect(cx-r,cy-r,r*2,r*2);
   const proj=(p:Position)=> {
     const q=pointToSphere(p[0],p[1],pose.centerLon,pose.centerLat,r);
@@ -225,6 +236,23 @@ function paint(
     ctx.font=`600 ${Math.max(10,Math.round(w*.035))}px sans-serif`;
     ctx.textAlign="center";ctx.fillText("CHARGEMENT DE LA CARTE…",cx,cy+3);
   }
+  // Optional true-vector borders; raster colour alone is insufficient in
+  // deserts. These lines are reprojected from REAL GeoJSON, horizon-clipped.
+  // Enable near arrival / on static inspection to protect animation FPS.
+  if(data&&pose.preciseBorders){
+    for(const feature of data.features){
+      const iso=String(feature.properties?.["ISO3166-1-Alpha-3"]||"").toUpperCase();
+      const selected=Boolean(pose.highlightCountryIso3)&&iso===pose.highlightCountryIso3;
+      const rings=contours(feature);
+      for(const ring of rings){
+        if(ring.length<2)continue;
+        ctx.beginPath();visibleFragment(ctx,ring,proj);
+        ctx.lineWidth=selected?Math.max(2,w*.005):Math.max(.8,w*.0019);
+        ctx.strokeStyle=selected?"#ffda81":space?"rgba(255,255,255,.95)":"rgba(14,42,69,.78)";
+        ctx.stroke();
+      }
+    }
+  }
   // Directional atmosphere and a very soft limb shadow.
   const limb=ctx.createRadialGradient(cx-r*.22,cy-r*.32,r*.34,cx+r*.16,cy+r*.16,r*1.25);
   limb.addColorStop(0,"rgba(255,255,255,.22)");
@@ -233,8 +261,11 @@ function paint(
   limb.addColorStop(1,"rgba(0,23,42,.50)");
   ctx.fillStyle=limb;ctx.fillRect(cx-r,cy-r,r*2,r*2);
   ctx.restore();
-  ctx.strokeStyle="rgba(243,255,255,.9)";
-  ctx.lineWidth=Math.max(1,w*.006);ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+  ctx.save();
+  ctx.strokeStyle=space?"rgba(105,245,255,.98)":"rgba(243,255,255,.9)";
+  ctx.lineWidth=Math.max(1,w*(space?.005:.006));
+  if(space){ctx.shadowColor="rgba(21,215,255,.9)";ctx.shadowBlur=Math.max(4,w*.028)}
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();ctx.restore();
 
   if(pose.target){
     const target=proj(pose.target);
