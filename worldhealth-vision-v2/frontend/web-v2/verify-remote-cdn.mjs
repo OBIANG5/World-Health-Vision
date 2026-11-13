@@ -55,6 +55,15 @@ try {
       };
     });
     console.log("VERCEL_BROWSER_BASELINE (lab, not real user measurements)",JSON.stringify(metrics));
+    // Initial screen should NOT fetch large feature libraries until a user
+    // explicitly opens the relevant tool or the detailed Leaflet map.
+    const startupNames = await page.evaluate(() => performance.getEntriesByType("resource")
+      .map(r => r.name.split("/").at(-1) ?? ""));
+    const eagerFeature = startupNames.filter(n =>
+      /^(?:WorldMap-|vendor-leaflet-|vendor-charts-|vendor-pdf-|jspdf\.es\.|index\.es-)/i.test(n));
+    assert.deepEqual(eagerFeature, [],
+      "Heavy feature libraries unexpectedly downloaded before user action");
+    console.log("VERCEL_STARTUP_RESOURCES",JSON.stringify(startupNames));
   }
   // New canonical V2 globe must really render and support country drill-down.
   const globe=page.locator("canvas.whv-globe-canvas");
