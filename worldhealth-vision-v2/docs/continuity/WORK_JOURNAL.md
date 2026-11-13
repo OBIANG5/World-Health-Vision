@@ -2,6 +2,18 @@
 
 **Principe :** journal **append-only**. Ajouter une entrée par session ou incrément utile. **Ne pas effacer les entrées anciennes** au prochain chat. Chaque entrée distingue code, tests, déploiement et approbation humaine.
 
+## 2026-11-13 — livraison finale du lien et du dossier de reprise
+
+- **Dernière UI réellement publiée :** code source `ab4a7410f89b7a19e2db652950e95e8036fcb7fb`, commit de la branche d'aperçu `596de0202df2c47909f1db13a9696074477e8565`.
+- **Workflow iPhone/desktop :** [run #43436631737](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43436631737) = `completed / success`. Les contrôles incluent accès A/B/C depuis l'ancien lien, affichage de la version, 14 étapes, avis COP31 conservé, maquettes et sources.
+- **Historique accessible depuis le site :** lien visible « Historique intégral & reprise du projet » vers [Issue #11](https://github.com/OBIANG5/World-Health-Vision/issues/11).
+- **Documentation supplémentaire :** [inventaire 26 branches](BRANCHES_SNAPSHOT_2026-11-13.md), [guide de cache](PREVIEW_RELEASES_AND_CACHE.md), [index du projet](README.md), [décisions](DECISION_REGISTER.md), [état](CURRENT_STATE_AND_NEXT_STEP.md), [prompt nouveau chat](NEW_CHAT_HANDOFF.md) et [chronologie](PROJECT_TIMELINE.md).
+- **Limite constatée :** RawGitHack garde des caches temporaires ; les fichiers et le build sont prouvés sur GitHub mais leur affichage instantané sur chaque navigateur n'est pas garanti.
+- **Validation humaine encore attendue :** A/B/C ; aucune nouvelle animation/voix/vidéo finale ne doit être démarrée au simple prétexte que les tests sont verts.
+- **Observation de prudence Vercel :** un projet existant `world-health-vision-v2` appartient à la plateforme globale ; **ne pas le réutiliser/écraser** pour Media Studio sans identifier et approuver explicitement le projet et les règles de déploiement. Aucun changement Vercel n'a été réalisé dans cette session.
+
+---
+
 ## 2026-11-13 — session de continuité après question « Pourquoi le lien permanent n'est-il pas à jour ? »
 
 **Demande utilisateur :** ne pas avoir à ouvrir plusieurs liens pour voir les nouveaux designs, garder **une URL permanente et mise à jour**, et sauvegarder dans GitHub l'historique depuis l'origine, avec instructions de reprise quand les chats ChatGPT se bloquent.
