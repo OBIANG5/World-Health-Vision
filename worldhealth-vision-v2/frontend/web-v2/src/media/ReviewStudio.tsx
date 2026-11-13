@@ -10,8 +10,9 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import type {MediaStory} from "./types";
 import "./ReviewStudio.css";
 import BrandEvidence from "./BrandEvidence";
+import CreativeDirections, {type DirectionId} from "./CreativeDirections";
 
-type GateId = "identite" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video";
+type GateId = "identite" | "direction" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video";
 type Decision = "a_corriger" | "refuse" | "valide";
 type Review = {
   version: 1;
@@ -30,32 +31,36 @@ const GATES:ReadonlyArray<{
   {id:"identite",number:"00",name:"Identité & logo",subtitle:"Charte World-Vision",
     deliverable:"Logo original approuvé, déclinaisons et planche de charte",
     required:["logo","couleurs","typographie","lisibilite"],
-    hint:"Le fichier du vrai logo validé n'est pas encore disponible ici. Aucun dessin approchant n'est approuvable."},
-  {id:"script",number:"01",name:"Sujet & script",subtitle:"Accroche, faits, angle",
+    hint:"Le fichier officiel de l’œil-globe bleu est présent dans le site et Remotion. Les nouvelles couleurs attendront."},
+  {id:"direction",number:"01",name:"Direction artistique",subtitle:"Choisir l'ouverture du reportage",
+    deliverable:"Trois compositions verticales avec le vrai logo ; une seule sera retenue",
+    required:["logo","accroche","images","couleurs","luminosite","lisibilite","composition"],
+    hint:"Choisis une direction A, B ou C et note-la. Nous ne produirons pas de clip animé sans ton accord."},
+  {id:"script",number:"02",name:"Sujet & script",subtitle:"Accroche, faits, angle",
     deliverable:"Script versionné et affirmations liées aux sources",
     required:["accroche","exactitude","narration","rythme"],
     hint:"Relis le récit et compare toutes les affirmations aux sources primaires avant de l'approuver."},
-  {id:"medias",number:"02",name:"Images & plans",subtitle:"Pertinence et authenticité",
+  {id:"medias",number:"03",name:"Images & plans",subtitle:"Pertinence et authenticité",
     deliverable:"Sélection de plans avec licences, sources et autorisations",
     required:["images","authenticite","luminosite","variete"],
     hint:"Une illustration générée n'est pas une image de l'événement réel. Les plans doivent être authentiques ou explicitement illustratifs."},
-  {id:"voix",number:"03",name:"Voix & narration",subtitle:"Écoute comparative",
+  {id:"voix",number:"04",name:"Voix & narration",subtitle:"Écoute comparative",
     deliverable:"Extrait de voix vérifié, avec diction et prosodie validées",
     required:["voix","diction","rythme","mixage"],
     hint:"La voix Piper du pilote est un premier essai rejeté ; il faut auditionner de vraies alternatives."},
-  {id:"animation",number:"04",name:"Animations",subtitle:"Prototype de 3 à 6 s",
+  {id:"animation",number:"05",name:"Animations",subtitle:"Prototype de 3 à 6 s",
     deliverable:"Micro-animation mobile, avant le rendu intégral",
     required:["animations","transitions","luminosite","lisibilite"],
     hint:"Une animation indépendante est nécessaire. La vidéo COP31 complète n'est pas une validation de ce prototype."},
-  {id:"montage",number:"05",name:"Montage & sound design",subtitle:"Rythme, plans, transitions",
+  {id:"montage",number:"06",name:"Montage & sound design",subtitle:"Rythme, plans, transitions",
     deliverable:"Version candidate avec voix et plans déjà approuvés",
     required:["montage","rythme","transitions","mixage","sous_titres"],
     hint:"Un rendu techniquement encodé peut être rejeté artistiquement. Tous les blocs doivent déjà avoir été validés."},
-  {id:"publication",number:"06",name:"Exports & diffusion",subtitle:"TikTok, WhatsApp, conformité",
+  {id:"publication",number:"07",name:"Exports & diffusion",subtitle:"TikTok, WhatsApp, conformité",
     deliverable:"Exports conformes, manifestes et preuves de canal",
     required:["conformite","sources","lisibilite","sous_titres"],
     hint:"Ce jalon ne peut pas être approuvé si aucun export autorisé n'a été produit."},
-  {id:"video",number:"07",name:"Vidéo complète",subtitle:"Notation finale sur 10",
+  {id:"video",number:"08",name:"Vidéo complète",subtitle:"Notation finale sur 10",
     deliverable:"Le MP4 exact, avec hash SHA-256 et évaluation de tous ses aspects",
     required:["logo","couleurs","luminosite","images","authenticite","voix","diction",
       "animations","transitions","rythme","mixage","sous_titres","exactitude","montage","lisibilite"],
@@ -67,6 +72,7 @@ const CRITERIA:Record<string,string> = {
   typographie:"Typographie & hiérarchie",
   lisibilite:"Lisibilité sur téléphone",
   accroche:"Accroche et intérêt immédiat",
+  composition:"Composition et direction artistique",
   exactitude:"Fiabilité des faits et des sources",
   narration:"Qualité du texte et des explications",
   rythme:"Rythme général et durée",
@@ -87,7 +93,9 @@ const CRITERIA:Record<string,string> = {
 const SCORE_OPTIONS = [1,2,3,4,5,6,7,8,9,10] as const;
 const START:Review = {version:1,global:null,notes:"",priorities:"",decision:"a_corriger",scores:{},blockers:[]};
 
-function artifactRef(story:MediaStory,gate:GateId):string|null {
+function artifactRef(story:MediaStory,gate:GateId,style:DirectionId="terrain"):string|null {
+  if(gate==="identite")return "official-eye-globe-blue-bc80fa70cebd566768bfb1703a0f1f636a78c196";
+  if(gate==="direction")return `cop31-visual-opening-v1-${style}-logo-bc80fa70`;
   if(gate==="video"||gate==="montage")return story.render_job?.output_sha256 || null;
   if(gate==="voix")return story.voiceover?.id || null;
   if(gate==="script")return story.creative_package?.version ? `creative-v${story.creative_package.version}` : null;
@@ -141,7 +149,7 @@ const STANCE:Record<Decision,string> = {
   refuse:"Refusé",
   valide:"Je valide",
 };
-const jsonForReview=(story:MediaStory,gate:GateId,review:Review)=>{
+const jsonForReview=(story:MediaStory,gate:GateId,review:Review,style:DirectionId)=>{
   const g=GATES.find(item=>item.id===gate)!;
   return {
     schema_version:"world-vision-review-v1",
@@ -152,7 +160,8 @@ const jsonForReview=(story:MediaStory,gate:GateId,review:Review)=>{
     story_title:story.title,
     gate_id:gate,
     gate_name:g.name,
-    artifact_ref:artifactRef(story,gate),
+    artifact_ref:artifactRef(story,gate,style),
+    art_direction_id:gate==="direction"?style:null,
     video_sha256:story.render_job?.output_sha256||null,
     decision:review.decision,
     overall_score:review.global,
@@ -163,11 +172,11 @@ const jsonForReview=(story:MediaStory,gate:GateId,review:Review)=>{
     notes:"Ce document est un retour utilisateur, non un reçu de publication ni une autorisation de rendu automatique.",
   };
 };
-function ReviewForm({story,gate,previewMode}:{
-  story:MediaStory;gate:GateId;previewMode:boolean;
+function ReviewForm({story,gate,previewMode,style}:{ 
+  story:MediaStory;gate:GateId;previewMode:boolean;style:DirectionId;
 }){
   const g=GATES.find(item=>item.id===gate)!;
-  const ref=artifactRef(story,gate);
+  const ref=artifactRef(story,gate,style);
   const storageKey=`wv-review-v1:${story.id}:${gate}:${ref||"missing"}`;
   const [review,setReview]=useState<Review>(()=>readDraft(storageKey));
   const reviewRef=useRef(review);
@@ -219,7 +228,7 @@ function ReviewForm({story,gate,previewMode}:{
   // A low score and an explicit refusal ARE meaningful feedback, even if
   // the user doesn't type any comments. Do not silently disable the CTA.
   const ready=review.global!==null&&!acceptanceBlocked;
-  const payload=()=>jsonForReview(story,gate,review);
+  const payload=()=>jsonForReview(story,gate,review,style);
   const githubLink=()=>{
     const data=payload();
     const title=`[WV-REVIEW] ${data.gate_id} · ${STANCE[data.decision]} · ${data.artifact_ref?.slice(0,12)||"sans-asset"}`;
@@ -375,6 +384,10 @@ function ReviewForm({story,gate,previewMode}:{
 export default function ReviewStudio({story,onOpenJourney,previewMode}:{
   story:MediaStory|null;onOpenJourney:()=>void;previewMode:boolean;
 }){
+  const [style,setStyle]=useState<DirectionId>(()=>{
+    const candidate=new URLSearchParams(window.location.search).get("style");
+    return candidate==="chiffres"||candidate==="pedagogie"?candidate:"terrain";
+  });
   const [gate,setGate]=useState<GateId>(() => {
     const candidate=new URLSearchParams(window.location.search).get("gate");
     return GATES.some(item=>item.id===candidate)?candidate as GateId:"video";
@@ -382,10 +395,11 @@ export default function ReviewStudio({story,onOpenJourney,previewMode}:{
   useEffect(()=>{
     const url=new URL(window.location.href);
     url.searchParams.set("gate",gate);
+    url.searchParams.set("style",style);
     window.history.replaceState({}, "",url.pathname+url.search+url.hash);
-  },[gate]);
+  },[gate,style]);
   const g=useMemo(()=>GATES.find(item=>item.id===gate)!,[gate]);
-  const evidence=story?artifactRef(story,gate):null;
+  const evidence=story?artifactRef(story,gate,style):null;
   return <main className="wv-review-shell">
     <header className="wv-review-hero">
       <div><div className="wv-review-eyebrow">WORLD-VISION · QUALITÉ ÉDITORIALE</div>
@@ -393,7 +407,7 @@ export default function ReviewStudio({story,onOpenJourney,previewMode}:{
         <p>Chaque étape est évaluée séparément, de 1 à 10, avant tout nouveau montage.
           Une note faible ou un refus signifie : on corrige ce composant, on ne passe pas au suivant.</p>
       </div>
-      <div className="wv-review-badge"><strong>7+1</strong><span>JALONS<br/>À VALIDER</span></div>
+      <div className="wv-review-badge"><strong>09</strong><span>JALONS<br/>À ÉVALUER</span></div>
     </header>
     <nav className="wv-review-stage-tabs" aria-label="Choisir un jalon à évaluer">
       {GATES.map(item=><button key={item.id} type="button" aria-current={gate===item.id?"step":undefined}
@@ -402,11 +416,15 @@ export default function ReviewStudio({story,onOpenJourney,previewMode}:{
       </button>)}
     </nav>
     <section className="wv-review-intro">
-      <div><span>JALON {g.number} / 07</span><h2>{g.name}</h2><p>{g.subtitle} · {g.deliverable}</p></div>
+      <div><span>JALON {g.number} / 08</span><h2>{g.name}</h2><p>{g.subtitle} · {g.deliverable}</p></div>
       <button onClick={onOpenJourney} type="button">← Retour au parcours</button>
     </section>
     {!story?<div className="wv-review-empty">Aucun dossier chargé. Vérifie le Media Studio ou sélectionne un reportage.</div>:
-      <ReviewForm key={`${story.id}:${gate}:${evidence||"missing"}`} story={story} gate={gate} previewMode={previewMode}/>}
+      <>
+        {gate==="direction"&&<CreativeDirections selected={style} onSelect={setStyle}/>}
+        <ReviewForm key={`${story.id}:${gate}:${evidence||"missing"}`}
+          story={story} gate={gate} style={style} previewMode={previewMode}/>
+      </>}
     <footer className="wv-review-footer">World-Vision · Le moteur technique reste conservé. L'approbation humaine précède chaque nouvelle production.</footer>
   </main>;
 }
