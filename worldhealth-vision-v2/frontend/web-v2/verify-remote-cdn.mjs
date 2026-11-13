@@ -47,7 +47,7 @@ try {
       "Public Vercel URL has not updated to the new editorial World Explorer");
     const bg = await page.locator(".whv-header").evaluate(
       el => getComputedStyle(el).backgroundColor);
-    assert(/255, 254, 250/.test(bg),"The new light header is missing: "+bg);
+    assert(/255, 255, 255/.test(bg),"The electric-Earth light header is missing: "+bg);
     assert(await page.locator(".whv-mobile-shortcut").count() === 6,
       "All six world exploration domain shortcuts must remain available");
     await page.locator(".whv-nav-btn--mobile-hub").click();
@@ -95,11 +95,38 @@ try {
   await page.touchscreen.tap(box.x+box.width*.5,box.y+box.height*.51);
   await page.locator(".country-drawer.open").waitFor({state:"visible",timeout:15000});
   await page.locator(".country-drawer.open .drawer-btn.close").click();
-  // The original Leaflet eye view must still work, then return to the globe.
-  await page.getByRole("button",{name:/Carte œil/}).click();
-  await page.locator(".eye-map-surface .leaflet-container").waitFor({state:"visible"});
-  await page.getByRole("button",{name:/Globe/}).click();
-  await globe.waitFor({state:"visible"});
+  if(isVercel){
+    // The approved Electric Earth design intentionally replaces the old
+    // option-two map with a SINGLE globe, as explicitly requested.
+    assert.equal(await page.locator(".whv-map-mode-switch").count(),0,
+      "Old two-map switch must be absent in Electric Earth");
+    assert.equal(await page.locator(".eye-map-surface").count(),0,
+      "Old Leaflet eye map was not retired");
+    const icons=await page.locator(".whv-mobile-shortcut svg").count();
+    assert(icons===6,"Expected six professional SVG thematic navigation icons, got "+icons);
+    const pixelMetrics=await globe.evaluate(el=>{
+      const c=el.getContext("2d");if(!c)return null;
+      const a=c.getImageData(0,0,el.width,el.height).data;
+      let white=0,green=0,cyan=0,gold=0,blue=0;
+      for(let i=0;i<a.length;i+=68){const r=a[i],g=a[i+1],b=a[i+2];
+        if(r>230&&g>230&&b>230)white++;
+        if(g>75&&g>r*1.1&&g>b*.8)green++;
+        if(b>195&&g>150&&r<165)cyan++;
+        if(r>150&&g>80&&b<140)gold++;
+        if(b>80&&b>g*1.15&&b>r*1.5)blue++;
+      }
+      return {white,green,cyan,gold,blue};
+    });
+    assert(pixelMetrics&&Object.values(pixelMetrics).every(x=>x>10),
+      "Electric-Earth image palette is incomplete: "+JSON.stringify(pixelMetrics));
+    console.log("PASS VERCEL_ELECTRIC_EARTH",JSON.stringify(pixelMetrics));
+  }else{
+    // Historical immutable GitHack snapshot still preserves the old map.
+    await page.getByRole("button",{name:/Carte œil/}).click();
+    await page.locator(".eye-map-surface .leaflet-container").waitFor({state:"visible"});
+    await page.getByRole("button",{name:/Globe/}).click();
+    await globe.waitFor({state:"visible"});
+  }
   await page.locator(".whv-nav-btn--tools").click();
   await page.locator(".whv-tools-menu").waitFor({state:"visible"});
   await page.locator(".whv-tools-menu").getByText("Expat & Retraite").click();
