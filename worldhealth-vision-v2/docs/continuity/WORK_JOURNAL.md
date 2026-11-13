@@ -238,3 +238,16 @@ Prochaine action soumise à validation :
 ### Confirmation de publication du panneau de continuité (13 novembre, contrôle final)
 
 Le workflow [World-Vision Media Studio real-UI mobile preview #43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661) est désormais **completed / success** (y compris build React, test Playwright iPhone/desktop, publication de la branche de preview). Branche de preview : HEAD `bdd6277fd88b9a5eebefe1e1737ac6ad19d31931`, manifeste `source_commit=00224feaaffb97c13a65e2518ee301d7aaefa910`. **Ce qu'il prouve** : le panneau « D00-v6 non encore validé » et la feuille de route sont intégrés au bundle statique. **Ce qu'il ne prouve pas** : synchronisation instantanée du cache RawGitHack, présence des pixels du concept D00-v6, moteur 3D fonctionnel, ou backend actif. Les captures anciennes du laboratoire restent explicitement distinguées de la nouvelle image dans l'UI.
+
+
+---
+
+## 2026-11-13 — récupération d'une réponse interrompue et vérification géociblage
+
+Le propriétaire a signalé « A cessé de réfléchir » durant la construction du laboratoire géographique. **Code conservé dans GitHub** : `geoTargeting.mjs`, `geoTargeting.d.mts`, `geoTargeting.test.mjs`, `GeoTargetingLab.tsx/.css`, adaptation `GeoGlobe.tsx` et intégration `GlobeDirection` → `CreativeDirections` → `ReviewStudio`. Aucun reset, aucun abandon.
+
+**Preuves techniques :** dernier run CI source observé `43460449189` → six jobs terminés avec succès, dont tests `node --test` des coordonnées et front TypeScript. Dernier run de site mobile observé `43460509829` → `completed/success` ; manifeste preview `source_commit=30f280b089148dd12768ce67d6bf7adea270419b` ; branche preview `08492abc9ab7ab55f2beebb4e0f1d268e8365765`. Capture Playwright `media-globe-motion-lab-iphone.png`, blob `a1dae4c14ab68e352cdcc21fda58deac7cc91fa4`. Le test vérifie la sélection Gabon, le mouvement, le reset, puis le Mali.
+
+**Document de reprise détaillé :** `docs/media/GEO_TARGETING_MOTION_LAB_2026-11-13.md` (créé au commit `44045d957518a3e59da204714bd45ffe8d55ea57`). Code réellement interactif **Canvas/GeoJSON**, pas CGI satellite, pas MP4, pas de publication d'actualité et aucune approbation implicite de D00-v6.
+
+**Suite** : retour utilisateur sur le prototype fonctionnel, puis master CGI 9:16 visuellement fidèle à la signature œil/globe validable (blanc pur, halo atmosphérique, frontières précises), puis micro-animation 3–6 s vers pays d'une nouvelle réelle ; continuer le pipeline voix, montage et QA du manuel de 137 pages.
