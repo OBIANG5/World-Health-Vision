@@ -60,7 +60,14 @@ try {
   assert.equal(await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).isEnabled(),true);
   await page.evaluate(() => {
     window.__wvTestIssueUrl = null;
-    window.open = (url) => {window.__wvTestIssueUrl = String(url);return {};};
+    const nativeClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function() {
+      if(this.href.includes("/issues/new?")){
+        window.__wvTestIssueUrl = String(this.href);
+        return;
+      }
+      return nativeClick.call(this);
+    };
   });
   await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).click();
   const issueUrl = await page.evaluate(() => window.__wvTestIssueUrl);
