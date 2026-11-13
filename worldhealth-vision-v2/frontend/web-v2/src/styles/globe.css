@@ -1,3 +1,4 @@
+.whv-eye-map-loading{display:grid;place-items:center;width:100%;height:100%;padding:20px;text-align:center;background:radial-gradient(ellipse at center,#123e61,#061725 70%);color:#c8e8fc;font-size:13px;font-weight:600;letter-spacing:.015em}
 /* World Health Vision V2 — the original eye/Leaflet view remains available. */
 .eye-stage.globe-mode{inset:79px 0 0;overflow:hidden;background:radial-gradient(ellipse at 50% 43%,#0c2d4a 0%,#04101f 60%,#020913 100%);border-top:1px solid rgba(117,192,242,.06)}
 .eye-stage.globe-mode.drawer-open{right:min(520px,46vw)}
