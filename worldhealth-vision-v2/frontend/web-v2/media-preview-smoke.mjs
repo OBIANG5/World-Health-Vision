@@ -163,7 +163,7 @@ try {
   await page.locator(".wv-geotarget-planet").screenshot({path:path.join(dist,"media-globe-motion-lab-iphone.png")});
   await page.getByRole("button",{name:/Recommencer/}).click();
   await page.locator("#wv-geotarget-country").selectOption("MLI");
-  await page.getByText("Mali · MLI").first().waitFor();
+  assert.equal(await page.locator("#wv-geotarget-country").inputValue(),"MLI");
   assert.equal(await page.locator("#wv-geotarget-scrub").inputValue(),"0");
   await page.locator('.wv-globe-scene[data-scene-id="d00"]')
     .screenshot({path:path.join(dist,"style-frame-globe-d00.png")});
