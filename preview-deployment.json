@@ -1,7 +1,10 @@
 {
   "source_branch": "feature/world-vision-media-studio",
-  "source_commit": "148cd5ff5592bd4c06b509e09029d039c2d9e031",
-  "preview_type": "STATIC_EXPLICIT_DEMO",
+  "source_commit": "66506b2d6dfe13e2d7a17508e89b57290d0ba1d4",
+  "preview_type": "STATIC_REAL_NEWS_EDITORIAL_ARCHIVE",
   "backend_connected": false,
-  "generated_media_proof": false
+  "editorial_sources_real": true,
+  "generated_media_proof": true,
+  "channel_published": false,
+  "human_qa_completed": false
 }
