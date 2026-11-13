@@ -40,6 +40,13 @@ const reviewDest = path.join(dist,"review-archive");
 if(!existsSync(reviewSource))throw new Error("Missing authoritative COP31 user review — cannot silently erase it.");
 mkdirSync(reviewDest,{recursive:true});
 copyFileSync(reviewSource,path.join(reviewDest,"cop31-video.json"));
+// Preserve the REAL historic eye-globe as a clearly unapproved comparison
+// asset; do not pretend that it is the approved multicolour logo.
+const legacyEye=path.resolve(scriptsDir,"../../frontend/web/src/assets/logo.png");
+if(!existsSync(legacyEye))throw new Error("Historical eye-globe source missing; refusing to invent a logo.");
+const brandDest=path.join(dist,"brand-archive");
+mkdirSync(brandDest,{recursive:true});
+copyFileSync(legacyEye,path.join(brandDest,"legacy-eye-globe-blue.png"));
 html = readFileSync(indexPath, "utf8").replace("<title>World Health Vision</title>", "<title>World-Vision Media Studio · reportage réel</title>");
 writeFileSync(indexPath, html, "utf8");
 console.log("Prepared authentic UN newsroom dossier + isolated read-only archive adapter.");
