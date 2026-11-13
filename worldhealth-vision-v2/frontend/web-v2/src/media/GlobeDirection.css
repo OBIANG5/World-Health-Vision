@@ -152,3 +152,11 @@
  .wv-globe-feedback-actions>*{width:100%}
  .wv-globe-lab-sources{padding:16px}
 }
+
+
+/* Visible jump to the real geo-motion lab; no confusing it with the static D00 art. */
+.wv-globe-lab-motion-jump{display:inline-flex;align-items:center;justify-content:center;
+ margin:13px 0;padding:12px 16px;border-radius:8px;border:1px solid rgba(26,126,156,.42);
+ background:#075572;color:#fff!important;font-weight:800;font-size:12px;
+ text-decoration:none;line-height:1.45;min-height:44px}
+.wv-globe-lab-motion-jump:hover{background:#087b94}
