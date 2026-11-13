@@ -111,19 +111,27 @@ const OrbitWorld:React.FC<{progress:number;stage:string}> = ({progress,stage}) =
   </svg>;
 };
 
-const Count:React.FC<{text:string;label:string}> = ({text,label}) => {
-  const f=useCurrentFrame();
+const Count:React.FC<{primary:string;secondary:string;label:string}> = ({primary,secondary,label}) => {
+  const frame=useCurrentFrame();
   const {fps}=useVideoConfig();
-  const shine=interpolate(f,[0,fps*2],[0,1],clamp);
-  return <div style={{margin:"88px 0 8px",textAlign:"left"}}>
+  const shine=interpolate(frame,[0,fps*2],[0,1],clamp);
+  return <div style={{margin:"72px 0 8px",width:790,maxWidth:790,textAlign:"left"}}>
     <FadeUp delay={6}>
-      <div style={{fontSize:154,lineHeight:0.9,letterSpacing:-9,fontWeight:950,
-        color:C.white,textShadow:"0 20px 100px rgba(38,177,239,.28)",whiteSpace:"pre-line"}}>
-        {text}
+      <div style={{fontSize:202,lineHeight:0.95,letterSpacing:-7,fontWeight:950,
+        color:C.white,textShadow:"0 20px 100px rgba(38,177,239,.28)"}}>
+        {primary}
       </div>
     </FadeUp>
-    <div style={{marginTop:39,width:interpolate(shine,[0,1],[0,550],clamp),height:7,background:C.cyan,borderRadius:4}}/>
-    <FadeUp delay={15}><div style={{fontWeight:800,fontSize:30,letterSpacing:5,color:C.cyan,marginTop:25}}>{label}</div></FadeUp>
+    <FadeUp delay={11}>
+      <div style={{fontSize:secondary.length>8?78:97,lineHeight:1.05,
+        letterSpacing:-2.6,fontWeight:920,color:C.white,
+        whiteSpace:"nowrap",maxWidth:790}}>
+        {secondary}
+      </div>
+    </FadeUp>
+    <div style={{marginTop:45,width:interpolate(shine,[0,1],[0,550],clamp),
+      height:7,background:C.cyan,borderRadius:4}}/>
+    <FadeUp delay={15}><div style={{fontWeight:800,fontSize:26,letterSpacing:4,color:C.cyan,marginTop:23}}>{label}</div></FadeUp>
   </div>;
 };
 
@@ -150,11 +158,11 @@ const NewsScene:React.FC<{scene:FirstReportScene;story:FirstReportStory;index:nu
       <FadeUp delay={2}><div style={{fontSize:24,fontWeight:800,letterSpacing:7,color:C.cyan,marginBottom:36}}>
         {String(index+1).padStart(2,"0")} / 07 — {scene.label}
       </div></FadeUp>
-      {scene.visual==="money_goal" ? <Count text="+3\nMILLIARDS $" label="FINANCEMENTS VISÉS"/> :
-       scene.visual==="people_goal" ? <Count text="75\nMILLIONS" label="DE PERSONNES · CIBLE 2030"/> :
-       <FadeUp delay={6}><div style={{fontSize:scene.visual==="source_close"?73:scene.visual==="caveat"?87:108,
+      {scene.visual==="money_goal" ? <Count primary="+3" secondary="MILLIARDS $" label="FINANCEMENTS VISÉS"/> :
+       scene.visual==="people_goal" ? <Count primary="75" secondary="MILLIONS" label="DE PERSONNES · CIBLE 2030"/> :
+       <FadeUp delay={6}><div style={{fontSize:scene.visual==="source_close"?68:scene.visual==="caveat"?67:scene.headline.length>22?78:96,
            fontWeight:950,lineHeight:0.98,letterSpacing:-4,maxWidth:830,
-           textTransform:"uppercase",whiteSpace:"pre-wrap"}}>
+           textTransform:"uppercase",whiteSpace:"pre-wrap",overflowWrap:"break-word"}}>
          {scene.headline}
        </div></FadeUp>}
       <FadeUp delay={19}><div style={{marginTop:49,fontSize:30,lineHeight:1.37,
