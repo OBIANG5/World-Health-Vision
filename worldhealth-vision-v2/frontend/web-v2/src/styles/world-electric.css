@@ -127,6 +127,15 @@ body .whv-tools-menu.whv-domain-menu{
 .country-selector-item{color:#123351}
 .country-selector-item:hover,.country-selector-item.selected{color:#004d89;background:#e9f6ff}
 
+/* Modal-like country and region drawers must sit above the global header;
+   otherwise its status chip steals taps from the close button on desktop. */
+.whv-page:has(.country-drawer.open) .whv-header,
+.whv-page:has(.region-drawer.open) .whv-header,
+.whv-page:has(.cur-panel) .whv-header,
+.whv-page:has(.rt-panel) .whv-header,
+.whv-page:has(.ds-panel) .whv-header,
+.whv-page:has(.tv-panel) .whv-header{z-index:8}
+.whv-page .country-drawer.open,.whv-page .region-drawer.open{z-index:400}
 /* All V2 country/region and feature panels use crisp cards, no transparent
    overlays that would destroy text contrast against the Earth. */
 .whv-page .country-drawer::before,
