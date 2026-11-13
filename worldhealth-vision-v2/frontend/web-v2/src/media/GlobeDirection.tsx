@@ -7,6 +7,7 @@ import {useEffect,useState} from "react";
 import GeoGlobe from "./GeoGlobe";
 import GeoTargetingLab from "./GeoTargetingLab";
 import CinematicEarth from "./CinematicEarth";
+import CinematicMotionReview from "./CinematicMotionReview";
 import CinematicCapture from "./CinematicCapture";
 import type {MediaStory} from "./types";
 import "./GlobeDirection.css";
@@ -199,6 +200,7 @@ export default function GlobeDirection({story}:{story?:MediaStory|null}){
         <p className="wv-cinematic-disclaimer">Version CGI de développement distincte de l’image de référence D00-v6, qui n’est pas remplacée. La fidélité artistique sera jugée sur une véritable capture 9:16 avant tout rendu MP4.</p>
       </div>
     </div>
+    <CinematicMotionReview/>
     <nav className="wv-globe-stage-list" aria-label="Six étapes de l'identité visuelle">
       {STEPS.map(s=><button type="button" key={s.id}
         aria-current={selected===s.id?"step":undefined}
