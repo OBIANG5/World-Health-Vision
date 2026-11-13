@@ -391,3 +391,17 @@ L'utilisateur a rejeté le pilote NASA mangroves : sujet jugé peu accrocheur, i
 **Ce qui NE fonctionne PAS encore** : n8n non connecté à ce chat, workflow RADAR non exécuté sur flux réel depuis une instance, aucun tableau éditorial persistant connecté, Shotstack non connecté, modèle vidéo encore à créer une fois avec le vrai logo et la D00-v6, aucune TTS/API ni chaîne de diffusion intégrée, aucun MP4 complet automatisé. **Ne jamais écrire que le système est déjà en production.**
 
 **La prochaine opération la plus utile** est l'activation d'une instance n8n (ou la voie moins chère Make si nécessaire), l'import et la mise en marche du radar après test; puis Google Drive + un seul modèle de rendu Shotstack/Creatomate et les gates humains.
+
+---
+
+## 13 novembre — recentrage définitif du travail sur le montage vidéo
+
+Nouvelle instruction utilisateur : « une vidéo par une vidéo » ; ChatGPT doit chercher automatiquement les meilleures nouvelles chaque heure, mais le **travail à réaliser dans GitHub est uniquement le MONTAGE**, à partir d'un script dont le propriétaire aura validé le contenu. Refus explicite des chantiers techniques hors sujet et des passages obligatoires entre de nombreux sites.
+
+**Action automatisation réelle :** tâche ChatGPT « World-Vision Breaking News » ID `6a9050fddd5c8191929b1f8cfa8d0f3e` retrouvée désactivée ; **modifiée et réactivée**, `RRULE:FREQ=HOURLY`, premiers contrôles avec utilisateur Europe/Paris, filtrage 3–5 sujets majeurs vérifiés, nouvelle notification seulement si développement significatif, aucun script/MP4/publication automatique. Pas de doublon de tâche créé.
+
+**Audit du code existant :** `services/media-renderer/src/WorldVisionShort.tsx` supporte `<Video>`, `<Img>`, `<Audio>`, `<Sequence>`, attributions ; `services/media-renderer/src/types.ts` supporte `asset_url`, `asset_license`, `asset_attribution`. Logo original du renderer présent à `public/brand/world-vision-official.png`. Réutiliser plutôt que refaire le montage from scratch.
+
+**Référence de méthode créée** : `docs/media/MONTAGE_ONLY_HANDOFF_2026-11-13.md` ; sélection de scènes, voix FR, Flow / Vids uniquement pour les plans concernés, Remotion/FFmpeg pour rendu et QA. **Aucune nouvelle vidéo produite dans ce tour**, car aucun nouveau script validé / aucun fichier sonore et visuel approuvé.
+
+**Prochain acte concret** : sur réception du script approuvé, préparer le découpage précis, sélectionner des clips authentiques/licenciés, proposer les prompts Flow si nécessaire et lancer une production de film réel une fois les assets/voix accessibles, en préservant G0 et D00-v6.
