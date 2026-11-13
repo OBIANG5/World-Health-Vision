@@ -9,6 +9,7 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import type {MediaStory} from "./types";
 import "./ReviewStudio.css";
+import BrandEvidence from "./BrandEvidence";
 
 type GateId = "identite" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video";
 type Decision = "a_corriger" | "refuse" | "valide";
@@ -257,6 +258,7 @@ function ReviewForm({story,gate,previewMode}:{
     setCopyStatus("Sauvegarde JSON créée sur ton appareil. Elle n'a pas été envoyée au serveur.");
   };
   return <div className="wv-review-panel" data-review-gate={gate}>
+    {gate==="identite"&&<BrandEvidence/>}
     <div className="wv-review-target">
       <div><span>LIVRABLE À ÉVALUER</span><h3>{g.deliverable}</h3><p>{g.hint}</p></div>
       <div className={`wv-review-evidence ${hasArtifact?"available":"missing"}`}>
