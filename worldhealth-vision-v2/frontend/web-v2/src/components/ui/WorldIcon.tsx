@@ -5,9 +5,10 @@ export type WorldIconName =
   | "globe" | "map" | "regions" | "compass" | "markets" | "travel"
   | "shield" | "search" | "star" | "currency" | "scale" | "advisor"
   | "destination" | "home" | "building" | "alert" | "menu"
-  | "arrow" | "chevron" | "close" | "info" | "book" | "layers";
+  | "arrow" | "chevron" | "close" | "info" | "book" | "layers" | "user";
 
 const symbols: Record<WorldIconName, ReactNode> = {
+  user: <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></>,
   globe: <><circle cx="12" cy="12" r="9"/><path d="M3.4 12h17.2M12 3c-4 5-4 13 0 18M12 3c4 5 4 13 0 18"/></>,
   map: <><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15"/></>,
   regions: <><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>,
