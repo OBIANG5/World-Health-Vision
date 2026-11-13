@@ -76,3 +76,21 @@ Ces compétences sont des **modules de méthode et de code**. Leur existence doc
 - **Décision explicite du propriétaire à chaque porte** ; jamais une approbation inventée par un score ou une CI verte.
 
 **État actuel :** nous sommes encore au premier jalon artistique de la direction D ; ce document ne doit pas être pris pour un avis humain positif.
+
+
+---
+
+## Complément de vérification documentaire : reprise du 13 novembre 2026
+
+Le **PDF original de 137 pages a été retrouvé dans la Library** et consulté en texte par tranches couvrant ses pages 1 à 137. Le sommaire d'origine confirme les **neuf parties** : 01 Comprendre (p. 4–11) ; 02 Préparer son ordinateur (p. 12–22) ; 03 Choix techniques (p. 23–40) ; 04 Prompt moteur/mémoire (p. 41–58) ; 05 Construire son univers (p. 59–74) ; 06 Monter des vidéos filmées (p. 75–91) ; 07 Motion design (p. 93–107) ; 08 Contrôler/livrer (p. 108–114) ; 09 Aller plus loin (p. 115–137).
+
+**L'analyse détaillée de l'état du code n'est toujours PAS une certification de chaque fichier/fonction.** Les observations complémentaires du manuel concernent notamment :
+- Comparer les moteurs vidéo, le système de transcription/alignement et les voix **par des essais concrets**, pas simplement choisir une marque.
+- Le **prompt moteur**, mémoire durable, secrets `.env`, itérations à validation humaine ; le manuel prescrit aussi des compétences spécifiques `montage-rushes`, `habillage-ecran`, `sous-titres-srt`, `rendu-long`. **Ces quatre skills ne sont pas déclarées comme déjà développées/testées** dans notre dépôt ; l'une `world-vision-media-director` y existe en tant que guide.
+- Scripts/dérushage avec vraie transcription, préparation des rushes en préservant les originaux, montage papier, coupe et recadrage, images source et licences, calage des mots, bruitages/musique, colorimétrie et titres.
+- Extraits vocaux comparables à auditionner (même phrase), lexique de prononciation, **ne pas accélérer la voix** ; calage mot à mot et sous-titres SRT séparés si besoin.
+- Extrait **de trois secondes** et aperçu avant tout rendu final ; suivi des ressources mémoire et des rendus concurrents, vérification du film avec le son sur téléphone.
+- Rendus longs récupérables par segments et liste explicite des droits/crédits à livrer.
+- Les exemples de modèles, prix et quotas du manuel sont **historiques et ne prouvent aucun accès API actuel**.
+
+Pour ne rien perdre, voir le **[plan directeur de production audiovisuelle](AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md)** qui relie les neuf parties du PDF, les **14 étapes réelles du site Media Studio**, le globe géographique à animer, le casting voix, les compétences de montage, les QA et les validations humaines. Cette extension conserve les preuves historiques du premier audit au lieu de les effacer.
