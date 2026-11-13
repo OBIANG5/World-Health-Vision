@@ -44,6 +44,22 @@ jobs:
         run: |
           node --check worldhealth-vision-v2/scripts/media-preview-bootstrap.js
           node worldhealth-vision-v2/scripts/build-media-preview.mjs
+      - name: Retrieve existing REAL video archive for mobile end-to-end testing
+        uses: actions/checkout@v4
+        with:
+          ref: whv-media-studio-browser-preview
+          path: existing-real-media
+          persist-credentials: false
+      - name: Test the same real source archive that users will view
+        run: |
+          set -euo pipefail
+          REAL=existing-real-media/media-pilots/cop31-risk-finance-2026-11-12
+          test -s "${REAL}/story.json"
+          test -s "${REAL}/world-vision-cop31-master.mp4"
+          (cd "${REAL}" && sha256sum --check SHA256SUMS)
+          mkdir -p worldhealth-vision-v2/frontend/web-v2/dist/media-pilots
+          cp -a existing-real-media/media-pilots/. \
+            worldhealth-vision-v2/frontend/web-v2/dist/media-pilots/
       - name: Install browser smoke-test dependency
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
