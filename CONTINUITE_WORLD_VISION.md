@@ -1,5 +1,17 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## PRIORITÉ ACTUELLE — MONTAGE D'UNE VIDÉO À LA FOIS (13/11/2026)
+
+**Cette décision du propriétaire prévaut sur la priorité n8n/Shotstack et les pilotes refusés plus bas dans l'historique.** La recherche des nouvelles est **SÉPARÉE** du montage : tâche ChatGPT World-Vision existante (`6a9050fddd5c8191929b1f8cfa8d0f3e`) **réactivée**, horaire, filtrée pour actualités majeures et seules nouveautés significatives. L'utilisateur choisit le sujet et valide le script avec nous. **LE TRAVAIL PRINCIPAL DE CE PROJET EST LE MONTAGE PROFESSIONNEL À PARTIR DU SCRIPT APPROUVÉ**.
+
+**Guide canonique à lire en premier pour le futur monteur** : [MONTAGE_ONLY_HANDOFF_2026-11-13.md](worldhealth-vision-v2/docs/media/MONTAGE_ONLY_HANDOFF_2026-11-13.md). Le dépôt possède **déjà** `services/media-renderer/src/WorldVisionShort.tsx` (Remotion : images, vidéos, audio, scènes, citations et logo), `services/media-renderer/server.mjs`, un PNG du logo officiel dans `services/media-renderer/public/brand/world-vision-official.png` ; ne pas reconstruire l'éditeur. Exploiter Google Flow pour les scènes d'ouverture à partir de la référence D00-v6 (après vérification du rendu) et Google Vids en français pour voix/retouches sur ordinateur, puis Remotion/FFmpeg pour le master MP4 9:16 et QA.
+
+**G0 logo bleu officiel et D00-v6 concept du globe/œil : incontournables.** Le PNG original D00-v6 n'a pas encore ses octets dans GitHub ; son mouvement n'est pas encore validé : ne pas reprendre les CGI de démonstration comme intro finale. L'utilisateur n'a pas donné le prochain script approuvé. **Aucune nouvelle vidéo n'est déclarée finie.**
+
+**n8n Radar JSON et étude Shotstack** restent archivés mais **hors chemin critique**. Aucun n8n à acheter ou ouvrir pour débuter ; la tâche ChatGPT couvre la veille horaire.
+
+---
+
 ## DÉCISION PRIORITAIRE DU 13 NOVEMBRE — AUTOMATISATION ET IDENTITÉ, FIN DU PILOTE MANGROVES
 
 **C'est désormais le point de reprise ACTUEL ; il annule les anciennes mentions « pilote mangroves actif » et « continuer à coder le globe » figurant plus bas dans l'historique.** L'utilisateur a **rejeté** l'actualité NASA mangroves comme insuffisamment marquante. Il exige : **(1)** sélection de **3 à 5 actualités mondiales majeures** avec classement/validation, **(2)** logo bleu œil-globe officiel et globe D00-v6 intégrés à chaque production pertinente, **(3)** **un centre de production automatisé**, sans ouvrir une multitude de sites, **(4)** usage des meilleurs logiciels existants au lieu de tout recoder.
