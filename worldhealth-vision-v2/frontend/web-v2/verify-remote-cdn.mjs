@@ -119,7 +119,11 @@ try {
     });
     assert(pixelMetrics&&Object.values(pixelMetrics).every(x=>x>10),
       "Electric-Earth image palette is incomplete: "+JSON.stringify(pixelMetrics));
+    const actualModules = await page.evaluate(()=>[...document.querySelectorAll('script[src]')].map(el=>el.getAttribute('src')));
+    assert(actualModules.some(s=>s&&s.includes('index-KyBGtQFF.js')),
+      "Public Vercel origin does not serve immutable Electric Earth release 2250ec0: "+JSON.stringify(actualModules));
     console.log("PASS VERCEL_ELECTRIC_EARTH",JSON.stringify(pixelMetrics));
+    console.log("PASS VERCEL_RELEASE_2250ec0: correct compiled main module, no obsolete map");
   }else{
     // Historical immutable GitHack snapshot still preserves the old map.
     await page.getByRole("button",{name:/Carte œil/}).click();
