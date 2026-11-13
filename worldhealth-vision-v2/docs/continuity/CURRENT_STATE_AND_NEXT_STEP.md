@@ -1,5 +1,15 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## 13 NOVEMBRE — DERNIÈRE DIRECTION D00 ŒIL / GLOBE (PRIORITÉ ACTUELLE)
+
+**Nouvelle proposition fixe générée, NON APPROUVÉE :** D00-v4, Terre presque plein cadre, **exactement deux arcs d'œil non circulaires** inspirés du logo officiel (arcs au-delà des bords gauche et droit, extrémités invisibles), halo atmosphérique bleu/cyan, continents naturels, **frontières nationales visibles**, aucun éclairage nocturne urbain, soleil ou nuages décoratifs hors planète, étoiles très discrètes. Dimensions du fichier image de conversation : 1086 × 1448 (donc **pas encore 9:16**) ; SHA-256 `5f97e5f0d29551e187b50106e0aaf2f00e700062a9a2f5845dbf9f9715b6a90e`.
+
+**Sources impératives :** [historique des quatre visuels + corrections humaines](../media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md), [contrat JSON v4](../media/art-direction/d00-eye-globe-visual-contract-v4.json), `DECISION_REGISTER.md` D-018–D-022, et `WORK_JOURNAL.md`. La Terre est la pupille ; les deux arcs sont des paupières secondaires, **pas deux anneaux formant un cercle**. Ne pas recréer ou modifier le logo bleu PNG officiel.
+
+**Prochaine opération :** attendre le retour sur D00-v4 et corriger si nécessaire. Avant toute vidéo, réaliser/évaluer un vrai **D00 3D vertical 1080×1920** avec géographie tracée depuis données fiables, atmosphère simulée et arcs paramétriques. Puis micro-animation 3–6 secondes sur validation explicite ; D01–D05 et montage complet restent ultérieurs. **Image générée dans le chat, binaire non archivé sur GitHub** ; seule sa trace et son cahier des charges sont versionnés. Aucun nouveau build de l'aperçu statique n'est revendiqué pour cette révision.
+
+---
+
 ## NOUVELLE REPRISE DU 13 NOVEMBRE — AUDIT DU CHAT BLOQUÉ (SANS NOUVELLE VALIDATION)
 
 Le propriétaire a fourni une capture du dernier message du chat précédent et demandé la vérification de l'historique et du dépôt. Rapport de lecture détaillé : [MEDIA_STUDIO_RECOVERY_AUDIT_2026-11-13.md](MEDIA_STUDIO_RECOVERY_AUDIT_2026-11-13.md). Le journal de travail est complété.
