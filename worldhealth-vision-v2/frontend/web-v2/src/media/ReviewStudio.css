@@ -190,3 +190,20 @@
   .wv-review-archive-actions{align-items:stretch}
   .wv-review-archive-actions a,.wv-review-archive-actions button{text-align:center;white-space:normal}
 }
+
+.wv-review-approved-decision{
+  margin:0 20px 36px;display:flex;align-items:center;justify-content:space-between;
+  padding:26px;gap:25px;border-radius:12px;
+  background:linear-gradient(115deg,#163e36,#163c4c);
+  border:1px solid rgba(151,235,193,.6);
+}
+.wv-review-approved-decision strong{display:block;color:#e5fff1;font-size:17px}
+.wv-review-approved-decision p{color:#c5e5df;font-size:12px;line-height:1.7;max-width:650px}
+.wv-review-approved-decision button{
+  padding:15px 17px;background:#d9f9ea;color:#0e3b32;border:0;
+  border-radius:8px;font-size:12px;font-weight:850;line-height:1.35;min-width:240px
+}
+@media(max-width:720px){
+  .wv-review-approved-decision{flex-direction:column;align-items:stretch;padding:19px}
+  .wv-review-approved-decision button{width:100%;min-width:0}
+}
