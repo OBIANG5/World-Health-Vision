@@ -19,6 +19,16 @@
 | D-011 | 2026-11-13 | Continuité | Documenter décisions, preuves, code, branches, problèmes et point de reprise GitHub afin de survivre à un chat bloqué | ACTIVE | `docs/continuity/` et `CONTINUITE_WORLD_VISION.md` |
 | D-012 | 2026-11-13 | Transparence média | Images historiques identifiées comme telles ; sources, droits, crédit, dates conservés ; ne jamais présenter illustration IA comme enregistrement d'un fait réel | ACTIVE | `docs/media/art-direction/cop31-opening-directions-v1.json` et manifeste photo |
 
+## Nouvelle preuve audiovisuelle reçue (sans validation créative)
+
+| ID | Date | Domaine | Observation et conséquence | État | Preuve |
+|---|---|---|---|---|---|
+| D-013 | 2026-11-13 | Référence tierce | Une vidéo TikTok géographique de 64,9 s a été effectivement reçue et analysée ; sa signature de déplacement « globe → pays → information » motive l'exploration d'une direction **D** distincte des 3 maquettes existantes | **RÉFÉRENCE ENREGISTRÉE, D NON VALIDÉE** | `docs/media/references/2026-11-13-focus-geopolitique-video-reference.md` ; SHA-256 `4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb` |
+
+**Contrainte explicite :** cette ligne **ne signifie pas** que l'utilisateur a approuvé un design, une animation ou un nouveau reportage. La vidéo source n'est pas un asset libre de droits et n'a pas été dupliquée dans GitHub.
+
+---
+
 ## Ce qui n'a pas été approuvé
 
 - La qualité visuelle/sonore de la vidéo COP31 initiale : **REFUS 1/10**.
