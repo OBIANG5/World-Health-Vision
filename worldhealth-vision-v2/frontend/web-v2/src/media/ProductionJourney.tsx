@@ -80,6 +80,13 @@ const STEPS = [
     output:"Reçus TikTok/WhatsApp associés à la version approuvée ; aucun faux statut publié."},
 ] as const;
 export type ProductionStageId = (typeof STEPS)[number]["id"];
+type ReviewGateId = "identite" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video";
+const REVIEW_GATE_FOR_STAGE:Record<ProductionStageId,ReviewGateId> = {
+  radar:"script",verify:"script",score:"script",approval:"script",creative:"script",
+  assets:"medias",storyboard:"script",audio:"voix",
+  render:"montage",preview:"montage",qa:"video",
+  package:"publication",tiktok:"publication",publish:"publication",
+};
 const STAGE_IDS = new Set<string>(STEPS.map(s => s.id));
 const groups = ["DÉCOUVRIR", "ÉDITER", "PRODUIRE", "VALIDER", "DIFFUSER"] as const;
 type Props = {
@@ -89,6 +96,7 @@ type Props = {
   onSelectStory: (id: string) => void;
   previewMode: boolean;
   onOpenControlRoom: () => void;
+  onOpenReview: (gate: ReviewGateId) => void;
   busy: boolean;
   onVerify: (story: MediaStory) => Promise<void>;
   onDecision: (story: MediaStory, action: "approve" | "approve_preview" | "mark_publish_ready") => Promise<void>;
@@ -260,7 +268,7 @@ function PhoneStage({story,stage,sceneIndex,previewMode}: {
 }
 
 export default function ProductionJourney({
-  story, stories, selectedId, onSelectStory, previewMode, onOpenControlRoom, busy,
+  story, stories, selectedId, onSelectStory, previewMode, onOpenControlRoom, onOpenReview, busy,
   onVerify,onDecision,onGenerateCreative,onDiscoverAssets,onPrepareDraft,
   onGenerateVoiceover,onLaunchRender,onSyncRender,onRunQa,onPreparePublication,
   onLaunchTikTokCleanExport,onSyncTikTokCleanExport,
@@ -335,6 +343,7 @@ export default function ProductionJourney({
             <div className="wvj-featured-note">Archive de test conservée pour analyse. Le logo, les images, les animations et la voix ne sont pas conformes.
               Ne pas diffuser. Refonte complète scène par scène avant un nouveau rendu.</div>
             <button type="button" onClick={()=>setCurrent("preview")}>Examiner le rendu refusé et les étapes →</button>
+            <button type="button" className="wvj-secondary-review" onClick={()=>onOpenReview("video")}>Noter ce pilote de 1 à 10 ★</button>
           </div>
           <div className="wvj-featured-player">
             <video
@@ -355,7 +364,8 @@ export default function ProductionJourney({
         <header className="wvj-page-head"><div className="wvj-page-icon">{selectedStep.icon}</div><div><div className="wvj-page-kicker">{selectedStep.kicker}</div><h2>{selectedStep.title}</h2><p>{selectedStep.description}</p></div></header>
         <div className="wvj-why"><div><span>POURQUOI C'EST IMPORTANT</span><p>{selectedStep.purpose}</p></div><div><span>CE QUI EST PRODUIT</span><p>{selectedStep.output}</p></div></div>
         {story ? <div className="wvj-evidence"><div className="wvj-evidence-title"><span>DONNÉES DU DOSSIER SÉLECTIONNÉ</span><small>{evidenceStatus(story,selectedStep.id)?"DONNÉES CONSIGNÉES":"NON FINALISÉ"}</small></div><StepEvidence id={selectedStep.id} story={story} selectedScene={sceneIndex} onScene={setSceneIndex}/></div> : <div className="wvj-empty">Aucune actualité chargée. Vérifie le service média ou choisis un dossier.</div>}
-        <div className="wvj-action-panel"><div><strong>PASSER À L'ACTION</strong><p>{previewMode?"Archive d’un reportage fondé sur des sources réelles. Les commandes restent désactivées sans serveur connecté : ce site ne fabrique ni rendus ni preuves fictives.":"Les actions sont reliées au véritable backend et suivent les contrôles d’état du sujet."}</p></div><div className="wvj-action-buttons">{task&&<button type="button" disabled={busy||previewMode||!task.allowed} onClick={()=>void task.run()} className="wvj-action-primary">{busy?"Traitement…":task.name}</button>}<button type="button" className="wvj-action-secondary" onClick={onOpenControlRoom}>Ouvrir le Control Room ↗</button></div></div>
+        <div className="wvj-action-panel"><div><strong>PASSER À L'ACTION</strong><p>{previewMode?"Archive d’un reportage fondé sur des sources réelles. Les commandes restent désactivées sans serveur connecté : ce site ne fabrique ni rendus ni preuves fictives.":"Les actions sont reliées au véritable backend et suivent les contrôles d’état du sujet."}</p></div><div className="wvj-action-buttons">{task&&<button type="button" disabled={busy||previewMode||!task.allowed} onClick={()=>void task.run()} className="wvj-action-primary">{busy?"Traitement…":task.name}</button>}<button type="button" className="wvj-action-secondary" onClick={()=>onOpenReview(REVIEW_GATE_FOR_STAGE[selectedStep.id])}>★ Noter / valider cette étape</button>
+        <button type="button" className="wvj-action-secondary" onClick={onOpenControlRoom}>Ouvrir le Control Room ↗</button></div></div>
         <nav className="wvj-page-footer" aria-label="Naviguer entre les étapes"><button type="button" disabled={index===0} onClick={()=>setCurrent(STEPS[index-1].id)}>← Étape précédente</button><span>{selectedStep.number} / 14</span><button type="button" disabled={index===STEPS.length-1} onClick={()=>setCurrent(STEPS[index+1].id)}>Étape suivante →</button></nav>
       </div>
       {story && <PhoneStage story={story} stage={selectedStep.id} sceneIndex={sceneIndex} previewMode={previewMode}/>}
