@@ -681,7 +681,7 @@ export default function MediaStudio() {
           }
         >
           <span className="wv-media-live-dot" />
-          {previewMode ? "APERÇU · DÉMO" : schedulerStatus?.enabled ? "RADAR AUTO" : "RADAR MANUEL"}
+          {previewMode ? "ARCHIVE · RÉELLE" : schedulerStatus?.enabled ? "RADAR AUTO" : "RADAR MANUEL"}
         </div>
 
         <nav className="wv-media-viewnav" aria-label="Espace Media Studio">
