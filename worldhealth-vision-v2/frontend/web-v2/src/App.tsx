@@ -358,7 +358,7 @@ function AppContent() {
         <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
       </button>
       <button type="button" ref={toolsButtonRef}
-        className={"whv-nav-btn whv-nav-btn--tools" + (showToolsMenu && navDomain === "all" ? " active" : "")}
+        className={"whv-nav-btn whv-nav-btn--tools" + (showToolsMenu && navDomain === "all" ? " active" : "") + (anyToolOpen ? " has-active-tool" : "")}
         aria-expanded={showToolsMenu && navDomain === "all"}
         aria-controls="whv-tools-menu"
         onClick={(event) => openNavDomain("all", event.currentTarget)}>
