@@ -45,6 +45,10 @@ try{
   assert(colors.green>25,screen.name+" missing green land "+JSON.stringify(colors));
   assert(colors.sand>15,screen.name+" missing Sahara gold "+JSON.stringify(colors));
   assert(colors.blue>500,screen.name+" missing vibrant ocean "+JSON.stringify(colors));
+  // Tap the Africa-centered landing before rotating into ocean territory.
+  await globe.click({position:{x:box.width*.5,y:box.height*.51}});
+  await page.locator(".country-drawer.open").waitFor({state:"visible",timeout:15000});
+  await page.locator(".country-drawer.open .drawer-btn.close").click();
   const before=await globe.evaluate(el=>el.toDataURL());
   const x=box.x+box.width*.5,y=box.y+box.height*.51;
   await page.mouse.move(x,y);await page.mouse.down();
@@ -53,9 +57,6 @@ try{
   const after=await globe.evaluate(el=>el.toDataURL());
   assert.notEqual(before,after,screen.name+" Earth did not turn");
   await page.screenshot({path:"globe-artifacts/"+screen.name+"-electric-eye.png",fullPage:true});
-  await globe.click({position:{x:box.width*.5,y:box.height*.51}});
-  await page.locator(".country-drawer.open").waitFor({state:"visible",timeout:15000});
-  await page.locator(".country-drawer.open .drawer-btn.close").click();
   assert.deepEqual(errors,[],screen.name+" JS errors");
   assert.deepEqual(assetFailures,[],screen.name+" assets failed");
   console.log("PASS "+screen.name+" Electric Earth: real GeoJSON, white eye, cyan/green/sand/blue, drag, country drilldown");
