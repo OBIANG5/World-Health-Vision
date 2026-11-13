@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import "./MediaStudio.css";
 import ProductionJourney from "./ProductionJourney";
+import ReviewStudio from "./ReviewStudio";
 import type {
   EditorialScoreFactors,
   MediaDashboard,
@@ -97,9 +98,10 @@ function emptyDashboard(): MediaDashboard {
 }
 
 export default function MediaStudio() {
-  const [screen, setScreen] = useState<"journey" | "desk">(
-    () => new URLSearchParams(window.location.search).get("screen") === "desk" ? "desk" : "journey",
-  );
+  const [screen, setScreen] = useState<"journey" | "review" | "desk">(() => {
+    const param = new URLSearchParams(window.location.search).get("screen");
+    return param === "desk" || param === "review" ? param : "journey";
+  });
   const previewMode = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
   const [stories, setStories] = useState<MediaStory[]>([]);
   const [dashboard, setDashboard] = useState<MediaDashboard>(emptyDashboard());
@@ -651,11 +653,11 @@ export default function MediaStudio() {
     }
   }
 
-  function changeScreen(next: "journey" | "desk") {
+  function changeScreen(next: "journey" | "review" | "desk") {
     setScreen(next);
     const url = new URL(window.location.href);
-    if (next === "desk") {
-      url.searchParams.set("screen", "desk");
+    if (next === "desk" || next === "review") {
+      url.searchParams.set("screen", next);
     } else {
       url.searchParams.delete("screen");
     }
@@ -687,12 +689,20 @@ export default function MediaStudio() {
         <nav className="wv-media-viewnav" aria-label="Espace Media Studio">
           <button type="button" className={screen === "journey" ? "active" : ""}
             onClick={() => changeScreen("journey")}>◈ Parcours vidéo</button>
+          <button type="button" className={screen === "review" ? "active" : ""}
+            onClick={() => changeScreen("review")}>★ Noter & valider</button>
           <button type="button" className={screen === "desk" ? "active" : ""}
             onClick={() => changeScreen("desk")}>▤ Control Room</button>
         </nav>
       </header>
 
-      {screen === "journey" ? (
+      {screen === "review" ? (
+        <ReviewStudio
+          story={selected}
+          previewMode={previewMode}
+          onOpenJourney={() => changeScreen("journey")}
+        />
+      ) : screen === "journey" ? (
         <ProductionJourney
           story={selected}
           stories={stories}
