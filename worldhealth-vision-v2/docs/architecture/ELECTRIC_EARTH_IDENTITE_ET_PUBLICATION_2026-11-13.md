@@ -56,3 +56,16 @@ Fusion de la refonte : PR #15 https://github.com/OBIANG5/World-Health-Vision/pul
 ## Pistes de prochaines améliorations
 
 Après validation visuelle de la nouvelle identité sur téléphone : étudier le rendu des régions/côtes par rapport à la référence ; mesurer FPS et énergie sur iPhone physique, améliorer les outils tourisme, comparaison de pays, marchés financiers et sécurité avec des sources officielles datées et vérifiables, rendre la synchronisation GitHub/Vercel automatique après autorisation. Éviter de remplacer le logiciel multi-modules par une maquette à une seule page.
+
+## Publication effective — 13 novembre 2026
+
+**Déploiement de production confirmé** : `dpl_5XGKWVfj1vGcyGzxfVwC4Tv5cbG9`, état Vercel `READY`, alias permanent `https://world-health-vision-v2.vercel.app` pointant vers ce déploiement. Code construit et publié depuis l'instantané GitHub immuable `2250ec045bee523a05a4db0c534c0d90d6cca74b` du dépôt `whv-v2-browser-preview`. 51 fichiers publiés en un seul ensemble.
+
+**Test public réel réussi**, directement sur l'URL Vercel (pas une simple compilation locale) :
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/43467898011
+
+Le test a confirmé le bon fichier JavaScript principal `index-KyBGtQFF.js`, les cinq couleurs attendues du globe, l'absence de l'ancienne carte, les six icônes SVG d'accueil, le parcours des neuf outils, les 22 sources internationales et les sources nationales documentées dont le Gabon. Le transfert de ressources dans le laboratoire Chromium était d'environ 607 Ko et DOMContentLoaded ~225 ms ; ce **ne sont pas des mesures terrain sur iPhone**.
+
+Le déploiement est actuellement **manuel**, faute de liaison Git native Vercel confirmée ; l'adresse du site reste fixe. Ne jamais annoncer que chaque push GitHub déclenche Vercel automatiquement avant d'avoir activé et testé l'intégration GitHub/Vercel.
+
+Le rendu Earth actuel est une **illustration interactive vectorielle/procédurale**, qui reprend les formes et les couleurs de la référence ; il n'est pas encore une texture terrestre photographique et n'est pas pixel-identique à l'image transmise. Préserver cette distinction lors des prochaines améliorations.
