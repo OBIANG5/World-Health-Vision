@@ -325,3 +325,19 @@ Build GitHub Actions modifié pour embarquer une source NASA avec provenance, co
 **Résultat vérifié en ligne** : Workflow https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755 completed/success ; manifest JSON déclare **GAB, 4 s, 24fps, 1080×1920, 96 frames**, technique non approuvée. SHA-256 du vrai MP4 `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a`, blob Git `8dd35afc5f5ef56eae1b40b72208dfc19380cb78`. Lien durable : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4.
 
 **Important** : cette réalisation n'est pas une nouvelle validation artistique de D00-v6 et n'est pas un film sur une véritable actualité du Gabon : ce pays sert de cible géographique d'essai. Voix, actualité sourcée, photos sous droits, sous-titres, montage et contrôles finaux restent à venir. **Ne pas publier sur un réseau social.** Plus de détails dans [CINEMATIC_D01_MICROCLIP_2026-11-13.md](../media/CINEMATIC_D01_MICROCLIP_2026-11-13.md). Reprendre la revue de la vidéo et de la fidélité à l'image D00-v6, puis le storyboard et la voix de qualité.
+
+---
+
+
+## 2026-11-13 — D01 export 4s, trois frames et lecteur mobile
+
+**Continuité après la livraison CGI D00** : travail repris sur le code réellement présent, sans écraser `CinematicEarth`. La branche média disposait déjà d'un nouveau pipeline de capture déterministe `CinematicCapture.tsx`, de `render-cinematic-d01.mjs` et du workflow `.github/workflows/whv-cinematic-motion-d01.yml` ; exécution [#43466731755](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755) terminée avec succès. Sortie `media-lab/wv-d01-gab-technical-4s.mp4`, SHA-256 `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a`, 1080×1920, 24 fps, 96 photogrammes, quatre secondes. Pays de démonstration : Gabon (`GAB`) sans localisation inventée de l'actualité.
+
+**Amélioration réalisée dans cette reprise :** création `CinematicMotionReview.tsx/.css`, intégration dans `GlobeDirection.tsx` : vrai lecteur iPhone HTML5 contrôlable et désactivé avant présence d'un manifeste valide, aucune lecture automatique. Ajout du poster de la première frame et du lien vers les trois photogrammes de contrôle. Test Playwright ajouté pour vérifier la présence du lecteur et l'absence d'autoplay. CI du commit visuel `94336393e7659303780c406bd30a8f3cba5ee5de` réussie.
+
+**QA du film :** nouveau workflow `.github/workflows/whv-d01-motion-qa.yml`. Premier passage [#43468544350](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43468544350) échoué pour une **dépendance absente** (`ffprobe`) sur le runner, non pour le film ; installation explicite de FFmpeg/FFprobe ajoutée et reprise [#43468666079](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43468666079) **success**. Vidéo recontrôlée SHA-256 + métadonnées, trois vraies frames différentes archivées dans `media-lab/review/` sur la branche permanente, contact sheet `contact-sheet.jpg`. Inspection des frames dans le chat : mouvement de l'Europe/Afrique vers l'Afrique centrale visible ; l'avis esthétique humain reste à recueillir.
+
+**Document canonique** : [D01_GABON_MOTION_REVIEW_2026-11-13.md](../media/D01_GABON_MOTION_REVIEW_2026-11-13.md). **Aucun faux contenu d'actualité, aucune approbation, aucune diffusion réseau social.**
+
+**Suite intelligente :** consolider la fidélité des arcs/du blanc et de la diffusion atmosphérique à D00-v6, tester le film sur téléphone, puis D02 zoom vers un lieu seulement si coordonnées vérifiées ; viendront vidéos réelles sous licence, voix et montage avec toutes les validations du PDF de 137 pages.
+
