@@ -77,7 +77,10 @@
       "actual_location": "Houston, Texas, USA",
       "not_from_story_event": true,
       "label_required": "IMAGE D'ARCHIVES · HOUSTON, 2017 · U.S. ARMY",
-      "status": "external_image_preview_only_not_stored_in_repository"
+      "status": "archival_photo_bundled_in_static_preview_verified_sha256",
+      "bundled_preview_path": "editorial/harvey-rescue-2017.jpg",
+      "bundled_preview_sha256": "58bc6d400c6d264465d2f0a1962b07e298371c01fe0527f743fd0b7d2068c8ec",
+      "preview_provenance_path": "editorial/harvey-rescue-2017.provenance.json"
     }
   ],
   "sources": [
@@ -102,5 +105,5 @@
     "no_auto_publish": true,
     "animation_only_after_approval": true
   },
-  "notes": "UI still frames are proposals; external archival photo may be temporarily unavailable depending on device. No actual video or animation generated at this stage."
+  "notes": "Real 2017 U.S. Army archival photograph is bundled with a pinned SHA-256 and explicit date/location caption; three style frames only, no video rendered or published. Source event COP31 facts verified from UNICEF and FAO releases."
 }
