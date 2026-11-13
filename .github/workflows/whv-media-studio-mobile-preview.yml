@@ -35,6 +35,9 @@ jobs:
       - name: Install canonical React frontend dependencies
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: npm ci --no-audit --no-fund
+      - name: Test news-driven country targeting and dateline navigation
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node --test src/media/geoTargeting.test.mjs
       - name: Typecheck and compile original V2 React Media Studio
         working-directory: worldhealth-vision-v2/frontend/web-v2
         env:
