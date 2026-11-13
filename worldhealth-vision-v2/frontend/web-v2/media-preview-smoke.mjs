@@ -9,7 +9,7 @@ const frontend = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(frontend, "dist");
 const contentTypes = {
   ".html": "text/html", ".js": "application/javascript", ".css": "text/css",
-  ".svg": "image/svg+xml", ".png": "image/png", ".json": "application/json",
+  ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".json": "application/json",
   ".woff2": "font/woff2",
 };
 
