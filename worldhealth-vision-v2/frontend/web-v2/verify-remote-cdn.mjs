@@ -81,7 +81,19 @@ try {
     "Remote preview does not expose all 22 registered V2 sources");
   // Cross-check the actual CURRENT published mobile preview snapshot,
   // rather than passing only on the previous 22-source global catalogue.
+  if (isVercel) console.log("VERCEL_SOURCE_BEFORE",JSON.stringify(await page.evaluate(()=>({
+    localContext: !!window.__WHV_PREVIEW_LOCAL_CONTEXT__,
+    nationalCoverage: !!window.__WHV_PREVIEW_COUNTRY_COVERAGE__,
+    nationalCount: document.querySelectorAll(".whv-national-coverage-overview").length,
+    nationalText: document.querySelector(".whv-national-coverage-overview")?.textContent?.slice(0,900),
+    scripts: [...document.scripts].map(s=>s.src.split("/").at(-1))
+  }))));
   await page.locator(".whv-national-coverage-overview summary").click();
+  if (isVercel) console.log("VERCEL_SOURCE_AFTER",JSON.stringify(await page.evaluate(()=>({
+    detailsOpen: document.querySelector(".whv-national-coverage-overview")?.open,
+    metricsCount: document.querySelectorAll(".whv-national-coverage-metrics").length,
+    text: document.querySelector(".whv-national-coverage-overview")?.textContent?.slice(0,1200)
+  }))));
   await page.locator(".whv-national-coverage-metrics").waitFor({state:"visible"});
   const coverage=await page.locator(".whv-national-coverage-overview").innerText();
   for(const n of ["217","4","5","0","APERÇU STATIQUE"])
