@@ -285,6 +285,8 @@ function AppContent() {
     setShowToolsMenu((wasOpen) => navDomain === domain ? !wasOpen : true);
     setNavDomain(domain);
     setShowCountrySelector(false);
+    setRegionDrawerOpen(false);
+    setDrawerOpen(false);
   }
 
   function openCountrySearch() {
@@ -316,6 +318,8 @@ function AppContent() {
 
   const headerActions = (
     <nav className="whv-nav" aria-label={lang === "fr" ? "Explorer World Health Vision" : "Explore World Health Vision"}>
+      <button type="button" className="whv-nav-btn whv-nav-btn--mobile-hub" aria-expanded={showToolsMenu && navDomain === "all"}
+        onClick={(event) => openNavDomain("all", event.currentTarget)}>{lang === "fr" ? "☷ Menu" : "☷ Menu"}</button>
       {(showCountrySelector || showToolsMenu) && (
         <div className="whv-menu-dismiss" onClick={() => {
           setShowCountrySelector(false);
@@ -638,11 +642,10 @@ function AppContent() {
         <div className="whv-offline-banner">
           <span className="whv-offline-banner-icon">⚠</span>
           <div>
-            <strong>Services backend hors ligne</strong>
-            <span>
-              Démarrez gateway (8080), catalog (8082) et analytics (8000) pour accéder aux données.
-              La carte reste navigable.
-            </span>
+            <strong>{lang === "fr" ? "Données temporairement indisponibles" : "Data temporarily unavailable"}</strong>
+            <span>{lang === "fr"
+              ? "Le globe reste consultable. Les fiches et outils indiquent les informations accessibles."
+              : "You can still explore the globe. Country profiles and tools will show available information."}</span>
           </div>
         </div>
       )}
