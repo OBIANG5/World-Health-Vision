@@ -5,6 +5,8 @@
  */
 import {useEffect,useState} from "react";
 import GeoGlobe from "./GeoGlobe";
+import GeoTargetingLab from "./GeoTargetingLab";
+import type {MediaStory} from "./types";
 import "./GlobeDirection.css";
 
 type Verdict="a_corriger"|"refuse"|"valide";
@@ -123,7 +125,7 @@ function feedbackPayload(step:Step,feedback:Feedback){
     animation_authorized:false,mp4_authorized:false,
   };
 }
-export default function GlobeDirection(){
+export default function GlobeDirection({story}:{story?:MediaStory|null}){
   const [selected,setSelected]=useState<string>(()=>{
     const p=new URLSearchParams(window.location.search).get("frame");
     return STEPS.some(s=>s.id===p)?p!:"d00";
@@ -221,6 +223,7 @@ export default function GlobeDirection(){
         </div>
       </div>
     </div>
+    <GeoTargetingLab story={story}/>
     <div className="wv-globe-lab-sources">
       <strong>Sources, authenticité et étapes restantes</strong>
       <p>Exemple situé à Antalya en Turquie, repris d'une annonce de la COP31 :
