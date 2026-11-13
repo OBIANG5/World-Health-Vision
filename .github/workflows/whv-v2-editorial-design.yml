@@ -1,0 +1,46 @@
+name: World Health Vision V2 editorial UX review
+on:
+  push:
+    branches: ['design/v2-world-explorer-editorial-2026-11-13']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  editorial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install production dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck and build the real V2
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx tsc -b --pretty false
+          npx vite build --base=./
+      - name: Install Chromium
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+      - name: Test real menus and existing tools across three viewports
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node editorial-smoke.mjs
+      - name: Check original interactive globe and lazy Leaflet mode remain usable
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node globe-smoke.mjs
+      - name: Save actual mobile/tablet/desktop screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-vision-editorial-ui-iphone-desktop
+          path: |
+            worldhealth-vision-v2/frontend/web-v2/editorial-artifacts/
+            worldhealth-vision-v2/frontend/web-v2/globe-artifacts/
+          if-no-files-found: ignore
