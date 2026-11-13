@@ -2,6 +2,28 @@
 
 **Date de rédaction : 13 novembre 2026.** Ce document est un **état de reprise vivant**, à actualiser après chaque incrément. Les preuves de changement et les dates des commits sont dans [COMMIT_HISTORY_INDEX.md](COMMIT_HISTORY_INDEX.md).
 
+## Dernière décision de direction créative (13 novembre 2026) — PRIORITÉ ACTUELLE
+
+**Ne pas se tromper de jalon.** La plateforme World Health Vision V2 et le Media Studio existent toujours. Dans Media Studio, le propriétaire était en train d'évaluer l'identité visuelle, et **a rejeté les trois anciennes maquettes A/B/C** pour leur manque de qualité. Aucun score chiffré individuel n'a été attribué à A/B/C.
+
+**Nouveau chemin demandé :** géolocalisation cinématique « Terre entière → pays ciblé → région/ville → médias véritables vérifiés → explication → transition ». Le logo officiel bleu est conservé. Développement **plan par plan**, aperçus au téléphone, notes 1–10, refus/corrections et validation explicite à chaque jalon. **Ne pas relancer un MP4 final.**
+
+**Code de la nouvelle étude :** `frontend/web-v2/src/media/GeoGlobe.tsx`, `GlobeDirection.tsx` et `GlobeDirection.css`. Six poses D00–D05 s'appuient sur le GeoJSON des pays déjà présent dans le projet. **Ce sont des maquettes fixes vectorielles et lumineuses, pas encore une sphère satellite 3D photoréaliste ni un film animé.** L'évaluation doit aussi déterminer si leur rendu est assez professionnel ; ne pas déclarer la direction validée sous prétexte que les tests passent.
+
+**Formation retrouvée et étudiée :** `monter-et-animer-vos-videos-avec-claude-v2.pdf` de 137 pages. Voir `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md` pour une comparaison honnête avec les fonctions actuelles et les manques, notamment voix, dérushage, compétences et QA.
+
+**Rappel sur les deux vidéos perdues :** une vidéo géopolitique de ~65 s a été renvoyée et réellement examinée ; l'autre et le texte exact du prompt historique n'ont pas été retrouvés. Ne pas attribuer des détails inventés à cette deuxième référence.
+
+**État des validations :** logo bleu actuel APPROUVÉ sans note ; ancien MP4 COP31 REFUSÉ 1/10 ; anciennes A/B/C REFUSÉES sans score ; **D00–D05 proposés seulement, pas approuvés**. Ne pas publier ni fusionner la branche média dans `v2` sans autorisation.
+
+**Liens utiles :**
+- [Directive artistique à respecter](../media/art-direction/WORLD_VISION_GLOBE_SIGNATURE_DIRECTIVE_2026-11-13.md)
+- [Audit de la formation](../media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md)
+- [Registre de décisions](DECISION_REGISTER.md)
+- Media Studio : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/index.html?view=media&screen=review&gate=direction
+
+---
+
 ## Nouvel élément confirmé le 13 novembre 2026 : référence vidéo originale réexpédiée
 
 Une des deux vidéos TikTok mentionnées dans la conversation disparue vient d'être **réellement reçue et inspectée**. Il s'agit d'une vidéo de ~64,9 s en 512×910 H.264 avec globe terrestre et cinq sujets géographiques (Mexique, Royaume-Uni, Riyad/Bruxelles, Soudan du Sud, Turquie/Chine), filigrane `@focus.geopolitique`.
