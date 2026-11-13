@@ -46,17 +46,18 @@ try {
   assert.match(await page.locator(".wvj-subject option").first().textContent(),/COP31/);
   assert.equal(await page.locator(".wvj-step-card").count(),14);
   // An old permanent link must display the new G1 work on its home screen.
-  await page.getByRole("heading",{name:/Les trois nouvelles ouvertures sont disponibles ici/}).waitFor();
+  await page.getByRole("heading",{name:/Le globe raconte le monde — six plans à juger/}).waitFor();
   const releaseResponse=await page.request.get(base+"/preview-deployment.json");
   assert.equal(releaseResponse.status(),200);
   const release=await releaseResponse.json();
   assert.match(release.source_commit,/^[a-f0-9]{40}$/);
   await page.getByText(release.source_commit.slice(0,12),{exact:false}).waitFor();
-  await page.getByRole("button",{name:/Voir A, B et C/}).click();
+  await page.getByRole("button",{name:/Examiner les 6 plans du globe/}).click();
   await page.locator('[data-review-gate="direction"]').waitFor();
-  assert.equal(await page.locator(".wv-direction-item").count(),3);
+  assert.equal(await page.locator(".wv-globe-stage-list button").count(),6);
+  await page.locator('[data-globe-step="d00"]').waitFor();
   await page.getByRole("button",{name:/Retour au parcours/}).click();
-  await page.getByRole("heading",{name:/Les trois nouvelles ouvertures sont disponibles ici/}).waitFor();
+  await page.getByRole("heading",{name:/Le globe raconte le monde — six plans à juger/}).waitFor();
   // Real pilot: grade the exact video, preserve the user's 1-to-10 values
   // across reloads, and verify secure handoff without creating a fake issue.
   await page.getByRole("button",{name:/Noter & valider/}).click();
@@ -137,37 +138,48 @@ try {
   assert.equal(await page.locator("#wv-review-overall").count(),0,
     "Explicit human logo approval must not trigger an invented numerical score.");
   // Choose an art direction and verify that feedback is version-specific.
-  await page.getByRole("button",{name:/Étape suivante : les trois directions artistiques/}).click();
-  await page.locator(".wv-direction-item").first().waitFor();
-  assert.equal(await page.locator(".wv-direction-item").count(),3);
-  assert.equal(await page.locator(".wv-direction-canvas").count(),3);
-  const archivalPhoto=page.locator('.wv-direction-item[data-direction="terrain"] .wv-direction-photo img');
-  await archivalPhoto.waitFor();
-  const photoIsLoaded=await archivalPhoto.evaluate(async img=>{
-    await img.decode().catch(()=>undefined);
-    return img.naturalWidth>700 && img.naturalHeight>400;
+  await page.getByRole("button",{name:/Étape suivante : explorer le globe plan par plan/}).click();
+  await page.locator('[data-globe-step="d00"]').waitFor();
+  assert.equal(await page.locator(".wv-globe-stage-list button").count(),6,
+    "Globe identity must have six separately reviewable frames.");
+  const actualGeometry=await page.request.get(base+"/countries.geojson");
+  assert.equal(actualGeometry.status(),200,"The six frames must use the app's real GeoJSON, not imaginary outlines.");
+  const geo=await actualGeometry.json();
+  assert.equal(geo.type,"FeatureCollection");
+  assert.ok(geo.features.length>100);
+  await page.locator(".wv-globe-canvas").waitFor();
+  await page.waitForFunction(()=>{
+    const el=document.querySelector(".wv-globe-canvas");
+    const ctx=el?.getContext("2d");
+    return Boolean(ctx&&el.width>200&&ctx.getImageData(el.width/2|0,el.height/2|0,1,1).data[3]===255);
   });
-  assert.equal(photoIsLoaded,true,
-    "Documentary direction must display an actual readable licensed photograph.");
-  // Separate real 9:16 proof images remain small enough to inspect without
-  // downscaling a multi-screen mobile screenshot.
-  for(const id of ["terrain","chiffres","pedagogie"]) {
-    await page.locator(`.wv-direction-item[data-direction="${id}"] .wv-direction-canvas`)
-      .screenshot({path:path.join(dist,`style-frame-${id}.png`)});
-  }
-  await page.locator('.wv-direction-item[data-direction="chiffres"] button').click();
-  await page.locator('[data-review-gate="direction"]').waitFor();
-  assert.equal(new URL(page.url()).searchParams.get("style"),"chiffres");
-  await page.locator("#wv-review-overall").selectOption("7");
-  await page.locator("#wv-review-score-composition").selectOption("6");
-  const frameLink=await page.locator("#wv-review-gh-link").getAttribute("href");
-  assert.match(new URL(frameLink).searchParams.get("body"),/cop31-visual-opening-v1-chiffres/);
-  await page.screenshot({path:path.join(dist,"media-studio-style-iphone.png"),fullPage:true});
-  await page.locator('.wv-direction-item[data-direction="pedagogie"] button').click();
-  assert.equal(new URL(page.url()).searchParams.get("style"),"pedagogie");
-  assert.equal(await page.locator("#wv-review-overall").inputValue(),"");
-  await page.locator('.wv-direction-item[data-direction="chiffres"] button').click();
-  assert.equal(await page.locator("#wv-review-overall").inputValue(),"7");
+  await page.locator('.wv-globe-scene[data-scene-id="d00"]')
+    .screenshot({path:path.join(dist,"style-frame-globe-d00.png")});
+  await page.locator("#wv-globe-score").selectOption("4");
+  await page.locator("#wv-globe-comment").fill("Globe vectoriel trop plat : améliorer textures et relief après validation.");
+  await page.locator(".wv-globe-stage-list button").nth(1).click();
+  assert.equal(await page.locator("[data-globe-step]").getAttribute("data-globe-step"),"d01");
+  assert.equal(await page.locator("#wv-globe-score").inputValue(),"");
+  await page.locator('.wv-globe-scene[data-scene-id="d01"]')
+    .screenshot({path:path.join(dist,"style-frame-globe-d01.png")});
+  await page.locator(".wv-globe-stage-list button").nth(2).click();
+  await page.locator('.wv-globe-scene[data-scene-id="d02"]')
+    .screenshot({path:path.join(dist,"style-frame-globe-d02.png")});
+  await page.locator(".wv-globe-stage-list button").nth(3).click();
+  await page.getByText(/EMPLACEMENT PRÉVU : VRAIES IMAGES/).waitFor();
+  await page.locator('.wv-globe-scene[data-scene-id="d03"]')
+    .screenshot({path:path.join(dist,"style-frame-globe-d03.png")});
+  await page.locator(".wv-globe-stage-list button").nth(4).click();
+  await page.getByText(/OBJECTIF · PAS UNE SOMME DÉJÀ VERSÉE/).waitFor();
+  await page.locator('.wv-globe-scene[data-scene-id="d04"]')
+    .screenshot({path:path.join(dist,"style-frame-globe-d04.png")});
+  await page.locator(".wv-globe-stage-list button").nth(5).click();
+  await page.locator('.wv-globe-scene[data-scene-id="d05"]')
+    .screenshot({path:path.join(dist,"style-frame-globe-d05.png")});
+  await page.locator(".wv-globe-stage-list button").first().click();
+  assert.equal(await page.locator("#wv-globe-score").inputValue(),"4");
+  assert.match(await page.locator("#wv-globe-comment").inputValue(),/trop plat/);
+  await page.screenshot({path:path.join(dist,"media-studio-globe-review-iphone.png"),fullPage:true});
   await page.getByRole("button",{name:/Parcours vidéo/}).click();
   const scrollState = await page.evaluate(() => ({
     doc:document.documentElement.scrollHeight,
