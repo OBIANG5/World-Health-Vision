@@ -32,10 +32,10 @@ const GATES:ReadonlyArray<{
     deliverable:"Logo original approuvé, déclinaisons et planche de charte",
     required:["logo","couleurs","typographie","lisibilite"],
     hint:"Le fichier officiel de l’œil-globe bleu est présent dans le site et Remotion. Les nouvelles couleurs attendront."},
-  {id:"direction",number:"01",name:"Direction artistique",subtitle:"Choisir l'ouverture du reportage",
-    deliverable:"Trois compositions verticales avec le vrai logo ; une seule sera retenue",
+  {id:"direction",number:"01",name:"Direction artistique",subtitle:"Le globe raconte le monde",
+    deliverable:"Six plans géographiques 9:16 à évaluer avant une animation",
     required:["logo","accroche","images","couleurs","luminosite","lisibilite","composition"],
-    hint:"Choisis une direction A, B ou C et note-la. Nous ne produirons pas de clip animé sans ton accord."},
+    hint:"Les anciennes maquettes A/B/C sont refusées. Examine les six plans D00 à D05 de la nouvelle piste du globe, puis note chaque plan."},
   {id:"script",number:"02",name:"Sujet & script",subtitle:"Accroche, faits, angle",
     deliverable:"Script versionné et affirmations liées aux sources",
     required:["accroche","exactitude","narration","rythme"],
@@ -95,7 +95,7 @@ const START:Review = {version:1,global:null,notes:"",priorities:"",decision:"a_c
 
 function artifactRef(story:MediaStory,gate:GateId,style:DirectionId="terrain"):string|null {
   if(gate==="identite")return "official-eye-globe-blue-bc80fa70cebd566768bfb1703a0f1f636a78c196";
-  if(gate==="direction")return `cop31-visual-opening-v1-${style}-logo-bc80fa70`;
+  if(gate==="direction")return style==="globe"?"world-vision-globe-v2-2026-11-13":`cop31-visual-opening-v1-${style}-logo-bc80fa70`;
   if(gate==="video"||gate==="montage")return story.render_job?.output_sha256 || null;
   if(gate==="voix")return story.voiceover?.id || null;
   if(gate==="script")return story.creative_package?.version ? `creative-v${story.creative_package.version}` : null;
@@ -383,10 +383,7 @@ function ReviewForm({story,gate,previewMode,style}:{
 export default function ReviewStudio({story,onOpenJourney,previewMode}:{
   story:MediaStory|null;onOpenJourney:()=>void;previewMode:boolean;
 }){
-  const [style,setStyle]=useState<DirectionId>(()=>{
-    const candidate=new URLSearchParams(window.location.search).get("style");
-    return candidate==="chiffres"||candidate==="pedagogie"?candidate:"terrain";
-  });
+  const [style,setStyle]=useState<DirectionId>(() => "globe");
   const [gate,setGate]=useState<GateId>(() => {
     const candidate=new URLSearchParams(window.location.search).get("gate");
     return GATES.some(item=>item.id===candidate)?candidate as GateId:"video";
