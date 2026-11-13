@@ -166,7 +166,7 @@ try {
   await page.locator('.wv-globe-scene[data-scene-id="d02"]')
     .screenshot({path:path.join(dist,"style-frame-globe-d02.png")});
   await page.locator(".wv-globe-stage-list button").nth(3).click();
-  await page.getByText(/EMPLACEMENT PRÉVU : VRAIES IMAGES/).waitFor();
+  await page.locator(".wv-globe-source-card").waitFor();
   await page.locator('.wv-globe-scene[data-scene-id="d03"]')
     .screenshot({path:path.join(dist,"style-frame-globe-d03.png")});
   await page.locator(".wv-globe-stage-list button").nth(4).click();
