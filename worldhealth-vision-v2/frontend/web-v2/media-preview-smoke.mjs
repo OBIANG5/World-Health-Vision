@@ -145,7 +145,8 @@ try {
   await page.screenshot({path:path.join(dist,"media-studio-iphone.png"),fullPage:true});
   await page.getByRole("button",{name:/Control Room/}).first().click();
   assert.equal(await page.locator(".wv-media-story-card").count(),1);
-  await page.getByText(/Vraie annonce des Nations unies/).first().waitFor();
+  assert.equal(await page.locator(".wv-media-story-card").count(),1);
+  await page.locator(".wv-media-story-card").first().getByText(/COP31/).first().waitFor();
   await page.screenshot({path:path.join(dist,"media-studio-desk-iphone.png"),fullPage:true});
   await page.getByRole("button",{name:/Scanner le Web/}).click();
   await page.getByText(/Archive réelle en lecture seule/).first().waitFor();
