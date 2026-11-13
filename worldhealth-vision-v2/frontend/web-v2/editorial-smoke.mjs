@@ -48,7 +48,8 @@ try{
   await finance.waitFor({state:"visible"});
   await finance.getByRole("button",{name:/Devises & taux de change|Currencies & FX/}).click();
   await page.locator(".cur-panel").waitFor({state:"visible",timeout:20000});
-  await page.locator(".cur-panel button").last().focus();
+  await page.locator(".cur-panel .prf-close-btn").click();
+  await page.locator(".cur-panel").waitFor({state:"hidden"});
   await page.getByRole("button",{name:/Voyager & vivre|Travel & living/}).click();
   const travel=page.locator('.whv-domain-menu[data-domain="travel"]');
   await travel.waitFor({state:"visible"});
