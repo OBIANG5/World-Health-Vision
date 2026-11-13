@@ -112,6 +112,8 @@ jobs:
           cache: npm
           cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
       - run: npm ci --no-audit --no-fund
+      - name: Test geographic targeting math and real country borders
+        run: node --test src/media/geoTargeting.test.mjs
       - run: npm run build
       - name: Upload frontend dist
         uses: actions/upload-artifact@v4
