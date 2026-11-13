@@ -1,0 +1,23 @@
+{
+  "status": "technical-only-not-approved",
+  "frames_differ": true,
+  "not_for_social_publication": true,
+  "images": [
+    {
+      "name": "frame-start.jpg",
+      "sha256": "c0b6e15a8e25cd9691c33d2e804b9a587ab5cf4a32bede103309c6299a2dac63"
+    },
+    {
+      "name": "frame-middle.jpg",
+      "sha256": "d240d86d79af8aa5d1bcf632bfec64a6c669bf7df99f1ea6e7cef4526c2d134f"
+    },
+    {
+      "name": "frame-end.jpg",
+      "sha256": "f27b4d0f5551bb1e3d89aa82c81347cdb05f8cfaf6f9bb092c37884fce72d45a"
+    },
+    {
+      "name": "contact-sheet.jpg",
+      "sha256": "3161707391d5e9c26b5768fc9611fb68d39f76367f8322486eed2af40f0c0862"
+    }
+  ]
+}
