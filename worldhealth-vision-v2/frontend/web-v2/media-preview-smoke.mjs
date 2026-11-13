@@ -159,8 +159,11 @@ try {
   await page.waitForFunction(()=>document.querySelectorAll("#wv-geotarget-country option").length>190);
   await page.locator("#wv-geotarget-country").selectOption("GAB");
   await page.getByRole("button",{name:/Voir la rotation vers le pays/}).click();
-  await page.waitForFunction(()=>Number(document.querySelector("#wv-geotarget-scrub")?.value)>180, {timeout:9000});
+  await page.waitForFunction(()=>Number(document.querySelector("#wv-geotarget-scrub")?.value)>180,null,{timeout:9000});
   await page.locator(".wv-geotarget-planet").screenshot({path:path.join(dist,"media-globe-motion-lab-iphone.png")});
+  // Observe the full arrival, including projected borders and ISO3 highlight.
+  await page.waitForFunction(()=>Number(document.querySelector("#wv-geotarget-scrub")?.value)===1000,null,{timeout:9000});
+  await page.locator(".wv-geotarget-planet").screenshot({path:path.join(dist,"media-globe-motion-arrival-gabon-iphone.png")});
   await page.getByRole("button",{name:/Recommencer/}).click();
   await page.locator("#wv-geotarget-country").selectOption("MLI");
   assert.equal(await page.locator("#wv-geotarget-country").inputValue(),"MLI");
