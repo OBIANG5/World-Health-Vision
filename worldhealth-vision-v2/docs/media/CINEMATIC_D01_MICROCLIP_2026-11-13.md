@@ -35,3 +35,16 @@ Manifeste attendu :
 2. Examiner le micro-clip D01 si sa génération réussit, relever défauts de mouvement et de cadrage ; améliorer les courbes caméra en fonction du pays réel.
 3. Étendre à un dossier d'actualité sourcé, avec `event.lat` et `event.lon` confirmés (pas le seul centre du pays) et politiques sur frontières contestées.
 4. Préparer le montage Remotion existant (script, scènes, véritables images autorisées, 3 voix à auditionner, alignement des mots, sous-titres, QA et exports), **après approbation humaine des étapes**.
+
+
+## Résultat effectif — rendu et archivage RÉUSSIS
+
+**Workflow du vrai rendu** : [run #43466731755](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755), **completed / success**. Toutes les étapes ont passé, y compris capture des 96 photogrammes, FFmpeg, validation FFprobe, artifact GitHub et push du MP4 sur la branche d'aperçu.
+
+**Fichier vérifié dans GitHub** : `whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4` ; blob Git `8dd35afc5f5ef56eae1b40b72208dfc19380cb78`. **SHA-256 réel du MP4** `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a`. Durée **4 s**, **1080×1920**, **24 i/s**, **96 images**, sortie H.264. Branche preview HEAD après publication du film : `e6022b36c4bcdc368fae71d52f92a817a21ca3cb`.
+
+- Vidéo : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4
+- Manifest JSON exact : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.json
+- Page GitHub du MP4 : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4
+
+**Statut éditorial exact :** micro-clip technique pour jugement humain, **non approuvé**, sans voix/sous-titres/images d'actualité et **non publié sur réseau social**. La réussite des validations vidéo ne juge pas la qualité artistique.
