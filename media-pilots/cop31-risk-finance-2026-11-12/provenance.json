@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "type": "WORLD_VISION_REAL_NEWSROOM_PILOT",
-  "source_case": "/home/runner/work/World-Health-Vision/World-Health-Vision/worldhealth-vision-v2/docs/media/pilots/cop31-risk-finance-2026-11-12.json",
+  "source_case": "worldhealth-vision-v2/docs/media/pilots/cop31-risk-finance-2026-11-12.json",
   "story_id": "wv-cop31-un-risk-finance-2026-11-12",
   "event_date": "2026-11-12",
   "source_urls": [
@@ -11,8 +11,8 @@
     "https://unfccc.int/cop31/about"
   ],
   "video_filename": "world-vision-cop31-master.mp4",
-  "video_sha256": "93a550a4679d9500c9882c3d8dfe3496064f9e2795ea695994e3aa165e14af34",
-  "narration_sha256": "13ba334b209808f93e2559dc9e1c85b65a3dee35e335a1b4c6a5900d527b6e45",
+  "video_sha256": "4f772a4185bdacaebbeb98c7f70417c8bc282f4904a599be23ebb00039545b03",
+  "narration_sha256": "3fca697a5248186fefc33e24a52aa967a4af8cbec179ef57eb815783ca0e9065",
   "voice_engine": "Piper fr_FR-siwis-medium; CC BY 4.0 training dataset; needs listening review",
   "duration_seconds": 36.1,
   "width": 1080,
@@ -20,8 +20,8 @@
   "video_codec": "h264",
   "audio_codec": "aac",
   "audio_sample_rate_hz": 48000,
-  "build_started_utc": "2026-11-13T10:08:13.280Z",
-  "rendered_at_utc": "2026-11-13T10:09:10.207Z",
+  "build_started_utc": "2026-11-13T10:13:32.327Z",
+  "rendered_at_utc": "2026-11-13T10:14:34.139Z",
   "published_to_platform": false,
   "human_visual_review": false,
   "independent_voice_transcription_qa": false,
