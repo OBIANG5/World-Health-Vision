@@ -1,0 +1,21 @@
+{
+  "schema_version": "wv-cinematic-d01-technical-motion-v1",
+  "source": "World-Vision GitHub Actions",
+  "status": "TECHNICAL_SAMPLE_NOT_ARTISTICALLY_APPROVED_NOT_FOR_PUBLICATION",
+  "target_iso3": "GAB",
+  "frame_count": 96,
+  "fps": 24,
+  "width": 1080,
+  "height": 1920,
+  "duration_seconds": 4,
+  "image_source": "NASA Blue Marble Next Generation January",
+  "image_sha256": "9743175942473681d78838ca1042553dab4779cf957fb6d8f22a81fb796f7797",
+  "borders": "worldhealth-vision-v2/frontend/web-v2/public/countries.geojson",
+  "interpolation": "geoTargeting.mjs great-circle + quintic easing",
+  "visual_engine": "CinematicEarth.tsx WebGL ray-sphere + projected borders",
+  "video_filename": "wv-d01-gab-technical-4s.mp4",
+  "video_sha256": "17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a",
+  "publication_authorized": false,
+  "voice_approved": false,
+  "art_direction_approved": false
+}
