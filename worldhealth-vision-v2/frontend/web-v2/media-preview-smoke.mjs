@@ -56,6 +56,7 @@ try {
   await page.locator("#wv-review-notes").fill("Le logo est incorrect, la voix est robotique et les animations ne conviennent pas.");
   await page.locator("#wv-review-priorities").fill("Récupérer le logo exact, comparer trois voix, valider un micro-clip.");
   await page.getByRole("button",{name:"Refusé",exact:true}).click();
+  await page.screenshot({path:path.join(dist,"media-studio-review-iphone.png"),fullPage:true});
   assert.equal(await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).isEnabled(),true);
   await page.evaluate(() => {
     window.__wvTestIssueUrl = null;
@@ -119,7 +120,10 @@ try {
   console.log("iPhone 390x844: verified real news, 14 pages, 7 scenes, 8 QA gates, newsroom and blocked fake scan — passed.");
 
   const desktop = await browser.newPage({viewport:{width:1365,height:900}});
-  await desktop.goto(base+"/index.html?view=media",{waitUntil:"networkidle"});
+  await desktop.goto(base+"/index.html?view=media&screen=review&gate=video",{waitUntil:"networkidle"});
+  await desktop.locator('[data-review-gate="video"]').waitFor();
+  await desktop.screenshot({path:path.join(dist,"media-studio-review-desktop.png"),fullPage:true});
+  await desktop.getByRole("button",{name:/Parcours vidéo/}).click();
   assert.equal(await desktop.locator(".wvj-step-card").count(),14);
   await desktop.getByRole("button",{name:/09.*REMOTION/}).click();
   await desktop.getByRole("heading",{name:/Le montage devient un vrai MP4/}).waitFor();
