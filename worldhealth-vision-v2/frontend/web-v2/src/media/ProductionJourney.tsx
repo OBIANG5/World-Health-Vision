@@ -322,19 +322,19 @@ export default function ProductionJourney({
         <div className="wvj-overview-metrics"><div><strong>05</strong><span>PHASES</span></div><div><strong>14</strong><span>ÉTAPES</span></div><div><strong>8</strong><span>CONTRÔLES QA</span></div><div><strong>{story?`${doneCount}/14`:"—"}</strong><span>ÉTAT DU DOSSIER</span></div></div>
       </section>
       {story?.render_job?.status==="completed" && story.render_job.output_sha256 && story.render_job.output_url && (
-        <section className="wvj-featured-real" aria-label="Premier véritable reportage vidéo">
+        <section className="wvj-featured-real" aria-label="Pilote de création vidéo non approuvé">
           <div className="wvj-featured-details">
-            <span>PREMIER REPORTAGE RÉEL · COP31 / ONU · 12 NOVEMBRE 2026</span>
-            <h2>Le reportage est un fichier. Pas une maquette.</h2>
+            <span>PILOTE REFUSÉ · COP31 / ONU · 12 NOVEMBRE 2026</span>
+            <h2>Vrai MP4. Qualité éditoriale refusée.</h2>
             <p>{story.title}</p>
             <div className="wvj-featured-facts">
               <b>{story.render_job.output_probe?.duration_sec.toFixed(1) ?? "—"} s</b>
               <b>1080 × 1920</b>
               <b>H.264 + AAC</b>
             </div>
-            <div className="wvj-featured-note">Images : animations originales · voix : IA française · sources : Nations unies.
-              Contrôle éditorial et validation de publication encore en attente.</div>
-            <button type="button" onClick={()=>setCurrent("preview")}>Explorer comment cette vidéo a été créée →</button>
+            <div className="wvj-featured-note">Archive de test conservée pour analyse. Le logo, les images, les animations et la voix ne sont pas conformes.
+              Ne pas diffuser. Refonte complète scène par scène avant un nouveau rendu.</div>
+            <button type="button" onClick={()=>setCurrent("preview")}>Examiner le rendu refusé et les étapes →</button>
           </div>
           <div className="wvj-featured-player">
             <video
@@ -343,7 +343,7 @@ export default function ProductionJourney({
               src={story.render_job.output_url}
               aria-label="World-Vision, véritable reportage COP31 en MP4"
             />
-            <div>FICHIER FINAL RÉEL · SHA-256 {story.render_job.output_sha256.slice(0,16)}…</div>
+            <div>ARCHIVE NON APPROUVÉE · SHA-256 {story.render_job.output_sha256.slice(0,16)}…</div>
           </div>
         </section>
       )}
