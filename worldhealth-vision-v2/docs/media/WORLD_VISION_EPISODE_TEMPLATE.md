@@ -12,6 +12,8 @@ Dupliquer ce modèle dans `docs/media/episodes/YYYY-MM-DD_sujet.md` au début de
 - Type : un pays / plusieurs pays justifiés / mondial / sans géographie utile
 - Durée cible : 40–50 s par défaut
 - Format : vertical 9:16, mp4 ; qualité conseillée 1080×1920
+- Matériel disponible : ordinateur avec Google Vids / seulement iPhone avec CapCut / autre ; choisi à partir de la réalité, pas deviné
+- Monteur principal choisi et accessible :
 - Éditorial : angle, ce que le public doit apprendre, lien à « Voir le monde, le comprendre »
 - Statut général : `NOT_STARTED`
 - Script gelé : NON
