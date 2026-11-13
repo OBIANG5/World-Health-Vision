@@ -54,3 +54,17 @@ description: Pilotage de la création vidéo journalistique World-Vision avec va
 ## Reprise après chat bloqué
 
 Ne jamais répondre « tout est terminé » en lisant un ancien résumé. Rechercher le dernier HEAD du dépôt, le dernier GitHub Actions et le SHA de `preview-deployment.json`. Reprendre seulement **le premier plan pas encore validé**.
+
+
+## Reprise mise à jour du 13 novembre — D00-v6, Manuel 137 pages, vidéo géociblée
+
+**Lire dès le début** :
+- `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md` — référence du parcours complet (neuf parties du PDF de 137 pages, 14 étapes produit, quatre compétences de montage, voix, calage, post-production et contrôle qualité).
+- `docs/media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md` — corrections sur les six images conceptuelles, hashes exacts et absence de validation automatique.
+- `docs/media/art-direction/d00-eye-globe-visual-contract-v6.json` — contraintes de la version actuelle.
+
+**Décision en cours** : D00-v5 est appréciée mais jugée encore insuffisante ; D00-v6 est générée **sans validation explicite**. Le blanc de l'œil doit être pur ; la diffusion atmosphérique de la Terre plus perceptible que les deux arcs ; les frontières de chaque pays, en particulier dans le Sahara, doivent être géographiquement exactes et lisibles. Le logo œil-globe bleu source demeure officiel et inchangé.
+
+**Après G1 (et seulement après approbation)** : construire en 9:16 un globe réellement 3D, avec frontière GeoJSON vérifiée et rotation vers les coordonnées `lat/lon` de la **nouvelle actuelle** ; un seul pays si le sujet est localisé. Tester séparément une micro-animation de 3–6 secondes. Puis D02–D05, vrais rushes, 3 voix comparées sur même phrase, transcription/alignement, SRT, montage, QA et export. Un **petit logo officiel** en coin d'écran est une hypothèse de design à tester sur fonds variés, pas un emplacement déjà validé.
+
+**Important sur les images** : v5 et v6 ont un hash/document GitHub, **mais pas leurs PNG binaires dans le repo ni dans la preview statique**. Le site affiche les six maquettes vectorielles précédentes et le nouveau statut/plan, pas la nouvelle image ou une vraie vidéo. Ne jamais présenter des frontières inventées par l'illustration IA comme des frontières géographiques exactes.
