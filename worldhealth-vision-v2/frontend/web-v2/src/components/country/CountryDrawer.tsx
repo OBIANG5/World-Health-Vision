@@ -24,6 +24,7 @@ import { useIndicatorRank } from "../../hooks/useIndicatorRank";
 import { t } from "../../i18n/labels";
 import { pdfSafe } from "../../utils/pdf";
 import TrendChart from "../charts/TrendChart";
+import {WorldIcon,type WorldIconName} from "../ui/WorldIcon";
 import ForecastChart from "../charts/ForecastChart";
 import "../../styles/charts.css";
 import "../../styles/country.css";
@@ -304,7 +305,7 @@ const TONE_FR: Record<string, string> = { POSITIVE:"Positif", BALANCED:"Équilib
 const AGREEMENT_FR: Record<AgreementLevel, string> = { CONSISTENT:"Cohérent", MIXED:"Mixte", DIVERGENT:"Divergent", INSUFFICIENT_DATA:"Insuffisant" };
 const CONFIDENCE_FR: Record<string, string> = { HIGH:"Haute", MEDIUM:"Moyenne", LOW:"Faible", INSUFFICIENT_EVIDENCE:"Insuffisant" };
 const TREND_ARROW: Record<string, string> = { UP:"↑", DOWN:"↓", FLAT:"→", INSUFFICIENT_DATA:"—" };
-const TREND_COLOR: Record<string, string> = { UP:"#9df0c5", DOWN:"#ffb3a0", FLAT:"rgba(183,220,245,0.7)", INSUFFICIENT_DATA:"rgba(183,220,245,0.45)" };
+const TREND_COLOR: Record<string, string> = { UP:"#9df0c5", DOWN:"#ffb3a0", FLAT:"rgba(33,68,100,0.90)", INSUFFICIENT_DATA:"rgba(48,82,114,0.86)" };
 
 // Noms lisibles des sources (codes catalog → libellé court).
 const SOURCE_LABELS: Record<string, string> = {
@@ -320,16 +321,14 @@ function sourceLabel(code: string | null | undefined): string {
   return SOURCE_LABELS[code] ?? code.replace(/_/g, " ");
 }
 
-const TAB_LABELS: Record<DrawerTab, string> = {
-  overview:    "📊 Résumé",
-  economy:     "💰 Économie",
-  health:      "🏥 Santé",
-  governance:  "⚖ Finances pub.",
-  markets:     "📈 Marchés",
-  forecasts:   "🔮 Projections",
-  safety:      "🔒 Sécurité",
-  compare:     "🌍 Comparer",
-  fx:          "💱 Devises",
+const TAB_LABELS: Record<DrawerTab,string> = {
+ overview:"Résumé",economy:"Économie",health:"Santé",governance:"Finances pub.",
+ markets:"Marchés",forecasts:"Projections",safety:"Sécurité",
+ compare:"Comparer",fx:"Devises",
+};
+const TAB_ICONS:Record<DrawerTab,WorldIconName>={
+ overview:"layers",economy:"currency",health:"info",governance:"scale",
+ markets:"markets",forecasts:"destination",safety:"shield",compare:"regions",fx:"currency",
 };
 
 // ---------------------------------------------------------------------------
@@ -405,8 +404,8 @@ function RankBadge({ iso3, indicatorCode, enabled }: { iso3: string; indicatorCo
     : null;
   return (
     <div className="rank-badge-row">
-      <span className="rank-badge">🌍 Monde : <strong>{worldStr}</strong></span>
-      {regionStr && <span className="rank-badge">🗺 Région : <strong>{regionStr}</strong></span>}
+      <span className="rank-badge">Monde : <strong>{worldStr}</strong></span>
+      {regionStr && <span className="rank-badge">Région : <strong>{regionStr}</strong></span>}
     </div>
   );
 }
@@ -427,11 +426,11 @@ function KpiRankLine({ iso3, indicatorCode }: { iso3: string; indicatorCode: str
   return (
     <div className="kpi-rank-line">
       <span className="kpi-rank-pill">
-        🌍 <span className="rank-num">{worldRankStr}</span>/{rank.worldTotal} monde
+        <span className="rank-num">{worldRankStr}</span>/{rank.worldTotal} monde
       </span>
       {rank.regionTotal > 0 && (
         <span className="kpi-rank-pill">
-          🗺 <span className="rank-num">{regionRankStr}</span>/{rank.regionTotal} {regionLabel}
+          <span className="rank-num">{regionRankStr}</span>/{rank.regionTotal} {regionLabel}
         </span>
       )}
     </div>
@@ -501,7 +500,7 @@ function IndicatorDetailPanel({
   const { points, loading: histLoading } = useIndicatorHistory(iso3, lens.indicatorCode, true);
 
   const arrow = TREND_ARROW[lens.trendDirection] ?? "—";
-  const trendColor = TREND_COLOR[lens.trendDirection] ?? "rgba(183,220,245,0.7)";
+  const trendColor = TREND_COLOR[lens.trendDirection] ?? "rgba(33,68,100,0.90)";
   const desc = INDICATOR_DESC[lens.indicatorCode];
 
   return (
@@ -536,8 +535,8 @@ function IndicatorDetailPanel({
             listé juste en dessous (SourceChipsRow). */}
         <div className="stat-hero-source" style={{ fontSize: 11, fontWeight: 600, color: "rgba(157,240,197,0.9)", marginTop: 5 }}>
           {lens.latestComparableSourceCount > 1
-            ? `🔗 Médiane de ${lens.latestComparableSourceCount} sources`
-            : `🔗 Source : ${sourceLabel(lens.selectedSourceCode)}`}
+            ? `Médiane de ${lens.latestComparableSourceCount} sources`
+            : `Source : ${sourceLabel(lens.selectedSourceCode)}`}
         </div>
         {/* Rang intégré dans le bloc héro, visible sans scroll */}
         <RankBadge iso3={iso3} indicatorCode={lens.indicatorCode} enabled={true} />
@@ -561,7 +560,7 @@ function IndicatorDetailPanel({
         className={`forecast-toggle-btn${showForecast ? " active" : ""}`}
         onClick={() => setShowForecast((v) => !v)}
       >
-        🔮 {showForecast
+        {showForecast
           ? (lang === "fr" ? "Masquer la projection" : "Hide projection")
           : (lang === "fr" ? "Voir la projection tendancielle" : "Show trend projection")}
       </button>
@@ -668,7 +667,7 @@ function IndicatorTabView({
   if (lenses.length === 0) {
     return (
       <div className="info-card" style={{ marginTop: 8 }}>
-        <p style={{ color: "rgba(183,220,245,0.6)", fontSize: 13, margin: 0 }}>{emptyMsg}</p>
+        <p style={{ color: "rgba(40,72,105,0.85)", fontSize: 13, margin: 0 }}>{emptyMsg}</p>
       </div>
     );
   }
@@ -725,7 +724,7 @@ function OverviewTab({
         <div className="overview-kpi-grid">
           {kpiLenses.map((lens) => {
             const arrow = TREND_ARROW[lens.trendDirection] ?? "—";
-            const trendColor = TREND_COLOR[lens.trendDirection] ?? "rgba(183,220,245,0.7)";
+            const trendColor = TREND_COLOR[lens.trendDirection] ?? "rgba(33,68,100,0.90)";
             const tab = tabForCode[lens.indicatorCode];
             return (
               <button
@@ -802,7 +801,7 @@ function OverviewTab({
               className={`overview-shortcut-btn${tab === "forecasts" ? " btn--forecast" : ""}`}
               onClick={() => onTabChange(tab)}
             >
-              {TAB_LABELS[tab]}
+              <WorldIcon name={TAB_ICONS[tab]} size={15}/> {TAB_LABELS[tab]}
             </button>
           ))}
         </div>
@@ -858,7 +857,7 @@ function ForecastsTab({
 
       {projectableLenses.length === 0 ? (
         <div className="info-card">
-          <p style={{ color: "rgba(183,220,245,0.6)", fontSize: 13, margin: 0 }}>
+          <p style={{ color: "rgba(40,72,105,0.85)", fontSize: 13, margin: 0 }}>
             {fr ? "Chargez d'abord les données économiques." : "Load economic data first."}
           </p>
         </div>
@@ -874,7 +873,7 @@ function ForecastsTab({
                 <span className="forecasts-val-number">
                   {fmtCompact(selectedLens.latestComparableValue, selectedLens.unitLabel)}
                 </span>
-                <span style={{ fontSize: 11, color: "rgba(183,220,245,0.5)" }}>
+                <span style={{ fontSize: 11, color: "rgba(44,76,110,0.85)" }}>
                   {selectedLens.latestPeriodLabel ?? ""}
                 </span>
               </div>
@@ -921,7 +920,7 @@ function SafetyTab({
       {risk && (
         <div className="safety-risk-banner" style={{ borderColor: `${riskColors[risk]}33`, background: `${riskColors[risk]}0d` }}>
           <span style={{ color: riskColors[risk], fontWeight: 700, fontSize: 13 }}>{riskLabels[risk]}</span>
-          <span style={{ fontSize: 12, color: "rgba(183,220,245,0.6)", marginLeft: 8 }}>
+          <span style={{ fontSize: 12, color: "rgba(40,72,105,0.85)", marginLeft: 8 }}>
             {fr ? "basé sur indicateurs macroéconomiques" : "based on macro indicators"}
           </span>
         </div>
@@ -946,7 +945,7 @@ function SafetyTab({
       )}
       {lenses.length === 0 && !risk && (
         <div className="info-card">
-          <p style={{ color: "rgba(183,220,245,0.6)", fontSize: 13, margin: 0 }}>
+          <p style={{ color: "rgba(40,72,105,0.85)", fontSize: 13, margin: 0 }}>
             {fr ? "Données de sécurité en cours d'intégration (GPI, UNODC)." : "Safety data integration in progress (GPI, UNODC)."}
           </p>
         </div>
@@ -1029,7 +1028,7 @@ function FxHistoryChart({ base, target }: { base: string; target: string }) {
           <YAxis domain={["auto", "auto"]} hide />
           <RechartsTip
             contentStyle={{ background: "#071a29", border: "1px solid rgba(115,192,242,0.18)", borderRadius: 8, fontSize: 11, padding: "4px 10px" }}
-            labelStyle={{ color: "rgba(183,220,245,0.65)" }}
+            labelStyle={{ color: "rgba(36,69,99,0.9)" }}
             itemStyle={{ color: strokeColor }}
             formatter={(v) => [typeof v === 'number' ? v.toFixed(4) : '—', `${base}/${target}`]}
           />
@@ -1078,7 +1077,7 @@ function FxConverterSection({ baseCurrency }: { baseCurrency: string }) {
         <span className="section-title">{t(lang, "convertisseurDevises")}</span>
         {!supported && <span className="fx-unsupported-note">{baseCurrency} {t(lang, "baseFallback")}</span>}
       </div>
-      {loading && <p style={{ color: "rgba(183,220,245,0.6)", fontSize: 13 }}>Chargement des taux…</p>}
+      {loading && <p style={{ color: "rgba(40,72,105,0.85)", fontSize: 13 }}>Chargement des taux…</p>}
       {error && <p className="drawer-error">{error}</p>}
       {rates && !loading && (
         <>
@@ -1166,7 +1165,7 @@ function ComparatorSection({
     <div className="fx-converter" style={{ borderColor: "rgba(118,191,240,0.14)" }}>
       <div className="fx-header">
         <span className="section-title">{t(lang, "comparateurPays")}</span>
-        <span style={{ fontSize: 11, color: "rgba(183,220,245,0.45)" }}>multi-indicateurs • côte à côte</span>
+        <span style={{ fontSize: 11, color: "rgba(48,82,114,0.86)" }}>multi-indicateurs • côte à côte</span>
       </div>
       <div className="comparator-controls">
         <div>
@@ -1502,7 +1501,7 @@ export default function CountryDrawer({
                   className={`drawer-tab-btn${tab === "forecasts" ? " drawer-tab-btn--forecast" : ""}${activeTab === tab ? " active" : ""}`}
                   onClick={() => setActiveTab(tab)}
                 >
-                  {TAB_LABELS[tab]}
+                  <WorldIcon name={TAB_ICONS[tab]} size={15}/> {TAB_LABELS[tab]}
                 </button>
               ))}
             </div>
@@ -1589,7 +1588,7 @@ export default function CountryDrawer({
               )}
               {activeTab === "fx" && !countryDetail?.currencyCode && (
                 <div className="info-card">
-                  <p style={{ color: "rgba(183,220,245,0.6)", fontSize: 13, margin: 0 }}>
+                  <p style={{ color: "rgba(40,72,105,0.85)", fontSize: 13, margin: 0 }}>
                     {fr ? "Devise du pays non disponible." : "Country currency not available."}
                   </p>
                 </div>
