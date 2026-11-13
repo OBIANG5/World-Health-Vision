@@ -3,7 +3,7 @@ import "./CreativeDirections.css";
 
 /** Real editorial source, not a claim that this 2017 archival photograph
  * depicts the 2026 COP31 conference. Explicit source and credit stay visible. */
-const archivePhoto="https://media.defense.gov/2017/Aug/27/2002037959/-1/-1/0/170827-A-ZW944-005A.JPG";
+const archivePhoto="./editorial/harvey-rescue-2017.jpg";
 const photoSource="https://www.war.gov/Multimedia/Photos/igphoto/2002037959/";
 const logo="./brand/world-vision-official.png";
 
