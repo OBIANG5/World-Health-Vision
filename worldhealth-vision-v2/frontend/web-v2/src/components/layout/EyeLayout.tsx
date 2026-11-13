@@ -1,4 +1,5 @@
 import "../../styles/eye.css";
+import { useLang } from "../../context/LanguageContext";
 
 type EyeLayoutProps = {
   children: React.ReactNode;
@@ -6,6 +7,7 @@ type EyeLayoutProps = {
 };
 
 export default function EyeLayout({ children, headerActions }: EyeLayoutProps) {
+  const lang = useLang();
   return (
     <div className="whv-page">
       <header className="whv-header">
@@ -71,7 +73,7 @@ export default function EyeLayout({ children, headerActions }: EyeLayoutProps) {
 
           <div className="whv-brand-text">
             <h1>World Health Vision</h1>
-            <p>Observe the health of the world</p>
+            <p>{lang === "fr" ? "Voir le monde, le comprendre." : "See the world, understand it."}</p>
           </div>
         </div>
         {headerActions}
