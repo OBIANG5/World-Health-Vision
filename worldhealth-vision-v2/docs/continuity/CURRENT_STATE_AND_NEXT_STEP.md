@@ -1,6 +1,20 @@
 # World-Vision — état actuel, blocages et prochaine action
 
 
+## PRIORITÉ ACTUELLE — PIVOT QUALITÉ FLOW + GIS (13/11/2026)
+
+**Retour explicite du propriétaire :** la vidéo technique D01 est décevante, la Terre n'est pas centrée comme l'œil, le CGI perd la beauté du concept et le rythme des développements a été trop lent. **Ne pas relancer sans raison de nouveaux rendus WebGL**. Les résultats techniques et le MP4 sont conservés pour la géographie, pas comme identité visuelle approuvée.
+
+**Diagnostic précis après inspection du code source :** WebGL `u_center=H*.48` (origine bas) et frontières Canvas `cy=h*.52` (origine haut) donnent **tous deux 52 % du haut**, mais l'œil SVG centré à y875/1600 n'y était pas complètement aligné. Correctif committé : WebGL `H*.5`, frontières `h*.5`, SVG centre `y800/1600`, test visuel régressif dans Playwright. Commits `9882b5d266af141410d20d4c48fa0dfdd6205386` et `14abd484e465bed7fc663d62c5addf3f266dc219`. **Ce centrage ne suffit pas pour réparer la qualité artistique**. CI du test `14abd484` réussie ; vérifier le manifeste avant d'affirmer que le site mobile montre la correction.
+
+**Pivot proposé et documenté** : [DECISION_HYBRID_GOOGLE_FLOW_D00_2026-11-13.md](../media/DECISION_HYBRID_GOOGLE_FLOW_D00_2026-11-13.md). Commencer avec **la véritable image de référence D00-v6** (SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`) comme **Start frame dans Google Flow**, 1 seul essai 4–6 s, animer légèrement l'atmosphère sans changer les frontières ; obtenir un retour avant de multiplier les générations. Flow peut altérer la géographie, donc le mouvement rigoureux vers un pays reste géré par `geoTargeting.mjs` et une scène GIS de production séparée. **Aucune vidéo Google Flow produite ni accès API Flow acquis.**
+
+L'utilisateur indique disposer de **Google AI Pro** ; les pages officielles présentent **1000 crédits Flow/mois** mais cela ne prouve pas son solde personnel ni une clé API. Les futurs montages, voix, sous-titres et reportages restent dans le plan vidéo de 137 pages. Le clip CGI D01 Gabon n'a **pas** de validation artistique ni d'autorisation de publication.
+
+---
+
+
+
 ## POINT DE REPRISE LE PLUS RÉCENT — moteur de rotation géographique codé et visible
 
 **Le code a changé, pas l'approbation artistique.** Le 13 novembre 2026, un premier moteur de **rotation vers le pays de l'actualité** a été développé dans `frontend/web-v2/src/media/geoTargeting.mjs` avec les types, le laboratoire React et les tests, basé sur le GeoJSON du produit et le `country_iso3` du dossier. Il est intégré sous la direction artistique des six étapes. Le labo permet de choisir le Gabon/Mali ou d'autres pays, faire tourner le globe en 4 s, ajuster la progression, et revenir au départ. Le rendu est une **simulation technique Canvas/2.5D**, pas la Terre photographique D00-v6 ni une vidéo.
