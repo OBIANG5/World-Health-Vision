@@ -719,7 +719,7 @@ export default function MediaStudio() {
 
       {previewMode && <div className="wv-media-version-strip" role="status">
         <span>APERCU STATIQUE · VERSION DU SITE : <strong>{previewRelease ? previewRelease.slice(0,12) : "lecture de la version…"}</strong></span>
-        <span>Les nouveautés sont sous <strong>Direction artistique</strong> (A/B/C).</span>
+        <span>La nouvelle étape est <strong>Direction artistique · Globe</strong> (six plans).</span>
         <a href="https://github.com/OBIANG5/World-Health-Vision/tree/whv-media-studio-browser-preview"
            target="_blank" rel="noreferrer">Vérifier les fichiers publiés sur GitHub ↗</a>
         <a href="https://github.com/OBIANG5/World-Health-Vision/issues/11"
