@@ -23,6 +23,18 @@ Le **premier MP4 COP31 existe techniquement mais est REFUSÉ 1/10 sur 15 critèr
 
 Le choix et la notation 1–10 du propriétaire sont **encore attendus**. Ne **pas** fabriquer le prochain MP4, les voix définitives ou des animations de 30 secondes avant cette décision. Après approbation d'un style : **un seul micro-clip animé 3–6 secondes**, puis notation, puis auditions vocales indépendantes.
 
+## Nouvelle référence audiovisuelle concrète (mise à jour du 13 novembre)
+
+L'utilisateur a renvoyé **une des vidéos TikTok disparues**, et son contenu a été réellement inspecté : environ 65 s, filigrane `@focus.geopolitique`, globe satellitaire qui transite entre les pays pour raconter cinq faits. **Ne pas revenir à la déclaration périmée « aucune vidéo récupérée ».**
+
+**Lire en priorité :** `worldhealth-vision-v2/docs/media/references/2026-11-13-focus-geopolitique-video-reference.md` et le JSON voisin, hash MP4 `4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb`.
+
+**Direction candidate ajoutée :** D « Le globe raconte l'actualité », inspirée du principe géographique, pas du média sous droits lui-même. D n'a pas encore de maquette finale ni d'approbation ; le prochain livrable devrait être une **maquette de direction D** à comparer aux propositions A/B/C. Pas de vidéo complète automatiquement.
+
+Le MP4 original de la référence est toujours **uniquement fourni dans le chat**, non archivé dans le repo. Pour garantir l'accès après disparition du chat, une sauvegarde du binaire dans un espace privé sera nécessaire.
+
+---
+
 ## Liens incontournables
 
 - Dossier de continuité : [README.md](README.md)
