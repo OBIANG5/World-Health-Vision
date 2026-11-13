@@ -1,6 +1,23 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 
+## POINT PRIORITAIRE 13 NOVEMBRE — FILM CGI D01 DE 4S
+
+**Cette mise à jour supplante les anciens paragraphes « pas de vidéo »** pour le prototype technique uniquement. Le nouveau moteur WebGL phototexturé NASA est codé dans `frontend/web-v2/src/media/CinematicEarth.tsx`; le ciblage géographique GeoJSON préexistant pilote son orientation, sans revenir au vieux globe plat. Une **vraie micro-vidéo H.264 4 secondes (1080×1920, 24 fps, 96 images)** a été rendue et archivée sur GitHub avec preuve FFprobe/sha256.
+
+- [Regarder le MP4 technique GAB / 4s](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4)
+- [Manifest et SHA-256 du film](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.json) : `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a`
+- [Workflow de rendu réussi #43466731755](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755)
+- [Documentation technique D01](worldhealth-vision-v2/docs/media/CINEMATIC_D01_MICROCLIP_2026-11-13.md) et [D00 CGI](worldhealth-vision-v2/docs/media/CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md)
+
+**Attention : prototype de rotation, NON approuvé artistiquement, sans actualité réelle Gabon, sans voix, sous-titres, montage documentaire ni diffusion réseaux.** La référence D00-v6 d'origine du chat **n'a pas été écrasée** et reste la boussole artistique (deux arcs, vraie sclère blanche, atmosphère lumineuse et frontières sahariennes très lisibles) ; son PNG original n'est pas encore dans GitHub, contrairement à son hash et à ses spécifications.
+
+**Prochain travail :** comparer le vrai micro-clip/CGI à D00-v6, ajuster l'aspect jusqu'à qualité média, compléter ciblage événementiel avec lieu vérifié et construire une actualité pilote sourcée et montée : voix naturelles auditionnées, rushes véridiques et autorisés, scripts, sous-titres, QA et validation humaine, selon les 14 étapes et le manuel de 137 pages.
+
+---
+
+
+
 ## ALERTE DE REPRISE — NE PAS REMPLACER D00-v6 PAR LE GLOBE VECTORIEL
 
 **13 novembre 2026.** Le propriétaire a clairement rejeté l'idée que le globe simplifié du laboratoire remplace la belle image cinématographique de référence. **Le Canvas GeoGlobe/GeoTargetingLab n'est qu'un prototype de rotation**, et non une direction artistique de rechange.
