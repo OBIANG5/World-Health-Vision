@@ -32,10 +32,15 @@ jobs:
       - name: Test real menus and existing tools across three viewports
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: node editorial-smoke.mjs
+      - name: Check original interactive globe and lazy Leaflet mode remain usable
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node globe-smoke.mjs
       - name: Save actual mobile/tablet/desktop screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: world-vision-editorial-ui-iphone-desktop
-          path: worldhealth-vision-v2/frontend/web-v2/editorial-artifacts/
+          path: |
+            worldhealth-vision-v2/frontend/web-v2/editorial-artifacts/
+            worldhealth-vision-v2/frontend/web-v2/globe-artifacts/
           if-no-files-found: ignore
