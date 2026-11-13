@@ -1,6 +1,19 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 
+## ALERTE DE REPRISE — NE PAS REMPLACER D00-v6 PAR LE GLOBE VECTORIEL
+
+**13 novembre 2026.** Le propriétaire a clairement rejeté l'idée que le globe simplifié du laboratoire remplace la belle image cinématographique de référence. **Le Canvas GeoGlobe/GeoTargetingLab n'est qu'un prototype de rotation**, et non une direction artistique de rechange.
+
+**Visuel artistique de référence en cours de validation** : `a_crisp_ultra_detailed_high_contrast_digital_ill.png`, PNG exact 1086×1448, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. Le fichier a été retrouvé localement dans le chat ; ses **pixels ne sont pas encore importés dans GitHub**. Ne pas confondre une empreinte et un fichier sauvegardé. Préserver les détails photographiques, les frontières des pays du Sahara, le globe immense, les deux arcs de l'œil du vrai logo, le blanc pur et l'atmosphère cyan dominante ; G1 n'est pas encore validé.
+
+**Changement de code** : `GlobeDirection.tsx` affiche un encadré `data-art-direction-ref="D00-v6"` et range la démonstration technique dans une section `<details id="wv-globe-tech">` fermée par défaut. Le test mobile `media-preview-smoke.mjs` vérifie le libellé et la fermeture avant d'ouvrir volontairement le simulateur. Détails dans `docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md`, `docs/continuity/DECISION_REGISTER.md` et `docs/continuity/WORK_JOURNAL.md`.
+
+**Objectif de l'incrément suivant** : récréer la qualité de D00-v6 en CGI 3D reproductible, coupler le mouvement géographique existant sans en reprendre l'apparence simplifiée, puis faire approuver séparément la belle frame 9:16 et le micro-clip. Les 137 pages de formation, la voix, les rushes, le montage, les sous-titres et la QA restent dans `worldhealth-vision-v2/docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`.
+
+---
+
+
 ## REPRISE PRIORITAIRE — prototype de rotation vers les pays réellement livré (13/11/2026)
 
 **Ne pas recommencer de zéro :** le laboratoire technique qui fait tourner la Terre vers un pays est **codé et accessible** dans le Media Studio. Il repose sur `geoTargeting.mjs` (SLERP, code ISO3, données GeoJSON), `GeoTargetingLab.tsx` et `GeoGlobe.tsx`; une actualité avec `country_iso3` exploitable présélectionne son pays, sinon aucun pays n'est inventé. Rotation manuelle sur 4 s, curseur et reset. **Il s'agit d'une carte Canvas 2.5D de laboratoire, pas de la future vidéo 3D professionnelle.**
