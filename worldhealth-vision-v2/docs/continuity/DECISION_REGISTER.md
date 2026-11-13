@@ -85,3 +85,19 @@ Une décision antérieure peut être supplantée par une décision plus récente
 | D-022 | NON VALIDÉ | Quatrième concept image D00-v4 produit ; sa valeur esthétique reste soumise au jugement du propriétaire ; animation vidéo future prévue par code. | Ne pas marquer D00 validé ni passer à une production vidéo complète. |
 
 Le rendu D00-v4 a été **généré en conversation seulement**, dimensions 1086 × 1448, empreinte SHA-256 `5f97e5f0d29551e187b50106e0aaf2f00e700062a9a2f5845dbf9f9715b6a90e`. Son **PNG n'a pas été importé sur GitHub** ; seuls les instructions, métadonnées, limites et choix de conception sont versionnés. Les images synthétiques ne constituent pas une preuve géographique : les futures frontières devront être calculées par données réelles. Contrat technique : `../media/art-direction/d00-eye-globe-visual-contract-v4.json`.
+
+
+---
+
+## 13 novembre 2026 — v5 appréciée, correction v6 et futur reportage (NOUVELLES DÉCISIONS)
+
+| ID | Domaine | Retour utilisateur vérifié | État |
+|---|---|---|---|
+| **D-023** | D00-v5 / esthétique | L'utilisateur trouve le nouveau globe-œil **« très beau »**, mais demande que le blanc de l'œil soit **vraiment blanc**, pas seulement bleu-gris. | **APPRÉCIATION POSITIVE AVEC CORRECTIONS**, pas validation finale |
+| **D-024** | D00 / atmosphère | La **lueur bleue de l'atmosphère terrestre** doit être plus claire et perceptuellement plus visible que les deux arcs de l'œil ; contours de pays plus marqués, surtout Sahara ; globe de taille déjà bonne. | **EXIGENCE ACTIVE** |
+| **D-025** | Futur moteur vidéo | Après acceptation artistique, programmer un globe 3D qui tourne vers le **pays réel de chaque actualité** ; ne pas confondre les images de référence D00-v5/v6 avec une vidéo existante. | **OBJECTIF FUTUR, NON IMPLÉMENTÉ** |
+| **D-026** | Branding & voix/montage | Envisager le **logo officiel discret en haut à gauche ou une autre zone sûre** des vidéos futures ; conserver intégralement les jalons voix, montage, sous-titres, QA et méthode du PDF de 137 pages. | **PLACEMENT NON VALIDÉ ; PARCOURS CONSERVÉ** |
+
+**Artefact de revue en cours :** D00-v6, PNG de conversation `a_crisp_ultra_detailed_high_contrast_digital_ill.png`, SHA-256 des vrais octets `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`, 1086×1448. **En attente de l'avis du propriétaire ; aucune vidéo ni photo-real globe programmable approuvée.**
+
+Documents autoritaires actualisés : [plan directeur audiovisuel](../media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md), [historique D00](../media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md) et [contrat technique D00-v6](../media/art-direction/d00-eye-globe-visual-contract-v6.json). Ne pas associer les anciennes mentions « v4 courante » à l'état actif : v6 remplace v4 comme **candidat** sans remplacer le statut « non approuvé ».
