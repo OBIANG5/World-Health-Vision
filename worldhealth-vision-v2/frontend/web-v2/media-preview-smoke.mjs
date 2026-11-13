@@ -168,6 +168,23 @@ try {
   assert.equal(nasaAsset.status(),200,"Cinematic Earth must ship its real NASA texture");
   assert.match(nasaAsset.headers()["content-type"]||"",/image\/jpeg/);
   assert.ok((await nasaAsset.body()).length>400000,"NASA raster unexpectedly small");
+  // The eye, country contours and WebGL sphere MUST share one optical centre.
+  // This catches the historic off-centre D00/D01 composition regression.
+  const optical=await page.locator('[data-testid="cinematic-nasa-showcase"] .wv-cinematic-earth').evaluate(node=>{
+    const svg=node.querySelector('.wv-cinematic-eye');
+    const eyelid=svg?.querySelector('path');
+    if(!svg||!eyelid)return {ready:false};
+    const pathBox=eyelid.getBBox();
+    const v=svg.viewBox.baseVal;
+    return {ready:true,
+      declared:node.getAttribute('data-optical-center'),
+      eyeX:(pathBox.x+pathBox.width/2-v.x)/v.width,
+      eyeY:(pathBox.y+pathBox.height/2-v.y)/v.height};
+  });
+  assert.equal(optical.ready,true,"Eye geometry must render");
+  assert.equal(optical.declared,"0.5,0.5","Earth CGI must use the centred projection");
+  assert.ok(Math.abs(optical.eyeX-.5)<.001&&Math.abs(optical.eyeY-.5)<.001,
+    "Both eyelid arcs must be centred on the sphere and GIS overlay");
   await page.locator('[data-testid="cinematic-nasa-showcase"]').waitFor();
   await page.waitForFunction(()=>{
     const shot=document.querySelector('[data-testid="cinematic-nasa-showcase"]');
