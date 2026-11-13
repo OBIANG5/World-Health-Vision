@@ -24,7 +24,15 @@
 
 **Validation humaine actuelle :** logo bleu approuvé sans note ; **aucune** direction A/B/C approuvée ; première vidéo COP31 refusée 1/10 ; **pas de nouveau MP4**.
 
-**À vérifier avant de clore cette session :** CI du frontend, dernier build mobile publié et badge de version en accord avec `preview-deployment.json` ; preuve que le bouton de l'accueil ouvre les trois maquettes en direct ; rapporter tout échec, pas le cacher.
+**Contrôles réalisés avant clôture :**
+- Source UI du déploiement : commit `8cb97eccded03d4dc066dcec55ea6efb026278ba`.
+- Workflow mobile : [run #43435702707](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43435702707), **completed/success** avec test iPhone : l'ancien lien `?view=media` expose désormais un panneau A/B/C et le bouton ouvre les trois maquettes ; lecture du SHA de version testée.
+- CI source même commit : [run #43435710013](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43435710013), **completed/success**.
+- Branche de prévisualisation compilée lors du contrôle : commit `060362eb3f7dc14c6ee2e2aa6b99838612446f0f`. Son `preview-deployment.json` désigne bien `8cb97eccded0`.
+- Lien GitHub grand public de reprise : [Issue #11 — START HERE](https://github.com/OBIANG5/World-Health-Vision/issues/11), créée pour rester accessible même lorsqu'un nouveau chat ne sélectionne pas la bonne branche.
+- **Limite de vérification :** les tests ont vérifié le frontend réellement compilé et les fichiers poussés. Ils **ne prouvent pas** que le CDN RawGitHack a renouvelé son cache sur tous les iPhones au même instant. La bande de version rend ce décalage observable ; ne pas dire que le cache a été purgé.
+
+**Test manuel utilisateur encore nécessaire :** regarder le panneau sur le lien permanent depuis son iPhone et choisir/noter A, B ou C.
 
 **Prochaine décision utilisateur :** examiner les trois designs A/B/C et choisir/évaluer celui qui servira de direction de base. Si les trois sont refusés, corriger uniquement les maquettes, puis redemander notation.
 
