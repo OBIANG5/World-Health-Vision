@@ -45,9 +45,22 @@ try {
   await page.locator(".wvj-subject option").first().waitFor({state:"attached"});
   assert.match(await page.locator(".wvj-subject option").first().textContent(),/COP31/);
   assert.equal(await page.locator(".wvj-step-card").count(),14);
+  // An old permanent link must display the new G1 work on its home screen.
+  await page.getByRole("heading",{name:/Les trois nouvelles ouvertures sont disponibles ici/}).waitFor();
+  const releaseResponse=await page.request.get(base+"/preview-deployment.json");
+  assert.equal(releaseResponse.status(),200);
+  const release=await releaseResponse.json();
+  assert.match(release.source_commit,/^[a-f0-9]{40}$/);
+  await page.getByText(release.source_commit.slice(0,12),{exact:false}).waitFor();
+  await page.getByRole("button",{name:/Voir A, B et C/}).click();
+  await page.locator('[data-review-gate="direction"]').waitFor();
+  assert.equal(await page.locator(".wv-direction-item").count(),3);
+  await page.getByRole("button",{name:/Retour au parcours/}).click();
+  await page.getByRole("heading",{name:/Les trois nouvelles ouvertures sont disponibles ici/}).waitFor();
   // Real pilot: grade the exact video, preserve the user's 1-to-10 values
   // across reloads, and verify secure handoff without creating a fake issue.
   await page.getByRole("button",{name:/Noter & valider/}).click();
+  await page.locator(".wv-review-stage-tabs button").filter({hasText:"Vidéo complète"}).click();
   await page.locator('[data-review-gate="video"]').waitFor();
   // The exact user 1/10 refusal is loaded from durable GitHub-backed archive
   // even if Safari has lost the local browser cache.
