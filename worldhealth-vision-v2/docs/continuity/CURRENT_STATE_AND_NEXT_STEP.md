@@ -1,6 +1,17 @@
 # World-Vision — état actuel, blocages et prochaine action
 
 
+## PILOTE VIDÉO WORLD-VISION #001 — MANGROVES NASA (13 NOV 2026)
+
+**PROGRÈS SUR LA PRODUCTION COMPLÈTE, PAS DE CGI SUPPLÉMENTAIRE :** choix d'un sujet daté et sourcé (« A Global Rebound for Mangroves », NASA 13/11/2026), vérification NASA/Tulane/NOAA et élaboration d'un **script de narration FR 112 mots** pour ~50 s + storyboard professionnel en six plans + liens vers 2010/2026 NASA haute résolution et photo NOAA d'illustration clairement localisée hors Myanmar. Aucun visuel IA nécessaire, Flow **SKIPPED_WITH_REASON**.
+
+**Dossier à lire pour reprendre** : [PRODUCTION_PACK.md](../media/episodes/2026-11-13_mangroves_nasa/PRODUCTION_PACK.md) et [voix_off_fr_v1.txt](../media/episodes/2026-11-13_mangroves_nasa/voix_off_fr_v1.txt). Faits et dates précis : comparatif local février 2010 et février 2026 ; les gains mondiaux concernent **2010–2023**, pas 2010–2026. Ne pas attribuer au Myanmar toute la statistique mondiale. Une nuance critique : delta du Niger encore en recul.
+
+**Statut honnête** : script/plan DRAFT_READY, sélection sujet NOT_EXPLICITLY_APPROVED, médias SOURCED_NOT_DOWNLOADED, voix et montage NOT_STARTED, **aucun MP4 complet à prétendre terminé**. Source NASA photos à importer via les liens de la fiche puis générer/auditionner vraie voix FR dans **Google Vids (ordinateur)** ; sinon passer à une voie iPhone (CapCut + voix disponible sous conditions) sans ajouter de logiciel de montage à programmer. Montage cible 50 s, six scènes, vrais visuels et sous-titres calés au son final.
+
+**Objectif suivant** : premier **MP4 journalistique complet** ; ne plus perdre le temps sur l'esthétique du globe D00-v6 pour ce pilote. G0/D00 et le prototype Gabon demeurent archivés séparément.
+
+
 ## PROCHAINE ÉTAPE — REPORTAGE COMPLET AVEC CONDUCTEUR MULTI-OUTILS
 
 **L'objectif est maintenant de terminer UN vrai reportage d'actualité (script + voix + médias authentiques + montage 9:16 + MP4) au lieu d'accumuler des expériences de globe.** Procédure : [conducteur multi-outils](../media/WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md), [fiche d'épisode](../media/WORLD_VISION_EPISODE_TEMPLATE.md).
