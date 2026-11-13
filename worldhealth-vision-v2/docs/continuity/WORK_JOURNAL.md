@@ -251,3 +251,33 @@ Le propriétaire a signalé « A cessé de réfléchir » durant la construction
 **Document de reprise détaillé :** `docs/media/GEO_TARGETING_MOTION_LAB_2026-11-13.md` (créé au commit `44045d957518a3e59da204714bd45ffe8d55ea57`). Code réellement interactif **Canvas/GeoJSON**, pas CGI satellite, pas MP4, pas de publication d'actualité et aucune approbation implicite de D00-v6.
 
 **Suite** : retour utilisateur sur le prototype fonctionnel, puis master CGI 9:16 visuellement fidèle à la signature œil/globe validable (blanc pur, halo atmosphérique, frontières précises), puis micro-animation 3–6 s vers pays d'une nouvelle réelle ; continuer le pipeline voix, montage et QA du manuel de 137 pages.
+
+
+---
+
+## 13 novembre 2026, 17h (Europe/Paris) — PREMIER MOTEUR GÉOCIBLÉ CODÉ, TESTÉ ET PUBLIÉ SUR LE SITE
+
+**Décision de travail :** développer la brique technique la plus utile avant une vidéo complète : faire **tourner le globe vers un pays du dossier médiatique**, avec géographie réelle vérifiable, sans supposer que la composition D00-v6 ou la voix/montage sont déjà validés. La directive G0 (logo bleu officiel) et l'historique D00-v1–v6 restent intacts.
+
+**Source de vérité du code écrit :**
+- `frontend/web-v2/src/media/geoTargeting.mjs` et `geoTargeting.d.mts` : calcul sans DOM (SLERP/easing, longitude/antiméridien, extraction de pays via GeoJSON, `MediaStory.country_iso3`).
+- `geoTargeting.test.mjs` : tests Node, cas antipodal, longitude ±180°, Mali, Niger, Gabon, France, Japon, Fidji, cas sans destination. La géographie de base vient du **vrai** `public/countries.geojson` du projet, pas d'un croquis IA.
+- `GeoGlobe.tsx` : refonte incrémentale (thème espace, halo bleu, vecteurs exacts sur face visible à l'arrivée). **Rendu Canvas 2.5D technique, PAS le master satellite CGI**.
+- `GeoTargetingLab.tsx` et `GeoTargetingLab.css` : module interactif intégré par `GlobeDirection.tsx → CreativeDirections.tsx → ReviewStudio.tsx`. Contrôles de sélection pays, mouvement 4 s, curseur, reset, état sans ISO3, provenance et avertissement centre approximatif.
+- `GlobeDirection.css` : raccourci visible vers le nouveau laboratoire depuis la page de revue, sans supprimer les **six images fixes historiques**.
+- `media-preview-smoke.mjs` : Playwright iPhone sélectionne Gabon et Mali, vérifie que la rotation progresse, la réinitialisation, prend une capture **en cours** et une capture **à l'arrivée au Gabon**.
+- CI: `.github/workflows/media-studio-ci.yml` et `whv-media-studio-mobile-preview.yml` exécutent `node --test src/media/geoTargeting.test.mjs` avant build/publication.
+
+**Preuves réellement vérifiées :**
+- `World-Vision Media Studio CI` (SHA `f0b281889676a20fbefba62fd45cf1fd5c2856ed`) : **success**.
+- `World-Vision Media Studio real-UI mobile preview` [run #43461296086](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43461296086) : **completed/success**. Tests géographiques, build TypeScript/Vite, smoke iPhone/desktop et publication sur la **même branche de preview**.
+- Manifeste réellement relu sous `whv-media-studio-browser-preview/preview-deployment.json` : `source_commit=f0b281889676a20fbefba62fd45cf1fd5c2856ed`, `backend_connected=false`, `channel_published=false`, `human_qa_completed=false`.
+- Captures réelles sous `whv-media-studio-browser-preview/media-globe-motion-lab-iphone.png` (pendant la rotation) et `media-globe-motion-arrival-gabon-iphone.png` (à 100 %), **fichiers images réellement présents dans la branche preview**, inspection visuelle effectuée dans le chat. La capture finale montre le marqueur du Gabon et les frontières vectorielles renforcées.
+
+**Lien permanent :** https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/index.html?view=media&screen=review&gate=direction — utiliser le bouton **« Tester le nouveau moteur : la Terre tourne vers un pays »**. Les caches CDN peuvent temporairement différer du manifeste GitHub, ne jamais inventer un SHA affiché par un appareil.
+
+**État artistique :** D00-v6 reste **non encore approuvé**, concept PNG gardé seulement dans la conversation et documenté avec SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. Le moteur livré ici est une **preuve technique**, graphiquement moins ambitieuse que la cible ; ne pas présenter cette capture comme la future ouverture 3D ou comme une vidéo MP4.
+
+**Aucun changement** : aucune vraie voix Gemini/ElevenLabs/OpenAI auditionnée pour la nouvelle identité, aucune vidéo du terrain inventée, aucun rendu Remotion de la nouvelle 3D, aucun montage complet, aucune API de publication, aucune PR fusionnée. Pour reprise, lire `docs/media/engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md`, `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md` et `docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md`.
+
+**Prochaine étape intelligente :** construire le master D00 **vraiment 3D, 9:16**, texture terrestre sous licence, précision GIS, atmosphère bleu/cyan plus forte que les deux arcs, vrai blanc de l'œil et contours du Sahara ; le montrer avant animation/final. Puis raccorder ce visuel au mouvement géographique déjà codé et produire un micro-test 3–6 s, puis seulement suite du workflow voix/montage.
