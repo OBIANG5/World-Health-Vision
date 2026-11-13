@@ -12,7 +12,7 @@
 | D-004 | 2026-11-13 | Processus créatif | Chaque composant est soumis séparément à l'humain, notation facultative 1–10 par critère et décision explicite ; pas de rendu intégral en bloc | ACTIVE | [Issue #8](https://github.com/OBIANG5/World-Health-Vision/issues/8), `docs/media/QUALITY_GATE_EDITORIAL_2026-11-13.md` |
 | D-005 | 2026-11-13 | Logo officiel | **Le vrai logo bleu œil + globe existant est l'identité officielle actuelle**, sans note chiffrée ; conserver les pixels de l'original | VALIDÉ | `docs/media/approvals/2026-11-13-current-official-logo.json` |
 | D-006 | 2026-11-13 | Logo futur | Continent vert et autres couleurs de la planète/multicolore envisagés **plus tard**, ne bloquent pas la production | REPORTÉ | même décision utilisateur que D-005 |
-| D-007 | 2026-11-13 | Direction artistique | Trois directions fixes A documentaire, B chiffres, C pédagogie à comparer ; **aucune sélection ni validation** à ce jour | EN ATTENTE | `docs/media/art-direction/cop31-opening-directions-v1.json` |
+| D-007 | 2026-11-13 | Direction artistique | Les premières propositions A/B/C ont été explicitement jugées **« moches » et rejetées** par le propriétaire ; aucune note chiffrée individuelle | **REFUSÉ** | `docs/media/art-direction/WORLD_VISION_GLOBE_SIGNATURE_DIRECTIVE_2026-11-13.md` |
 | D-008 | 2026-11-13 | Voix | Rejeter l'ancienne voix Piper comme référence professionnelle ; demander plus tard plusieurs auditions de voix naturelles avant montage | ACTIVE | Issue #9 et rapport QA |
 | D-009 | 2026-11-13 | Persistances d'avis | Les avis humains liés à un SHA doivent être conservés ; le site statique ne peut ouvrir qu'un formulaire GitHub prérempli, pas écrire secrètement dans le dépôt | ACTIVE | `docs/media/REVIEW_AND_APPROVAL_WORKFLOW.md`, Issue #9 |
 | D-010 | 2026-11-13 | Hébergement du preview | **Même lien permanent**, et les nouvelles étapes doivent être visibles depuis l'accueil avec identifiant de release. Reconnaître le cache RawGitHack | EN COURS | workflow `whv-media-studio-mobile-preview.yml`, `preview-deployment.json` |
@@ -26,6 +26,17 @@
 | D-013 | 2026-11-13 | Référence tierce | Une vidéo TikTok géographique de 64,9 s a été effectivement reçue et analysée ; sa signature de déplacement « globe → pays → information » motive l'exploration d'une direction **D** distincte des 3 maquettes existantes | **RÉFÉRENCE ENREGISTRÉE, D NON VALIDÉE** | `docs/media/references/2026-11-13-focus-geopolitique-video-reference.md` ; SHA-256 `4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb` |
 
 **Contrainte explicite :** cette ligne **ne signifie pas** que l'utilisateur a approuvé un design, une animation ou un nouveau reportage. La vidéo source n'est pas un asset libre de droits et n'a pas été dupliquée dans GitHub.
+
+---
+
+## Clarifications prioritaires du 13 novembre 2026
+
+| ID | Date | Domaine | Décision / instruction | État | Preuve |
+|---|---|---|---|---|---|
+| D-014 | 2026-11-13 | Maquettes A/B/C | Ces premières propositions ont été rejetées esthétiquement ; ne plus demander de les choisir. Aucune note numérique inventée. | **REFUSÉ** | `docs/media/art-direction/WORLD_VISION_GLOBE_SIGNATURE_DIRECTIVE_2026-11-13.md` |
+| D-015 | 2026-11-13 | Signature géographique | Explorer « Terre → pays → vraies images/vidéos → information → transition », avec approbation plan par plan. Nouveaux designs NON validés à ce jour. | **PROPOSITION PRIORITAIRE** | même directive et `frontend/web-v2/src/media/GlobeDirection.tsx` |
+| D-016 | 2026-11-13 | Formation | Formation `monter-et-animer-vos-videos-avec-claude-v2.pdf` retrouvée, 137 pages. Adapter la méthode à ChatGPT, Remotion et outils accessibles, sans dépendance obligatoire à Claude. | **SOURCE MÉTHODOLOGIQUE** | `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md` |
+| D-017 | 2026-11-13 | Chat disparu | Le prompt original sous les deux vidéos n'a pas pu être retrouvé mot pour mot ; conserver la reformulation explicite actuelle du propriétaire. | **CONTEXTE RÉTABLI, PROMPT EXACT NON RETROUVÉ** | directive d'identité géographique |
 
 ---
 
