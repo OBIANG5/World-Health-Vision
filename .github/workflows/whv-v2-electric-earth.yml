@@ -5,6 +5,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: world-electric-earth-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   branding:
     runs-on: ubuntu-latest
