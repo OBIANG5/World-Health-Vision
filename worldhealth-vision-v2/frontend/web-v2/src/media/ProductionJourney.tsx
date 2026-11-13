@@ -325,6 +325,15 @@ export default function ProductionJourney({
         <div className="wvj-current-kicker">PROCHAINE VALIDATION · DIRECTION ARTISTIQUE</div>
         <h2>Le globe raconte le monde — six plans à juger.</h2>
         <p>Tu as rejeté les trois anciennes maquettes A/B/C. Nous sommes maintenant sur une autre approche : Terre entière → pays → ville → sources → explication → transition. Chaque image se note séparément. Le logo bleu actuel est conservé, et l’ancien MP4 COP31 reste refusé 1/10.</p>
+        <div className="wvj-direction-status" role="note">
+          <strong>D00-v6 · CONCEPT EN COURS DE VALIDATION</strong>
+          <p>Nouvelle image discutée le 13 novembre : blanc de l'œil pur, atmosphère cyan plus lumineuse, pays et frontières plus nets. Les six plans cliquables ci-dessous sont encore des <b>maquettes vectorielles antérieures</b>, pas cette nouvelle image ni une vidéo 3D. Pas de validation finale.</p>
+        </div>
+        <div className="wvj-next-production" aria-label="Parcours prévu après la validation de la direction artistique">
+          <strong>ENSUITE, ÉTAPE PAR ÉTAPE</strong>
+          <p>Globe 3D codé → rotation vers le pays de l'actualité → vraies images sourcées → trois auditions de voix → sous-titres et montage → aperçu iPhone, QA et autorisation de diffusion.</p>
+          <a href="https://github.com/OBIANG5/World-Health-Vision/blob/feature/world-vision-media-studio/worldhealth-vision-v2/docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md" target="_blank" rel="noopener noreferrer">Plan directeur complet (manuel de 137 pages, montage, voix et validations) ↗</a>
+        </div>
       </div>
       <button type="button" onClick={()=>onOpenReview("direction")}>
         Examiner les 6 plans du globe · noter plan par plan ↗
