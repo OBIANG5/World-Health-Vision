@@ -40,3 +40,26 @@
   .wv-brand-followup{flex-direction:column;align-items:stretch}
   .wv-brand-followup a{text-align:center;white-space:normal}
 }
+
+.wv-brand-example-head .wv-brand-ok{
+  background:#d2f2df!important;color:#123f2d!important;
+  font-weight:850;letter-spacing:.06em
+}
+.wv-brand-application{
+  background:linear-gradient(145deg,#0a2a42,#11557c)!important;
+  border-color:#367c9a!important;
+}
+.wv-brand-display-lockup{
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;width:100%;padding:13px;
+}
+.wv-brand-display-lockup img{width:150px!important;height:95px!important;
+  object-fit:contain;border-radius:2px}
+.wv-brand-display-lockup strong{
+  font-size:25px;letter-spacing:-.03em;color:white
+}
+.wv-brand-display-lockup small{font-size:12px;color:#d0edf7}
+.wv-brand-done{
+  white-space:normal;text-align:center;font-size:11px;letter-spacing:.06em;
+  color:#c2f3dc;background:#14543e;padding:12px;border-radius:8px;font-weight:850
+}
