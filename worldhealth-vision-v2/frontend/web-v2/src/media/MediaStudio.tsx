@@ -103,6 +103,20 @@ export default function MediaStudio() {
     return param === "desk" || param === "review" ? param : "journey";
   });
   const previewMode = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
+  const [previewRelease, setPreviewRelease] = useState<string | null>(null);
+  useEffect(() => {
+    if (!previewMode) return;
+    const controller = new AbortController();
+    fetch("./preview-deployment.json", {cache:"no-store",signal:controller.signal})
+      .then(async (response) => response.ok ? response.json() : null)
+      .then((meta:unknown) => {
+        if (meta && typeof meta === "object" && "source_commit" in meta) {
+          const commit = (meta as {source_commit?:unknown}).source_commit;
+          if (typeof commit === "string" && /^[a-f0-9]{40}$/.test(commit)) setPreviewRelease(commit);
+        }
+      }).catch(() => undefined);
+    return () => controller.abort();
+  }, [previewMode]);
   const [stories, setStories] = useState<MediaStory[]>([]);
   const [dashboard, setDashboard] = useState<MediaDashboard>(emptyDashboard());
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -697,12 +711,18 @@ export default function MediaStudio() {
           <button type="button" className={screen === "journey" ? "active" : ""}
             onClick={() => changeScreen("journey")}>◈ Parcours vidéo</button>
           <button type="button" className={screen === "review" ? "active" : ""}
-            onClick={() => changeScreen("review")}>★ Noter & valider</button>
+            onClick={() => openReviewGate("direction")}>★ Direction artistique A/B/C</button>
           <button type="button" className={screen === "desk" ? "active" : ""}
             onClick={() => changeScreen("desk")}>▤ Control Room</button>
         </nav>
       </header>
 
+      {previewMode && <div className="wv-media-version-strip" role="status">
+        <span>APERCU STATIQUE · VERSION DU SITE : <strong>{previewRelease ? previewRelease.slice(0,12) : "lecture de la version…"}</strong></span>
+        <span>Les nouveautés sont sous <strong>Direction artistique</strong> (A/B/C).</span>
+        <a href="https://github.com/OBIANG5/World-Health-Vision/tree/whv-media-studio-browser-preview"
+           target="_blank" rel="noreferrer">Vérifier les fichiers publiés sur GitHub ↗</a>
+      </div>}
       {screen === "review" ? (
         <ReviewStudio
           story={selected}
