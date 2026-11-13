@@ -341,3 +341,17 @@ Build GitHub Actions modifié pour embarquer une source NASA avec provenance, co
 
 **Suite intelligente :** consolider la fidélité des arcs/du blanc et de la diffusion atmosphérique à D00-v6, tester le film sur téléphone, puis D02 zoom vers un lieu seulement si coordonnées vérifiées ; viendront vidéos réelles sous licence, voix et montage avec toutes les validations du PDF de 137 pages.
 
+
+
+---
+
+## 13 novembre 2026 — système de vidéo complète multi-outils (suite du retour qualité)
+
+L'utilisateur a demandé de transposer le manuel PDF original (137 pages) en un atelier professionnel qui **sélectionne l'outil le plus adapté à chaque étape**, en tenant compte de ChatGPT Plus et Google AI Pro, plutôt que de continuer exclusivement le développement CGI. Une recherche sur les documentations officielles a confirmé l'intérêt de **Google Vids** pour la voix off française, les éditions verticales 9:16 et l'export MP4 ; Flow pour plans illustratifs depuis image ; Gemini/ChatGPT pour script et vérification ; FFmpeg pour QA et sous-titres FR si nécessaires. Les API Google et OpenAI restent distinctes des abonnements, ElevenLabs est optionnel avec licence commerciale payante.
+
+Livrables réellement écrits et committés :
+- [WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md](../media/WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md), méthode complète mappant 9 parties de la formation + 14 étapes, outils/fallbacks, livrables, économie des crédits, montage, voix, sources, validations et droits.
+- [WORLD_VISION_EPISODE_TEMPLATE.md](../media/WORLD_VISION_EPISODE_TEMPLATE.md), fiche duplicable par actualité avec dossier d'affirmations, script, storyboard minuté, voix, médias et licences, QA, hashes, états des 14 étapes.
+- Mise à jour de `CONTINUITE_WORLD_VISION.md` et `CURRENT_STATE_AND_NEXT_STEP.md`.
+
+**Ne pas surpromettre :** c'est un conducteur de travail versionné, pas un moteur Flow/Vids automatisé ni un premier reportage finalisé. Objectif réel suivant : mener **un reportage complet de 40–50 secondes** au bout (un sujet réellement sourcé, une vraie voix, un montage vérifié), sans laisser le CGI du globe bloquer la production.
