@@ -1,16 +1,14 @@
 name: World-Vision - REAL COP31 newsroom video
 
+# Quality freeze 2026-11-13: rejected pilot must not be re-rendered on
+# every code or storyboard commit. Re-render only by deliberate approval record
+# in docs/media/approvals/ or an explicit GitHub workflow dispatch.
 on:
   push:
     branches:
       - feature/world-vision-media-studio
     paths:
-      - '.github/workflows/whv-media-real-first-report.yml'
-      - 'worldhealth-vision-v2/docs/media/pilots/**'
-      - 'worldhealth-vision-v2/services/media-renderer/src/WorldVisionFirstReport.tsx'
-      - 'worldhealth-vision-v2/services/media-renderer/src/FirstReportRoot.tsx'
-      - 'worldhealth-vision-v2/services/media-renderer/src/first-report-index.ts'
-      - 'worldhealth-vision-v2/services/media-renderer/render-first-report.mjs'
+      - 'worldhealth-vision-v2/docs/media/approvals/APPROVE_FIRST_REPORT_RENDER_*.json'
   workflow_dispatch:
 
 permissions:
