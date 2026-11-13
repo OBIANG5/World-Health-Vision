@@ -1,5 +1,17 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## NOUVEAU POINT DE REPRISE — MONTAGE UNIQUEMENT APRÈS SCRIPT APPROUVÉ
+
+**Décision actuelle, prioritaire sur les anciens plans présents dans ce journal :** sélection de l'actualité et script discutés/validés dans ChatGPT ; **le développement World-Vision se concentre désormais sur le montage vidéo à partir de ce script**. Ne plus forcer n8n/Shotstack, ni un autre pilote, ni un globe artisanal, ni l'automatisation intégrale de la rédaction.
+
+**Veille** : la tâche ChatGPT World-Vision existante ID `6a9050fddd5c8191929b1f8cfa8d0f3e` a été **réactivée** et reconfigurée en recherche horaire ; envoie des candidats majeurs seulement quand un changement significatif mérite l'attention. Pas besoin d'un n8n supplémentaire pour ce besoin immédiat.
+
+**Studio vidéo existant** : `services/media-renderer/src/WorldVisionShort.tsx` est le composant Remotion qui sait déjà placer vraie photo/vidéo, narration, scènes, texte et crédit ; worker `server.mjs`. Logo réel présent dans le dossier du renderer ; concept D00-v6 conservé mais intro animée NON approuvée. **Réutiliser** le moteur. Google Vids FR sur ordinateur = voix/timeline si accessible; Flow = courtes animations à partir du concept/image si possible (utilisation manuelle Google AI Pro, API non supposée); FFmpeg/Remotion = master et contrôles. CapCut iPhone = plan de secours.
+
+**Plan de montage étape par étape** dans [MONTAGE_ONLY_HANDOFF_2026-11-13.md](../media/MONTAGE_ONLY_HANDOFF_2026-11-13.md). Le prochain input attendu est le **script utilisateur approuvé** ; fournir de suite storyboard minuté, sélection d'images authentiques avec droits, prompts pour les plans nécessaires et voie de voix française, puis un aperçu vidéo réel et ensuite un MP4 entier. Ne pas prétendre qu'une voix, une intro CGI approuvée ou un MP4 complet existent avant vérification.
+
+---
+
 ## PRÉCÉDENCE ABSOLUE — WORLD-VISION AUTOMATISATION CENTRALE (13/11/2026)
 
 **Le dossier NASA mangroves cité dans les anciens paragraphes est explicitement REJETÉ par l'utilisateur.** Sa production est arrêtée. La priorité n'est plus une autre maquette de globe, une vidéo isolée ou une sélection de sujet imposée.
