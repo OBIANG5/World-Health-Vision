@@ -118,6 +118,18 @@ body .whv-tools-menu.whv-domain-menu{
 .whv-story-topics span:nth-child(3){color:#79521b;background:#fff6df;border-color:#efe1b9}
 .whv-story-topics span:nth-child(4){color:#144c86;background:#eef4fc;border-color:#d4e3f0}
 
+/* Legacy inline annotations were authored for the original dark V2 background.
+   Force a readable neutral-ink color on white tool cards; meaningful green/red
+   status tones and graphic signals are not changed. */
+.whv-page :is(.country-drawer,.region-drawer,.rt-panel,.ds-panel,.tv-panel,.re-panel,
+ .cur-panel,.adv-panel,.prf-panel) [style*="183,220,245"],
+.whv-page :is(.country-drawer,.region-drawer,.rt-panel,.ds-panel,.tv-panel,.re-panel,
+ .cur-panel,.adv-panel,.prf-panel) [style*="183, 220, 245"] {
+ color:#315474!important
+}
+.whv-page :is(.country-drawer,.region-drawer,.re-panel,.rt-panel)
+ :is(.tab-section-title,.whv-national-evidence-source,.info-card p,.info-card span,
+ .re-affordability-note p){color:#294c6e}
 /* Search/select country — all neutral controls with explicit contrast. */
 .country-selector-popover,.whv-page .country-selector-popover{
  background:#fff;color:#092345;border:1px solid #c8e3f6;box-shadow:0 20px 56px #051e4566
