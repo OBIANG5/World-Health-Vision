@@ -336,7 +336,7 @@ const TAB_ICONS:Record<DrawerTab,WorldIconName>={
 // ---------------------------------------------------------------------------
 
 function countryFlag(iso2?: string | null): string {
-  if (!iso2 || iso2.length !== 2) return "🌍";
+  if (!iso2 || iso2.length !== 2) return "—";
   const base = 0x1f1e6; const A = 65;
   const u = iso2.toUpperCase();
   return String.fromCodePoint(u.charCodeAt(0) - A + base) + String.fromCodePoint(u.charCodeAt(1) - A + base);
@@ -596,7 +596,7 @@ function IndicatorDetailPanel({
               )}
               {lens.whyItMatters && (
                 <p className="analysis-why">
-                  <span style={{ opacity: 0.55, marginRight: 4 }}>💡</span>
+                  <span style={{ opacity: 0.76, marginRight: 4 }}><WorldIcon name="info" size={15}/></span>
                   {lens.whyItMatters}
                 </p>
               )}
@@ -847,7 +847,7 @@ function ForecastsTab({
     <div className="forecasts-tab">
       {/* En-tête explicatif */}
       <div className="forecasts-tab-header">
-        <p className="forecasts-tab-title">🔮 {fr ? "Projections tendancielles" : "Trend projections"}</p>
+        <p className="forecasts-tab-title"><WorldIcon name="markets" size={17}/> {fr ? "Projections tendancielles" : "Trend projections"}</p>
         <p className="forecasts-tab-subtitle">
           {fr
             ? "Basé sur la régression des données historiques. Ces projections supposent que les conditions actuelles restent stables — aucun choc (crise, guerre, pandémie) n'est intégré. Trois niveaux de fiabilité indiqués : ✓ Fiable · ~ Indicatif · ! Spéculatif."
@@ -1381,7 +1381,7 @@ export default function CountryDrawer({
             {subtitle && <p className="country-drawer-subtitle">{subtitle}</p>}
             {(selectedCountry?.capitalCity || selectedCountry?.currencyCode) && (
               <p className="country-drawer-meta-line">
-                {selectedCountry.capitalCity && <span>🏛 {selectedCountry.capitalCity}</span>}
+                {selectedCountry.capitalCity && <span><WorldIcon name="building" size={14}/> {selectedCountry.capitalCity}</span>}
                 {selectedCountry.capitalCity && selectedCountry.currencyCode && <span className="country-meta-sep">·</span>}
                 {selectedCountry.currencyCode && (
                   <span>{selectedCountry.currencyCode}{selectedCountry.currencySymbol ? ` ${selectedCountry.currencySymbol}` : ""}{selectedCountry.currencyName ? ` — ${selectedCountry.currencyName}` : ""}</span>
