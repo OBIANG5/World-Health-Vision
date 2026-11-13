@@ -21,6 +21,21 @@ Lire impérativement :
 - [Registre des décisions](worldhealth-vision-v2/docs/continuity/DECISION_REGISTER.md)
 
 ---
+## Point de reprise prioritaire — message du 13 novembre 2026
+
+**L'étape actuelle est l'identité audiovisuelle G1 : un globe géographique qui ouvre un reportage et converge vers le lieu concerné, puis de vraies images/vidéos et des explications.**
+
+**Les anciennes maquettes A/B/C sont REFUSÉES. D00–D05 sont des prototypes d'images fixes non approuvés.**
+Le propriétaire a corrigé explicitement toute généralisation : **une actualité peut concerner UN seul pays, et ne doit surtout pas en faire défiler plusieurs par défaut**. Plusieurs lieux seulement lorsqu'ils servent le sujet.
+
+- [Contrat des formats : un lieu / relations géographiques / tour du monde](worldhealth-vision-v2/docs/media/art-direction/EDITORIAL_GLOBE_FORMATS_AND_REVIEW_CONTRACT_2026-11-13.md)
+- [Audit partiel du manuel de 137 pages contre le code réel](worldhealth-vision-v2/docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md)
+- [État et action suivante](worldhealth-vision-v2/docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md)
+
+Le logiciel et les docs ne prouvent pas une vidéo professionnelle finale, ni la connexion Google Flow/ElevenLabs/Gemini/n8n. Reprendre D00 avec inspection visuelle et notes, **sans faire de MP4 complet avant validation**.
+
+---
+
 ## Le plus important, à lire en 60 secondes
 
 - **Dépôt :** `OBIANG5/World-Health-Vision` ; **produit V2** sur `v2`, **Media Studio** sur `feature/world-vision-media-studio` ; PR [#5](https://github.com/OBIANG5/World-Health-Vision/pull/5) en draft, non fusionnée.
