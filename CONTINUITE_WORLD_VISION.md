@@ -1,6 +1,19 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 
+## REPRISE PRIORITAIRE D01 — VRAI CLIP GABON 4S (13 novembre 2026)
+
+**Dernier livrable vérifié** : véritable MP4 H.264 de 4 secondes, 1080×1920 à 24 fps (96 images), produit par WebGL NASA + moteur géographique, dirigé vers GABON (GAB) en démonstration. **Ne pas recommencer le moteur à zéro.**
+
+- [MP4 technique dans GitHub](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4) — SHA-256 `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a` ; [workflow de rendu réussi](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755).
+- [Trois vraies frames début/milieu/fin](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/review/contact-sheet.jpg) — [QA réussi](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43468666079), SHA et métadonnées vérifiés.
+- [Documentation D01](worldhealth-vision-v2/docs/media/D01_GABON_MOTION_REVIEW_2026-11-13.md) ; lecteur D01 directement intégré dans `CinematicMotionReview.tsx/.css` du Media Studio, sans autoplay et sans diffusion.
+- **Aucun D00-v6 / D01 approuvé artistiquement.** Le concept beau et réaliste reste référence prioritaire : globe détaillé, deux arcs d'œil, blanc pur, atmosphère cyan plus visible que les arcs, frontières exactes. La nouvelle vidéo est une **preuve de mouvement technique**, pas encore un générique achevé.
+- Suite : corrections de fidélité artistique, D02 zoom vers un lieu vérifié, vraies images, audition voix, sous-titrage, montage Remotion/FFmpeg, QA, validation et publication éventuelle. Respecter le manuel original de 137 pages : `worldhealth-vision-v2/docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`.
+
+---
+
+
 ## POINT PRIORITAIRE 13 NOVEMBRE — FILM CGI D01 DE 4S
 
 **Cette mise à jour supplante les anciens paragraphes « pas de vidéo »** pour le prototype technique uniquement. Le nouveau moteur WebGL phototexturé NASA est codé dans `frontend/web-v2/src/media/CinematicEarth.tsx`; le ciblage géographique GeoJSON préexistant pilote son orientation, sans revenir au vieux globe plat. Une **vraie micro-vidéo H.264 4 secondes (1080×1920, 24 fps, 96 images)** a été rendue et archivée sur GitHub avec preuve FFprobe/sha256.
