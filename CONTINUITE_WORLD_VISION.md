@@ -1,6 +1,19 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 
+## PILOTE REPORTAGE #001 — MANGROVES NASA, SCRIPT ET STORYBOARD (13 NOV 2026)
+
+**La nouvelle méthode multi-outils a réellement démarré sur un sujet d'actualité vérifié.** Sélection : NASA Earth Observatory, 13 novembre 2026, « A Global Rebound for Mangroves ». La NASA compare deux images Landsat de la côte du Myanmar en 2010 et 2026 et résume la reprise mondiale depuis 2010, tout en signalant des pertes persistantes dans le delta du Niger. Recherche croisée avec Tulane University (4 juin 2026) et NOAA.
+
+**Livrables GitHub** : [Dossier de production complet avec 6 plans, vrais médias NASA/NOAA, source fact-check, voix, scénarisation et choix outils](worldhealth-vision-v2/docs/media/episodes/2026-11-13_mangroves_nasa/PRODUCTION_PACK.md) ; [texte voix off FR V1](worldhealth-vision-v2/docs/media/episodes/2026-11-13_mangroves_nasa/voix_off_fr_v1.txt).
+
+**Stade réel :** RADAR/VERIFY/SCORE terminés, script **provisoire** et storyboard terminés, liens vers assets authentiques identifiés ; **pas de vraie voix auditionnée, pas de montage Vids/CapCut, pas de MP4 de ce reportage et aucune publication**. Ne pas confondre avec le micro-clip technique Gabon D01. Pour cet épisode, **Google Flow volontairement écarté** : il y a déjà de vraies images NASA et le code de globe n'est pas nécessaire.
+
+**Prochain livrable à réaliser :** audition voix FR sur le même extrait avec Google Vids si ordinateur, ou voie mobile accessible si iPhone seul ; enregistrer ensuite les deux JPEG originaux NASA (6,23 et 3,56 Mo), montage en six scènes et export complet. Le workflow général des 137 pages est dans [WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md](worldhealth-vision-v2/docs/media/WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md).
+
+---
+
+
 ## 13 NOV 2026 — CONDUCTEUR MULTI-OUTILS PRIORITAIRE POUR LA PREMIÈRE VIDÉO COMPLÈTE
 
 **Nouvelle décision stratégique :** le propriétaire ne veut plus de prototypes CGI isolés. Il demande un système fidèle au manuel original de 137 pages, utilisant les **meilleurs outils réellement accessibles** à chaque étape via **ChatGPT Plus + Google AI Pro** : choix d'un fait réel → script sourcé → storyboard → véritables rushes → voix française naturelle → plans illustratifs Flow si utiles → **montage complet dans Google Vids 9:16** → SRT/FFmpeg → contrôle iPhone → MP4 et archivage. **Ne pas passer du temps à réécrire un moteur de montage complet tant que cette filière suffit.**
