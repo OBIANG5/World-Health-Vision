@@ -134,3 +134,12 @@ Pour **chaque** étape :
 ## 9. Action strictement suivante
 
 **Obtenir un retour sur l'image fixe D00-v6**. Si correction, produire v7 à partir de la direction acceptée (pas refaire tout le style). Si le style est explicitement approuvé, créer un **rendu programmable et vérifiable de D00 en 1080×1920**, géographie GIS et atmosphère, inspecter sur téléphone ; ensuite seulement tester la rotation (D01) et un micro-clip 3–6 s ciblant un pays. Le placement du logo dans les futurs reportages et le casting voix se jugeront plus tard comme étapes **distinctes**, sans perdre les exigences décrites ci-dessus.
+
+
+## Premier incrément d'ingénierie du géociblage — FAIT dans le code, à ne pas confondre avec la vidéo finale
+
+Après rédaction du plan, un véritable noyau **géographique indépendant du DOM** a été ajouté à la branche média. `frontend/web-v2/src/media/geoTargeting.mjs` et son contrat `.d.mts` assurent normalisation longitude, SLERP, trajectoire eased, cibles auto issues de `countries.geojson` et sélection à partir de `MediaStory.country_iso3`. Le laboratoire `GeoTargetingLab.tsx` est intégré à `GlobeDirection → CreativeDirections → ReviewStudio` avec une simulation de rotation sur 4 secondes et des contrôles utilisateur. `GeoGlobe.tsx` possède une variante espace à halo cyan et frontières re-projetées lisibles vers la fin du mouvement.
+
+**Ce qui change dans l'ordre de travail :** le calcul D01 est amorcé **en laboratoire** et versionné, mais il **ne valide PAS D00-v6** et ne saute pas les gates visuelles, les voix ou les rushes du manuel. La route de production Remotion/FFmpeg reste techniquement distincte. L'angle/pays choisi en mode démo ne remplace pas l'approbation d'un dossier journalistique. La géographie exacte (ville, région, frontières disputées) exige encore sources explicites et règles éditoriales.
+
+Pour les tests et limites détaillées, voir [GEO_TARGETING_PROTOTYPE_2026-11-13.md](engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md). Pour reprendre le projet, ne pas réécrire ce ciblage à partir de zéro : auditer ses tests d'abord.
