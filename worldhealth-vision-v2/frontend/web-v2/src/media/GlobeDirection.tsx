@@ -75,7 +75,7 @@ function SceneFrame({step}:{step:Step}){
     </div>}
     {step.id==="d00"&&<div className="wv-globe-stage-headline intro">
       <span>LE MONDE, EN UNE IMAGE</span>
-      <h3>UNE ACTUALITÉ.<br/><em>UNE DESTINATION.</em></h3>
+      <h3>UNE HISTOIRE.<br/><em>UN LIEU.</em></h3>
       <p>Chaque histoire commence quelque part.</p>
     </div>}
     {step.id==="d01"&&<div className="wv-globe-stage-headline focus">
@@ -94,7 +94,7 @@ function SceneFrame({step}:{step:Step}){
         <b>UNICEF / FAO</b><strong>UNE PLATEFORME DE FINANCEMENT DES RISQUES</strong>
         <p>Annonce lors de la COP31 à Antalya. Vérification des faits avant narration.</p>
       </div>
-      <small>EMPLACEMENT PRÉVU : VRAIES IMAGES / VIDÉOS VÉRIFIÉES ET AUTORISÉES</small>
+
     </div>}
     {isData&&<div className="wv-globe-data-frame">
       <span>COP31 · OBJECTIF ANNONCÉ</span>
@@ -107,7 +107,7 @@ function SceneFrame({step}:{step:Step}){
       <span>WORLD-VISION</span><h3>LE MONDE,<br/><em>EN CONTEXTE.</em></h3>
       <p>Prochaine étape : un autre lieu, si l'actualité l'exige.</p>
     </div>}
-    <div className="wv-globe-scene-bottom"><span>REPÈRE : ANTALYA · 2026</span><span>PROTOTYPE VISUEL · PAS UN REPORTAGE</span></div>
+
   </div>;
 }
 function feedbackPayload(step:Step,feedback:Feedback){
