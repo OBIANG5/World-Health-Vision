@@ -72,6 +72,8 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
   border-radius:10px;
 }
 .whv-service-status--offline {color:#876d58!important;background:#f7f1e9!important;border-color:#eee2d5!important}
+/* Keep category tabs clickable while the backdrop catches clicks outside navigation. */
+.whv-nav > .whv-nav-btn {position:relative;z-index:1151}
 .whv-menu-dismiss {position:fixed;inset:0;z-index:1150;cursor:default}
 .whv-tools-menu.whv-domain-menu {
   width:min(568px,calc(100vw - 24px));max-width:min(568px,calc(100vw - 24px));
