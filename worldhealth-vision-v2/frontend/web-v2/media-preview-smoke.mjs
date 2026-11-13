@@ -49,6 +49,14 @@ try {
   // across reloads, and verify secure handoff without creating a fake issue.
   await page.getByRole("button",{name:/Noter & valider/}).click();
   await page.locator('[data-review-gate="video"]').waitFor();
+  // The exact user 1/10 refusal is loaded from durable GitHub-backed archive
+  // even if Safari has lost the local browser cache.
+  await page.getByText("AVIS DURABLE · GITHUB #9").waitFor();
+  assert.equal(await page.locator("#wv-review-overall").inputValue(),"1");
+  assert.equal(await page.locator("#wv-review-score-logo").inputValue(),"1");
+  assert.equal(await page.locator("#wv-review-score-voix").inputValue(),"1");
+  assert.equal(await page.locator("#wv-review-gh-link").count(),1,
+    "An explicit refusal of 1/10 without written comments must be submittable.");
   await page.locator("#wv-review-overall").selectOption("2");
   await page.locator("#wv-review-score-logo").selectOption("1");
   await page.locator("#wv-review-score-voix").selectOption("2");
@@ -57,26 +65,24 @@ try {
   await page.locator("#wv-review-priorities").fill("Récupérer le logo exact, comparer trois voix, valider un micro-clip.");
   await page.getByRole("button",{name:"Refusé",exact:true}).click();
   await page.screenshot({path:path.join(dist,"media-studio-review-iphone.png"),fullPage:true});
-  assert.equal(await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).isEnabled(),true);
-  await page.evaluate(() => {
-    window.__wvTestIssueUrl = null;
-    const nativeClick = HTMLAnchorElement.prototype.click;
-    HTMLAnchorElement.prototype.click = function() {
-      if(this.href.includes("/issues/new?")){
-        window.__wvTestIssueUrl = String(this.href);
-        return;
-      }
-      return nativeClick.call(this);
-    };
-  });
-  await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).click();
-  const issueUrl = await page.evaluate(() => window.__wvTestIssueUrl);
+  const reviewLink=page.locator("#wv-review-gh-link");
+  assert.equal(await reviewLink.isVisible(),true);
+  assert.equal(await reviewLink.getAttribute("target"),null,
+    "GitHub must navigate the current tab to survive iOS in-app popup blocking.");
+  const issueUrl=await reviewLink.getAttribute("href");
   assert.ok(issueUrl && issueUrl.startsWith("https://github.com/OBIANG5/World-Health-Vision/issues/new?"));
-  const issue = new URL(issueUrl);
+  const issue=new URL(issueUrl);
   assert.match(issue.searchParams.get("title"),/WV-REVIEW/);
   assert.match(issue.searchParams.get("body"),/2\/10/);
   assert.match(issue.searchParams.get("body"),/Le logo est incorrect/);
-  assert.match(issue.searchParams.get("body"),/artifact_ref/);
+  assert.match(issue.searchParams.get("body"),/Vidéo SHA-256/);
+  // Switching views MUST NOT silently discard an unsubmitted draft.
+  await page.getByRole("button",{name:/Parcours vidéo/}).click();
+  await page.getByRole("button",{name:/Noter & valider/}).click();
+  await page.locator('[data-review-gate="video"]').waitFor();
+  assert.equal(await page.locator("#wv-review-overall").inputValue(),"2");
+  assert.equal(await page.locator("#wv-review-notes").inputValue(),
+    "Le logo est incorrect, la voix est robotique et les animations ne conviennent pas.");
   await page.reload({waitUntil:"networkidle"});
   await page.locator('[data-review-gate="video"]').waitFor();
   assert.equal(await page.locator("#wv-review-overall").inputValue(),"2");
@@ -91,7 +97,8 @@ try {
     await page.locator("#wv-review-score-"+aspect).selectOption("10");
   }
   await page.getByRole("button",{name:"Je valide",exact:true}).click();
-  assert.equal(await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).isDisabled(),true);
+  assert.equal(await page.locator("#wv-review-gh-link").count(),0);
+  assert.equal(await page.getByRole("button",{name:/Note nécessaire avant l'enregistrement/}).isDisabled(),true);
   await page.getByRole("button",{name:/Parcours vidéo/}).click();
   const scrollState = await page.evaluate(() => ({
     doc:document.documentElement.scrollHeight,
