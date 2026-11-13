@@ -73,13 +73,28 @@ jobs:
           find /tmp/whv-media-studio-preview \
             -mindepth 1 -maxdepth 1 ! -name .git ! -name media-pilots -exec rm -rf {} +
           cp -a worldhealth-vision-v2/frontend/web-v2/dist/. /tmp/whv-media-studio-preview/
+          # This static site is an authentic editorial archive. It is not a
+          # connected newsroom server; declare the true artifact state.
+          REAL_MEDIA_DIR=/tmp/whv-media-studio-preview/media-pilots/cop31-risk-finance-2026-11-12
+          PROOF=false
+          if test -s "${REAL_MEDIA_DIR}/world-vision-cop31-master.mp4" && \
+             test -s "${REAL_MEDIA_DIR}/story.json" && \
+             (cd "${REAL_MEDIA_DIR}" && sha256sum --check SHA256SUMS); then
+            PROOF=true
+          fi
+          # Remove only an obsolete raw temp intermediate, never the signed
+          # canonical MP4 or its provenance / archived publication evidence.
+          rm -f "${REAL_MEDIA_DIR}/.pilot-render-raw.mp4"
           cat > /tmp/whv-media-studio-preview/preview-deployment.json <<EOF
           {
             "source_branch": "feature/world-vision-media-studio",
             "source_commit": "${GITHUB_SHA}",
-            "preview_type": "STATIC_EXPLICIT_DEMO",
+            "preview_type": "STATIC_REAL_NEWS_EDITORIAL_ARCHIVE",
             "backend_connected": false,
-            "generated_media_proof": false
+            "editorial_sources_real": true,
+            "generated_media_proof": ${PROOF},
+            "channel_published": false,
+            "human_qa_completed": false
           }
           EOF
           cd /tmp/whv-media-studio-preview
