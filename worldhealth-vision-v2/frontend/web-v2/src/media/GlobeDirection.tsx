@@ -141,7 +141,6 @@ export default function GlobeDirection(){
     const next={...feedback,...p};setFeedback(next);saveFeedback(selected,next);
   };
   const reviewUrl=()=>{
-    const data=feedbackPayload(step,feedback);
     const title=`[WV-STYLE-REVIEW] ${step.id} · ${feedback.decision} · ${feedback.score}/10`;
     const body=[
       `## Revue d'image World-Vision — ${step.name}`,
