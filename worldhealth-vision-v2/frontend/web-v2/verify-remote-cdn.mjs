@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-const url = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/d8739fdf9335debea598238b22c23b711c343ca8/index.html";
+const pinnedCdn = "https://rawcdn.githack.com/OBIANG5/World-Health-Vision/d8739fdf9335debea598238b22c23b711c343ca8/index.html";
+const productionVercel = "https://world-health-vision-v2.vercel.app";
+const url = process.env.WHV_VERIFY_VERCEL === "1" ? productionVercel : pinnedCdn;
+const isVercel = url === productionVercel;
 const browser = await chromium.launch({headless: true, args: ["--no-sandbox"]});
 try {
   const page = await browser.newPage({viewport: {width:390,height:844}, isMobile:true,hasTouch:true});
@@ -35,6 +38,20 @@ try {
     throw error;
   }
   await page.locator(".eye-stage").waitFor({state:"visible"});
+  if (isVercel) {
+    await page.screenshot({path:"vercel-mobile-globe.png",fullPage:true});
+    const metrics=await page.evaluate(()=>{
+      const n=performance.getEntriesByType("navigation")[0];
+      const resources=performance.getEntriesByType("resource");
+      return {
+        domContentLoadedMs: n ? Math.round(n.domContentLoadedEventEnd) : null,
+        transferBytes: resources.reduce((s,r)=>s+(r.transferSize||0),0),
+        resourceCount: resources.length,
+        resourceLoadDurationMs: resources.length ? Math.round(Math.max(...resources.map(r=>r.responseEnd))) : null
+      };
+    });
+    console.log("VERCEL_BROWSER_BASELINE (lab, not real user measurements)",JSON.stringify(metrics));
+  }
   // New canonical V2 globe must really render and support country drill-down.
   const globe=page.locator("canvas.whv-globe-canvas");
   await globe.waitFor({state:"visible"});
@@ -96,6 +113,7 @@ try {
   await gab.getByText("Comparaison internationale en direct indisponible",{exact:false})
     .waitFor({state:"visible"});
 
+  if (isVercel) await page.screenshot({path:"vercel-mobile-gabon.png",fullPage:true});
   assert(errors.length === 0, "Remote JS errors: "+errors.join("; "));
   assert(failures.length === 0, "Remote static asset failures: "+failures.join("; "));
   console.log("PASS remote pinned V2: mobile eye, 9 tools, 22 global sources, 217-country local registry and documented Gabon census with NO fake live comparison.");
