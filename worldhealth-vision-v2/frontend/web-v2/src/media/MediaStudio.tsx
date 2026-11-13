@@ -711,7 +711,7 @@ export default function MediaStudio() {
           <button type="button" className={screen === "journey" ? "active" : ""}
             onClick={() => changeScreen("journey")}>◈ Parcours vidéo</button>
           <button type="button" className={screen === "review" ? "active" : ""}
-            onClick={() => openReviewGate("direction")}>★ Direction artistique A/B/C</button>
+            onClick={() => openReviewGate("direction")}>★ Noter & valider · A/B/C</button>
           <button type="button" className={screen === "desk" ? "active" : ""}
             onClick={() => changeScreen("desk")}>▤ Control Room</button>
         </nav>
