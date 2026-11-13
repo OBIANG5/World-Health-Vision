@@ -1,5 +1,17 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+
+## POINT ACTIF — D00-v6 après retour positif conditionnel sur v5 (13 novembre 2026)
+
+**NOUVELLE RÉFÉRENCE (priorité sur les anciennes sections v4) :** l'utilisateur a trouvé **très belle** D00-v5 mais demandé vrai blanc de l'œil (#FFFFFF), halo atmosphérique bleu plus lumineux que les deux arcs et frontières nationales (notamment Sahara) plus marquées ; conserver la taille de Terre. Une image **D00-v6 a été créée**, `a_crisp_ultra_detailed_high_contrast_digital_ill.png`, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`, 1086×1448, **EN ATTENTE DE L'AVIS HUMAIN, PAS ENCORE UNE VIDÉO**. Les bytes du PNG ne sont **pas versés à GitHub**, seul le contrat et son empreinte y figurent. Ne pas prétendre qu'un aperçu du site montre v6 : le build statique n'a pas été relancé dans cette session.
+
+**Plan exhaustif du pipeline à conserver :** [AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md](../media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md) — neuf parties du PDF de 137 pages, 14 étapes du Media Studio, quatre compétences de montage, sélection voix à l'aveugle sur la même phrase, alignement, scènes réelles, montage, exports/QA et preuves. **Contrat D00-v6 :** [d00-eye-globe-visual-contract-v6.json](../media/art-direction/d00-eye-globe-visual-contract-v6.json).
+
+**Prochaine étape après approbation de D00** : reconstruire fidèlement l'image en **3D programmatique** 1080×1920 avec frontières GIS exactes, blanc de l'œil et atmosphère séparés ; comparer moteur Three.js/Blender piloté par Remotion/FFmpeg. Puis rotation géographique vers `lat/lon` du **pays de l'actualité**, avec validation D01 et micro-clip 3–6 s avant D02/D03/D04/D05. Ne jamais forcer plusieurs pays. Tester **logo officiel discret en coin** plus tard ; place non validée, respecter les règles du canal. Voix et montage ne sont pas oubliés : ce sont des jalons ultérieurs distincts, pas du travail déjà terminé.
+
+---
+
+
 ## 13 NOVEMBRE — DERNIÈRE DIRECTION D00 ŒIL / GLOBE (PRIORITÉ ACTUELLE)
 
 **Nouvelle proposition fixe générée, NON APPROUVÉE :** D00-v4, Terre presque plein cadre, **exactement deux arcs d'œil non circulaires** inspirés du logo officiel (arcs au-delà des bords gauche et droit, extrémités invisibles), halo atmosphérique bleu/cyan, continents naturels, **frontières nationales visibles**, aucun éclairage nocturne urbain, soleil ou nuages décoratifs hors planète, étoiles très discrètes. Dimensions du fichier image de conversation : 1086 × 1448 (donc **pas encore 9:16**) ; SHA-256 `5f97e5f0d29551e187b50106e0aaf2f00e700062a9a2f5845dbf9f9715b6a90e`.
