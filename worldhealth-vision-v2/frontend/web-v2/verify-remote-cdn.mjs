@@ -38,6 +38,27 @@ try {
     throw error;
   }
   await page.locator(".eye-stage").waitFor({state:"visible"});
+  if(isVercel){
+    // Verify the redesigned REAL production site, not only that an older
+    // World Health Vision build remains online at the same stable URL.
+    await page.locator(".whv-nav-btn--mobile-hub").waitFor({state:"visible"});
+    const editorial = await page.locator(".whv-mobile-overview h2").innerText();
+    assert(editorial.includes("Voir le monde, le comprendre."),
+      "Public Vercel URL has not updated to the new editorial World Explorer");
+    const bg = await page.locator(".whv-header").evaluate(
+      el => getComputedStyle(el).backgroundColor);
+    assert(/255, 254, 250/.test(bg),"The new light header is missing: "+bg);
+    assert(await page.locator(".whv-mobile-shortcut").count() === 6,
+      "All six world exploration domain shortcuts must remain available");
+    await page.locator(".whv-nav-btn--mobile-hub").click();
+    const thematicMenu = page.locator('.whv-domain-menu[data-domain="all"]');
+    await thematicMenu.waitFor({state:"visible"});
+    assert(await thematicMenu.locator(".whv-domain-group").count() === 4,
+      "Missing themed countries, markets, travel and safety navigation groups");
+    await page.keyboard.press("Escape");
+    await thematicMenu.waitFor({state:"hidden"});
+    console.log("PASS VERCEL_EDITORIAL_NAVIGATION: permanent URL, light theme, six shortcuts, four functional navigation domains");
+  }
   if (isVercel) {
     const badge=await page.locator(".whv-service-status").innerText();
     assert(badge.includes("Aperçu"),"Vercel V2 must label its static preview honestly; got: "+badge);
