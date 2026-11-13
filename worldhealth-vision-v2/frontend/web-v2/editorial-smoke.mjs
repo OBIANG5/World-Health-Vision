@@ -40,9 +40,8 @@ try{
   assert(await explore.getByText(/Explorer les pays|Explore countries/).count()>=1,"Country exploration unavailable");
   await explore.getByRole("button",{name:/Régions du monde|World regions/}).click();
   await page.locator(".region-drawer.open").waitFor({state:"visible",timeout:20000});
-  await page.locator(".region-drawer.open").getByRole("button",{name:/fermer|close/i}).first().click().catch(async()=>{
-    await page.keyboard.press("Escape");
-  });
+  await page.locator(".region-drawer.open .drawer-btn.close").click();
+  await page.locator(".region-drawer.open").waitFor({state:"hidden",timeout:12000});
   await page.getByRole("button",{name:/Économie & marchés|Economy & markets/}).click();
   const finance=page.locator('.whv-domain-menu[data-domain="markets"]');
   await finance.waitFor({state:"visible"});
