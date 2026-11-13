@@ -221,3 +221,20 @@ Après présentation du laboratoire Canvas de rotation, le propriétaire a signa
 **Distinction code** : `GlobeDirection.tsx` affiche en priorité un rappel `data-art-direction-ref="D00-v6"`, puis les anciennes maquettes D00–D05 ; le laboratoire schématique `GeoTargetingLab` est replié par défaut dans `<details id="wv-globe-tech">`. Test dans `media-preview-smoke.mjs`. Le simulateur sert uniquement à la rotation et aux frontières, **jamais à définir l'esthétique de l'image finale**.
 
 **Prochaine vraie étape artistique** : reconstruire avec un moteur CGI 3D la Terre détaillée, grande, naturelle et atmosphérique, les blancs purs dans les deux arcs de l'œil, la couche atmosphérique cyan plus lumineuse que les arcs, et des frontières exactes, notamment au Sahara. Un prototype photo-CGI 1080×1920 doit être présenté et corrigé avant d'animer D01. Préserver le moteur pays ISO3 développé mais dissocier son rendu de l'identité visuelle. Le futur montage/voix/QA suit `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`.
+
+  
+---
+
+## 13 NOVEMBRE 2026 — NOUVELLE TERRE CGI WEBGL VRAIMENT PUBLIÉE (PRIORITÉ DE REPRISE)
+
+**Le prototype géographique plat N'EST PLUS le seul rendu proposé.** Le nouveau composant `CinematicEarth.tsx` affiche une **Terre phototexturée NASA Blue Marble**, sphère calculée par shader WebGL, grande et en couleurs jour, halo atmosphérique cyan, **deux arcs de l'œil sur blanc pur** et des **frontières tirées du fichier réel `countries.geojson`**. Le D00 original de conversation **n'est pas remplacé ni approuvé** ; le CGI est une première réinterprétation codée à évaluer.
+
+- Référence canonique et détail du code : [CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md](../media/CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md).
+- Code : `frontend/web-v2/src/media/CinematicEarth.tsx`, `CinematicEarth.css`, `GeoTargetingLab.tsx`, `GlobeDirection.tsx`, et workflow de packaging NASA `.github/workflows/whv-media-studio-mobile-preview.yml`.
+- **Preuve publique** : workflow https://github.com/OBIANG5/World-Health-Vision/actions/runs/43464929633 **completed/success**, tests du PNG NASA + WebGL + iPhone Playwright, capture `media-globe-cinematic-d00-candidate-iphone.png`. Preview `source_commit=2f9fedd46ae2ee77e3984814b3d47710e0a25c27`; son lien permanent n'a pas changé.
+- Capture : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-globe-cinematic-d00-candidate-iphone.png
+- Site : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/index.html?view=media&screen=review&gate=direction
+- Texture NASA archivée dans le build `earth/blue-marble-topography-nasa.jpg`, SHA-256 `9743175942473681d78838ca1042553dab4779cf957fb6d8f22a81fb796f7797` et `earth/provenance.json`.
+
+**MAINTENIR LES GATES:** une compilation réussie n'est pas une validation artistique, le CGI interactif n'est pas encore un master 1080×1920 Remotion ni un MP4. L'original D00-v6 a SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2` et n'a pas encore son PNG dans GitHub. **Prochaine étape** : revue visuelle de cette vraie capture, ajustements de la signature œil/atmosphère/pays, puis premier micro-clip D01 3–6 s et intégration Remotion/FFmpeg. **Ne pas revenir à la carte vectorielle plate ni déclarer D00 validé sans l'utilisateur.** Conserver le plan audiovisuel complet de 137 pages.
+
