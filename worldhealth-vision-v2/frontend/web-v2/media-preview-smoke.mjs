@@ -118,6 +118,8 @@ try {
   const originalLogo=await page.request.get(base+"/brand-archive/legacy-eye-globe-blue.png");
   assert.equal(originalLogo.status(),200,"Historic eye-globe must be shipped as an actual asset.");
   await page.getByText(/FICHIER MANQUANT/).first().waitFor();
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.screenshot({path:path.join(dist,"media-studio-brand-iphone.png"),fullPage:true});
   await page.locator("#wv-review-overall").selectOption("10");
   for(const aspect of ["logo","couleurs","typographie"]) {
     await page.locator("#wv-review-score-"+aspect).selectOption("10");
