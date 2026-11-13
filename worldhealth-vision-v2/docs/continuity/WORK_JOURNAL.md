@@ -2,6 +2,33 @@
 
 **Principe :** journal **append-only**. Ajouter une entrée par session ou incrément utile. **Ne pas effacer les entrées anciennes** au prochain chat. Chaque entrée distingue code, tests, déploiement et approbation humaine.
 
+## 2026-11-13 — vidéo géopolitique renvoyée, analyse réelle et traçabilité
+
+**Entrée utilisateur :** une vidéo MP4 a été remise afin de retrouver l'inspiration pour la signature géographique World-Vision et d'éviter de perdre ce travail si le chat bloque.
+
+**Preuves locales réellement vérifiées :**
+- Fichier : `v26044gc0000dbrcrf7og65qnjb2qh6g(1).mp4`, 38 285 831 octets.
+- SHA-256 : `4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb`.
+- FFprobe : 64,921667 s, 512×910, H.264 ~30fps, stéréo HE-AAC 44,1 kHz.
+- Inspection visuelle des captures à 2 s d'intervalle : intro globe; Mexique; Royaume-Uni; Riyad/Bruxelles; Soudan du Sud; Turquie/Chine, cadres géographiques, contours rouges, lignes pointillées, sous-titres blancs/jaunes.
+- Filigrane visible : `@focus.geopolitique`. Source/usage commercial des graphismes, de la voix, de la musique et des textures **non autorisés** par défaut.
+- Les **faits d'actualité narrés dans la vidéo tierce ne sont pas réputés vérifiés** par cette analyse technique.
+
+**Modifications GitHub :**
+- `docs/media/references/2026-11-13-focus-geopolitique-video-reference.md` — étude chronométrée, règles de design et proposition D.
+- `docs/media/references/2026-11-13-focus-geopolitique-video-reference.json` — manifeste source avec SHA exact.
+- `docs/continuity/RECOVERED_TIKTOK_VIDEO_REFERENCES_2026-11-13.md` — correction de l'ancien état « aucune vidéo retrouvée ».
+- `docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md` — état à jour avec référence D.
+- La source originale **n'est PAS dans GitHub** : stockage séparé requis pour pérenniser les 38 Mo et droits tiers à clarifier.
+
+**Décision artistique :** A/B/C restent non validées. D « Globe → pays → information vérifiée » est seulement une nouvelle piste étayée par une vidéo réellement examinée ; aucune note ni validation n'a été attribuée à D.
+
+**Prochaine étape :** faire comparer au propriétaire une maquette fixe indépendante D à A/B/C, puis **seulement si validée**, prototype animé 3–6 s ; suivre ensuite le protocole d'évaluations.
+
+**Tests :** métadonnées et hash calculés directement sur le MP4 ; documentation commise dans la branche média. Aucun CI d'application ni nouveau déploiement nécessaire pour cette étude documentaire.
+
+---
+
 ## 2026-11-13 — livraison finale du lien et du dossier de reprise
 
 - **Dernière UI réellement publiée :** code source `ab4a7410f89b7a19e2db652950e95e8036fcb7fb`, commit de la branche d'aperçu `596de0202df2c47909f1db13a9696074477e8565`.
