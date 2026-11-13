@@ -171,3 +171,17 @@ Validation/refus de l'utilisateur :
 Problèmes ouverts :
 Prochaine action soumise à validation :
 ```
+
+---
+
+## 2026-11-13 — nouveau chat : lecture, vérification GitHub et audit de reprise
+
+**Demande :** le propriétaire fournit la dernière réponse du chat bloqué et demande de relire tout le contexte accessible, la branche du média et le point d'arrêt réel. **Aucune nouvelle direction, voix, animation ou diffusion n'est validée dans cette session.**
+
+**Travail vérifié :** lecture des références de continuité et décisions, de la documentation Media Studio/formation, de la directive géographique et de modules de code (frontend, API, Remotion/FFmpeg). Vérification réelle des branches, PR #5 (ouverte, draft), PR #6 (fusionnée), issues #8/#9/#11, SHAs et manifeste de preview ; la CI associée au SHA source initial `c422eafa1bbb...` est marquée success. L'aperçu pointe vers `e57207ba1b19...`, cinq commits documentaires avant ce SHA, sans modification du frontend entre ces points. Les 521 fichiers de la branche ont été inventoriés, **pas tous lus ligne par ligne**.
+
+**Preuve durable créée :** [MEDIA_STUDIO_RECOVERY_AUDIT_2026-11-13.md](MEDIA_STUDIO_RECOVERY_AUDIT_2026-11-13.md) (audit détaillé avec liens et limites), commit `0a4a7495c7f21268fad377cfa77b7c385b55215f`.
+
+**Décisions préservées :** G0 logo bleu approuvé ; MP4 COP31 1/10 refusé ; A/B/C refusées ; G1 direction D00–D05 fixes et non approuvées ; un seul pays si événement local ; services externes non prouvés connectés. **Aucun changement audiovisuel ou déploiement n'a été réalisé dans cette session de lecture.**
+
+**Prochaine action maintenue :** inspecter la capture du D00 réellement publiée et améliorer seulement ce premier plan, montrer le rendu sur téléphone, recueillir l'avis explicite avant toute animation ou passage à D01–D05.
