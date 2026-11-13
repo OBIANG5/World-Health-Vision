@@ -1,0 +1,61 @@
+name: WHV V2 Vercel public site and mobile integrity
+on:
+  push:
+    branches:
+      - 'preview/whv-v2-complete-current-2026-11-10'
+    paths:
+      - '.github/workflows/whv-v2-vercel-public-smoke.yml'
+      - 'worldhealth-vision-v2/frontend/web-v2/verify-remote-cdn.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-public:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify public Vercel origin and genuine world geometry
+        run: |
+          set -eu
+          url='https://world-health-vision-v2.vercel.app'
+          curl -fLsS --max-time 45 "$url/" -o /tmp/whv-vercel.html
+          grep -q 'id="root"' /tmp/whv-vercel.html
+          if grep -Eiq 'Vercel Authentication|Authentication Required|Deployment Protection' /tmp/whv-vercel.html; then
+            echo 'The Vercel production website is unexpectedly protected.'
+            exit 1
+          fi
+          curl -fLsS --max-time 45 "$url/countries.geojson" -o /tmp/whv-vercel-geo.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          doc=json.loads(Path('/tmp/whv-vercel-geo.json').read_text())
+          features=doc.get('features',[])
+          assert doc.get('type')=='FeatureCollection' and len(features)>150
+          print('Vercel geographic features:',len(features))
+          PY
+      - name: Install exact V2 browser test dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+      - name: Verify actual iPhone globe, original map, tools, sources and Gabon
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        env:
+          WHV_VERIFY_VERCEL: '1'
+        run: node verify-remote-cdn.mjs
+      - name: Preserve actual Vercel iPhone screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-vercel-iphone-evidence
+          path: |
+            worldhealth-vision-v2/frontend/web-v2/vercel-mobile-globe.png
+            worldhealth-vision-v2/frontend/web-v2/vercel-mobile-gabon.png
+          if-no-files-found: ignore
