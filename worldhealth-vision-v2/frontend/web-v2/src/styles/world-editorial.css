@@ -63,6 +63,7 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
 }
 .whv-nav-btn--regions,.whv-nav-btn--sources,.whv-nav-btn--lang {color:#41564a;padding:10px 11px;border-color:transparent}
 .whv-nav-btn--home {color:#7b857c}
+.whv-nav-btn--mobile-hub{display:none}
 .whv-nav-btn--tools {color:var(--whv-forest);border-color:#dce5dc;background:#f1f5f0}
 .whv-nav-btn--profile{max-width:110px;overflow:hidden;text-overflow:ellipsis}
 .whv-nav-chevron{padding-left:7px;opacity:.6}
@@ -243,6 +244,7 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
  .whv-brand-text h1{font-size:15px}
  .whv-nav-btn{font-size:11px;padding:9px 8px}
  .whv-nav-btn--home{display:none}
+ .whv-nav-btn--mobile-hub{display:inline-flex;align-items:center;background:#e6efe3;border-color:#d5e4d4;color:#244c3b;order:-1;position:sticky;left:0;z-index:1152;box-shadow:4px 0 9px #fffefa}
 }
 @media (max-width:1080px) and (min-width:721px){
  .whv-nav-btn--profile,.whv-nav-btn--lang{display:none}
@@ -364,3 +366,11 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
 @media(prefers-reduced-motion:reduce){
  .whv-page *, .whv-domain-menu *{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* Network outages must be understandable by visitors, not internal service ports. */
+.whv-page .whv-offline-banner{
+  background:#fbf2e8;border:1px solid #ebd7bf;color:#77553c;
+  border-radius:14px;box-shadow:0 9px 28px rgba(65,52,35,.11);
+}
+.whv-page .whv-offline-banner strong{color:#674b37}
+.whv-page .whv-offline-banner span{color:#967960}
