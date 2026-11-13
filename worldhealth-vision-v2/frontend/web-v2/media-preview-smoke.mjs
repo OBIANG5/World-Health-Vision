@@ -42,7 +42,8 @@ try {
   await page.locator(".wv-media-shell").waitFor();
   await page.getByText(/DOSSIER ONU VÉRIFIÉ|VIDÉO MP4 RÉELLE/).waitFor();
   await page.getByRole("heading", {name: /De l'actualité/}).waitFor();
-  await page.getByText(/COP31 : l'ONU vise plus de 3 milliards/).first().waitFor();
+  await page.locator(".wvj-subject option").first().waitFor({state:"attached"});
+  assert.match(await page.locator(".wvj-subject option").first().textContent(),/COP31/);
   assert.equal(await page.locator(".wvj-step-card").count(),14);
   const scrollState = await page.evaluate(() => ({
     doc:document.documentElement.scrollHeight,
