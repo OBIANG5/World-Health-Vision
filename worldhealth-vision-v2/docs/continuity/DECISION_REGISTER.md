@@ -114,3 +114,16 @@ Documents autoritaires actualisés : [plan directeur audiovisuel](../media/AUDIO
 **Nouveaux fichiers référents :** `frontend/web-v2/src/media/geoTargeting.mjs`, `geoTargeting.d.mts`, `geoTargeting.test.mjs`, `GeoTargetingLab.tsx`, `GeoTargetingLab.css` ; modifications `GeoGlobe.tsx`, `GlobeDirection.tsx`, `CreativeDirections.tsx`, `ReviewStudio.tsx` et workflows. [ADR détaillée](../media/engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md).
 
 **Garde-fou :** cette démonstration est visuellement une **carte Canvas 2.5D**, pas le globe réaliste D00-v6, pas une vidéo, pas une voix approuvée. D00 reste non validé ; l'image concept D00-v6 ne figure pas dans GitHub au format PNG. Aucune diffusion sur réseau social. Ne plus repartir de zéro sur les mathématiques : les réutiliser pour la prochaine scène 3D après validation humaine.
+
+
+---
+
+## 13 novembre 2026 — séparation impérative image artistique et prototype de rotation
+
+**Réaction explicite du propriétaire :** l'apparence schématique publiée dans le simulateur (carte vert pâle, océan uniforme, halo simple) ne ressemble pas à l'image qu'il a appréciée. **Ce n'est pas une nouvelle direction artistique approuvée.** Le prototype peut uniquement servir de mécanisme de ciblage géographique. **Ne jamais le substituer** au globe cinématographique de l'œil World-Vision.
+
+**Référence conservée :** `D00-v6`, `a_crisp_ultra_detailed_high_contrast_digital_ill.png`, dimensions `1086×1448`, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. Les octets ont été vérifiés dans le conteneur de conversation ; **le PNG original n'est pas encore versionné dans GitHub**, contrairement à ses spécifications et à son empreinte. Il reste une référence de conception soumise à validation humaine.
+
+**Non négociable pour l'apparence finale :** globe très grand, textures continentales et océaniques réalistes, Sahara détaillé et pays nettement délimités par géodonnées exactes, blanc d'œil #FFFFFF, exactement deux arcs inspirés du vrai logo, extrémités hors caméra, halo atmosphérique cyan plus fort que les arcs, nuages légers et étoiles rares. **Ne pas convertir ce cahier des charges en simple carte vectorielle plate.**
+
+**Code de protection :** `GlobeDirection.tsx` comporte un bloc `data-art-direction-ref="D00-v6"` expliquant le statut du visuel. Le laboratoire Canvas `GeoTargetingLab` est dorénavant **caché dans une section technique refermée par défaut**, volontairement distincte des maquettes et de la référence artistique. Le test navigateur doit vérifier explicitement cette séparation. Aucune autorisation de produire une vidéo finale ou de considérer G1 validé.
