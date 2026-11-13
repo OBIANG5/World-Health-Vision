@@ -113,7 +113,7 @@ function paintRing(ctx:CanvasRenderingContext2D,ring:Ring,pose:Pose,cx:number,cy
   prev=p;
  }
 }
-function drawEye(ctx:CanvasRenderingContext2D,w:number,h:number,cx:number,cy:number,r:number){
+function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
  // The actual brand emblem: luminous blue outlines around a pure-white sclera.
  const left=cx-r*1.70,right=cx+r*1.70,top=cy-r*1.17,bottom=cy+r*1.17;
  const shape=()=>{
@@ -160,7 +160,7 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
   ctx.fillStyle="rgba(218,246,255,"+opacity+")";
   ctx.beginPath();ctx.arc(x,y,i%31===0?1.12:.49,0,Math.PI*2);ctx.fill();
  }
- drawEye(ctx,w,h,cx,cy,r);
+ drawEye(ctx,cx,cy,r);
  const aura=ctx.createRadialGradient(cx,cy,r*.76,cx,cy,r*1.19);
  aura.addColorStop(0,"rgba(0,194,255,.40)");
  aura.addColorStop(.72,"rgba(0,191,255,.22)");
