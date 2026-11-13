@@ -258,3 +258,7 @@ radial-gradient(ellipse at 10% 85%,rgba(151,102,80,.5),transparent 48%),linear-g
   .wvj-featured-details button{width:100%;text-align:center;margin-top:20px}
   .wvj-featured-player video{max-width:270px;max-height:500px}
 }
+
+.wvj-featured-details .wvj-secondary-review{
+  background:#aee6e4;color:#0c3039;margin-top:11px;
+}
