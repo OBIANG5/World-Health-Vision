@@ -422,7 +422,7 @@ export default function ReviewStudio({story,onOpenJourney,previewMode}:{
             <p>Approbation explicite enregistrée le 13 novembre 2026, sans note chiffrée.
               La version multicolore est une amélioration future et ne bloque plus la production.</p>
           </div>
-          <button type="button" onClick={()=>setGate("direction")}>Étape suivante : les trois directions artistiques →</button>
+          <button type="button" onClick={()=>setGate("direction")}>Étape suivante : explorer le globe plan par plan →</button>
         </div></>:<>
           {gate==="direction"&&<CreativeDirections selected={style} onSelect={setStyle}/>}
           <ReviewForm key={`${story.id}:${gate}:${evidence||"missing"}`}
