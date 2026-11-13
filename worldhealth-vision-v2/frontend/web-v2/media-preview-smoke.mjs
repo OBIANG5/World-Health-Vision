@@ -147,12 +147,24 @@ try {
   const geo=await actualGeometry.json();
   assert.equal(geo.type,"FeatureCollection");
   assert.ok(geo.features.length>100);
-  await page.locator(".wv-globe-canvas").waitFor();
+  await page.locator(".wv-globe-scene .wv-globe-canvas").waitFor();
   await page.waitForFunction(()=>{
-    const el=document.querySelector(".wv-globe-canvas");
+    const el=document.querySelector(".wv-globe-scene .wv-globe-canvas");
     const ctx=el?.getContext("2d");
     return Boolean(ctx&&el.width>200&&ctx.getImageData(el.width/2|0,el.height/2|0,1,1).data[3]===255);
   });
+  // The new country-motion engineering lab is real and country-driven.
+  // It does not turn the previously rejected static designs into approved art.
+  await page.locator("#wv-geotarget").waitFor();
+  await page.waitForFunction(()=>document.querySelectorAll("#wv-geotarget-country option").length>190);
+  await page.locator("#wv-geotarget-country").selectOption("GAB");
+  await page.getByRole("button",{name:/Voir la rotation vers le pays/}).click();
+  await page.waitForFunction(()=>Number(document.querySelector("#wv-geotarget-scrub")?.value)>180, {timeout:9000});
+  await page.locator(".wv-geotarget-planet").screenshot({path:path.join(dist,"media-globe-motion-lab-iphone.png")});
+  await page.getByRole("button",{name:/Recommencer/}).click();
+  await page.locator("#wv-geotarget-country").selectOption("MLI");
+  await page.getByText("Mali · MLI").first().waitFor();
+  assert.equal(await page.locator("#wv-geotarget-scrub").inputValue(),"0");
   await page.locator('.wv-globe-scene[data-scene-id="d00"]')
     .screenshot({path:path.join(dist,"style-frame-globe-d00.png")});
   await page.locator("#wv-globe-score").selectOption("4");
