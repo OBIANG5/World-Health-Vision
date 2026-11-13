@@ -18,7 +18,7 @@ Lien de consultation à conserver : `https://raw.githack.com/OBIANG5/World-Healt
 
 Le 13/11/2026, le fichier vidéo renvoyé par l'utilisateur a été inspecté et neuf instants ont été comparés (1,5 ; 5 ; 9 ; 13 ; 17 ; 21 ; 25 ; 29 et 34 secondes).
 
-1. **Logo non conforme.** Le renderer dessine un nouvel œil/globe géométrique en SVG au lieu de charger et afficher le logo World-Vision **effectivement approuvé**. Le logo à retrouver conserve la forme œil + globe originale et la colorisation multicolore validée ; ne pas substituer arbitrairement le simple logo bleu historique.
+1. **Logo non conforme.** Le renderer dessine un nouvel œil/globe géométrique en SVG au lieu de charger et afficher le logo World-Vision **effectivement approuvé**. Le logo affiché dans le MP4 rejeté était un dessin approximatif. Le propriétaire a depuis explicitement confirmé le logo bleu historique exact comme **logo officiel actuel** (13/11/2026) ; une éventuelle recolorisation sera étudiée ultérieurement.
 2. **Narration visuelle déficiente.** Les sept scènes reprennent globalement le même globe filaire et la même grille typographique, sans vrais médias évocateurs de l'événement, sans progression visuelle démontrant les mécanismes.
 3. **Image trop sombre.** Fond bleu-noir et zones vides massives ; manque de contraste visuel, de hiérarchie et de matière documentaire.
 4. **Mauvais habillage.** Éléments « 01 / 07 », « HOOK », barre de progression, étiquettes de QA, micro-textes permanents et footer répété : ce sont des indicateurs techniques qui n'ont pas leur place dans un reportage grand public.
@@ -30,7 +30,7 @@ Le 13/11/2026, le fichier vidéo renvoyé par l'utilisateur a été inspecté et
 ## Nouveau workflow : jalons de validation, un livrable à la fois
 
 ### Gate 0 — Restauration de l'identité officielle
-- Récupérer **le fichier original exact** du logo multicolore approuvé (pas un redessin approximatif).
+- **Décision G0 enregistrée :** utiliser le PNG bleu original œil-globe comme identité officielle actuelle, dans le frontend et Remotion ; multicolore reporté.
 - Préparer les variantes sans altération : positif, négatif, fond clair/foncé, signature courte et filigrane discret.
 - Fixer les tokens validés : palette, police(s) légalement utilisables, tailles, contrastes, marges verticales TikTok, signature éditoriale.
 - Livrable : **une seule planche de charte** (PNG ou page web), visualisable sur smartphone, à approuver **avant** vidéo.
@@ -82,6 +82,6 @@ L'abonnement Google AI personnel et l'accès aux applications Google ne sont pas
 
 ## État de reprise
 
-Le dernier MP4 reste un **pilote technique rejeté**, même s'il est lisible au lien GitHub. Prochaine opération autorisée : récupérer l'authentique logo multicolore validé, produire un document de design system et faire contrôler cette base *avant* de relancer le rendu complet.
+Le dernier MP4 reste un **pilote technique rejeté**, même s'il est lisible au lien GitHub. **G0 confirmé sans note numérique.** Prochaine opération : évaluer séparément l'une des trois directions artistiques de l'ouverture (A, B ou C), puis créer un micro-clip seulement après validation. Le rendu vidéo complet reste interdit jusqu'aux gates ultérieurs.
 
 Ce document est l'engagement de ne plus confondre « build réussi » et « vidéo professionnelle ».
