@@ -1,0 +1,444 @@
+{
+  "id": "wv-cop31-un-risk-finance-2026-11-12",
+  "slug": "cop31-onu-financement-anticipation",
+  "status": "scripting",
+  "title": "COP31 : l'ONU vise plus de 3 milliards de dollars pour anticiper les catastrophes",
+  "summary": "Une plateforme commune pour financer l'action avant les crises",
+  "category": "Climat & monde",
+  "language": "fr",
+  "country_iso3": null,
+  "country_name": "Monde",
+  "region": "Global",
+  "breaking": false,
+  "detected_at": "2026-11-13T09:00:00Z",
+  "event_at": "2026-11-12T12:00:00Z",
+  "updated_at": "2026-11-13T09:00:00Z",
+  "verification_status": "verified",
+  "confidence_score": 96,
+  "verification_report": {
+    "version": 1,
+    "checked_at": "2026-11-13T09:00:00Z",
+    "model": "verification-redactionnelle-manuelle",
+    "retrieved_urls": [
+      "https://news.un.org/feed/view/en/story/2026/11/1168794",
+      "https://www.ungeneva.org/en/news-media/news-list?page=0",
+      "https://www.un.org/sustainabledevelopment/",
+      "https://unfccc.int/cop31/about"
+    ],
+    "claims": [
+      {
+        "claim": "Six agences des Nations unies ont lancé une plateforme commune à la COP31 à Antalya le 12 novembre 2026.",
+        "status": "verified",
+        "explanation": "Contenu vérifié manuellement contre les références primaires.",
+        "supporting_urls": [
+          "https://news.un.org/feed/view/en/story/2026/11/1168794",
+          "https://www.ungeneva.org/en/news-media/news-list?page=0"
+        ],
+        "contradicting_urls": []
+      },
+      {
+        "claim": "La plateforme vise à faciliter l'accès à plus de 3 milliards de dollars de financement des risques.",
+        "status": "verified",
+        "explanation": "Contenu vérifié manuellement contre les références primaires.",
+        "supporting_urls": [
+          "https://news.un.org/feed/view/en/story/2026/11/1168794",
+          "https://www.un.org/sustainabledevelopment/"
+        ],
+        "contradicting_urls": []
+      },
+      {
+        "claim": "L'objectif annoncé est de protéger 75 millions de personnes et leurs moyens de subsistance d'ici 2030.",
+        "status": "verified",
+        "explanation": "Contenu vérifié manuellement contre les références primaires.",
+        "supporting_urls": [
+          "https://news.un.org/feed/view/en/story/2026/11/1168794",
+          "https://www.un.org/sustainabledevelopment/"
+        ],
+        "contradicting_urls": []
+      },
+      {
+        "claim": "Le mécanisme doit contribuer à financer des mesures anticipées avant des catastrophes prévisibles.",
+        "status": "verified",
+        "explanation": "Contenu vérifié manuellement contre les références primaires.",
+        "supporting_urls": [
+          "https://news.un.org/feed/view/en/story/2026/11/1168794"
+        ],
+        "contradicting_urls": []
+      },
+      {
+        "claim": "Les 3 milliards correspondent à un objectif de financement, et non à une somme intégralement déjà versée.",
+        "status": "verified",
+        "explanation": "Contenu vérifié manuellement contre les références primaires.",
+        "supporting_urls": [
+          "https://news.un.org/feed/view/en/story/2026/11/1168794"
+        ],
+        "contradicting_urls": []
+      }
+    ],
+    "distinct_supporting_sources": 3,
+    "has_primary_support": true,
+    "verdict": "verified",
+    "confidence_score": 96
+  },
+  "sources": [
+    {
+      "id": "un-news",
+      "name": "Nations unies — UN News",
+      "url": "https://news.un.org/feed/view/en/story/2026/11/1168794",
+      "source_type": "institution",
+      "scope": "international",
+      "is_primary": true,
+      "published_at": "2026-11-12T12:00:00Z",
+      "note": "Source vérifiée et archivée pour ce reportage réel."
+    },
+    {
+      "id": "un-geneva",
+      "name": "Nations unies — Genève",
+      "url": "https://www.ungeneva.org/en/news-media/news-list?page=0",
+      "source_type": "institution",
+      "scope": "international",
+      "is_primary": true,
+      "published_at": "2026-11-12T12:00:00Z",
+      "note": "Source vérifiée et archivée pour ce reportage réel."
+    },
+    {
+      "id": "un-sdg",
+      "name": "Nations unies — Développement durable",
+      "url": "https://www.un.org/sustainabledevelopment/",
+      "source_type": "institution",
+      "scope": "international",
+      "is_primary": true,
+      "published_at": "2026-11-12T12:00:00Z",
+      "note": "Source vérifiée et archivée pour ce reportage réel."
+    },
+    {
+      "id": "unfccc",
+      "name": "CCNUCC — À propos de la COP31",
+      "url": "https://unfccc.int/cop31/about",
+      "source_type": "institution",
+      "scope": "international",
+      "is_primary": true,
+      "published_at": "2026-11-09T12:00:00Z",
+      "note": "Source vérifiée et archivée pour ce reportage réel."
+    }
+  ],
+  "score": {
+    "total": 87,
+    "factors": {
+      "freshness": 95,
+      "surprise": 75,
+      "human_impact": 93,
+      "importance": 91,
+      "visual_potential": 95,
+      "numerical_strength": 96,
+      "undercoverage": 82,
+      "francophone_relevance": 84,
+      "africa_relevance": 82,
+      "source_confidence": 96,
+      "urgency": 78,
+      "saturation_penalty": 14
+    },
+    "model_version": "selection-editoriale-manuelle-v1",
+    "reasons": [
+      "Vraie annonce des Nations unies datée du 12 novembre 2026.",
+      "Score éditorial indicatif choisi manuellement, non issu d'un scan RADAR continu.",
+      "Les trois milliards de dollars sont une cible de mobilisation, pas un versement déjà effectué."
+    ]
+  },
+  "hooks": [
+    {
+      "id": "hook-real-1",
+      "text": "Et si l'aide arrivait avant la catastrophe ?",
+      "score": 91,
+      "rationale": "Un angle clair et prudent fondé sur l'annonce de l'ONU.",
+      "claim_indexes": []
+    },
+    {
+      "id": "hook-real-2",
+      "text": "COP31 : 3 milliards de dollars visés pour agir plus tôt.",
+      "score": 88,
+      "rationale": "Les chiffres sont des objectifs annoncés, pas des résultats acquis.",
+      "claim_indexes": [
+        1
+      ]
+    },
+    {
+      "id": "hook-real-3",
+      "text": "75 millions de personnes : ce que vise la nouvelle plateforme de l'ONU.",
+      "score": 86,
+      "rationale": "Impact potentiel, avec horizon explicite de 2030.",
+      "claim_indexes": [
+        2
+      ]
+    }
+  ],
+  "selected_hook_id": "hook-real-1",
+  "creative_package": {
+    "version": 1,
+    "created_at": "2026-11-13T09:00:00Z",
+    "model": "redaction-humaine-source-onu",
+    "angle": "Financer des mesures AVANT les catastrophes, sans surinterpréter l'objectif.",
+    "angle_claim_indexes": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "target_duration_sec": 40,
+    "hooks": [
+      {
+        "id": "hook-real-1",
+        "text": "Et si l'aide arrivait avant la catastrophe ?",
+        "score": 91,
+        "rationale": "Un angle clair et prudent fondé sur l'annonce de l'ONU.",
+        "claim_indexes": []
+      },
+      {
+        "id": "hook-real-2",
+        "text": "COP31 : 3 milliards de dollars visés pour agir plus tôt.",
+        "score": 88,
+        "rationale": "Les chiffres sont des objectifs annoncés, pas des résultats acquis.",
+        "claim_indexes": [
+          1
+        ]
+      },
+      {
+        "id": "hook-real-3",
+        "text": "75 millions de personnes : ce que vise la nouvelle plateforme de l'ONU.",
+        "score": 86,
+        "rationale": "Impact potentiel, avec horizon explicite de 2030.",
+        "claim_indexes": [
+          2
+        ]
+      }
+    ],
+    "script_segments": [
+      {
+        "text": "Les catastrophes arrivent vite. Mais l'aide financière, parfois trop tard. À la COP trente et un, six agences des Nations unies ont lancé une plateforme pour agir plus tôt. Leur objectif annoncé : rendre accessibles plus de trois milliards de dollars pour protéger soixante-quinze millions de personnes d'ici deux mille trente. Le principe : financer des mesures avant les inondations, les tempêtes ou les canicules. Attention : c'est un objectif de mobilisation, pas trois milliards de dollars déjà versés. World-Vision. Voir le monde, le comprendre.",
+        "claim_indexes": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      }
+    ],
+    "caption": "🌍 COP31 : l'ONU annonce une nouvelle plateforme pour financer l'action avant les catastrophes. Objectif : plus de 3 milliards de dollars mobilisables et 75 millions de personnes mieux protégées d'ici 2030. ⚠️ Il s'agit d'un objectif annoncé, non d'une somme déjà versée. Sources : UN News (12/11/2026), UN Geneva, UNFCCC. #COP31 #Climat #ONU #WorldVision",
+    "caption_claim_indexes": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "hashtags": [
+      "#COP31",
+      "#Climat",
+      "#ONU",
+      "#WorldVision"
+    ],
+    "scene_plan": [
+      {
+        "order": 1,
+        "purpose": "hook",
+        "on_screen_text": "ET SI L'AIDE ARRIVAIT AVANT ?",
+        "visual_kind": "chart",
+        "asset_query": null,
+        "claim_indexes": []
+      },
+      {
+        "order": 2,
+        "purpose": "annonce",
+        "on_screen_text": "6 AGENCES DE L'ONU",
+        "visual_kind": "chart",
+        "asset_query": null,
+        "claim_indexes": [
+          0
+        ]
+      },
+      {
+        "order": 3,
+        "purpose": "chiffre clé",
+        "on_screen_text": "+3 MILLIARDS $",
+        "visual_kind": "chart",
+        "asset_query": null,
+        "claim_indexes": [
+          1
+        ]
+      },
+      {
+        "order": 4,
+        "purpose": "objectif 2030",
+        "on_screen_text": "75 MILLIONS",
+        "visual_kind": "chart",
+        "asset_query": null,
+        "claim_indexes": [
+          2
+        ]
+      },
+      {
+        "order": 5,
+        "purpose": "mécanisme",
+        "on_screen_text": "ANTICIPER. AGIR.",
+        "visual_kind": "chart",
+        "asset_query": null,
+        "claim_indexes": [
+          3
+        ]
+      },
+      {
+        "order": 6,
+        "purpose": "nuance",
+        "on_screen_text": "OBJECTIF ≠ ARGENT VERSÉ",
+        "visual_kind": "chart",
+        "asset_query": null,
+        "claim_indexes": [
+          4
+        ]
+      },
+      {
+        "order": 7,
+        "purpose": "sources",
+        "on_screen_text": "VOIR LE MONDE. LE COMPRENDRE.",
+        "visual_kind": "source_card",
+        "asset_query": null,
+        "claim_indexes": []
+      }
+    ]
+  },
+  "script": "Les catastrophes arrivent vite. Mais l'aide financière, parfois trop tard. À la COP trente et un, six agences des Nations unies ont lancé une plateforme pour agir plus tôt. Leur objectif annoncé : rendre accessibles plus de trois milliards de dollars pour protéger soixante-quinze millions de personnes d'ici deux mille trente. Le principe : financer des mesures avant les inondations, les tempêtes ou les canicules. Attention : c'est un objectif de mobilisation, pas trois milliards de dollars déjà versés. World-Vision. Voir le monde, le comprendre.",
+  "video_draft": {
+    "version": 1,
+    "created_at": "2026-11-13T09:00:00Z",
+    "format": "9:16",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "duration_sec": 40,
+    "rendering_engine": "remotion",
+    "design_system_id": "world-vision-eye-globe-blue-news-v1",
+    "safe_zone_profile": "tiktok-conservative-v1",
+    "hook_id": "hook-real-1",
+    "voiceover_script": "Les catastrophes arrivent vite. Mais l'aide financière, parfois trop tard. À la COP trente et un, six agences des Nations unies ont lancé une plateforme pour agir plus tôt. Leur objectif annoncé : rendre accessibles plus de trois milliards de dollars pour protéger soixante-quinze millions de personnes d'ici deux mille trente. Le principe : financer des mesures avant les inondations, les tempêtes ou les canicules. Attention : c'est un objectif de mobilisation, pas trois milliards de dollars déjà versés. World-Vision. Voir le monde, le comprendre.",
+    "source_line": "Sources : UN News, Nations unies, CCNUCC",
+    "scenes": [
+      {
+        "id": "scene-01",
+        "order": 1,
+        "start_sec": 0,
+        "duration_sec": 5.8,
+        "purpose": "hook",
+        "on_screen_text": "ET SI L'AIDE ARRIVAIT AVANT ?",
+        "visual_kind": "chart",
+        "source_ids": []
+      },
+      {
+        "id": "scene-02",
+        "order": 2,
+        "start_sec": 5.8,
+        "duration_sec": 6,
+        "purpose": "annonce",
+        "on_screen_text": "6 AGENCES DE L'ONU",
+        "visual_kind": "chart",
+        "source_ids": [
+          "un-news",
+          "un-geneva"
+        ]
+      },
+      {
+        "id": "scene-03",
+        "order": 3,
+        "start_sec": 11.8,
+        "duration_sec": 6.4,
+        "purpose": "chiffre clé",
+        "on_screen_text": "+3 MILLIARDS $",
+        "visual_kind": "chart",
+        "source_ids": [
+          "un-news",
+          "un-sdg"
+        ]
+      },
+      {
+        "id": "scene-04",
+        "order": 4,
+        "start_sec": 18.2,
+        "duration_sec": 6.4,
+        "purpose": "objectif 2030",
+        "on_screen_text": "75 MILLIONS",
+        "visual_kind": "chart",
+        "source_ids": [
+          "un-news",
+          "un-sdg"
+        ]
+      },
+      {
+        "id": "scene-05",
+        "order": 5,
+        "start_sec": 24.6,
+        "duration_sec": 6.4,
+        "purpose": "mécanisme",
+        "on_screen_text": "ANTICIPER. AGIR.",
+        "visual_kind": "chart",
+        "source_ids": [
+          "un-news"
+        ]
+      },
+      {
+        "id": "scene-06",
+        "order": 6,
+        "start_sec": 31,
+        "duration_sec": 5.8,
+        "purpose": "nuance",
+        "on_screen_text": "OBJECTIF ≠ ARGENT VERSÉ",
+        "visual_kind": "chart",
+        "source_ids": [
+          "un-news"
+        ]
+      },
+      {
+        "id": "scene-07",
+        "order": 7,
+        "start_sec": 36.8,
+        "duration_sec": 3.2,
+        "purpose": "sources",
+        "on_screen_text": "VOIR LE MONDE. LE COMPRENDRE.",
+        "visual_kind": "source_card",
+        "source_ids": []
+      }
+    ]
+  },
+  "voiceover": null,
+  "render_job": null,
+  "target_duration_sec": 40,
+  "assets": {
+    "photos": 0,
+    "videos": 0,
+    "official_documents": 0,
+    "maps_or_charts": 7
+  },
+  "asset_bundle": null,
+  "qa": {
+    "facts": "pass",
+    "spelling": "pending",
+    "safe_zones": "pending",
+    "logo_integrity": "pending",
+    "source_display": "pass",
+    "rights": "pass",
+    "audio": "pending",
+    "render_integrity": "pending",
+    "notes": [
+      "Vrai sujet vérifié sur les sources officielles de l'ONU.",
+      "Animation originale sans médias externes soumis à une licence supplémentaire.",
+      "Le fichier MP4 et ses empreintes ne sont affichés qu'après le rendu GitHub réel."
+    ]
+  },
+  "qa_report": null,
+  "publication_package": null,
+  "channel_exports": [],
+  "publication_receipts": [],
+  "approval_note": "Rendu de test demandé, publication publique non autorisée.",
+  "radar_scan_id": null,
+  "radar_fingerprint": null
+}
