@@ -233,3 +233,8 @@ Prochaine action soumise à validation :
 - **CI de compilation** pour le commit source `00224fea...` : succès [run #43457617960](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457617960).
 - **Workflow de preview** [run #43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661), statut **in_progress** lors du contrôle initial. Ne pas prétendre à une livraison CDN réussie tant que le manifeste n'est pas actualisé et que le run n'est pas vert.
 - **Image D00-v6** : toujours absente des fichiers publiés dans GitHack ; le site ne contient que le **statut et les instructions**, pas les pixels de ce visuel. Aucune vidéo CGI tournante n'a été produite.
+
+
+### Confirmation de publication du panneau de continuité (13 novembre, contrôle final)
+
+Le workflow [World-Vision Media Studio real-UI mobile preview #43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661) est désormais **completed / success** (y compris build React, test Playwright iPhone/desktop, publication de la branche de preview). Branche de preview : HEAD `bdd6277fd88b9a5eebefe1e1737ac6ad19d31931`, manifeste `source_commit=00224feaaffb97c13a65e2518ee301d7aaefa910`. **Ce qu'il prouve** : le panneau « D00-v6 non encore validé » et la feuille de route sont intégrés au bundle statique. **Ce qu'il ne prouve pas** : synchronisation instantanée du cache RawGitHack, présence des pixels du concept D00-v6, moteur 3D fonctionnel, ou backend actif. Les captures anciennes du laboratoire restent explicitement distinguées de la nouvelle image dans l'UI.
