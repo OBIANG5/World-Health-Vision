@@ -109,6 +109,36 @@ jobs:
           EOF
           echo "Source credit: US Army photographer 1st Lt. Zachary West, 2017 Houston, public domain US federal work."
           test -s worldhealth-vision-v2/docs/media/art-direction/cop31-opening-directions-v1.json
+      - name: Bundle NASA Blue Marble daytime topography for the cinematic Earth
+        run: |
+          set -euo pipefail
+          DEST=worldhealth-vision-v2/frontend/web-v2/dist/earth
+          mkdir -p "$DEST"
+          # The source is a global, equirectangular NASA satellite mosaic.
+          # Do NOT substitute generated / invented political borders or city lights.
+          SOURCE='https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography/january/world.topo.200401.3x5400x2700.jpg'
+          curl --fail --location --retry 4 --retry-all-errors \
+            --retry-delay 2 --connect-timeout 20 --max-time 140 \
+            --silent --show-error \
+            "$SOURCE" -o "$DEST/blue-marble-topography-nasa.jpg"
+          test "$(stat -c %s "$DEST/blue-marble-topography-nasa.jpg")" -gt 400000
+          test "$(stat -c %s "$DEST/blue-marble-topography-nasa.jpg")" -lt 20000000
+          test "$(file -b --mime-type "$DEST/blue-marble-topography-nasa.jpg")" = "image/jpeg"
+          SHA=$(sha256sum "$DEST/blue-marble-topography-nasa.jpg" | awk '{print $1}')
+          cat > "$DEST/provenance.json" <<EOF
+          {
+            "asset": "blue-marble-topography-nasa.jpg",
+            "source": "$SOURCE",
+            "source_page": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography/",
+            "credit": "NASA Earth Observatory / Reto Stöckli et al. (Blue Marble Next Generation)",
+            "month": "January",
+            "type": "global equirectangular daytime land/topography mosaic",
+            "night_city_lights": false,
+            "country_borders": "supplied separately via V2 countries.geojson, not part of imagery",
+            "sha256": "$SHA"
+          }
+          EOF
+          echo "NASA texture SHA256 $SHA"
       - name: Write source-version proof for in-browser release visibility
         run: |
           cat > worldhealth-vision-v2/frontend/web-v2/dist/preview-deployment.json <<EOF
