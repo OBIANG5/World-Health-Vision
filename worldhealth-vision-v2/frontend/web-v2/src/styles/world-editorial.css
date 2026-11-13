@@ -28,7 +28,8 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
                    linear-gradient(to bottom,rgba(88,112,97,.043) 1px,transparent 1px);
   background-size:72px 72px;
 }
-.whv-main {z-index:1;isolation:isolate}
+/* Do not isolate the main stacking context: tool panels must overlay the header. */
+.whv-main {position:relative}
 .whv-header {
   position:absolute;top:0;left:0;right:0;height:84px;padding:13px clamp(16px,2.3vw,40px);
   display:flex;gap:12px;align-items:center;justify-content:space-between;z-index:65;
