@@ -1,5 +1,18 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## NOUVELLE REPRISE DU 13 NOVEMBRE — AUDIT DU CHAT BLOQUÉ (SANS NOUVELLE VALIDATION)
+
+Le propriétaire a fourni une capture du dernier message du chat précédent et demandé la vérification de l'historique et du dépôt. Rapport de lecture détaillé : [MEDIA_STUDIO_RECOVERY_AUDIT_2026-11-13.md](MEDIA_STUDIO_RECOVERY_AUDIT_2026-11-13.md). Le journal de travail est complété.
+
+**Preuves au démarrage de la reprise :** code média HEAD `c422eafa1bbbe47f427057ba4ce2bb1c54612e06` ; preview HEAD `824bd847a8c0a0703f507cb85e7d25cbff1bd0ba` ; manifeste `source_commit=e57207ba1b19add8649f39511eda0984798afb78`, `backend_connected=false`, `channel_published=false`, `human_qa_completed=false`. Entre le code de la preview et le HEAD média initial, **cinq commits purement documentaires**, pas de modification de l'UI. Les commits ajoutés depuis cette lecture concernent seulement la documentation de reprise. CI média du HEAD initial signalée successful ; ce n'est pas une validation créative.
+
+**Statut inchangé :** G0 logo bleu validé ; MP4 COP31 refusé 1/10 ; A/B/C refusées ; G1 direction géographique D00–D05 **frames fixes non approuvées**. **Priorité immédiate D00**, image du globe réellement convaincante, présentation dans le chat/site mobile et jugement humain avant mouvement. Un événement localisé n'impose pas plusieurs pays. La formation de 137 pages n'a qu'un audit thématique ; Gemini/Flow, ElevenLabs et n8n/Make non prouvés intégrés.
+
+**Limite de la récupération :** ancien chat non disponible intégralement mot pour mot ; son dernier message et les traces GitHub/contextuelles ont été croisés. Aucune nouvelle image, voix ou vidéo n'a été produite pendant cette session d'audit.
+
+---
+
+
 **Date de rédaction : 13 novembre 2026.** Ce document est un **état de reprise vivant**, à actualiser après chaque incrément. Les preuves de changement et les dates des commits sont dans [COMMIT_HISTORY_INDEX.md](COMMIT_HISTORY_INDEX.md).
 
 ## POINT DE REPRISE IMMÉDIAT — clarification du propriétaire (13 novembre, ~15 h 26 CET)
