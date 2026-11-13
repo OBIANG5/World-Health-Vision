@@ -109,15 +109,15 @@ try {
   assert.equal(await page.locator("#wv-review-score-voix").inputValue(),"2");
   assert.equal(await page.locator("#wv-review-notes").inputValue(),
     "Le logo est incorrect, la voix est robotique et les animations ne conviennent pas.");
-  // Do not allow approving an identity design with no genuine logo asset.
+  // Authentic user-approved current blue logo: exact original binary, not a placeholder.
   await page.locator(".wv-review-stage-tabs button").first().click();
   await page.locator(".wv-brand-gate").waitFor();
   assert.equal(await page.locator(".wv-brand-example.old img").count(),1);
-  assert.equal(await page.locator(".wv-brand-example.approved img").count(),0,
-    "Do not invent the missing approved multicolor logo.");
-  const originalLogo=await page.request.get(base+"/brand-archive/legacy-eye-globe-blue.png");
-  assert.equal(originalLogo.status(),200,"Historic eye-globe must be shipped as an actual asset.");
-  await page.getByText(/FICHIER MANQUANT/).first().waitFor();
+  assert.equal(await page.locator(".wv-brand-example.approved img").count(),1);
+  assert.equal(await page.locator(".wv-brand-example.approved img").getAttribute("src"),"./brand/world-vision-official.png");
+  const originalLogo=await page.request.get(base+"/brand/world-vision-official.png");
+  assert.equal(originalLogo.status(),200,"Current official original PNG must be bundled.");
+  await page.getByText(/OFFICIEL ACTUEL|ORIGINAL APPROUVÉ/).first().waitFor();
   await page.evaluate(()=>window.scrollTo(0,0));
   await page.screenshot({path:path.join(dist,"media-studio-brand-iphone.png"),fullPage:true});
   await page.locator("#wv-review-overall").selectOption("10");
@@ -127,6 +127,24 @@ try {
   await page.getByRole("button",{name:"Je valide",exact:true}).click();
   assert.equal(await page.locator("#wv-review-gh-link").count(),0);
   assert.equal(await page.getByRole("button",{name:/Note nécessaire avant l'enregistrement/}).isDisabled(),true);
+  // Choose an art direction and verify that feedback is version-specific.
+  await page.locator(".wv-review-stage-tabs button").filter({hasText:"Direction artistique"}).click();
+  await page.locator(".wv-direction-item").first().waitFor();
+  assert.equal(await page.locator(".wv-direction-item").count(),3);
+  assert.equal(await page.locator(".wv-direction-canvas").count(),3);
+  await page.locator('.wv-direction-item[data-direction="chiffres"] button').click();
+  await page.locator('[data-review-gate="direction"]').waitFor();
+  assert.equal(new URL(page.url()).searchParams.get("style"),"chiffres");
+  await page.locator("#wv-review-overall").selectOption("7");
+  await page.locator("#wv-review-score-composition").selectOption("6");
+  const frameLink=await page.locator("#wv-review-gh-link").getAttribute("href");
+  assert.match(new URL(frameLink).searchParams.get("body"),/cop31-visual-opening-v1-chiffres/);
+  await page.screenshot({path:path.join(dist,"media-studio-style-iphone.png"),fullPage:true});
+  await page.locator('.wv-direction-item[data-direction="pedagogie"] button').click();
+  assert.equal(new URL(page.url()).searchParams.get("style"),"pedagogie");
+  assert.equal(await page.locator("#wv-review-overall").inputValue(),"");
+  await page.locator('.wv-direction-item[data-direction="chiffres"] button').click();
+  assert.equal(await page.locator("#wv-review-overall").inputValue(),"7");
   await page.getByRole("button",{name:/Parcours vidéo/}).click();
   const scrollState = await page.evaluate(() => ({
     doc:document.documentElement.scrollHeight,
