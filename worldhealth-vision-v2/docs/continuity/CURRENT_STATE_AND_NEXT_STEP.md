@@ -2,6 +2,25 @@
 
 **Date de rédaction : 13 novembre 2026.** Ce document est un **état de reprise vivant**, à actualiser après chaque incrément. Les preuves de changement et les dates des commits sont dans [COMMIT_HISTORY_INDEX.md](COMMIT_HISTORY_INDEX.md).
 
+## POINT DE REPRISE IMMÉDIAT — clarification du propriétaire (13 novembre, ~15 h 26 CET)
+
+**Cette entrée est prioritaire sur les passages plus anciens du document.**
+
+- Le propriétaire a signalé un nouveau risque de blocage du chat et exige la conservation des avancées dans GitHub après chaque étape.
+- **Notre jalon est G1 : validation de l'identité audiovisuelle géographique**, PAS réimplémentation d'un nouveau dashboard ni finalisation d'une vidéo.
+- **Anciennes directions A/B/C : refusées explicitement**, sans scores inventés ; ancien MP4 COP31 : refusé 1/10 ; **logo bleu original : validé sans note**.
+- Des compositions **D00–D05** ont déjà été codées pour montrer le globe → le pays → les preuves → l'explication → la sortie, mais **ce ne sont que des frames Canvas/React fixes et non approuvées**, pas le globe satellite premium final.
+- **Correction impérative : un reportage ne doit PAS forcément traiter plusieurs pays.** Une actualité sur un pays = un seul pays dans la vidéo si le récit l'impose ; deux pays si une relation est pertinente ; plusieurs pour un véritable tour du monde seulement. Les cinq pays du clip TikTok étaient une référence de technique visuelle, pas un moule de format.
+- **Spécification canonique mise à jour :** [contrat des formats et approbations](../media/art-direction/EDITORIAL_GLOBE_FORMATS_AND_REVIEW_CONTRACT_2026-11-13.md).
+- **Audit du PDF / code : PARTIEL, NON terminé**. Formation 137 pages accessible et sections essentielles extraites, code de `GeoGlobe`, `GlobeDirection`, `ReviewStudio`, `WorldVisionFirstReport`, `WorldVisionShort`, `media-renderer/server.mjs`, `media-service/voiceover.py` et package Remotion examinés. **Pas de certification complète du code ligne par ligne, ni de validation artistique.** Voir `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md`.
+- **Fait technique important :** la narration dans le service média utilise OpenAI Realtime avec contrôle de transcription ; ce n'est PAS une intégration Gemini/ElevenLabs. Le moteur Remotion existe mais les écrans D00–D05 ne sont pas encore branchés à une composition animée validée. La vidéo initiale contient encore des signes de l'ancien style refusé : ne pas la rediffuser.
+- **Google Flow / Gemini vidéo, ElevenLabs TTS/alignement, n8n/Make : non connectés à ce jour selon le code inspecté.** Le fait de posséder un abonnement Google n'implique pas une autorisation API.
+- **Prochaine action artistique :** relire la capture réelle **D00**, proposer une image du globe plus convaincante et expliciter les critères de notation ; faire valider son style **avant tout rendu de 3–6 secondes**, puis seulement poursuivre D01 → D05 avec de vrais médias autorisés.
+
+**Ne pas confondre documentation des intentions, code présent, CI technique et rendu professionnel approuvé.**
+
+---
+
 ## Dernière décision de direction créative (13 novembre 2026) — PRIORITÉ ACTUELLE
 
 **Ne pas se tromper de jalon.** La plateforme World Health Vision V2 et le Media Studio existent toujours. Dans Media Studio, le propriétaire était en train d'évaluer l'identité visuelle, et **a rejeté les trois anciennes maquettes A/B/C** pour leur manque de qualité. Aucun score chiffré individuel n'a été attribué à A/B/C.
