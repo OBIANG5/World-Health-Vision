@@ -35,7 +35,7 @@ try {
     const bounds = await menu.boundingBox();
     assert(bounds && bounds.x >= 0 && bounds.x + bounds.width <= 390,
       "Tools menu extends beyond the mobile viewport");
-    await menu.getByText(label).click();
+    await menu.getByRole("button", { name: label, exact: false }).first().click();
     await phone.locator(panel).waitFor({ state: "visible" });
     await phone.locator(closeButton).click();
     await phone.locator(panel).waitFor({ state: "hidden" });
