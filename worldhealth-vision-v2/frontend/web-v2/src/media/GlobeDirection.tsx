@@ -169,6 +169,11 @@ export default function GlobeDirection({story}:{story?:MediaStory|null}){
         construite <strong>plan par plan</strong>. L'application utilise son propre fichier de frontières GeoJSON ;
         ce globe est une <strong>étude vectorielle lumineuse</strong>, pas encore un globe satellite 3D
         ni une animation finalisée.</p>
+      <a className="wv-globe-lab-motion-jump" href="#wv-geotarget" onClick={event=>{
+        event.preventDefault();
+        document.getElementById("wv-geotarget")?.scrollIntoView({behavior:"smooth",block:"start"});
+      }}>Tester le nouveau moteur : la Terre tourne vers un pays ↗</a>
+      <p>Ce lien ouvre un <strong>prototype géographique interactif distinct</strong> ; les six cadres ci-dessous restent les anciennes maquettes. Le D00-v6 cinématographique n'est pas encore un rendu 3D approuvé.</p>
     </div>
     <nav className="wv-globe-stage-list" aria-label="Six étapes de l'identité visuelle">
       {STEPS.map(s=><button type="button" key={s.id}
