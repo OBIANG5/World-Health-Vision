@@ -39,6 +39,10 @@ try {
   }
   await page.locator(".eye-stage").waitFor({state:"visible"});
   if (isVercel) {
+    const badge=await page.locator(".whv-service-status").innerText();
+    assert(badge.includes("Aperçu"),"Vercel V2 must label its static preview honestly; got: "+badge);
+  }
+  if (isVercel) {
     await page.screenshot({path:"vercel-mobile-globe.png",fullPage:true});
     const metrics=await page.evaluate(()=>{
       const n=performance.getEntriesByType("navigation")[0];
