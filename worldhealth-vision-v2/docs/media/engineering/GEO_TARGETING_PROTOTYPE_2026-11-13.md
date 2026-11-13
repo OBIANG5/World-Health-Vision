@@ -70,3 +70,16 @@ Voix approuvée, transcription/calage, sous-titres, mixage, QA, MP4 hashé
 Avant le montage complet, mettre au point un **D00 réellement calculé en 1080×1920** (modèle sphérique, textures jour autorisées, frontières ISO3, deux courbes d'œil et blanc pur séparés, halo atmosphérique lumineux et lisible) ; évaluer sa qualité sur iPhone et le corriger. Puis connecter cette scène au mouvement du moteur `geoTargeting` pour un test **de 3–6 secondes**, sans voix ni source factice. Les étapes de voix, dérushage, sous-titres et mixage restent fixées par `AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md` et la formation de 137 pages, sans étape sautée.
 
 **Règle permanente :** codes source et commits GitHub, tests CI, capture iPhone, état d'approbation explicite, journal et fichier de reprise après **chaque** incrément ; pas de « fait » sans preuve.
+
+
+## Confirmation de QA et livraison de l'incrément
+
+**Vérification finale du 13 novembre 2026** :
+- `World-Vision Media Studio real-UI mobile preview` [run #43461296086](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43461296086) **completed/success** sur `f0b281889676a20fbefba62fd45cf1fd5c2856ed`.
+- Le run confirme les étapes : test Node geotarget, build TypeScript/Vite, test Playwright iPhone et desktop, mise à jour effective de la même branche de preview.
+- `whv-media-studio-browser-preview/preview-deployment.json` contient exactement `source_commit=f0b281889676a20fbefba62fd45cf1fd5c2856ed`, `backend_connected=false`, `channel_published=false`, `human_qa_completed=false`.
+- [Capture **pendant la rotation**](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-globe-motion-lab-iphone.png) : nom de destination Gabon, progression, Terre.
+- [Capture **à l'arrivée**](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-globe-motion-arrival-gabon-iphone.png) : pays ciblé, contours vectoriels renforcés, halo ; l'image reste explicitement un **prototype 2.5D**.
+- Le raccourci **« Tester le nouveau moteur : la Terre tourne vers un pays »** est visible en haut de `GlobeDirection.tsx` sur l'aperçu du vrai Media Studio.
+
+**Résultat qualité artistique :** cette géométrie technique est **fonctionnelle et vérifiée**, mais encore très éloignée du concept visuel approuvé partiellement (Terre détaillée, blanc pur, deux arcs, atmosphère). Ne jamais faire noter ce prototype comme s'il était la version D00-v6 elle-même. Toute note utilisateur doit être liée à son **artefact et à sa version**.
