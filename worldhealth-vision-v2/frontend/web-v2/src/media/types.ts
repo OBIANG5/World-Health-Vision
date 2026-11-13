@@ -174,11 +174,11 @@ export type VideoDraft = {
 
 export type VoiceoverRef = {
   id: string;
-  provider: "openai_realtime";
+  provider: "openai_realtime" | "piper_offline";
   model: string;
   voice: string;
   format: "wav";
-  sample_rate_hz: 24000;
+  sample_rate_hz: number;
   duration_sec: number;
   generated_at: string;
   renderer_url: string;
@@ -333,6 +333,8 @@ export type MediaStory = {
   channel_exports: ChannelExportRef[];
   publication_receipts: PublicationReceipt[];
   approval_note?: string | null;
+  radar_scan_id?: string | null;
+  radar_fingerprint?: string | null;
 };
 
 export type PublicationChannel =
