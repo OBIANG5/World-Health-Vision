@@ -2,6 +2,21 @@
 
 > **Mode d'emploi :** ouvrir ce fichier depuis GitHub et le transmettre à un nouveau chat. Lire également les fichiers liés ci-dessous. Ce document est la **consigne de reprise**, non une demande de reconstruire le projet.
 
+## MAJ impérative du 13 novembre 2026 — décision en cours
+
+L'ancienne mention « A/B/C à choisir » dans les documents historiques est désormais **périmée** : le propriétaire a **refusé ces trois premières propositions esthétiquement**. Il a précisé son idée forte : **Terre qui se tourne vers le pays → zoom → vraies images ou séquences autorisées → explication → transition**. Aucun nouveau design final n'est encore approuvé.
+
+Les fichiers de mise en œuvre **déjà codés** se trouvent sous `frontend/web-v2/src/media/GeoGlobe.tsx`, `GlobeDirection.tsx` et `GlobeDirection.css`, avec **six poses fixes D00–D05** fondées sur le GeoJSON des pays. Ne pas confondre ce premier laboratoire vectoriel avec une Terre satellite photoréaliste ou une animation finale. Le propriétaire doit les noter **un par un** avant de poursuivre.
+
+Formation récupérée : `monter-et-animer-vos-videos-avec-claude-v2.pdf`, **137 pages**, audit ici :
+`worldhealth-vision-v2/docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md`.
+
+Directive exacte en vigueur :
+`worldhealth-vision-v2/docs/media/art-direction/WORLD_VISION_GLOBE_SIGNATURE_DIRECTIVE_2026-11-13.md`.
+
+Les anciens deux fichiers TikTok et le texte historique exact du prompt ne sont PAS tous deux disponibles ; une vidéo a été examinée, l'autre non. Ne jamais inventer leurs détails.
+
+---
 ## Contexte incontestable
 
 Le dépôt est `OBIANG5/World-Health-Vision`.
