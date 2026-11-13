@@ -7,6 +7,7 @@ import {useEffect,useState} from "react";
 import GeoGlobe from "./GeoGlobe";
 import GeoTargetingLab from "./GeoTargetingLab";
 import CinematicEarth from "./CinematicEarth";
+import CinematicCapture from "./CinematicCapture";
 import type {MediaStory} from "./types";
 import "./GlobeDirection.css";
 
@@ -162,6 +163,9 @@ export default function GlobeDirection({story}:{story?:MediaStory|null}){
     catch{setStatus("La copie est bloquée par ce navigateur. Utilise le lien GitHub ci-dessous.");}
   };
   const canApprove=feedback.score!==null&&feedback.score>=8;
+  // Internal frame-by-frame capture route; never changes editorial approval.
+  if(new URLSearchParams(window.location.search).get("cinema_only")==="1")
+    return <CinematicCapture/>;
   return <section className="wv-globe-lab" id="wv-globe-lab">
     <div className="wv-globe-lab-intro">
       <span>NOUVELLE DIRECTION D · MAQUETTES À VALIDER</span>
