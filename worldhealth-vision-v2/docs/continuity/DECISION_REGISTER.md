@@ -101,3 +101,16 @@ Le rendu D00-v4 a été **généré en conversation seulement**, dimensions 1086
 **Artefact de revue en cours :** D00-v6, PNG de conversation `a_crisp_ultra_detailed_high_contrast_digital_ill.png`, SHA-256 des vrais octets `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`, 1086×1448. **En attente de l'avis du propriétaire ; aucune vidéo ni photo-real globe programmable approuvée.**
 
 Documents autoritaires actualisés : [plan directeur audiovisuel](../media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md), [historique D00](../media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md) et [contrat technique D00-v6](../media/art-direction/d00-eye-globe-visual-contract-v6.json). Ne pas associer les anciennes mentions « v4 courante » à l'état actif : v6 remplace v4 comme **candidat** sans remplacer le statut « non approuvé ».
+
+
+---
+
+## D-027 — moteur de rotation pays par pays (13 novembre 2026)
+
+**Statut : décision de conception et implémentation technique vérifiée, PAS validation artistique ni publication.** Sur instruction de continuer avec l'étape la plus utile, un **moteur géociblé** a été ajouté au code, sans attendre de reconstituer à l'aveugle un reportage complet. D'abord démontrer : présence du pays (`country_iso3`), calcul de sa destination depuis GeoJSON, trajet SLERP, rotation contrôlée, frontières géographiques et test mobile.
+
+**Preuves de fonctionnement :** [workflow mobile #43461296086 réussi](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43461296086), version source `f0b281889676a20fbefba62fd45cf1fd5c2856ed`, capture réelle [Gabon 100 %](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-globe-motion-arrival-gabon-iphone.png). Tests Node + Playwright mobile : Gabon, Mali, dateline, invalidités, captures.
+
+**Nouveaux fichiers référents :** `frontend/web-v2/src/media/geoTargeting.mjs`, `geoTargeting.d.mts`, `geoTargeting.test.mjs`, `GeoTargetingLab.tsx`, `GeoTargetingLab.css` ; modifications `GeoGlobe.tsx`, `GlobeDirection.tsx`, `CreativeDirections.tsx`, `ReviewStudio.tsx` et workflows. [ADR détaillée](../media/engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md).
+
+**Garde-fou :** cette démonstration est visuellement une **carte Canvas 2.5D**, pas le globe réaliste D00-v6, pas une vidéo, pas une voix approuvée. D00 reste non validé ; l'image concept D00-v6 ne figure pas dans GitHub au format PNG. Aucune diffusion sur réseau social. Ne plus repartir de zéro sur les mathématiques : les réutiliser pour la prochaine scène 3D après validation humaine.
