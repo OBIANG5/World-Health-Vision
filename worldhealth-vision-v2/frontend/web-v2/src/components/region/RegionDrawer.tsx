@@ -13,6 +13,7 @@ import { useRegionSheet } from "../../hooks/useRegionSheet";
 import { useRegions } from "../../hooks/useRegions";
 import { pdfSafe } from "../../utils/pdf";
 import "../../styles/country.css";
+import {WorldIcon} from "../ui/WorldIcon";
 
 // ---------- dictionnaires ----------
 
@@ -47,11 +48,7 @@ const INDICATOR_NAME_FR: Record<string, string> = {
   "EN.ATM.CO2E.PC":             "Émissions CO₂/hab.",
 };
 
-const REGION_ICON: Record<string, string> = {
-  CONTINENT: "🌍",
-  REGION:    "🗺",
-  SUBREGION: "📍",
-};
+
 
 const REGION_TYPE_LABEL: Record<string, string> = {
   CONTINENT: "Continent",
@@ -97,12 +94,12 @@ function RegionKpiCard({ lens }: { lens: RegionalEconomicLens | RegionalRelative
           {TONE_FR[lens.signalTone] ?? lens.signalTone}
         </span>
         {coverage && (
-          <span style={{ fontSize: 10, color: "rgba(183,220,245,0.50)" }}>
+          <span style={{ fontSize: 10, color: "rgba(40,72,105,0.87)" }}>
             {coverage}
           </span>
         )}
         {lens.latestPeriodLabel && (
-          <span style={{ fontSize: 10, color: "rgba(183,220,245,0.40)", marginLeft: "auto" }}>
+          <span style={{ fontSize: 10, color: "rgba(40,72,105,0.87)", marginLeft: "auto" }}>
             {lens.latestPeriodLabel}
           </span>
         )}
@@ -145,7 +142,7 @@ function RegionLensCard({
           <span className="indicator-main-value">
             {fmtCompact(lens.medianComparableValue, lens.unitLabel)}
           </span>
-          <span className="indicator-trend-line" style={{ color: "rgba(183,220,245,0.55)" }}>
+          <span className="indicator-trend-line" style={{ color: "rgba(40,72,105,0.87)" }}>
             médiane {lens.latestPeriodLabel ? `• ${lens.latestPeriodLabel}` : ""}
           </span>
         </div>
@@ -162,25 +159,25 @@ function RegionLensCard({
           onClick={(e) => e.stopPropagation()}
         >
           {lens.narrative && (
-            <p style={{ fontSize: 13, color: "rgba(183,220,245,0.72)", lineHeight: 1.55, margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(40,72,105,0.87)", lineHeight: 1.55, margin: 0 }}>
               {lens.narrative}
             </p>
           )}
           {lens.whyItMatters && (
-            <p style={{ fontSize: 12, color: "rgba(183,220,245,0.5)", lineHeight: 1.5, margin: 0 }}>
-              <strong style={{ color: "rgba(183,220,245,0.65)", fontWeight: 600 }}>Pourquoi ça compte :</strong>{" "}
+            <p style={{ fontSize: 12, color: "rgba(40,72,105,0.87)", lineHeight: 1.5, margin: 0 }}>
+              <strong style={{ color: "rgba(40,72,105,0.87)", fontWeight: 600 }}>Pourquoi ça compte :</strong>{" "}
               {lens.whyItMatters}
             </p>
           )}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
             {lens.memberCountryCount > 0 && (
               <span style={{ fontSize: 11, color: "rgba(183,220,245,0.45)" }}>
-                📊 {lens.comparableCountryCount}/{lens.memberCountryCount} pays couverts
+                {lens.comparableCountryCount}/{lens.memberCountryCount} pays couverts
               </span>
             )}
             {lens.selectedSourceCode && (
               <span style={{ fontSize: 11, color: "rgba(183,220,245,0.45)" }}>
-                🔍 {lens.selectedSourceCode}
+                {lens.selectedSourceCode}
                 {lens.selectedDatasetCode ? ` • ${lens.selectedDatasetCode}` : ""}
               </span>
             )}
@@ -225,13 +222,13 @@ function DecisionSignalCard({ signal }: { signal: RelativeCostDecisionSignal }) 
           onClick={(e) => e.stopPropagation()}
         >
           {signal.narrative && (
-            <p style={{ fontSize: 13, color: "rgba(183,220,245,0.72)", lineHeight: 1.55, margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(40,72,105,0.87)", lineHeight: 1.55, margin: 0 }}>
               {signal.narrative}
             </p>
           )}
           {signal.whyItMatters && (
-            <p style={{ fontSize: 12, color: "rgba(183,220,245,0.5)", lineHeight: 1.5, margin: 0 }}>
-              <strong style={{ color: "rgba(183,220,245,0.65)", fontWeight: 600 }}>Pourquoi ça compte :</strong>{" "}
+            <p style={{ fontSize: 12, color: "rgba(40,72,105,0.87)", lineHeight: 1.5, margin: 0 }}>
+              <strong style={{ color: "rgba(40,72,105,0.87)", fontWeight: 600 }}>Pourquoi ça compte :</strong>{" "}
               {signal.whyItMatters}
             </p>
           )}
@@ -414,7 +411,7 @@ export default function RegionDrawer({ open, onClose, countries, onOpenCountry }
 
   const activeRegion = regions.find((r) => r.code === activeCode);
   const regionType = activeRegion?.type ?? economicSnapshot?.region.type ?? "REGION";
-  const regionIcon = REGION_ICON[regionType] ?? "🗺";
+  const regionIcon = regionType === "CONTINENT" ? "globe" : regionType === "SUBREGION" ? "compass" : "regions";
 
   const regionLabel =
     economicSnapshot?.region.displayName ??
@@ -456,7 +453,7 @@ export default function RegionDrawer({ open, onClose, countries, onOpenCountry }
       {/* En-tête */}
       <div className="country-drawer-header">
         <div className="country-hero">
-          <span className="country-hero-flag" aria-hidden="true">{regionIcon}</span>
+          <span className="country-hero-flag" aria-hidden="true"><WorldIcon name={regionIcon} size={27}/></span>
           <div style={{ flex: 1, minWidth: 0 }}>
             <h2 className="country-drawer-title">{regionLabel}</h2>
             {regionSubtitle && (
@@ -517,7 +514,7 @@ export default function RegionDrawer({ open, onClose, countries, onOpenCountry }
               aria-expanded={showMemberCountries}
               onClick={() => setShowMemberCountries((value) => !value)}
             >
-              <span>🌍 {memberCountries.length} pays dans cette zone</span>
+              <span><WorldIcon name="globe" size={16}/> {memberCountries.length} pays dans cette zone</span>
               <span aria-hidden="true">{showMemberCountries ? "−" : "+"}</span>
             </button>
             {showMemberCountries && (
@@ -540,7 +537,7 @@ export default function RegionDrawer({ open, onClose, countries, onOpenCountry }
         {/* Chargement / erreur */}
         {loading && (
           <div className="info-card">
-            <p style={{ color: "rgba(183,220,245,0.72)", margin: 0 }}>
+            <p style={{ color: "rgba(40,72,105,0.87)", margin: 0 }}>
               Chargement du snapshot régional...
             </p>
           </div>
@@ -627,7 +624,7 @@ export default function RegionDrawer({ open, onClose, countries, onOpenCountry }
             {/* État vide */}
             {activeCode && !regionLenses.length && (
               <div className="info-card">
-                <p style={{ color: "rgba(183,220,245,0.65)", margin: 0, fontSize: 13 }}>
+                <p style={{ color: "rgba(40,72,105,0.87)", margin: 0, fontSize: 13 }}>
                   Les indicateurs chiffrés de cette région ne sont pas encore disponibles.
                   Le catalogue des pays reste consultable ci-dessus. Aucune statistique
                   n'est inventée lorsque les séries temporelles sont absentes.

@@ -13,61 +13,32 @@ export default function EyeLayout({ children, headerActions }: EyeLayoutProps) {
       <header className="whv-header">
         <div className="whv-brand">
           <div className="whv-brand-logo" aria-hidden="true">
-            <svg viewBox="0 0 96 60" className="whv-brand-logo-svg">
+            <svg viewBox="0 0 112 70" className="whv-brand-logo-svg" role="img" aria-label="World Vision — œil et Terre">
               <defs>
-                <clipPath id="whv-brand-globe-clip">
-                  <circle cx="48" cy="30" r="13.5" />
-                </clipPath>
+                <radialGradient id="wv-brand-sea" cx="35%" cy="22%" r="85%">
+                  <stop offset="0" stopColor="#12aaf7"/>
+                  <stop offset=".55" stopColor="#075db3"/>
+                  <stop offset="1" stopColor="#001a63"/>
+                </radialGradient>
+                <linearGradient id="wv-brand-stroke" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor="#90faff"/>
+                  <stop offset=".48" stopColor="#007df0"/>
+                  <stop offset="1" stopColor="#a6fcff"/>
+                </linearGradient>
+                <clipPath id="wv-brand-clip"><circle cx="56" cy="35" r="25"/></clipPath>
               </defs>
-
-              {/* Sclère — fond blanc de l'œil (visible autour du globe) */}
-              <path
-                d="M8 30 C20 14, 36 7, 48 7 C60 7, 76 14, 88 30 C76 46, 60 53, 48 53 C36 53, 20 46, 8 30 Z"
-                fill="#dceef8"
-              />
-
-              {/* Globe / iris — fond sombre */}
-              <circle cx="48" cy="30" r="13.5" fill="#081c2d" />
-
-              {/* Grille méridienne */}
-              <g clipPath="url(#whv-brand-globe-clip)" opacity="0.38">
-                <ellipse cx="48" cy="30" rx="13.5" ry="5.5" fill="none" stroke="#4db8ff" strokeWidth="0.5" />
-                <ellipse cx="48" cy="30" rx="13.5" ry="10"  fill="none" stroke="#4db8ff" strokeWidth="0.5" />
-                <line x1="48" y1="16.5" x2="48" y2="43.5"  stroke="#4db8ff" strokeWidth="0.5" />
-                <line x1="34.5" y1="30" x2="61.5" y2="30"  stroke="#4db8ff" strokeWidth="0.5" />
+              <path d="M3 35Q56 -14 109 35Q56 84 3 35Z" fill="#ffffff" stroke="#046ad9" strokeWidth="6"/>
+              <path d="M4 35Q56 -13 108 35" fill="none" stroke="#64f1ff" strokeWidth="3.6"/>
+              <path d="M4 35Q56 83 108 35" fill="none" stroke="#2de8ff" strokeWidth="3.6"/>
+              <circle cx="56" cy="35" r="25.5" fill="url(#wv-brand-sea)" stroke="#35ddff" strokeWidth="2"/>
+              <g clipPath="url(#wv-brand-clip)">
+                <path d="M35 30 44 22 50 20 54 25 63 23 71 30 72 38 66 42 61 51 51 49 49 41 40 37z" fill="#3ea452"/>
+                <path d="M41 33 56 31 66 35 68 43 61 49 54 47 50 39z" fill="#edbd59"/>
+                <path d="M57 18 66 20 75 27 70 32 62 28 58 24z" fill="#87ba41"/>
+                <path d="M34 18 41 22 39 30 33 34" fill="#58ae52"/>
+                <path d="M34 43 40 45 44 56 39 59" fill="#a7bb45"/>
               </g>
-
-              {/* Continents */}
-              <ellipse cx="41.5" cy="29" rx="3.0" ry="4.6" fill="#1a72b8" clipPath="url(#whv-brand-globe-clip)" />
-              <ellipse cx="49.5" cy="27" rx="2.0" ry="2.6" fill="#1a72b8" clipPath="url(#whv-brand-globe-clip)" />
-              <ellipse cx="50"   cy="34" rx="2.2" ry="3.2" fill="#1a72b8" clipPath="url(#whv-brand-globe-clip)" />
-              <ellipse cx="56.5" cy="26" rx="3.8" ry="2.8" fill="#1a72b8" clipPath="url(#whv-brand-globe-clip)" />
-              <ellipse cx="58.5" cy="34" rx="1.8" ry="1.3" fill="#1a72b8" clipPath="url(#whv-brand-globe-clip)" />
-
-              {/* Reflet globe */}
-              <ellipse cx="43.5" cy="23.5" rx="3.5" ry="2.2" fill="rgba(200,235,255,0.10)" clipPath="url(#whv-brand-globe-clip)" />
-
-              {/* Bague limbique — séparation sclère / iris */}
-              <circle cx="48" cy="30" r="13.5" fill="none" stroke="rgba(6,32,52,0.55)" strokeWidth="1.2" />
-
-              {/* Bordure épaisse de l'œil */}
-              <path
-                d="M8 30 C20 14, 36 7, 48 7 C60 7, 76 14, 88 30 C76 46, 60 53, 48 53 C36 53, 20 46, 8 30 Z"
-                fill="none"
-                stroke="#0a3050"
-                strokeWidth="13"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-
-              {/* Filet lumineux interne de la bordure */}
-              <path
-                d="M8 30 C20 14, 36 7, 48 7 C60 7, 76 14, 88 30 C76 46, 60 53, 48 53 C36 53, 20 46, 8 30 Z"
-                fill="none"
-                stroke="rgba(100, 196, 255, 0.20)"
-                strokeWidth="1"
-                strokeLinecap="round"
-              />
+              <circle cx="56" cy="35" r="25.2" fill="none" stroke="#e5fdff" strokeWidth=".9"/>
             </svg>
           </div>
 

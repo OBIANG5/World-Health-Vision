@@ -5,6 +5,7 @@
 // L'ancienne version (estimation coût de séjour) reste dans l'historique git.
 
 import { useLang } from "../../context/LanguageContext";
+import {WorldIcon} from "../ui/WorldIcon";
 import "../../styles/travel.css";
 
 type Props = { onClose: () => void };
@@ -28,7 +29,7 @@ export default function TravelPanel({ onClose }: Props) {
       <div className="tv-body">
         <div className="tv-hint" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <p style={{ fontSize: 15, fontWeight: 700, color: "#cfe6fb", margin: 0 }}>
-            🚧 {fr ? "Cet outil arrive prochainement." : "This tool is coming soon."}
+            <WorldIcon name="info" size={18}/> {fr ? "Cet outil arrive prochainement." : "This tool is coming soon."}
           </p>
           <p style={{ margin: 0, lineHeight: 1.6 }}>
             {fr

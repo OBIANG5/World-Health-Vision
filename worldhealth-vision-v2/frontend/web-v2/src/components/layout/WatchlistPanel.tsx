@@ -4,14 +4,15 @@
 // Chaque entrée permet d'ouvrir directement la fiche pays du pays.
 
 import type { CountrySummary } from "../../api/types";
-import { useLang } from "../../context/LanguageContext";
+import { useLang } from "../../context/LanguageContext";import {WorldIcon} from "../ui/WorldIcon";
+
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function countryFlag(iso2?: string | null): string {
-  if (!iso2 || iso2.length !== 2) return "🌍";
+  if (!iso2 || iso2.length !== 2) return "—";
   const base = 0x1f1e6;
   const A = 65;
   const up = iso2.toUpperCase();
@@ -141,7 +142,7 @@ export default function WatchlistPanel({
         {/* Pays étoilés dont l'ISO3 n'est pas encore dans le catalogue */}
         {unknownIso3s.map((iso3) => (
           <div key={iso3} className="watchlist-item watchlist-item--unknown">
-            <span className="watchlist-item-flag">🌍</span>
+            <span className="watchlist-item-flag"><WorldIcon name="globe" size={19}/></span>
             <span className="watchlist-item-name" style={{ opacity: 0.55 }}>{iso3}</span>
             <div className="watchlist-item-actions">
               <button

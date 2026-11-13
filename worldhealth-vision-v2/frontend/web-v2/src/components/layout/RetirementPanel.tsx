@@ -9,6 +9,7 @@ import type { CountryEconomicSnapshotResponse, CountryRelativeCostSnapshotRespon
 import { fetchCountryEconomicSnapshot, fetchCountryRelativeCostSnapshot } from "../../api/whvApi";
 import { useLang } from "../../context/LanguageContext";
 import { useUserProfile } from "../../context/UserProfileContext";
+import {WorldIcon} from "../ui/WorldIcon";
 import "../../styles/retirement.css";
 
 // ---------- destinations populaires (retraite + expat) ----------
@@ -305,7 +306,7 @@ export default function RetirementPanel({ countries, onOpenCountry, onClose }: R
       {/* Header */}
       <div className="rt-header">
         <div className="rt-header-left">
-          <span className="rt-header-icon">🌍</span>
+          <span className="rt-header-icon"><WorldIcon name="globe" size={25}/></span>
           <div>
             <h2 className="rt-title">{fr ? "Retraite & Expatriation" : "Retirement & Expat"}</h2>
             <p className="rt-subtitle">
@@ -471,7 +472,7 @@ function RetirementRow({ item, rank, budget, lang, expanded, onToggle, onOpen }:
     return (
       <div className="rt-row rt-row--loading">
         <span className="rt-rank">{rank}</span>
-        <span className="rt-row-flag">{item.iso2 ? isoToFlag(item.iso2) : "🌐"}</span>
+        <span className="rt-row-flag">{item.iso2 ? isoToFlag(item.iso2)  : "—"}</span>
         <span className="rt-row-name">{item.displayName}</span>
         <span className="rt-row-spinner">{fr ? "Analyse…" : "Loading…"}</span>
       </div>
@@ -482,7 +483,7 @@ function RetirementRow({ item, rank, budget, lang, expanded, onToggle, onOpen }:
     return (
       <div className="rt-row rt-row--error">
         <span className="rt-rank">{rank}</span>
-        <span className="rt-row-flag">{item.iso2 ? isoToFlag(item.iso2) : "🌐"}</span>
+        <span className="rt-row-flag">{item.iso2 ? isoToFlag(item.iso2)  : "—"}</span>
         <span className="rt-row-name">{item.displayName}</span>
         <span className="rt-row-err">{fr ? "Données indisponibles" : "Data unavailable"}</span>
       </div>
@@ -505,7 +506,7 @@ function RetirementRow({ item, rank, budget, lang, expanded, onToggle, onOpen }:
     <div className="rt-score-row">
       <button type="button" className="rt-row-main" onClick={onToggle}>
         <span className="rt-rank">{rank}</span>
-        <span className="rt-row-flag">{item.iso2 ? isoToFlag(item.iso2) : "🌐"}</span>
+        <span className="rt-row-flag">{item.iso2 ? isoToFlag(item.iso2)  : "—"}</span>
         <span className="rt-row-name">{item.displayName}</span>
 
         {/* Budget ratio bar */}
@@ -569,7 +570,7 @@ function RetirementRow({ item, rank, budget, lang, expanded, onToggle, onOpen }:
           <div className="rt-detail-section">
             <p className="rt-detail-title">{fr ? "Qualité de vie" : "Quality of life"}</p>
             <div className="rt-dim-row">
-              <span className="rt-dim-icon">🏥</span>
+              <span className="rt-dim-icon"><WorldIcon name="info" size={18}/></span>
               <span className="rt-dim-name">{fr ? "Prospérité / Santé" : "Prosperity / Health"}</span>
               <div className="rt-dim-bar-wrap">
                 <div className="rt-dim-bar" style={{ width: `${prosperityPct}%`, background: "#4db8ff" }} />
@@ -578,7 +579,7 @@ function RetirementRow({ item, rank, budget, lang, expanded, onToggle, onOpen }:
               <ConfDot lens={item.prosperity} />
             </div>
             <div className="rt-dim-row">
-              <span className="rt-dim-icon">🛡</span>
+              <span className="rt-dim-icon"><WorldIcon name="shield" size={18}/></span>
               <span className="rt-dim-name">{fr ? "Stabilité / Sécurité" : "Stability / Safety"}</span>
               <div className="rt-dim-bar-wrap">
                 <div className="rt-dim-bar" style={{ width: `${safetyPct}%`, background: "#a78bfa" }} />

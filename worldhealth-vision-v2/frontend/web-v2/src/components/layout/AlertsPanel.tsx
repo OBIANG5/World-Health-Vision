@@ -5,6 +5,7 @@
 // n'est supprimée (les alertes s'appuieront sur les endpoints existants).
 
 import { useLang } from "../../context/LanguageContext";
+import {WorldIcon} from "../ui/WorldIcon";
 import "../../styles/alerts.css";
 
 type Props = { onClose: () => void };
@@ -16,7 +17,7 @@ export default function AlertsPanel({ onClose }: Props) {
     <div className="al-panel">
       <div className="al-header">
         <div className="al-header-left">
-          <span className="al-header-icon">🔔</span>
+          <span className="al-header-icon"><WorldIcon name="alert" size={23}/></span>
           <div>
             <h2 className="al-title">{fr ? "Alertes" : "Alerts"}</h2>
             <p className="al-subtitle">{fr ? "Bientôt disponible" : "Coming soon"}</p>
@@ -28,7 +29,7 @@ export default function AlertsPanel({ onClose }: Props) {
       <div className="al-body">
         <div className="al-empty" style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 14 }}>
           <p style={{ fontSize: 15, fontWeight: 700, color: "#cfe6fb", margin: 0 }}>
-            🚧 {fr ? "Cet outil arrive prochainement." : "This tool is coming soon."}
+            <WorldIcon name="info" size={18}/> {fr ? "Cet outil arrive prochainement." : "This tool is coming soon."}
           </p>
           <p style={{ margin: 0, lineHeight: 1.6, color: "rgba(183,220,245,0.82)" }}>
             {fr
