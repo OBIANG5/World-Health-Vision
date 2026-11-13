@@ -132,6 +132,12 @@ try {
   await page.locator(".wv-direction-item").first().waitFor();
   assert.equal(await page.locator(".wv-direction-item").count(),3);
   assert.equal(await page.locator(".wv-direction-canvas").count(),3);
+  // Separate real 9:16 proof images remain small enough to inspect without
+  // downscaling a multi-screen mobile screenshot.
+  for(const id of ["terrain","chiffres","pedagogie"]) {
+    await page.locator(`.wv-direction-item[data-direction="${id}"] .wv-direction-canvas`)
+      .screenshot({path:path.join(dist,`style-frame-${id}.png`)});
+  }
   await page.locator('.wv-direction-item[data-direction="chiffres"] button').click();
   await page.locator('[data-review-gate="direction"]').waitFor();
   assert.equal(new URL(page.url()).searchParams.get("style"),"chiffres");
