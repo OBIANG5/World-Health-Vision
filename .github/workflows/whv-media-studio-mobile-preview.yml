@@ -88,7 +88,22 @@ jobs:
             echo "A photographic design without its verified archival photo is NOT publishable."
             exit 1
           fi
-          sha256sum "$DEST/harvey-rescue-2017.jpg"
+          echo "58bc6d400c6d264465d2f0a1962b07e298371c01fe0527f743fd0b7d2068c8ec  $DEST/harvey-rescue-2017.jpg" | sha256sum --check
+          cat > "$DEST/harvey-rescue-2017.provenance.json" <<'EOF'
+          {
+            "asset_id": "harvey-us-army-2017",
+            "title": "Hurricane Harvey, Houston rescue archival photograph",
+            "event_date": "2017-08-27",
+            "location": "Houston, Texas, USA",
+            "credit": "U.S. Army / 1st Lt. Zachary West",
+            "source_url": "https://www.war.gov/Multimedia/Photos/igphoto/2002037959/",
+            "retrieval_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg/960px-Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg",
+            "license_status": "U.S. federal government public-domain work; no endorsement implied",
+            "sha256": "58bc6d400c6d264465d2f0a1962b07e298371c01fe0527f743fd0b7d2068c8ec",
+            "depicts_cop31": false,
+            "use": "historical illustration of disaster risk for an editorial style-frame proof only"
+          }
+          EOF
           echo "Source credit: US Army photographer 1st Lt. Zachary West, 2017 Houston, public domain US federal work."
           test -s worldhealth-vision-v2/docs/media/art-direction/cop31-opening-directions-v1.json
       - name: Install browser smoke-test dependency
