@@ -176,3 +176,19 @@ Commits source UI : `fa26c788b463269f64afbb760a4099d8e2498f35` (interface) et `0
 ### Confirmation de publication du panneau de continuité (13 novembre, contrôle final)
 
 Le workflow [World-Vision Media Studio real-UI mobile preview #43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661) est désormais **completed / success** (y compris build React, test Playwright iPhone/desktop, publication de la branche de preview). Branche de preview : HEAD `bdd6277fd88b9a5eebefe1e1737ac6ad19d31931`, manifeste `source_commit=00224feaaffb97c13a65e2518ee301d7aaefa910`. **Ce qu'il prouve** : le panneau « D00-v6 non encore validé » et la feuille de route sont intégrés au bundle statique. **Ce qu'il ne prouve pas** : synchronisation instantanée du cache RawGitHack, présence des pixels du concept D00-v6, moteur 3D fonctionnel, ou backend actif. Les captures anciennes du laboratoire restent explicitement distinguées de la nouvelle image dans l'UI.
+
+
+---
+
+## MISE À JOUR APRÈS INTERRUPTION — GÉOCIBLAGE INTERACTIF VALIDÉ TECHNIQUEMENT (13/11/2026)
+
+**Priorité de reprise récente (supplante les anciennes indications « pas de rotation ») :** la rotation **technique** du globe est bien développée sur la branche média et testée dans le site mobile. **Elle n'est pas le rendu photo/CGI du plan D00-v6 et ne vaut pas validation de la direction artistique.**
+
+**Architecture** : `frontend/web-v2/src/media/geoTargeting.mjs`, `geoTargeting.d.mts`, `geoTargeting.test.mjs`, `GeoTargetingLab.tsx/.css`, `GeoGlobe.tsx`, intégration au parcours `ReviewStudio` et six maquettes anciennes via `GlobeDirection`. Pays identifiés par ISO3 du dossier d'actualité ou sélection de test manuelle ; mouvement sphérique lissé, frontière GeoJSON, contrôles iPhone. Pas de zoom dans une ville imaginaire ni de diffusion automatique.
+
+**Preuves** : CI `43460449189` = six jobs verts ; workflow mobile `43460509829` = `completed/success`, GitHack manifest `source_commit=30f280b089148dd12768ce67d6bf7adea270419b`, preview HEAD `08492abc9ab7ab55f2beebb4e0f1d268e8365765` ; capture `media-globe-motion-lab-iphone.png` existe sur la branche preview et a été inspectée. Voir [GEO_TARGETING_MOTION_LAB_2026-11-13.md](../media/GEO_TARGETING_MOTION_LAB_2026-11-13.md).
+
+**Lien permanent de démonstration** : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/index.html?view=media&screen=review&gate=direction . Faire défiler après les six images D00–D05 pour trouver « Une actualité. Un pays. La Terre s'oriente. ».
+
+**Prochaine étape intelligente** : utiliser ce moteur comme **moteur de géographie pour une future vraie 3D**, mais reconstruire le plan D00 selon la charte toujours en cours de validation (Terre immense, frontières sahariennes exactes, blanc pur dans l'œil à deux arcs, atmosphère cyan mieux éclairée). Livrer le prototype CGI 1080×1920 et obtenir validation humaine avant micro-clip 3–6 s, voix, montage complet. Se référer aux 9 parties du manuel de 137 pages sauvegardées dans `AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`.
+
