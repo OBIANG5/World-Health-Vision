@@ -267,7 +267,6 @@ function ReviewForm({story,gate,previewMode,style}:{
     setCopyStatus("Sauvegarde JSON créée sur ton appareil. Elle n'a pas été envoyée au serveur.");
   };
   return <div className="wv-review-panel" data-review-gate={gate}>
-    {gate==="identite"&&<BrandEvidence/>}
     <div className="wv-review-target">
       <div><span>LIVRABLE À ÉVALUER</span><h3>{g.deliverable}</h3><p>{g.hint}</p></div>
       <div className={`wv-review-evidence ${hasArtifact?"available":"missing"}`}>
@@ -421,13 +420,13 @@ export default function ReviewStudio({story,onOpenJourney,previewMode}:{
     </section>
     {!story?<div className="wv-review-empty">Aucun dossier chargé. Vérifie le Media Studio ou sélectionne un reportage.</div>:
       <>
-        {gate==="identite"?<div className="wv-review-approved-decision" role="status">
+        {gate==="identite"?<><BrandEvidence/><div className="wv-review-approved-decision" role="status">
           <div><strong>Logo officiel actuel : validé par toi</strong>
             <p>Approbation explicite enregistrée le 13 novembre 2026, sans note chiffrée.
               La version multicolore est une amélioration future et ne bloque plus la production.</p>
           </div>
           <button type="button" onClick={()=>setGate("direction")}>Étape suivante : les trois directions artistiques →</button>
-        </div>:<>
+        </div></>:<>
           {gate==="direction"&&<CreativeDirections selected={style} onSelect={setStyle}/>}
           <ReviewForm key={`${story.id}:${gate}:${evidence||"missing"}`}
             story={story} gate={gate} style={style} previewMode={previewMode}/>
