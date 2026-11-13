@@ -181,7 +181,7 @@ jobs:
             /tmp/whv-media-studio-preview
           # Refresh only the static build; never touch canonical V2 or media code.
           find /tmp/whv-media-studio-preview \
-            -mindepth 1 -maxdepth 1 ! -name .git ! -name media-pilots -exec rm -rf {} +
+            -mindepth 1 -maxdepth 1 ! -name .git ! -name media-pilots ! -name media-lab -exec rm -rf {} +
           cp -a worldhealth-vision-v2/frontend/web-v2/dist/. /tmp/whv-media-studio-preview/
           # This static site is an authentic editorial archive. It is not a
           # connected newsroom server; declare the true artifact state.
