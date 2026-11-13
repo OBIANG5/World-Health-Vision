@@ -1,0 +1,55 @@
+/* World-Vision: geospatial motion laboratory, not final cinematic art. */
+.wv-geotarget{margin:clamp(20px,4vw,44px) 0;border:1px solid rgba(73,158,190,.27);
+  background:linear-gradient(135deg,#07172e,#081d38 60%,#071225);color:#f4fcff;border-radius:20px;overflow:hidden}
+.wv-geotarget *{box-sizing:border-box}
+.wv-geotarget-head{padding:clamp(20px,4vw,36px) clamp(18px,4vw,36px) 18px}
+.wv-geotarget-head>span{font-size:10px;letter-spacing:.16em;color:#71ddec;font-weight:900}
+.wv-geotarget-head h3{font-size:clamp(21px,3vw,34px);letter-spacing:-.04em;line-height:1.13;margin:12px 0}
+.wv-geotarget-head p{color:#c1d9e3;line-height:1.7;margin:0 0 10px;font-size:13px;max-width:850px}
+.wv-geotarget-head .wv-geotarget-disclaimer{color:#d9e9ed;font-size:12px;background:rgba(99,193,213,.07);
+  padding:12px 15px;border-left:2px solid #64c8e4;border-radius:4px;max-width:none;margin-top:18px}
+.wv-geotarget-layout{display:grid;grid-template-columns:minmax(245px,.95fr) minmax(280px,1fr);gap:clamp(12px,2vw,26px);
+  padding:0 clamp(12px,2vw,26px) 24px;align-items:start}
+.wv-geotarget-visual{min-width:0}
+.wv-geotarget-planet{position:relative;width:100%;aspect-ratio:9/16;max-height:680px;
+  overflow:hidden;border-radius:13px;border:1px solid rgba(115,213,243,.3);isolation:isolate;background:#061329}
+.wv-geotarget-planet>.wv-globe-canvas-wrap{height:100%;width:100%}
+.wv-geotarget-caption{position:absolute;z-index:3;left:18px;right:18px;bottom:20px;
+  pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;gap:5px;
+  text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.wv-geotarget-caption small{font-size:10px;letter-spacing:.15em;color:#bde9ef;font-weight:800}
+.wv-geotarget-caption strong{font-size:clamp(17px,3vw,27px);font-weight:850;line-height:1.1;letter-spacing:-.045em}
+.wv-geotarget-caption span{font-size:11px;color:#bcdae3}
+.wv-geotarget-visual>p{font-size:10px;color:#98b6c5;line-height:1.7;padding:9px 2px 0;margin:0}
+.wv-geotarget-controls{min-width:0;background:#102846;border:1px solid rgba(104,188,212,.15);border-radius:13px;
+  padding:clamp(15px,2.4vw,26px);display:flex;flex-direction:column;gap:13px}
+.wv-geotarget-evidence{padding:15px 16px;border:1px solid rgba(123,215,233,.21);border-radius:9px;background:rgba(7,21,39,.46)}
+.wv-geotarget-evidence span{display:block;color:#82d6e7;font-size:10px;letter-spacing:.11em;font-weight:850;margin-bottom:7px}
+.wv-geotarget-evidence strong{font-size:15px;display:block}
+.wv-geotarget-evidence p{color:#accbd9;font-size:12px;line-height:1.55;margin:9px 0 0;overflow-wrap:anywhere}
+.wv-geotarget-controls label{display:block;font-weight:750;color:#e7f7fc;font-size:12px;line-height:1.5}
+.wv-geotarget-controls select{width:100%;padding:12px 11px;background:#061a31;color:#fff;border:1px solid rgba(149,215,235,.36);
+  border-radius:8px;font-size:14px;min-height:44px}
+.wv-geotarget-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.wv-geotarget-metrics>div{background:#061a31;border:1px solid rgba(111,181,211,.17);padding:13px;border-radius:8px}
+.wv-geotarget-metrics small{font-size:9px;letter-spacing:.1em;color:#9ec9dc;display:block;margin-bottom:8px}
+.wv-geotarget-metrics b{font-size:12px;letter-spacing:-.01em}
+.wv-geotarget-controls .wv-geotarget-hint{font-size:11px;line-height:1.65;color:#bdd4e0;margin:0}
+.wv-geotarget-buttons{display:flex;flex-wrap:wrap;gap:9px}
+.wv-geotarget-buttons button{min-height:43px;padding:11px 14px;border:1px solid rgba(121,219,238,.4);
+  border-radius:8px;color:#fff;background:#13758f;font-size:12px;font-weight:800}
+.wv-geotarget-buttons button:first-child{flex:1;min-width:185px}
+.wv-geotarget-buttons button:last-child{background:transparent;color:#d8f4fc}
+.wv-geotarget-buttons button:disabled{opacity:.5;cursor:not-allowed}
+.wv-geotarget-buttons button:not(:disabled):hover{filter:brightness(1.15)}
+.wv-geotarget-controls input[type="range"]{accent-color:#33cde8;width:100%;margin:0;min-height:30px}
+.wv-geotarget-footer{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#98c4d3;font-size:10px}
+.wv-geotarget-error{border:1px solid #e79090;color:#ffe7e7;background:#632c39;padding:10px;border-radius:7px}
+.wv-geotarget-accessibility{color:#d0e8ef;font-size:11px;line-height:1.6;margin:0}
+@media(max-width:760px){
+  .wv-geotarget{border-radius:13px}
+  .wv-geotarget-layout{grid-template-columns:minmax(0,1fr);padding:0 12px 17px}
+  .wv-geotarget-planet{max-width:480px;margin-inline:auto;max-height:660px}
+  .wv-geotarget-controls{padding:17px}
+  .wv-geotarget-head{padding:22px 17px 16px}
+}
