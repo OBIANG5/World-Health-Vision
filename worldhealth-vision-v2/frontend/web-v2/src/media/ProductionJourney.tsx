@@ -321,9 +321,35 @@ export default function ProductionJourney({
         <div className="wvj-overview-intro"><span>LE CIRCUIT ÉDITORIAL</span><h2>Une information ne devient pas une vidéo par magie.</h2><p>Ce sont quatorze opérations contrôlées : de la détection du sujet jusqu'aux preuves de publication. Choisis n'importe quel bloc pour entrer dans son espace de travail.</p></div>
         <div className="wvj-overview-metrics"><div><strong>05</strong><span>PHASES</span></div><div><strong>14</strong><span>ÉTAPES</span></div><div><strong>8</strong><span>CONTRÔLES QA</span></div><div><strong>{story?`${doneCount}/14`:"—"}</strong><span>ÉTAT DU DOSSIER</span></div></div>
       </section>
+      {story?.render_job?.status==="completed" && story.render_job.output_sha256 && story.render_job.output_url && (
+        <section className="wvj-featured-real" aria-label="Premier véritable reportage vidéo">
+          <div className="wvj-featured-details">
+            <span>PREMIER REPORTAGE RÉEL · COP31 / ONU · 12 NOVEMBRE 2026</span>
+            <h2>Le reportage est un fichier. Pas une maquette.</h2>
+            <p>{story.title}</p>
+            <div className="wvj-featured-facts">
+              <b>{story.render_job.output_probe?.duration_sec.toFixed(1) ?? "—"} s</b>
+              <b>1080 × 1920</b>
+              <b>H.264 + AAC</b>
+            </div>
+            <div className="wvj-featured-note">Images : animations originales · voix : IA française · sources : Nations unies.
+              Contrôle éditorial et validation de publication encore en attente.</div>
+            <button type="button" onClick={()=>setCurrent("preview")}>Explorer comment cette vidéo a été créée →</button>
+          </div>
+          <div className="wvj-featured-player">
+            <video
+              controls playsInline preload="metadata"
+              poster="./media-pilots/cop31-risk-finance-2026-11-12/poster-preview.jpg"
+              src={story.render_job.output_url}
+              aria-label="World-Vision, véritable reportage COP31 en MP4"
+            />
+            <div>FICHIER FINAL RÉEL · SHA-256 {story.render_job.output_sha256.slice(0,16)}…</div>
+          </div>
+        </section>
+      )}
       {groups.map((group,gi)=><section className="wvj-group" key={group}><div className="wvj-group-title"><span>{String(gi+1).padStart(2,"0")} / 05</span><h3>{group}</h3></div><div className="wvj-card-grid">{STEPS.filter(s=>s.group===group).map(s=><button type="button" key={s.id} onClick={()=>setCurrent(s.id)} className="wvj-step-card"><span className="wvj-step-top"><b>{s.number}</b><i>{s.icon}</i></span><strong>{s.name}</strong><small>{s.short}</small><span className="wvj-step-card-bottom"><span>{story&&evidenceStatus(story,s.id)?"DONNÉES PRODUITES":"EXPLORER"}</span><span>↗</span></span></button>)}</div></section>)}
     </> : selectedStep && <div className="wvj-workspace">
-      <nav className="wvj-rail" aria-label="Étapes du processus"><div className="wvj-rail-label">LES 14 ÉTAPES</div>{STEPS.map(step=><button key={step.id} type="button" className={`wvj-rail-item ${step.id===current?"active":""}`} aria-current={step.id===current?"step":undefined} onClick={()=>setCurrent(step.id)}><span className="wvj-rail-num">{step.number}</span><span className="wvj-rail-name"><b>{step.name}</b><small>{step.short}</small></span><span className="wvj-rail-indicator">{!previewMode&&story&&evidenceStatus(story,step.id)?"✓":step.id===current?"●":"·"}</span></button>)}</nav>
+      <nav className="wvj-rail" aria-label="Étapes du processus"><div className="wvj-rail-label">LES 14 ÉTAPES</div>{STEPS.map(step=><button key={step.id} type="button" className={`wvj-rail-item ${step.id===current?"active":""}`} aria-current={step.id===current?"step":undefined} onClick={()=>setCurrent(step.id)}><span className="wvj-rail-num">{step.number}</span><span className="wvj-rail-name"><b>{step.name}</b><small>{step.short}</small></span><span className="wvj-rail-indicator">{story&&evidenceStatus(story,step.id)?"✓":step.id===current?"●":"·"}</span></button>)}</nav>
       <div className="wvj-page">
         <div className="wvj-page-meta"><button type="button" onClick={()=>setCurrent("overview")}>← Vue d'ensemble</button><span>{selectedStep.group} / ÉTAPE {selectedStep.number} SUR 14</span></div>
         <header className="wvj-page-head"><div className="wvj-page-icon">{selectedStep.icon}</div><div><div className="wvj-page-kicker">{selectedStep.kicker}</div><h2>{selectedStep.title}</h2><p>{selectedStep.description}</p></div></header>
