@@ -653,7 +653,7 @@ export default function MediaStudio() {
     }
   }
 
-  function openReviewGate(gate: "identite" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video") {
+  function openReviewGate(gate: "identite" | "direction" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video") {
     const url = new URL(window.location.href);
     url.searchParams.set("gate", gate);
     window.history.replaceState({}, "", url.pathname + url.search + url.hash);
