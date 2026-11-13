@@ -137,13 +137,19 @@ function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
  ctx.lineWidth=Math.max(2,r*.036);ctx.stroke();
  ctx.restore();
 }
-function landColor(region:string,latitude:number){
- // Natural broad biome zones: warm Sahara, vivid equatorial belt, pale far north.
- if(region==="Middle East & North Africa")return "#eab454";
- if(region==="Sub-Saharan Africa")return latitude>11?"#c9a456":latitude< -22?"#bba052":"#278a42";
- if(latitude>66)return "#d2e2c3";
- if(region==="Europe & Central Asia")return latitude>46?"#62a53c":"#7ab73c";
- return palette[region]??(Math.abs(latitude)<25?"#3f9653":"#9bb868");
+function landColor(region:string,latitude:number,longitude:number){
+ // Broad geographical/climatic impression, deliberately not a measured metric.
+ const africa=longitude>-19&&longitude<53&&latitude>-37&&latitude<38;
+ if(africa&&latitude>=12)return "#f1b34c";   // Sahara/Sahel
+ if(africa&&latitude<=-27)return "#df9f4c";  // South African dry belt
+ if(africa&&latitude>=-27)return "#188744";  // Congo/central forest green
+ if(latitude>72)return "#e1f4ee";            // polar ice
+ if(latitude>34&&longitude>-13&&longitude<65)return "#5eaf31"; // Europe
+ if(longitude< -35&&longitude>-86&&latitude<18&&latitude> -55)return "#1e9745"; // South America
+ if(latitude>54)return "#8abb59";
+ if(region==="Middle East & North Africa")return "#edb650";
+ if(region==="Sub-Saharan Africa")return "#239443";
+ return palette[region]??(Math.abs(latitude)<26?"#3eaa53":"#83b64d");
 }
 function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:FeatureCollection|null,selected:string,hover:string|null,countries:Map<string,CountrySummary>){
  ctx.clearRect(0,0,w,h);
@@ -191,7 +197,7 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
    const polys=rings(f.geometry),outer=polys[0]?.[0];
    const latitude=outer?.length?outer.reduce((sum,p)=>sum+p[1],0)/outer.length:0;
    const active=code===selected,over=code===hover;
-   ctx.fillStyle=active?"#90dc55":over?"#d8ed6f":landColor(region,latitude);
+   ctx.fillStyle=active?"#90dc55":over?"#d8ed6f":landColor(region,latitude,outer?.length?outer.reduce((sum,p)=>sum+p[0],0)/outer.length:0);
    ctx.strokeStyle=active?"#f7ffff":over?"#ffffff":"rgba(248,255,252,.93)";
    ctx.lineWidth=active?2.0:over?1.7:Math.max(.58,r*.0025);
    for(const p of polys)if(p[0])paintRing(ctx,p[0],pose,cx,cy,r);
@@ -224,7 +230,8 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
 function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
  const canvas=useRef<HTMLCanvasElement>(null);
  const geo=useRef<FeatureCollection|null>(null);
- const pose=useRef<Pose>({lon:13,lat:25,zoom:1});
+ // Begin over Africa and the Mediterranean as in the approved eye reference.
+ const pose=useRef<Pose>({lon:12,lat:8,zoom:1});
  const pointers=useRef(new Map<number,{x:number;y:number}>());
  const drag=useRef<{moved:number}|null>(null);
  const pinch=useRef<{distance:number;zoom:number}|null>(null);
@@ -263,18 +270,23 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   const obs=new ResizeObserver(schedule);if(canvas.current)obs.observe(canvas.current);
   schedule();return()=>{obs.disconnect();if(frame.current!==null)cancelAnimationFrame(frame.current);frame.current=null;};
  },[schedule]);
+ const previousSelection=useRef(selectedCountryIso3);
  useEffect(()=>{
-  const feature=geo.current?.features.find(f=>iso(f)===selectedCountryIso3);
-  const mainRing=feature&&rings(feature.geometry).map(p=>p[0]).filter(Boolean).sort((a,b)=>b.length-a.length)[0];
-  if(mainRing&&mainRing.length>2){
-   const sum:Vec=[0,0,0];
-   for(const p of mainRing){
-    const v=vec(p);sum[0]+=v[0];sum[1]+=v[1];sum[2]+=v[2];
-   }
-   const norm=Math.hypot(...sum);
-   if(norm>1e-6){
-    pose.current.lon=wrap(Math.atan2(sum[1],sum[0])*DEG);
-    pose.current.lat=clamp(Math.asin(clamp(sum[2]/norm,-1,1))*DEG,-75,75);
+  // Keep the Africa-centered opening frame. Only navigate the globe to a new
+  // location after the user actually selects a *different* country.
+  const changed=selectedCountryIso3!==previousSelection.current;
+  previousSelection.current=selectedCountryIso3;
+  if(changed&&geo.current){
+   const feature=geo.current.features.find(f=>iso(f)===selectedCountryIso3);
+   const mainRing=feature&&rings(feature.geometry).map(p=>p[0]).filter(Boolean).sort((a,b)=>b.length-a.length)[0];
+   if(mainRing&&mainRing.length>2){
+    const sum:Vec=[0,0,0];
+    for(const p of mainRing){const v=vec(p);sum[0]+=v[0];sum[1]+=v[1];sum[2]+=v[2];}
+    const norm=Math.hypot(...sum);
+    if(norm>1e-6){
+     pose.current.lon=wrap(Math.atan2(sum[1],sum[0])*DEG);
+     pose.current.lat=clamp(Math.asin(clamp(sum[2]/norm,-1,1))*DEG,-75,75);
+    }
    }
   }
   schedule();
