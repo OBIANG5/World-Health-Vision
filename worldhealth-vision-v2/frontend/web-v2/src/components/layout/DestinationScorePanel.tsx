@@ -9,6 +9,7 @@ import type { CountrySummary, IndicatorOverviewResponse } from "../../api/types"
 import { fetchIndicatorOverview } from "../../api/whvApi";
 import { useLang } from "../../context/LanguageContext";
 import { PRIORITY_LABEL, type UserPriorities, useUserProfile } from "../../context/UserProfileContext";
+import {WorldIcon} from "../ui/WorldIcon";
 import "../../styles/destination-score.css";
 
 // ---------- Shortlist destinations populaires (expats / retraite / nomades) ----------
@@ -44,7 +45,7 @@ interface CountryScore {
 // ---------- helpers ----------
 
 function flag(iso2?: string | null): string {
-  if (!iso2 || iso2.length !== 2) return "🌍";
+  if (!iso2 || iso2.length !== 2) return "—";
   const b = 0x1f1e6, A = 65, u = iso2.toUpperCase();
   return String.fromCodePoint(u.charCodeAt(0) - A + b) + String.fromCodePoint(u.charCodeAt(1) - A + b);
 }
@@ -353,7 +354,7 @@ export default function DestinationScorePanel({ countries, onOpenCountry, onClos
     <div className="ds-panel">
       <div className="ds-header">
         <div className="ds-header-left">
-          <span className="ds-header-icon">🎯</span>
+          <span className="ds-header-icon"><WorldIcon name="destination" size={23}/></span>
           <div>
             <h2 className="ds-title">{lang === "fr" ? "Score de destination" : "Destination score"}</h2>
             <p className="ds-subtitle">
