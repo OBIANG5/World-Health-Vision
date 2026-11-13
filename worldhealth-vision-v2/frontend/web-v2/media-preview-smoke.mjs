@@ -40,7 +40,7 @@ try {
   page.on("pageerror", error => errors.push(error.message));
   await page.goto(base + "/index.html?view=media", {waitUntil: "networkidle"});
   await page.locator(".wv-media-shell").waitFor();
-  await page.getByText(/ACTUALITÉ RÉELLE VÉRIFIÉE/).waitFor();
+  await page.getByText(/DOSSIER ONU VÉRIFIÉ|VIDÉO MP4 RÉELLE/).waitFor();
   await page.getByRole("heading", {name: /De l'actualité/}).waitFor();
   await page.getByText(/COP31 : l'ONU vise plus de 3 milliards/).first().waitFor();
   assert.equal(await page.locator(".wvj-step-card").count(),14);
