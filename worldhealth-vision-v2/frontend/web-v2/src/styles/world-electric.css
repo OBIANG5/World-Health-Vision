@@ -1,0 +1,283 @@
+/* WORLD HEALTH VISION — Electric Earth / image-led design system.
+   Palette sampled from user's eye-and-globe reference (13 Nov 2026):
+   midnight #010623 | ocean #043CA3 | azure #1189CD | cyan #80DAD6 |
+   forest #267C48 | sahara #D5A656 | sclera #FEFEFE.
+   Contrast-safe content surfaces remain white, never translucent over busy imagery. */
+:root{
+  --whv-paper:#f5faff;--whv-surface:#ffffff;--whv-ink:#06163b;
+  --whv-muted:#455b76;--whv-border:#cddfec;--whv-forest:#207047;
+  --whv-accent:#c08b34;--whv-shadow:0 18px 52px rgba(3,36,99,.09);
+  --whv-blue:#0469cf;--whv-electric:#00a8fa;--whv-cyan:#35dffb;
+  --whv-deep:#010623;--whv-sea:#043ca3;--whv-sand:#e1ac52;
+}
+html,body,#root{background:#f5faff}
+body{color:#06163b}
+.whv-page{
+  color:#06163b;
+  background:
+    radial-gradient(ellipse 30% 55% at 82% 30%,rgba(28,151,253,.105),transparent 94%),
+    radial-gradient(ellipse 27% 45% at 5% 90%,rgba(26,157,114,.06),transparent 94%),
+    #f6fbff;
+}
+.whv-page::before{opacity:.25;background-image:
+  linear-gradient(to right,rgba(5,98,188,.11) 1px,transparent 1px),
+  linear-gradient(to bottom,rgba(5,98,188,.11) 1px,transparent 1px)}
+.whv-header{background:#fff!important;border-bottom:1px solid #dceaf4;
+ box-shadow:0 4px 25px rgba(7,48,103,.05);backdrop-filter:none}
+.whv-brand{background:transparent}
+.whv-brand-text h1{color:#03143d;font-size:17px;letter-spacing:-.035em;font-weight:830}
+.whv-brand-text p{color:#416d92;opacity:1!important;font-weight:650}
+.whv-brand-logo{width:59px;flex-basis:59px;height:47px}
+.whv-brand-logo-svg{width:100%;height:100%;overflow:visible}
+.whv-nav-btn{color:#12355a;border-color:transparent;background:transparent;font-weight:720}
+.whv-nav-btn:hover{background:#edf7ff;border-color:#d7edff;color:#00599d}
+.whv-nav-btn.active{background:#e6f4ff;color:#034e90;border-color:#b4e0f9}
+.whv-nav-btn--tools{color:#074b83;background:#e8f5ff;border-color:#cfeafa}
+.whv-nav-btn--home,.whv-nav-btn--sources,.whv-nav-btn--lang{color:#275471}
+.whv-nav-btn--mobile-hub{color:#043e73;background:#e6f5ff;border-color:#b9e1f8}
+.whv-nav-chevron{opacity:.78;display:inline-flex;align-items:center;margin-left:1px;padding-left:4px}
+.whv-service-status{background:#eaf8ef!important;color:#17613e!important;
+ border:1px solid #c8e8d4!important}
+.whv-service-status--offline{background:#fff7e8!important;
+ color:#80541a!important;border:1px solid #ecd9b0!important}
+.whv-service-status-dot{background:#2aa46a!important}
+
+/* Four thematic domains, calm surfaces and vector iconography. */
+body .whv-tools-menu.whv-domain-menu{
+ background:#fff!important;border:1px solid #d3e7f7!important;color:#0b2446!important;
+ box-shadow:0 24px 68px rgba(0,29,83,.20)!important
+}
+.whv-domain-heading{border-bottom-color:#e3edf6}
+.whv-domain-overline{color:#0263b1;font-weight:840}
+.whv-domain-heading h2{color:#041a43;font-weight:820}
+.whv-domain-close{display:grid;place-items:center;background:#f2f8ff;
+ border-color:#d9eafb;color:#104c83;font-size:inherit}
+.whv-domain-group{background:#fafdff;border:1px solid #deedf7}
+.whv-domain-group h3{color:#315779;font-weight:790}
+.whv-domain-menu .whv-tools-item{color:#071e47}
+.whv-domain-menu .whv-tools-item strong{color:#0a244d;font-size:12px}
+.whv-domain-menu .whv-tools-item small{color:#405e7b;font-size:11px}
+.whv-domain-menu .whv-tools-item:hover{background:#e9f7ff;border-color:#c8e9fa;color:#034d92}
+.whv-menu-icon{
+  color:#036cb4;background:#e4f4ff;border:1px solid #c8eafa;
+  border-radius:10px;width:36px;height:36px;flex-basis:36px
+}
+.whv-domain-group:nth-child(2) .whv-menu-icon{color:#116a45;background:#e7f7ef;border-color:#cae9d8}
+.whv-domain-group:nth-child(3) .whv-menu-icon{color:#995b09;background:#fff3d9;border-color:#f1dfb2}
+.whv-domain-group:nth-child(4) .whv-menu-icon{color:#00579c;background:#eaf5ff;border-color:#d2e9ff}
+.whv-domain-disclosure{background:#f6fbff;color:#47617b;border-radius:7px;
+ padding:10px;margin:8px 2px 1px;font-size:11px;line-height:1.6}
+.whv-domain-footer{color:#456179}
+.whv-domain-menu .whv-tools-item:focus-visible,.whv-nav-btn:focus-visible,
+.whv-domain-close:focus-visible,.whv-mobile-shortcut:focus-visible{
+ outline:3px solid #007de4!important;outline-offset:2px
+}
+/* The sphere occupies the primary artistic position: full eye frame,
+   no second map, no map toggle. */
+.whv-page .eye-stage.globe-mode,
+.whv-page .eye-stage.globe-mode.drawer-open{
+  left:43%;right:clamp(22px,3.5vw,58px);top:110px;bottom:34px;
+  background:#010623;border:1px solid #134c9b;border-radius:26px;
+  box-shadow:0 16px 48px rgba(2,31,96,.15),0 0 0 4px rgba(20,153,248,.045);
+  overflow:hidden
+}
+.whv-globe-shell{background:#010623}
+.whv-globe-canvas{cursor:grab}
+.whv-globe-canvas:focus-visible{outline:3px solid #96faff;outline-offset:-7px}
+.whv-globe-topline{color:#e9fbff;font-size:10px;font-weight:800;letter-spacing:.10em;
+ opacity:1;text-shadow:0 1px 8px #001743}
+.whv-globe-signal{background:#8fffe4;box-shadow:0 0 14px #38ffe5}
+.whv-globe-hint{color:#f4ffff;background:rgba(0,13,45,.91);
+ border-color:rgba(111,221,255,.53);font-weight:650}
+.whv-globe-zoom button{color:#fff;background:#063c85;border-color:#72dfff;
+ box-shadow:0 4px 16px #001e50a0;font-weight:750}
+.whv-globe-zoom button:hover{background:#0864b9}
+.whv-globe-disclaimer{color:#f4ffff;opacity:.85;letter-spacing:.01em;
+ background:rgba(0,18,57,.75);padding:4px 9px;border-radius:10px}
+.whv-globe-status{color:#fff;background:rgba(1,22,62,.97);border-color:#87eaff}
+
+/* Hero: bright, simple, readable from 100% zoom and from an iPhone. */
+.whv-desktop-story{width:min(480px,34vw);max-width:34vw;top:clamp(157px,24vh,254px)}
+.whv-story-eyebrow{color:#075eaa;font-size:11px}
+.whv-story-dot{background:#12a26a}
+.whv-desktop-story h2{color:#05163d}
+.whv-desktop-story h2 em{color:#066db9}
+.whv-desktop-story>p{color:#3c5374;font-size:clamp(14px,1.18vw,18px);
+ line-height:1.72;font-weight:510}
+.whv-story-primary{color:#fff;background:#075cbd;border-color:#075cbd;
+ box-shadow:0 10px 24px rgba(5,100,198,.20)}
+.whv-story-primary:hover{background:#034d9c}
+.whv-story-secondary{color:#065195;background:#fff;border-color:#b9d9ee}
+.whv-story-secondary:hover{background:#eaf7ff}
+.whv-story-metrics{border-color:#d4e6f2}
+.whv-story-metrics strong{color:#034a90}
+.whv-story-metrics span{color:#345671;font-weight:650}
+.whv-story-metrics>div+div{border-left-color:#c9e1f0}
+.whv-story-topics span{color:#085394;background:#e9f6ff;border-color:#cbe5f6}
+.whv-story-topics span:nth-child(2){color:#156e47;background:#eaf9ef;border-color:#ccead6}
+.whv-story-topics span:nth-child(3){color:#79521b;background:#fff6df;border-color:#efe1b9}
+.whv-story-topics span:nth-child(4){color:#144c86;background:#eef4fc;border-color:#d4e3f0}
+
+/* Search/select country — all neutral controls with explicit contrast. */
+.country-selector-popover,.whv-page .country-selector-popover{
+ background:#fff;color:#092345;border:1px solid #c8e3f6;box-shadow:0 20px 56px #051e4566
+}
+.country-selector-search{background:#f2f9ff;color:#062747;border-bottom-color:#d2e5f2}
+.country-selector-search::placeholder{color:#4b6881;opacity:1}
+.country-selector-item{color:#123351}
+.country-selector-item:hover,.country-selector-item.selected{color:#004d89;background:#e9f6ff}
+
+/* All V2 country/region and feature panels use crisp cards, no transparent
+   overlays that would destroy text contrast against the Earth. */
+.whv-page .country-drawer::before,
+.whv-page .region-drawer::before{background:#fff!important;
+ border-left:1px solid #cddfeb;backdrop-filter:none}
+.whv-page .country-drawer-title,.whv-page .region-drawer-title{color:#061e49}
+.whv-page .country-drawer-subtitle,.whv-page .country-drawer-meta-line{color:#405b74}
+.whv-page .country-drawer .drawer-btn{background:#eaf6ff;border-color:#c7e5fa;color:#07558e}
+.whv-page .country-drawer :is(.info-card,.kpi-card,.indicator-card,.lens-card,.decision-card){
+ background:#f8fcff;border:1px solid #dcebf6;color:#122b4a
+}
+.whv-page .country-drawer :is(.info-card h3,.info-card h4,.info-card p,
+ .section-title,.country-meta-label,.country-meta-value,.kpi-card-label,.kpi-card-value,
+ .indicator-name,.indicator-main-value,.lens-card-headline,.decision-headline,
+ .lens-card-narrative,.decision-narrative){color:#102d51}
+.whv-page :is(.rt-panel,.ds-panel,.tv-panel,.re-panel,.cur-panel,.al-panel,
+ .adv-panel,.prf-panel,.pp-panel,.watchlist-panel){
+ color:#0f2a4a;background:#fff;border:1px solid #c8dfef;box-shadow:0 22px 65px #051c3840
+}
+.whv-page :is(.rt-header,.ds-header,.tv-header,.re-header,.cur-header,
+ .al-header,.adv-header,.prf-header){background:#f0f8ff;border-bottom:1px solid #d7eafa}
+.whv-page :is(.rt-title,.ds-title,.tv-header-title,.re-title,.cur-header-title,
+ .al-title,.adv-title,.prf-header-title){color:#05214b}
+.whv-page :is(.rt-subtitle,.ds-subtitle,.tv-header-sub,.re-subtitle,.cur-header-sub,
+ .al-subtitle,.adv-subtitle,.prf-header-sub){color:#49617b}
+.whv-page :is(.rt-close-btn,.ds-close-btn,.tv-close-btn,.re-close-btn,
+ .cur-close-btn,.al-close-btn,.adv-close-btn,.prf-close-btn){
+ background:#e5f3ff;border:1px solid #bddff4;color:#034978
+}
+.whv-page :is(.rt-body,.ds-body,.tv-body,.re-body,.cur-body,
+ .al-body,.adv-body,.prf-body){background:#fff;color:#173353}
+.whv-page :is(.rt-panel,.ds-panel,.tv-panel,.re-panel,.cur-panel,
+ .al-panel,.adv-panel,.prf-panel) :is(h3,h4,p,label,small,strong){color:#1b3857}
+.whv-page :is(.rt-panel,.ds-panel,.tv-panel,.re-panel,.cur-panel,
+ .al-panel,.adv-panel,.prf-panel) :is(input,select,textarea){
+ background:#fff;color:#16314e;border-color:#cbddea
+}
+.whv-modal-overlay{background:rgba(1,17,50,.58);backdrop-filter:blur(3px)}
+.whv-page .whv-modal{background:#fff;color:#10294a;border:1px solid #cfe4f4}
+.whv-page .whv-modal-title{color:#09254b}
+.whv-page .whv-modal-subtitle{color:#46627c}
+.whv-page .whv-modal-close{background:#eaf6ff;border-color:#c3e1f5;color:#03518f}
+.whv-page .whv-source-card,.whv-page .whv-national-coverage-overview{
+ background:#f7fbff;border:1px solid #d8e8f5;color:#163657
+}
+.whv-page .whv-source-card :is(h2,h3,h4,p,span),
+.whv-page .whv-national-coverage-overview :is(p,span,strong){color:#163657}
+.whv-page .whv-source-controls>input{color:#092b4a;background:#fff;border-color:#c0d8e8}
+.whv-page .whv-source-filters button{color:#07539a;background:#eaf6ff;border-color:#cce4f6}
+.whv-page .whv-source-filters button.active{color:#004785;background:#d8edff}
+.whv-page .whv-source-coverage{background:#eaf6ff;color:#1b527d;border-color:#d2e4f2}
+.whv-page .whv-national-coverage-metrics span{color:#0b3f71;background:#e9f6ff;border-color:#cde3f5}
+.whv-page .whv-national-coverage-caution{color:#465f76}
+.whv-page .whv-national-coverage-country-names{color:#116944}
+.whv-page .whv-offline-banner{color:#694317;background:#fff5df;border-color:#e9d5ad}
+.whv-page .whv-offline-banner strong{color:#674317}
+.whv-page .whv-offline-banner span{color:#77552c}
+.whv-eye-map-loading{background:#063e80;color:#fff}
+@media(min-width:721px) and (max-width:1080px){
+ .whv-page .eye-stage.globe-mode{top:144px;bottom:auto;left:42%;right:19px;height:min(67vh,625px)}
+ .whv-desktop-story{left:32px;width:35vw;max-width:35vw}
+}
+@media(max-width:720px){
+ .whv-page{background:radial-gradient(circle at 97% 12%,#e3f4ff,transparent 47%),#f6fbff}
+ .whv-header{background:#fff!important;border-bottom:1px solid #deebf6}
+ .whv-brand-logo{width:51px;flex-basis:51px;height:41px}
+ .whv-brand-text h1{color:#051b49}
+ .whv-brand-text p{color:#27628d;opacity:1}
+ .whv-nav-btn{background:#f6fbff;border:1px solid #d9e9f5;color:#153c60;font-size:11px}
+ .whv-nav-btn.active{background:#e4f3ff;border-color:#a7d9f5;color:#075b9b}
+ .whv-nav-btn--mobile-hub{display:inline-flex;align-items:center;gap:7px;
+   background:#e7f5ff;border-color:#b3dff7;color:#00579e}
+ .whv-nav-btn--tools{background:#eaf6ff;color:#095897}
+ .whv-service-status{font-size:10px;font-weight:750}
+ .whv-page .eye-stage.globe-mode,
+ .whv-page .eye-stage.globe-mode.drawer-open{
+   top:145px!important;left:11px!important;right:11px!important;
+   width:calc(100% - 22px)!important;
+   height:clamp(210px,69vw,292px)!important;
+   border-radius:21px;border:1px solid #155baf;
+   box-shadow:0 13px 37px rgba(4,38,108,.22);
+ }
+ .whv-page .whv-mobile-overview,
+ .whv-page:has(.eye-stage.globe-mode) .whv-mobile-overview{
+   top:calc(145px + clamp(210px,69vw,292px) + 12px)!important;
+   left:13px;right:13px;bottom:max(9px,env(safe-area-inset-bottom,0px));
+   gap:12px;padding:5px 3px 24px
+ }
+ .whv-mobile-eyebrow{color:#0565b1;font-size:10px;font-weight:840}
+ .whv-mobile-overview h2{color:#061b47;letter-spacing:-.046em}
+ .whv-mobile-overview-description{color:#345b7c;font-size:13px}
+ .whv-mobile-featured{
+   color:#0d284d;background:#fff;
+   border:1px solid #d1e6f4;box-shadow:0 9px 29px rgba(7,58,116,.09)
+ }
+ .whv-mobile-featured-label{color:#036caf;font-weight:830}
+ .whv-mobile-featured-name{color:#08244d}
+ .whv-mobile-featured-subtitle{color:#425f7b}
+ .whv-mobile-featured-arrow{color:#0473bc}
+ .whv-mobile-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+ .whv-mobile-shortcut{
+   background:#fff;border:1px solid #cfe4f4;color:#0d3157;
+   min-height:78px;border-radius:14px;box-shadow:0 5px 17px rgba(7,48,103,.065);
+   font-size:11px;font-weight:740
+ }
+ .whv-mobile-shortcut:hover,.whv-mobile-shortcut:active{background:#e8f6ff}
+ .whv-mobile-shortcut-symbol{
+   display:grid;place-items:center;min-width:34px;min-height:34px;
+   padding:4px;border-radius:10px;color:#056cb3;background:#e7f6ff;
+   font-size:inherit
+ }
+ .whv-mobile-shortcut:nth-child(2) .whv-mobile-shortcut-symbol{
+   color:#127248;background:#e6f8ec
+ }
+ .whv-mobile-shortcut:nth-child(3) .whv-mobile-shortcut-symbol{
+   color:#0d5da5;background:#eaf4ff
+ }
+ .whv-mobile-shortcut:nth-child(4) .whv-mobile-shortcut-symbol{
+   color:#976514;background:#fff4dc
+ }
+ .whv-mobile-shortcut:nth-child(5) .whv-mobile-shortcut-symbol{
+   color:#095f9b;background:#eaf4ff
+ }
+ .whv-mobile-shortcut:nth-child(6) .whv-mobile-shortcut-symbol{
+   color:#135f8d;background:#e8f6fd
+ }
+ .whv-mobile-note{color:#435e78;font-size:10.5px;line-height:1.6}
+ .whv-mobile-note strong{color:#114c7d}
+ .whv-globe-topline{top:13px;left:12px;font-size:8px;letter-spacing:.075em}
+ .whv-globe-hint{bottom:26px;font-size:9px;padding:6px 9px;white-space:normal}
+ .whv-globe-zoom{bottom:47px;right:8px}
+ .whv-globe-zoom button{height:29px;width:29px;font-size:18px}
+ .whv-globe-disclaimer{bottom:5px;font-size:8px;max-width:95%}
+ body .whv-tools-menu.whv-domain-menu{
+   background:#fff!important;color:#0c2446!important;border-color:#cee5f5!important
+ }
+ .whv-domain-menu .whv-tools-item strong{font-size:12px;color:#0a2a50}
+ .whv-domain-menu .whv-tools-item small{font-size:10.5px;color:#486580}
+ .whv-page .whv-modal-overlay{z-index:1300}
+}
+@media(max-width:720px) and (max-height:690px){
+ .whv-page .eye-stage.globe-mode,.whv-page .eye-stage.globe-mode.drawer-open{
+   height:clamp(184px,57vw,226px)!important
+ }
+ .whv-page .whv-mobile-overview,
+ .whv-page:has(.eye-stage.globe-mode) .whv-mobile-overview{
+   top:calc(145px + clamp(184px,57vw,226px) + 10px)!important
+ }
+ .whv-mobile-shortcut{min-height:62px}
+}
+@media(prefers-reduced-motion:reduce){
+ .whv-page *,body .whv-domain-menu *{animation-duration:.01ms!important;
+ transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
