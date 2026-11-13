@@ -128,6 +128,14 @@ try {
   await page.locator(".wv-direction-item").first().waitFor();
   assert.equal(await page.locator(".wv-direction-item").count(),3);
   assert.equal(await page.locator(".wv-direction-canvas").count(),3);
+  const archivalPhoto=page.locator('.wv-direction-item[data-direction="terrain"] .wv-direction-photo img');
+  await archivalPhoto.waitFor();
+  const photoIsLoaded=await archivalPhoto.evaluate(async img=>{
+    await img.decode().catch(()=>undefined);
+    return img.naturalWidth>700 && img.naturalHeight>400;
+  });
+  assert.equal(photoIsLoaded,true,
+    "Documentary direction must display an actual readable licensed photograph.");
   // Separate real 9:16 proof images remain small enough to inspect without
   // downscaling a multi-screen mobile screenshot.
   for(const id of ["terrain","chiffres","pedagogie"]) {
