@@ -2,6 +2,36 @@
 
 **Principe :** journal **append-only**. Ajouter une entrée par session ou incrément utile. **Ne pas effacer les entrées anciennes** au prochain chat. Chaque entrée distingue code, tests, déploiement et approbation humaine.
 
+## 2026-11-13, 15 h 26 CET — alerte conversation expirée, état réel et correction du format
+
+**Demande utilisateur explicite :** risque de perte du chat, priorité à la documentation GitHub ; préciser le jalon présent et l'état réel du comparatif du PDF de 137 pages, du code de montage, de Google Flow/Gemini, ElevenLabs, n8n et Make. **Rappel majeur :** la vidéo TikTok d'inspiration présentait plusieurs pays, mais World-Vision ne doit **pas** imposer plusieurs pays par vidéo.
+
+**Constat vérifié dans les sources de code GitHub :**
+- `GeoGlobe.tsx` : projection orthographique Canvas avec données pays GeoJSON ; maquettes fixes. Aucun moteur photo-satellite ni animation Remotion du nouveau globe dans ce module.
+- `GlobeDirection.tsx` : six poses D00–D05 et notes par image, démonstration d'un **seul pays** (Turquie / Antalya).
+- `WorldVisionFirstReport.tsx`, `WorldVisionShort.tsx` : compositions Remotion historiques ; le premier MP4 est rejeté artistiquement 1/10.
+- `services/media-renderer/server.mjs` : capacité de rendu MP4/FFmpeg, normalisation audio, jobs et stockage ; infrastructure de rendu existante mais pas un nouvel épisode approuvé.
+- `services/media-service/src/media_service/voiceover.py` : narration API **OpenAI Realtime** avec transcription/QA ; n'est PAS la voix Gemini/ElevenLabs choisie par l'utilisateur.
+- `frontend/web-v2/package.json` : React/Vite, aucune dépendance de globe photoréaliste dans cette application.
+- Des tests CI GitHub ont été verts précédemment, mais **aucun test ne remplace l'accord artistique du propriétaire**.
+
+**Cours de 137 pages :** fichier retrouvé dans la Library `monter-et-animer-vos-videos-avec-claude-v2.pdf`, sections consultées sur workflow, choix de moteur, mémoire des décisions, design system, médias et droits, mixage, studio et QA. Le rapprochement partiel avec le code existe dans `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md`. **Ne pas affirmer un audit exhaustif de chaque page et chaque ligne de code.**
+
+**Recherche de faisabilité externe :** API de vidéo Gemini/Veo documentée par Google ; API ElevenLabs TTS et Forced Alignment documentées par ElevenLabs. Ces services sont disponibles comme options techniques *à qualifier*, mais **aucune authentification, quota, voix ni budget n'a été configuré ou approuvé** dans le repo. Les workflows n8n/Make restent des idées et non un moteur actif.
+- https://ai.google.dev/gemini-api/docs/video
+- https://elevenlabs.io/docs/overview/capabilities/text-to-speech
+- https://elevenlabs.io/docs/overview/capabilities/forced-alignment
+
+**Action réellement enregistrée dans GitHub :**
+- Nouveau contrat `docs/media/art-direction/EDITORIAL_GLOBE_FORMATS_AND_REVIEW_CONTRACT_2026-11-13.md` détaillant `single_location` (un seul lieu), `related_locations` (relation justifiant plusieurs lieux) et `global_overview` (véritable tour du monde).
+- Mise à jour `docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md` : G1 en cours, code D00–D05 fixes, audit partiel, connecteurs non configurés.
+
+**Statut :** logo validé ; anciennes A/B/C refusées ; D00–D05 non approuvées ; pas de voix candidate approuvée, pas de nouvelle animation vidéo, pas de publication.
+
+**Prochain livrable :** inspection de la vraie capture D00, amélioration du cadrage/relief/luminosité si nécessaire, puis **évaluation du premier plan visuel**, pas d'assemblage final.
+
+---
+
 ## 2026-11-13 — reprise de l'identité géographique après rejet d'A/B/C
 
 **Demande de l'utilisateur :** continuer le logiciel sans perdre le fil ; les trois directions initiales A/B/C sont jugées « moches » et rejetées. Les deux anciennes vidéos TikTok inspiraient un globe terrestre tournant vers le pays de l'actualité, suivi du zoom et d'images/vidéos réelles. Les nouveaux rendus doivent être magnifiques, minutieux et évaluables à **chaque étape**, jamais entièrement montés d'un coup. Le prompt historique exact reste inaccessible, malgré la récupération du contexte.
