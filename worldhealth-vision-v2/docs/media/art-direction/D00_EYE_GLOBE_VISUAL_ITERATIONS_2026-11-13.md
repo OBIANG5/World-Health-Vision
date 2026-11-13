@@ -52,3 +52,18 @@ Architecture suggérée à étudier/benchmarker dans le code **existant**, pas �
 L'utilisateur a exprimé une appréciation positive de la beauté du globe sur les propositions précédentes, mais **aucune validation finale de D00**, aucune note globale et aucune approbation pour produire une vidéo complète. Ne pas interpréter « ça se rapproche » ou « j'aime bien » comme un feu vert pour D01/D05 ou une production automatisée. La toute prochaine étape reste la revue de la proposition D00-v4, puis ses corrections éventuelles.
 
 Voir aussi `WORLD_VISION_GLOBE_SIGNATURE_DIRECTIVE_2026-11-13.md`, `EDITORIAL_GLOBE_FORMATS_AND_REVIEW_CONTRACT_2026-11-13.md` et `../../continuity/CURRENT_STATE_AND_NEXT_STEP.md`.
+
+## Nouvelle itération : D00-v5 puis D00-v6 (reprise du 13 novembre, plus tard)
+
+Cette section est **postérieure** à la table initiale v1–v4 ci-dessus et constitue désormais la **référence la plus récente**. Ne pas s'arrêter au texte historique « D00-v4, nouvelle proposition ».
+
+| Itération | Fichier image réellement généré | Dimensions | SHA-256 réel des octets PNG | Décision utilisateur |
+|---|---|---|---|---|
+| **D00-v5** | `la_terre_iris_lumineux_dans_l_espace.png` | 1086×1448 | `8091826a484d090f624b70c5b3169a8bf4775ca5b8b05c35d93527c784728463` | **Appréciation positive « très beau »**, mais exige un **blanc vraiment pur**, une **couche atmosphérique plus claire et visible que les deux arcs** et des **frontières encore mieux tracées**. D00 non validé définitivement. |
+| **D00-v6 — proposition actuelle** | `a_crisp_ultra_detailed_high_contrast_digital_ill.png` | 1086×1448 | `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2` | **Généré après ce retour. En attente de validation explicite**. L'image est une illustration IA, pas encore la vidéo 3D ni une géographie certifiée. |
+
+**Intention v6 prioritaire, exactement :** (1) le « blanc de l'œil » est un blanc réel #FFFFFF dans les espaces entre Terre et deux arcs ; (2) la **diffusion atmosphérique cyan au bord de la planète** est plus lumineuse/prioritaire que les arcs, lesquels restent des courbes de paupières hors cadre ; (3) les tracés nationaux, surtout ceux du Sahara, sont renforcés et plus grands/visibles dans la lecture mobile, à reconstruire sur GeoJSON au moment du rendu codé ; (4) ne pas changer la taille du globe déjà appréciée ; nuages légèrement diminués ; (5) le logo officiel bleu d'origine est inchangé, et son éventuel petit habillage **dans un coin du reportage final** sera testé séparément.
+
+**Attention :** le PNG v6 est dans l'espace fichier de cette conversation, avec hash réel mesuré et taille 2 296 765 octets. **Les octets PNG v5/v6 n'ont pas été importés dans GitHub par les actions présentes**, donc ne pas annoncer un déploiement visuel des captures ou une mise à jour immédiate de la preview. Un nouveau chat doit préserver ou récupérer l'image originale avant toute transformation fidèle ; les documents seuls ne contiennent pas ses pixels.
+
+**Suite programmée, après validation humaine du visuel :** construire une Terre **réellement 3D et contrôlable**, la faire **tourner vers les coordonnées du pays de l'actualité** (un seul pays quand le récit est local), puis raccorder aux vrais plans sourcés, à la voix et au montage. Le script technique, la méthode des **137 pages** et la validation logo/voix/montage sont conservés dans le [plan directeur audiovisuel](../AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md) et le [contrat machine D00-v6](d00-eye-globe-visual-contract-v6.json).
