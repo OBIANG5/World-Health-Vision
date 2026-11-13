@@ -17,10 +17,11 @@ type Vec=[number,number,number];
 type Pt={x:number;y:number;z:number};
 type Ring=number[][];
 type Props={countriesMap:Map<string,CountrySummary>;selectedCountryIso3:string;onCountryClick:(iso3:string)=>void};
+// Biome-inspired color palette, visual presentation only (not country indicators).
 const palette:Record<string,string>={
- "Europe & Central Asia":"#b9ad86","Sub-Saharan Africa":"#c77e60",
- "Middle East & North Africa":"#c49c75","East Asia & Pacific":"#8ba4a1",
- "South Asia":"#a6b198","Latin America & Caribbean":"#bd9e7e","North America":"#859b9c"
+ "Europe & Central Asia":"#68aa32","Sub-Saharan Africa":"#269149",
+ "Middle East & North Africa":"#efae50","East Asia & Pacific":"#499b45",
+ "South Asia":"#a4a53d","Latin America & Caribbean":"#36a34e","North America":"#80b246"
 };
 const vec=(p:number[]):Vec=>[Math.cos(p[1]*RAD)*Math.cos(p[0]*RAD),Math.cos(p[1]*RAD)*Math.sin(p[0]*RAD),Math.sin(p[1]*RAD)];
 function project(v:Vec,pose:Pose):Pt{
@@ -61,19 +62,27 @@ function pick(data:FeatureCollection,lon:number,lat:number){
  const code=feature?iso(feature):"";
  return code&&code!=="-99"?code:null;
 }
+// Cache great-circle interpolation once per real GeoJSON ring: no expensive
+// acos/sin rebuilding on every frame of the rotating Earth.
+const ringCache=new WeakMap<Ring,Vec[]>();
 function sampled(ring:Ring,pose:Pose):Pt[]{
- const points:Pt[]=[];if(ring.length<3)return points;
- let prev=vec(ring[ring.length-1]);
- for(const ll of ring){
-  const cur=vec(ll),dot=clamp(prev[0]*cur[0]+prev[1]*cur[1]+prev[2]*cur[2],-1,1);
-  const angle=Math.acos(dot),sin=Math.sin(angle),steps=Math.max(1,Math.ceil(angle/(5*RAD)));
-  for(let i=1;i<=steps;i++){
-   const t=i/steps,a=sin>1e-6?Math.sin((1-t)*angle)/sin:1-t,b=sin>1e-6?Math.sin(t*angle)/sin:t;
-   points.push(project([a*prev[0]+b*cur[0],a*prev[1]+b*cur[1],a*prev[2]+b*cur[2]],pose));
+ if(ring.length<3)return [];
+ let vectors=ringCache.get(ring);
+ if(!vectors){
+  vectors=[];
+  let prev=vec(ring[ring.length-1]);
+  for(const ll of ring){
+   const cur=vec(ll),dot=clamp(prev[0]*cur[0]+prev[1]*cur[1]+prev[2]*cur[2],-1,1);
+   const angle=Math.acos(dot),sin=Math.sin(angle),steps=Math.max(1,Math.ceil(angle/(7*RAD)));
+   for(let i=1;i<=steps;i++){
+    const t=i/steps,a=sin>1e-6?Math.sin((1-t)*angle)/sin:1-t,b=sin>1e-6?Math.sin(t*angle)/sin:t;
+    vectors.push([a*prev[0]+b*cur[0],a*prev[1]+b*cur[1],a*prev[2]+b*cur[2]]);
+   }
+   prev=cur;
   }
-  prev=cur;
+  ringCache.set(ring,vectors);
  }
- return points;
+ return vectors.map(v=>project(v,pose));
 }
 function limb(a:Pt,b:Pt):Pt{
  const t=a.z/(a.z-b.z);let x=a.x+t*(b.x-a.x),y=a.y+t*(b.y-a.y);
@@ -104,38 +113,79 @@ function paintRing(ctx:CanvasRenderingContext2D,ring:Ring,pose:Pose,cx:number,cy
   prev=p;
  }
 }
+function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
+ // The actual brand emblem: luminous blue outlines around a pure-white sclera.
+ const left=cx-r*1.70,right=cx+r*1.70,top=cy-r*1.17,bottom=cy+r*1.17;
+ const shape=()=>{
+  ctx.beginPath();ctx.moveTo(left,cy);
+  ctx.bezierCurveTo(cx-r*.8,cy-r*1.11,cx+r*.8,cy-r*1.11,right,cy);
+  ctx.bezierCurveTo(cx+r*.8,cy+r*1.11,cx-r*.8,cy+r*1.11,left,cy);
+  ctx.closePath();
+ };
+ const white=ctx.createLinearGradient(cx,top,cx,bottom);
+ white.addColorStop(0,"#f8ffff");white.addColorStop(.35,"#ffffff");
+ white.addColorStop(.7,"#ffffff");white.addColorStop(1,"#e3faff");
+ ctx.save();
+ shape();ctx.fillStyle=white;ctx.fill();
+ shape();ctx.shadowColor="#00afff";ctx.shadowBlur=Math.max(12,r*.17);
+ ctx.strokeStyle="#03a1ff";ctx.lineWidth=Math.max(8,r*.063);ctx.stroke();
+ ctx.shadowBlur=0;
+ shape();ctx.strokeStyle="#36e9ff";ctx.lineWidth=Math.max(3,r*.017);ctx.stroke();
+ ctx.restore();
+ // Subtle deeper blue ribbon outside the cyan light.
+ ctx.save();shape();ctx.strokeStyle="rgba(3,61,165,.60)";
+ ctx.lineWidth=Math.max(2,r*.036);ctx.stroke();
+ ctx.restore();
+}
+function landColor(region:string,latitude:number,longitude:number){
+ // Broad geographical/climatic impression, deliberately not a measured metric.
+ const africa=longitude>-19&&longitude<53&&latitude>-37&&latitude<38;
+ if(africa&&latitude>=12)return "#f1b34c";   // Sahara/Sahel
+ if(africa&&latitude<=-27)return "#df9f4c";  // South African dry belt
+ if(africa&&latitude>=-27)return "#188744";  // Congo/central forest green
+ if(latitude>72)return "#e1f4ee";            // polar ice
+ if(latitude>34&&longitude>-13&&longitude<65)return "#5eaf31"; // Europe
+ if(longitude< -35&&longitude>-86&&latitude<18&&latitude> -55)return "#1e9745"; // South America
+ if(latitude>54)return "#8abb59";
+ if(region==="Middle East & North Africa")return "#edb650";
+ if(region==="Sub-Saharan Africa")return "#239443";
+ return palette[region]??(Math.abs(latitude)<26?"#3eaa53":"#83b64d");
+}
 function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:FeatureCollection|null,selected:string,hover:string|null,countries:Map<string,CountrySummary>){
  ctx.clearRect(0,0,w,h);
- const cx=w/2,cy=h*.51,r=Math.min(w*.39,h*.425)*pose.zoom;
- for(let i=0;i<150;i++){
-  const x=((i*7919+379)%997)/997*w,y=((i*541+123)%991)/991*h;
-  if(Math.hypot(x-cx,y-cy)<r*1.11)continue;
-  ctx.fillStyle="rgba(213,236,255,"+(.15+(i%5)*.075)+")";
-  ctx.beginPath();ctx.arc(x,y,i%19===0?1.05:.5,0,Math.PI*2);ctx.fill();
+ const cx=w/2,cy=h*.51,r=Math.min(w*.32,h*.41)*pose.zoom;
+ // Behind the eye: clean midnight space as on the reference artwork.
+ const sky=ctx.createRadialGradient(cx,cy,r*.52,cx,cy,Math.max(w,h)*.79);
+ sky.addColorStop(0,"#063981");sky.addColorStop(.56,"#031843");sky.addColorStop(1,"#000621");
+ ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+ for(let i=0;i<95;i++){
+  const x=((i*7907+421)%997)/997*w,y=((i*541+153)%991)/991*h;
+  const distance=Math.hypot(x-cx,y-cy);
+  if(distance<r*1.18)continue;
+  const opacity=.18+(i%7)*.075;
+  ctx.fillStyle="rgba(218,246,255,"+opacity+")";
+  ctx.beginPath();ctx.arc(x,y,i%31===0?1.12:.49,0,Math.PI*2);ctx.fill();
  }
- const atmosphere=ctx.createRadialGradient(cx,cy,r*.78,cx,cy,r*1.35);
- atmosphere.addColorStop(0,"rgba(52,138,207,.36)");atmosphere.addColorStop(.8,"rgba(20,101,176,.08)");atmosphere.addColorStop(1,"rgba(0,0,0,0)");
- ctx.fillStyle=atmosphere;ctx.beginPath();ctx.arc(cx,cy,r*1.35,0,Math.PI*2);ctx.fill();
- const sea=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
- sea.addColorStop(0,"#28648b");sea.addColorStop(.5,"#184467");sea.addColorStop(1,"#081e38");
+ drawEye(ctx,cx,cy,r);
+ const aura=ctx.createRadialGradient(cx,cy,r*.76,cx,cy,r*1.19);
+ aura.addColorStop(0,"rgba(0,194,255,.40)");
+ aura.addColorStop(.72,"rgba(0,191,255,.22)");
+ aura.addColorStop(1,"rgba(0,204,255,0)");
+ ctx.fillStyle=aura;ctx.beginPath();ctx.arc(cx,cy,r*1.21,0,Math.PI*2);ctx.fill();
+ const sea=ctx.createRadialGradient(cx-r*.33,cy-r*.36,r*.08,cx+r*.12,cy+r*.06,r*1.15);
+ sea.addColorStop(0,"#168de6");sea.addColorStop(.42,"#096cc9");
+ sea.addColorStop(.75,"#07469c");sea.addColorStop(1,"#02144d");
  ctx.fillStyle=sea;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
- ctx.strokeStyle="rgba(185,226,253,.12)";ctx.lineWidth=.55;
- for(let latitude=-75;latitude<=75;latitude+=15){
+ // Quiet ocean currents and subtle polar/atmospheric highlights; no graticule
+ // that would cover the vivid earth photo-inspired look.
+ ctx.strokeStyle="rgba(156,229,252,.12)";ctx.lineWidth=.6;
+ for(let latitude=-75;latitude<=75;latitude+=30){
   ctx.beginPath();let started=false;
-  for(let longitude=-180;longitude<=180;longitude+=3){
-   const p=projectCoordinates(longitude,latitude,pose.lon,pose.lat);
+  for(let lon=-180;lon<=180;lon+=4){
+   const p=projectCoordinates(lon,latitude,pose.lon,pose.lat);
    if(p.z>=0){if(!started)ctx.moveTo(cx+p.x*r,cy-p.y*r);else ctx.lineTo(cx+p.x*r,cy-p.y*r);started=true;}
-   else {if(started)ctx.stroke();ctx.beginPath();started=false;}
-  }
-  if(started)ctx.stroke();
- }
- for(let longitude=-180;longitude<180;longitude+=15){
-  ctx.beginPath();let started=false;
-  for(let latitude=-90;latitude<=90;latitude+=3){
-   const p=projectCoordinates(longitude,latitude,pose.lon,pose.lat);
-   if(p.z>=0){if(!started)ctx.moveTo(cx+p.x*r,cy-p.y*r);else ctx.lineTo(cx+p.x*r,cy-p.y*r);started=true;}
-   else {if(started)ctx.stroke();ctx.beginPath();started=false;}
+   else{if(started)ctx.stroke();ctx.beginPath();started=false;}
   }
   if(started)ctx.stroke();
  }
@@ -144,27 +194,44 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
   const highlighted=geo.features.filter(f=>iso(f)===selected||iso(f)===hover);
   for(const f of ordinary.concat(highlighted)){
    const code=iso(f),region=countries.get(code)?.regionName??"";
+   const polys=rings(f.geometry),outer=polys[0]?.[0];
+   const latitude=outer?.length?outer.reduce((sum,p)=>sum+p[1],0)/outer.length:0;
    const active=code===selected,over=code===hover;
-   ctx.fillStyle=active?"#44a9e9":over?"#90d6f8":palette[region]??"#91a7a4";
-   ctx.strokeStyle=active?"#d0f1ff":over?"#d3f3ff":"rgba(13,37,48,.55)";
-   ctx.lineWidth=active?1.5:over?1.2:.48;
-   for(const p of rings(f.geometry))if(p[0])paintRing(ctx,p[0],pose,cx,cy,r);
+   ctx.fillStyle=active?"#90dc55":over?"#d8ed6f":landColor(region,latitude,outer?.length?outer.reduce((sum,p)=>sum+p[0],0)/outer.length:0);
+   ctx.strokeStyle=active?"#f7ffff":over?"#ffffff":"rgba(248,255,252,.93)";
+   ctx.lineWidth=active?2.0:over?1.7:Math.max(.58,r*.0025);
+   for(const p of polys)if(p[0])paintRing(ctx,p[0],pose,cx,cy,r);
   }
  }
- const shadow=ctx.createLinearGradient(cx-r,cy-r*.8,cx+r,cy+r);
- shadow.addColorStop(0,"rgba(205,239,255,.11)");shadow.addColorStop(.45,"rgba(9,18,37,0)");shadow.addColorStop(.82,"rgba(1,8,23,.15)");shadow.addColorStop(1,"rgba(0,4,18,.68)");
- ctx.fillStyle=shadow;ctx.fillRect(cx-r,cy-r,r*2,r*2);
- const light=ctx.createRadialGradient(cx-r*.4,cy-r*.45,r*.03,cx-r*.2,cy-r*.25,r*1.5);
- light.addColorStop(0,"rgba(210,242,255,.13)");light.addColorStop(1,"rgba(0,0,0,0)");
+ // High-frequency light glints and limited cloud strokes; never factual weather.
+ ctx.globalAlpha=.12;ctx.strokeStyle="#f4fbff";ctx.lineWidth=Math.max(.6,r*.007);
+ for(let k=0;k<16;k++){
+  const lat=-52+(k*37)%110,lon=-162+(k*47)%325;
+  const p=projectCoordinates(lon,lat,pose.lon,pose.lat);
+  if(p.z<.25)continue;
+  const x=cx+p.x*r,y=cy-p.y*r;
+  ctx.beginPath();ctx.ellipse(x,y,r*.034,r*.008,-.35,0,Math.PI*1.5);ctx.stroke();
+ }
+ ctx.globalAlpha=1;
+ const light=ctx.createRadialGradient(cx-r*.34,cy-r*.45,r*.02,cx-r*.1,cy-r*.15,r*1.35);
+ light.addColorStop(0,"rgba(255,255,255,.22)");
+ light.addColorStop(.45,"rgba(255,255,255,.03)");
+ light.addColorStop(1,"rgba(0,3,25,.50)");
  ctx.fillStyle=light;ctx.fillRect(cx-r,cy-r,r*2,r*2);
  ctx.restore();
- ctx.strokeStyle="rgba(138,211,251,.5)";ctx.lineWidth=1.5;
- ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+ // Electric-blue atmosphere makes the globe read as a single spherical object.
+ ctx.save();ctx.shadowColor="#00d9ff";ctx.shadowBlur=Math.max(12,r*.065);
+ ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+ ctx.strokeStyle="rgba(79,238,255,.98)";ctx.lineWidth=Math.max(2,r*.009);ctx.stroke();
+ ctx.restore();
+ ctx.strokeStyle="rgba(239,255,255,.55)";ctx.lineWidth=.8;
+ ctx.beginPath();ctx.arc(cx,cy,r-2.5,0,Math.PI*2);ctx.stroke();
 }
 function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
  const canvas=useRef<HTMLCanvasElement>(null);
  const geo=useRef<FeatureCollection|null>(null);
- const pose=useRef<Pose>({lon:13,lat:25,zoom:1});
+ // Begin over Africa and the Mediterranean as in the approved eye reference.
+ const pose=useRef<Pose>({lon:12,lat:8,zoom:1});
  const pointers=useRef(new Map<number,{x:number;y:number}>());
  const drag=useRef<{moved:number}|null>(null);
  const pinch=useRef<{distance:number;zoom:number}|null>(null);
@@ -173,6 +240,8 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
  live.current={selectedCountryIso3,countriesMap};
  const [status,setStatus]=useState<"loading"|"ready"|"error">("loading");
  const [hoverName,setHoverName]=useState<string|null>(null);
+ const interaction=useRef(0);
+ const visible=useRef(true);
  const draw=useCallback(()=>{
   const el=canvas.current,ctx=el?.getContext("2d");
   if(!el||!ctx)return;
@@ -201,25 +270,53 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   const obs=new ResizeObserver(schedule);if(canvas.current)obs.observe(canvas.current);
   schedule();return()=>{obs.disconnect();if(frame.current!==null)cancelAnimationFrame(frame.current);frame.current=null;};
  },[schedule]);
+ const previousSelection=useRef(selectedCountryIso3);
  useEffect(()=>{
-  const feature=geo.current?.features.find(f=>iso(f)===selectedCountryIso3);
-  const mainRing=feature&&rings(feature.geometry).map(p=>p[0]).filter(Boolean).sort((a,b)=>b.length-a.length)[0];
-  if(mainRing&&mainRing.length>2){
-   const sum:Vec=[0,0,0];
-   for(const p of mainRing){
-    const v=vec(p);sum[0]+=v[0];sum[1]+=v[1];sum[2]+=v[2];
-   }
-   const norm=Math.hypot(...sum);
-   if(norm>1e-6){
-    pose.current.lon=wrap(Math.atan2(sum[1],sum[0])*DEG);
-    pose.current.lat=clamp(Math.asin(clamp(sum[2]/norm,-1,1))*DEG,-75,75);
+  // Keep the Africa-centered opening frame. Only navigate the globe to a new
+  // location after the user actually selects a *different* country.
+  const changed=selectedCountryIso3!==previousSelection.current;
+  previousSelection.current=selectedCountryIso3;
+  if(changed&&geo.current){
+   const feature=geo.current.features.find(f=>iso(f)===selectedCountryIso3);
+   const mainRing=feature&&rings(feature.geometry).map(p=>p[0]).filter(Boolean).sort((a,b)=>b.length-a.length)[0];
+   if(mainRing&&mainRing.length>2){
+    const sum:Vec=[0,0,0];
+    for(const p of mainRing){const v=vec(p);sum[0]+=v[0];sum[1]+=v[1];sum[2]+=v[2];}
+    const norm=Math.hypot(...sum);
+    if(norm>1e-6){
+     pose.current.lon=wrap(Math.atan2(sum[1],sum[0])*DEG);
+     pose.current.lat=clamp(Math.asin(clamp(sum[2]/norm,-1,1))*DEG,-75,75);
+    }
    }
   }
   schedule();
  },[selectedCountryIso3,status,schedule]);
+ // Time-capped motion; pause outside viewport and for reduced-motion visitors.
+ // No 60fps redraw on idle phones: approximately 15fps, with 0 network use.
+ useEffect(()=>{
+  const element=canvas.current;if(!element)return;
+  const observer=new IntersectionObserver(entries=>{visible.current=!!entries[0]?.isIntersecting;},{threshold:0.03});
+  observer.observe(element);
+  const reduced=window.matchMedia("(prefers-reduced-motion: reduce)");
+  let running=true,anim=0,last=0;
+  const tick=(time:number)=>{
+   if(!running)return;
+   if(visible.current&&!document.hidden&&!reduced.matches&&time-last>=64){
+    const elapsed=last?Math.min(time-last,100):64;
+    last=time;
+    if(performance.now()-interaction.current>1800&&pointers.current.size===0){
+     pose.current.lon=wrap(pose.current.lon+elapsed*.0008);
+     schedule();
+    }
+   }
+   anim=requestAnimationFrame(tick);
+  };
+  anim=requestAnimationFrame(tick);
+  return()=>{running=false;cancelAnimationFrame(anim);observer.disconnect();};
+ },[schedule]);
  const location=(x:number,y:number)=>{
   const r=canvas.current?.getBoundingClientRect();if(!r)return null;
-  const radius=Math.min(r.width*.39,r.height*.425)*pose.current.zoom;
+  const radius=Math.min(r.width*.32,r.height*.41)*pose.current.zoom;
   return inverseProjection((x-r.left-r.width/2)/radius,-(y-r.top-r.height*.51)/radius,pose.current.lon,pose.current.lat);
  };
  const hoverAt=(x:number,y:number)=>{
@@ -229,6 +326,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   }
  };
  const down=(e:PointerEventReact<HTMLCanvasElement>)=>{
+  interaction.current=performance.now();
   e.currentTarget.setPointerCapture(e.pointerId);
   pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pointers.current.size===1)drag.current={moved:0};
@@ -239,6 +337,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   }
  };
  const move=(e:PointerEventReact<HTMLCanvasElement>)=>{
+  interaction.current=performance.now();
   const prev=pointers.current.get(e.pointerId);
   if(!prev){if(e.pointerType==="mouse")hoverAt(e.clientX,e.clientY);return;}
   pointers.current.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -247,7 +346,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
    if(pinch.current.distance>0)pose.current.zoom=clamp(pinch.current.zoom*d/pinch.current.distance,.75,1.25);
   }else if(drag.current){
    const rect=canvas.current?.getBoundingClientRect();
-   const radius=rect?Math.max(80,Math.min(rect.width*.39,rect.height*.425)):180;
+   const radius=rect?Math.max(80,Math.min(rect.width*.32,rect.height*.41)):180;
    const dx=e.clientX-prev.x,dy=e.clientY-prev.y;
    drag.current.moved+=Math.hypot(dx,dy);
    if(drag.current.moved>5){
@@ -267,34 +366,36 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);
  };
  const wheel=(e:WheelEventReact<HTMLCanvasElement>)=>{
-  e.preventDefault();pose.current.zoom=clamp(pose.current.zoom*(e.deltaY>0?.93:1.07),.75,1.25);schedule();
+  interaction.current=performance.now();
+  e.preventDefault();pose.current.zoom=clamp(pose.current.zoom*(e.deltaY>0?.93:1.07),.82,1.18);schedule();
  };
  const keys=(e:KeyboardEventReact<HTMLCanvasElement>)=>{
+  interaction.current=performance.now();
   if(e.key==="ArrowLeft")pose.current.lon=wrap(pose.current.lon-12);
   else if(e.key==="ArrowRight")pose.current.lon=wrap(pose.current.lon+12);
   else if(e.key==="ArrowUp")pose.current.lat=clamp(pose.current.lat+9,-80,80);
   else if(e.key==="ArrowDown")pose.current.lat=clamp(pose.current.lat-9,-80,80);
-  else if(e.key==="+"||e.key==="=")pose.current.zoom=clamp(pose.current.zoom+.09,.75,1.25);
-  else if(e.key==="-")pose.current.zoom=clamp(pose.current.zoom-.09,.75,1.25);
+  else if(e.key==="+"||e.key==="=")pose.current.zoom=clamp(pose.current.zoom+.09,.82,1.18);
+  else if(e.key==="-")pose.current.zoom=clamp(pose.current.zoom-.09,.82,1.18);
   else return;
   e.preventDefault();schedule();
  };
- const zoom=(step:number)=>{pose.current.zoom=clamp(pose.current.zoom+step,.75,1.25);schedule();};
+ const zoom=(step:number)=>{interaction.current=performance.now();pose.current.zoom=clamp(pose.current.zoom+step,.82,1.18);schedule();};
  return <div className="whv-globe-shell">
   <canvas ref={canvas} className="whv-globe-canvas" role="application" tabIndex={0}
    aria-label="Globe terrestre interactif. Glisser pour tourner, toucher un pays pour ouvrir sa fiche, flèches pour tourner, plus et moins pour zoomer."
    onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
    onWheel={wheel} onKeyDown={keys}/>
-  <div className="whv-globe-topline" aria-hidden="true"><span className="whv-globe-signal"/>EXPLORATION MONDIALE</div>
+  <div className="whv-globe-topline" aria-hidden="true"><span className="whv-globe-signal"/>WORLD VISION · TERRE INTERACTIVE</div>
   {status!=="ready"&&<div className="whv-globe-status" role="status">
-   {status==="loading"?"Chargement des frontières réelles…":"Frontières indisponibles — utilisez la vue Carte œil."}
+   {status==="loading"?"Chargement des frontières réelles…":"Frontières indisponibles — rechargez la page."}
   </div>}
   <div className="whv-globe-hint" aria-live="polite">{hoverName??"Tournez le globe · touchez un pays"}</div>
   <div className="whv-globe-zoom" aria-label="Zoom du globe">
    <button type="button" aria-label="Agrandir le globe" onClick={()=>zoom(.12)}>+</button>
    <button type="button" aria-label="Réduire le globe" onClick={()=>zoom(-.12)}>−</button>
   </div>
-  <div className="whv-globe-disclaimer">Couleurs géographiques · aucune statistique simulée</div>
+  <div className="whv-globe-disclaimer">Couleurs géographiques · pas de données simulées</div>
  </div>;
 }
 export default memo(GlobeMap);

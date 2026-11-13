@@ -14,6 +14,7 @@ import {
 import { useLang } from "../../context/LanguageContext";
 import { CURRENCY_META, FIXED_PEGS, computeRate } from "../../api/fxApi";
 import { useFxRates } from "../../hooks/useFxRates";
+import {WorldIcon} from "../ui/WorldIcon";
 import "../../styles/profile.css";
 
 // Toutes les devises disponibles pour le profil (organisées)
@@ -43,7 +44,7 @@ function currencyLabel(code: string, lang: "fr" | "en"): string {
 // ---------- helpers ----------
 
 function countryFlag(iso2?: string | null): string {
-  if (!iso2 || iso2.length !== 2) return "🌍";
+  if (!iso2 || iso2.length !== 2) return "—";
   const base = 0x1f1e6;
   const A = 65;
   const upper = iso2.toUpperCase();
@@ -123,7 +124,7 @@ export default function UserProfilePanel({ countries, onClose }: Props) {
       {/* En-tête */}
       <div className="prf-header">
         <div className="prf-header-left">
-          <span className="prf-header-icon">👤</span>
+          <span className="prf-header-icon"><WorldIcon name="user" size={24}/></span>
           <div>
             <h2 className="prf-header-title">{lang === "fr" ? "Mon profil" : "My profile"}</h2>
             <p className="prf-header-sub">

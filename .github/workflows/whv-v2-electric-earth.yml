@@ -1,0 +1,52 @@
+name: WHV V2 electric Earth, legibility and navigation
+on:
+  push:
+    branches: ['design/v2-electric-earth-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: world-electric-earth-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  branding:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install exact V2 dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Type-check and compile the complete existing V2
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx tsc -b --pretty false
+          npx vite build --base=./
+      - name: Install Chromium for visual and functional regression tests
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+      - name: Verify single electric-eye globe, continents, selection and device screenshots
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node globe-smoke.mjs
+      - name: Verify four navigation domains, tools, sources and responsive layout
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node editorial-smoke.mjs
+      - name: Verify WCAG text contrast for real mobile and desktop surfaces
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node contrast-smoke.mjs
+      - name: Keep tested screenshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: whv-v2-electric-eye-review
+          path: |
+            worldhealth-vision-v2/frontend/web-v2/globe-artifacts/
+            worldhealth-vision-v2/frontend/web-v2/editorial-artifacts/
+          if-no-files-found: ignore

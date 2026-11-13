@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CountrySummary } from "../../api/types";
 import { useLang } from "../../context/LanguageContext";
 import { useUserProfile } from "../../context/UserProfileContext";
+import {WorldIcon} from "../ui/WorldIcon";
 import "../../styles/advisor.css";
 
 // ---------- types ----------
@@ -158,7 +159,7 @@ export default function AdvisorPanel({ countries, selectedIso3, onClose }: Advis
       {/* Header */}
       <div className="adv-header">
         <div className="adv-header-left">
-          <span className="adv-header-icon">🤖</span>
+          <span className="adv-header-icon"><WorldIcon name="advisor" size={24}/></span>
           <div>
             <h2 className="adv-title">{fr ? "Assistant WHV" : "WHV Advisor"}</h2>
             <p className="adv-subtitle">
@@ -271,13 +272,13 @@ function ChatBubble({ msg, lang }: { msg: ChatMessage; lang: string }) {
 
   return (
     <div className={`adv-bubble-wrap ${isUser ? "adv-bubble-wrap--user" : "adv-bubble-wrap--assistant"}`}>
-      {!isUser && <span className="adv-bubble-avatar">🤖</span>}
+      {!isUser && <span className="adv-bubble-avatar"><WorldIcon name="advisor" size={18}/></span>}
       <div className={`adv-bubble ${isUser ? "adv-bubble--user" : "adv-bubble--assistant"}${isStreaming ? " adv-bubble--streaming" : ""}`}>
         {isStreaming
           ? <span className="adv-typing">{lang === "fr" ? "Analyse en cours…" : "Thinking…"}</span>
           : <span className="adv-bubble-text">{renderContent(msg.content)}</span>}
       </div>
-      {isUser && <span className="adv-bubble-avatar adv-bubble-avatar--user">👤</span>}
+      {isUser && <span className="adv-bubble-avatar adv-bubble-avatar--user"><WorldIcon name="user" size={18}/></span>}
     </div>
   );
 }

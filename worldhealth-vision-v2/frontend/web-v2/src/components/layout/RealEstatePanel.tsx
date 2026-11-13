@@ -11,6 +11,7 @@ import type { CountrySummary, IndicatorOverviewResponse } from "../../api/types"
 import { fetchIndicatorOverview } from "../../api/whvApi";
 import { useLang } from "../../context/LanguageContext";
 import { useUserProfile } from "../../context/UserProfileContext";
+import {WorldIcon} from "../ui/WorldIcon";
 import "../../styles/realestate.css";
 
 const HOUSING_CODE = "WHV.HOUSING.PRICE.REAL.INDEX2015";
@@ -65,7 +66,7 @@ function useHousing(iso3: string): HousingState {
 }
 
 function isoToFlag(iso2: string | null): string {
-  if (!iso2 || iso2.length !== 2) return "🌐";
+  if (!iso2 || iso2.length !== 2) return "—";
   return iso2.toUpperCase().split("").map(c => String.fromCodePoint(0x1f1e0 - 65 + c.charCodeAt(0))).join("");
 }
 
@@ -101,7 +102,7 @@ export default function RealEstatePanel({ countries, onOpenCountry, onClose }: P
     <div className="re-panel">
       <div className="re-header">
         <div className="re-header-left">
-          <span className="re-header-icon">🏘</span>
+          <span className="re-header-icon"><WorldIcon name="building" size={24}/></span>
           <div>
             <h2 className="re-title">{fr ? "Immobilier & Logement" : "Real Estate & Housing"}</h2>
             <p className="re-subtitle">{fr ? "Évolution réelle des prix des logements" : "Real home-price trend"}</p>
@@ -153,7 +154,7 @@ export default function RealEstatePanel({ countries, onOpenCountry, onClose }: P
         {data.loaded && data.value !== null && (
           <>
             <div className="re-kpi-card" style={{ alignItems: "flex-start", padding: "16px 18px" }}>
-              <span className="re-kpi-icon">🏠</span>
+              <span className="re-kpi-icon"><WorldIcon name="home" size={22}/></span>
               <div>
                 <p className="re-kpi-label">{fr ? "Indice OCDE des prix réels des logements" : "OECD real home-price index"}</p>
                 <p className="re-kpi-val">{data.value.toFixed(1)} <span style={{ fontSize: 13, fontWeight: 500, opacity: 0.7 }}>(2015 = 100)</span></p>
@@ -181,14 +182,14 @@ export default function RealEstatePanel({ countries, onOpenCountry, onClose }: P
 
             {/* Prix réels au m² : lien direct vers la vraie source, zéro chiffre inventé */}
             <div className="re-affordability-note" style={{ background: "rgba(251,191,36,0.07)", border: "1px solid rgba(251,191,36,0.22)", borderRadius: 10, padding: "12px 14px", marginTop: 10, lineHeight: 1.6 }}>
-              <p style={{ margin: "0 0 6px", fontWeight: 600, color: "rgba(183,220,245,0.9)" }}>{fr ? "💰 Prix réels au m² (achat & loyers)" : "💰 Real €/m² prices & rents"}</p>
+              <p style={{ margin: "0 0 6px", fontWeight: 600, color: "rgba(183,220,245,0.9)" }}>{fr ? "Prix réels au m² (achat & loyers)" : "Real €/m² prices & rents"}</p>
               <p style={{ margin: "0 0 10px" }}>
                 {fr
                   ? `Le prix au m² varie énormément d'une ville à l'autre (ex. Paris ≫ moyenne France) : un seul chiffre national serait trompeur. Plutôt que d'inventer une valeur, voici les prix réels et détaillés (achat centre-ville / hors centre, loyers), crowdsourcés et à jour, pour ${selectedCountry?.displayName ?? "ce pays"} :`
                   : `Price per m² varies hugely by city (e.g. Paris ≫ France average): a single national figure would mislead. Rather than inventing a value, here are the real, detailed prices (city-centre / outside, rents), crowdsourced and up to date, for ${selectedCountry?.displayName ?? "this country"}:`}
               </p>
               <a href={numbeoUrl} target="_blank" rel="noopener noreferrer" className="re-open-btn" style={{ display: "block", textDecoration: "none", textAlign: "center" }}>
-                {fr ? `📊 Voir les prix réels au m² (Numbeo) →` : `📊 See real €/m² prices (Numbeo) →`}
+                {fr ? `Voir les prix réels au m² (Numbeo) →` : `See real €/m² prices (Numbeo) →`}
               </a>
               <p style={{ margin: "8px 0 0", fontSize: 11, color: "rgba(183,220,245,0.6)" }}>
                 {fr

@@ -15,6 +15,7 @@ import {
 import { useFxRates } from "../../hooks/useFxRates";
 import { useFxHistory } from "../../hooks/useFxHistory";
 import { useLang } from "../../context/LanguageContext";
+import {WorldIcon} from "../ui/WorldIcon";
 import "../../styles/profile.css";
 import "../../styles/currency.css";
 
@@ -91,7 +92,7 @@ export default function CurrencyPanel({ onClose }: Props) {
       {/* ── En-tête ── */}
       <div className="cur-header">
         <div className="cur-header-left">
-          <span className="cur-header-icon">💱</span>
+          <span className="cur-header-icon"><WorldIcon name="currency" size={23}/></span>
           <div>
             <h2 className="cur-header-title">
               {lang === "fr" ? "Devises & Convertisseur" : "Currency Converter"}
@@ -274,7 +275,7 @@ export default function CurrencyPanel({ onClose }: Props) {
                               }
                             }}
                           >
-                            📈
+                            <WorldIcon name="markets" size={17}/>
                           </button>
                         )}
                       </div>
