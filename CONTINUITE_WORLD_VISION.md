@@ -1,5 +1,21 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+
+## POINT ACTUEL — 13 NOVEMBRE, NOUVELLE IMAGE D00-v6 ET PLAN COMPLET
+
+**Ce paragraphe est prioritaire sur les récapitulatifs antérieurs v4/D00 du fichier.** Le propriétaire aime la direction de D00-v5 mais a demandé blanc d'œil **pur**, diffusion atmosphérique **plus claire que les deux arcs** et **frontières des pays du Sahara** beaucoup plus lisibles. Une nouvelle **image fixe D00-v6** existe dans la conversation, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. **Elle n'est pas encore validée et son binaire n'a pas été enregistré sur GitHub.**
+
+**À LIRE pour reprendre sans perdre voix/montage/code :**
+- [Plan directeur audiovisuel complet : manuel de 137 pages, pipeline, globe, voix, montage, QA](worldhealth-vision-v2/docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md).
+- [Contrat machine D00-v6, Géociblage futur](worldhealth-vision-v2/docs/media/art-direction/d00-eye-globe-visual-contract-v6.json).
+- [Historique des six images et corrections](worldhealth-vision-v2/docs/media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md).
+- [Décisions humaines](worldhealth-vision-v2/docs/continuity/DECISION_REGISTER.md), [Journal](worldhealth-vision-v2/docs/continuity/WORK_JOURNAL.md), [État](worldhealth-vision-v2/docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md).
+
+**Prochaine production à entreprendre après validation humaine du visuel** : créer un globe 3D **qui tourne automatiquement vers le pays/localisation de chaque actualité**, en s'appuyant sur des coordonnées vérifiées, puis traiter chaque plan, les vraies images, trois auditions de voix, le calage/sous-titrage, le montage et les exports ; **pas de vidéo complète avant toutes validations**. Logo officiel discret en haut à gauche ou autre coin = **hypothèse de design non validée**. Ne pas supposer que les fichiers générés dans le chat ont été publiés sur le site statique.
+
+---
+
+
 > **Point d'entrée durable du dépôt GitHub.** Ce document permet de relancer la plateforme World Health Vision et le média World-Vision sans réinventer le code ni perdre les décisions utilisateurs.
 
 **Entrée GitHub indépendante des branches :** [Issue #11 — START HERE : reprise World-Vision](https://github.com/OBIANG5/World-Health-Vision/issues/11). Ce ticket renvoie à tous les fichiers de continuité même si GitHub ouvre `main` par défaut.
