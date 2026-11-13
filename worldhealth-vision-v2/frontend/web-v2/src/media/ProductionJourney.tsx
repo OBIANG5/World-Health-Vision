@@ -80,9 +80,9 @@ const STEPS = [
     output:"Reçus TikTok/WhatsApp associés à la version approuvée ; aucun faux statut publié."},
 ] as const;
 export type ProductionStageId = (typeof STEPS)[number]["id"];
-type ReviewGateId = "identite" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video";
+type ReviewGateId = "identite" | "direction" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video";
 const REVIEW_GATE_FOR_STAGE:Record<ProductionStageId,ReviewGateId> = {
-  radar:"script",verify:"script",score:"script",approval:"script",creative:"script",
+  radar:"script",verify:"script",score:"script",approval:"script",creative:"direction",
   assets:"medias",storyboard:"script",audio:"voix",
   render:"montage",preview:"montage",qa:"video",
   package:"publication",tiktok:"publication",publish:"publication",
