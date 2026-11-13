@@ -169,11 +169,17 @@ export default function GlobeDirection({story}:{story?:MediaStory|null}){
         construite <strong>plan par plan</strong>. L'application utilise son propre fichier de frontières GeoJSON ;
         ce globe est une <strong>étude vectorielle lumineuse</strong>, pas encore un globe satellite 3D
         ni une animation finalisée.</p>
-      <a className="wv-globe-lab-motion-jump" href="#wv-geotarget" onClick={event=>{
+      <div className="wv-globe-art-reference" data-art-direction-ref="D00-v6" role="note">
+        <strong>RÉFÉRENCE ARTISTIQUE À PRÉSERVER — D00-v6</strong>
+        <p>La Terre réaliste avec ses deux arcs d’œil, le blanc pur, les continents détaillés et l’atmosphère cyan est notre <b>référence de conception en cours</b>. Elle n’a pas été remplacée. Son image originale n’est pas encore intégrée à cet aperçu GitHub.</p>
+        <p>Les six anciennes cartes ci-dessous et le simulateur géographique sont uniquement des <b>outils de construction du mouvement</b> : leur rendu simplifié ne constitue ni une nouvelle direction artistique ni une proposition pour le reportage final.</p>
+      </div>
+      <a className="wv-globe-lab-motion-jump" href="#wv-globe-tech" onClick={event=>{
         event.preventDefault();
-        document.getElementById("wv-geotarget")?.scrollIntoView({behavior:"smooth",block:"start"});
-      }}>Tester le nouveau moteur : la Terre tourne vers un pays ↗</a>
-      <p>Ce lien ouvre un <strong>prototype géographique interactif distinct</strong> ; les six cadres ci-dessous restent les anciennes maquettes. Le D00-v6 cinématographique n'est pas encore un rendu 3D approuvé.</p>
+        const fold=document.getElementById("wv-globe-tech") as HTMLDetailsElement|null;
+        if(fold)fold.open=true;
+        fold?.scrollIntoView({behavior:"smooth",block:"start"});
+      }}>Ouvrir le laboratoire technique de rotation (apparence provisoire) ↗</a>
     </div>
     <nav className="wv-globe-stage-list" aria-label="Six étapes de l'identité visuelle">
       {STEPS.map(s=><button type="button" key={s.id}
@@ -228,7 +234,10 @@ export default function GlobeDirection({story}:{story?:MediaStory|null}){
         </div>
       </div>
     </div>
-    <GeoTargetingLab story={story}/>
+    <details className="wv-globe-tech-fold" id="wv-globe-tech">
+      <summary>Laboratoire technique — rotation vers un pays (ne remplace pas la Terre artistique)</summary>
+      <GeoTargetingLab story={story}/>
+    </details>
     <div className="wv-globe-lab-sources">
       <strong>Sources, authenticité et étapes restantes</strong>
       <p>Exemple situé à Antalya en Turquie, repris d'une annonce de la COP31 :
