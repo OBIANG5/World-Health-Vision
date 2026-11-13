@@ -151,7 +151,7 @@ function traceClipped(ctx:CanvasRenderingContext2D,points:Position[],pose:GlobeP
 }
 function drawBorders(ctx:CanvasRenderingContext2D,w:number,h:number,pose:GlobePose,data:CountryData){
   ctx.clearRect(0,0,w,h);
-  const radius=Math.min(w*.466,h*.38),cx=w*.5,cy=h*.52;
+  const radius=Math.min(w*.466,h*.38),cx=w*.5,cy=h*.5;
   const iso=pose.highlightCountryIso3||"";
   for(const feature of data.features){
     const code=String(feature.properties?.["ISO3166-1-Alpha-3"]||"");
@@ -214,7 +214,8 @@ export default function CinematicEarth({pose,alt}:{
       gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);
       gl.uniform1i(gl.getUniformLocation(program,"u_earth"),0);
       gl.uniform2f(gl.getUniformLocation(program,"u_resolution"),W,H);
-      gl.uniform2f(gl.getUniformLocation(program,"u_center"),W*.5,H*.48);
+      // WebGL gl_FragCoord uses bottom-origin: .5 is also the visual centre.
+      gl.uniform2f(gl.getUniformLocation(program,"u_center"),W*.5,H*.5);
       gl.uniform1f(gl.getUniformLocation(program,"u_radius"),Math.min(W*.466,H*.38));
       const state=stateRef.current;
       gl.uniform2f(gl.getUniformLocation(program,"u_geo"),
@@ -256,14 +257,14 @@ export default function CinematicEarth({pose,alt}:{
     drawBorders(ctx,cssW,cssH,pose,countries);
   },[pose,countries,ready]);
 
-  return <div className="wv-cinematic-earth" data-cinematic="D00-development" role="img" aria-label={alt}>
+  return <div className="wv-cinematic-earth" data-cinematic="D00-development" data-optical-center="0.5,0.5" role="img" aria-label={alt}>
     <svg className="wv-cinematic-eye" viewBox="0 0 1000 1600"
       preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      <path d="M -300 875 Q 500 -195 1300 875 Q 500 1945 -300 875 Z"
+      <path d="M -300 800 Q 500 -270 1300 800 Q 500 1870 -300 800 Z"
         fill="#ffffff"/>
-      <path d="M -300 875 Q 500 -195 1300 875"
+      <path d="M -300 800 Q 500 -270 1300 800"
         fill="none" stroke="#a9e5ee" strokeWidth="4" opacity=".82"/>
-      <path d="M -300 875 Q 500 1945 1300 875"
+      <path d="M -300 800 Q 500 1870 1300 800"
         fill="none" stroke="#a9e5ee" strokeWidth="4" opacity=".82"/>
     </svg>
     <canvas ref={glRef} className="wv-cinematic-gl-layer" aria-hidden="true"/>
