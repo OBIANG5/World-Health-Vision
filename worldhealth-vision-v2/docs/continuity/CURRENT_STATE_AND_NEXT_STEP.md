@@ -1,5 +1,18 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## PRÉCÉDENCE ABSOLUE — WORLD-VISION AUTOMATISATION CENTRALE (13/11/2026)
+
+**Le dossier NASA mangroves cité dans les anciens paragraphes est explicitement REJETÉ par l'utilisateur.** Sa production est arrêtée. La priorité n'est plus une autre maquette de globe, une vidéo isolée ou une sélection de sujet imposée.
+
+**Objectif central** : un pipeline professionnel de veille d'actualités majeures → sélection parmi 3–5 → vérification → script → voix → assets authentiques → modèle vidéo de marque → QA → approbation → diffusion. Outils existants, pas de nouvelle usine CGI maison.
+
+**Artefacts vérifiables en GitHub** : `automation/n8n/world-vision-radar-v1.n8n.json` (8 nœuds, 4 RSS, tri heuristique, aucune publication), `automation/brand/WORLD_VISION_BRAND_LOCK.json` (logo G0 et référence D00-v6, règles d'intégrité, placement safe-zone, géociblage, voix, titres, SRT, crédits), `automation/WORLD_VISION_AUTOMATION_COCKPIT.md` (architecture, abonnement/API, limites, étapes de connexion). **Aucun workflow activé**, aucune instance n8n disponible, aucun rendu automatique Shotstack exécuté. Le JSON est un artefact importable et doit encore être testé dans un vrai n8n.
+
+**Prochaine vraie opération** : connecter/activer n8n Cloud d'essai **une seule fois** et importer le RADAR ; tester les 4 flux, classer les 3–5 meilleures informations, puis connecter Google Drive et un moteur de rendu à modèle. Le montage ne doit pas sortir sans image identité World-Vision et accord humain. Google AI Pro **n'est pas une clé API** ; Flow reste manuel sans nouvelle intégration approuvée.
+
+---
+
+
 
 ## PILOTE VIDÉO WORLD-VISION #001 — MANGROVES NASA (13 NOV 2026)
 
