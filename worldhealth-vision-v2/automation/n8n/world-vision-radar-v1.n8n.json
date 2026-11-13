@@ -1,0 +1,219 @@
+{
+  "name": "World-Vision | RADAR international | sélection seulement (aucune publication)",
+  "nodes": [
+    {
+      "id": "schedule",
+      "name": "Every hour - editorial radar",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -880,
+        320
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "rss-0",
+      "name": "BBC · Monde",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        0
+      ],
+      "parameters": {
+        "url": "https://feeds.bbci.co.uk/news/world/rss.xml"
+      }
+    },
+    {
+      "id": "rss-1",
+      "name": "BBC · Économie",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        200
+      ],
+      "parameters": {
+        "url": "https://feeds.bbci.co.uk/news/business/rss.xml"
+      }
+    },
+    {
+      "id": "rss-2",
+      "name": "BBC · Technologie",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        400
+      ],
+      "parameters": {
+        "url": "https://feeds.bbci.co.uk/news/technology/rss.xml"
+      }
+    },
+    {
+      "id": "rss-3",
+      "name": "ONU · Actualités",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        600
+      ],
+      "parameters": {
+        "url": "https://news.un.org/feed/subscribe/en/news/all/rss.xml"
+      }
+    },
+    {
+      "id": "merge",
+      "name": "Merge 4 monitored feeds",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -290,
+        320
+      ],
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 4
+      }
+    },
+    {
+      "id": "rank",
+      "name": "Rank impact and deduplicate - review only",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -10,
+        320
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "/**\n * World-Vision / Editorial radar V1.\n * Rule-based PRIORITY SIGNALS, NOT automated fact-checking.\n * No external AI calls or API keys. Human editorial approval required.\n */\nconst rows = $input.all().map((item) => item.json || {});\nconst now = Date.now();\nconst rules = [\n  {cat:\"Conflits et sécurité\", weight:30, terms:/\\\\b(war|invasion|missile|airstrike|bombing|ceasefire|hostage|coup|attack|attacks|strikes|ukraine|gaza|sudan|iran|russia|nato)\\\\b/i},\n  {cat:\"Catastrophes et humanitaire\",weight:30,terms:/\\\\b(earthquake|tsunami|hurricane|floods?|landslide|cyclone|drought|wildfires?|disaster|evacuated|famine|humanitarian|displaced|tropical storm)\\\\b/i},\n  {cat:\"Politique mondiale\",weight:24,terms:/\\\\b(president|prime minister|election|parliament|sanctions|summit|united nations|security council|peace deal|resigns?)\\\\b/i},\n  {cat:\"Économie et marchés\",weight:23,terms:/\\\\b(inflation|central bank|interest rates?|recession|markets?|stock market|oil prices?|trade war|tariffs?|currency|bankruptcy|jobs report)\\\\b/i},\n  {cat:\"Science et technologie\",weight:20,terms:/\\\\b(artificial intelligence|AI|semiconductor|cyberattack|chipmaker|space launch|breakthrough|vaccine|scientists|robotics|data breach)\\\\b/i},\n  {cat:\"Santé publique\",weight:26,terms:/\\\\b(outbreak|epidemic|pandemic|ebola|cholera|measles|WHO|public health emergency)\\\\b/i}\n];\nconst magnitude=/\\\\b(thousands?|millions?|billions?|dead|deaths?|killed|injured|missing|massive|national|worldwide|global|emergency|historic|record)\\\\b/i;\nconst consequences=/\\\\b(civilians?|families|children|hospitals?|homes?|schools?|refugees?|supply|power outage|prices?|livelihoods?|workers?)\\\\b/i;\nconst urgent=/\\\\b(breaking|now|urgent|confirmed|announces?|warns?|latest|overnight|this morning|today)\\\\b/i;\nconst byKey = new Map();\nfor (const raw of rows) {\n  const title = String(raw.title || \"\").replace(/<[^>]*>/g,\"\").replace(/\\\\s+/g,\" \").trim();\n  const url = String(raw.link || raw.guid || \"\").trim();\n  if(!title || !/^https?:\\\\/\\\\//i.test(url))continue;\n  const description=String(raw.contentSnippet || raw.description || raw.content || \"\").replace(/<[^>]*>/g,\" \").replace(/\\\\s+/g,\" \").slice(0,450).trim();\n  const dateString=raw.isoDate || raw.pubDate || raw.published || \"\";\n  const timestamp=Date.parse(dateString);\n  const ageHours=Number.isFinite(timestamp)?(now-timestamp)/3600000:null;\n  if(ageHours!==null && (ageHours < -2 || ageHours > 72))continue;\n  const combined=title+\" \"+description;\n  const matched=rules.filter(r=>r.terms.test(combined));\n  const category=matched.sort((a,b)=>b.weight-a.weight)[0];\n  // Priority score is only triage. Journalism requires corroboration.\n  let score=20+(category?.weight||0)+(magnitude.test(combined)?15:0)+\n    (consequences.test(combined)?10:0)+(urgent.test(title)?8:0);\n  if(ageHours!==null){score+=(ageHours<=6?12:ageHours<=24?8:ageHours<=48?3:0)}\n  if(!category)score=Math.min(score,47);\n  if(/\\\\b(recipe|celebrity|football|entertainment|lifestyle|horoscope|travel tips|fashion)\\\\b/i.test(title))\n    score=Math.min(score,36);\n  score=Math.max(0,Math.min(100,score));\n  const source=/news\\\\.un\\\\.org/i.test(url)?\"ONU\":/bbc\\\\.co\\\\.uk/i.test(url)?\"BBC\":\"Flux externe\";\n  const canonicalUrl=url.split(\"#\")[0].replace(/[?&]utm_[^&]*/g,\"\");\n  const key=title.toLocaleLowerCase(\"en\").replace(/[^a-z0-9]+/g,\" \").trim().slice(0,160);\n  if(!key)continue;\n  const candidate={\n    title,url:canonicalUrl,source,date:dateString||null,age_hours:ageHours===null?null:Math.round(ageHours*10)/10,\n    category:category?.cat||\"Autres\",\n    priority_score:score,\n    context_excerpt:description,\n    editorial_status:\"TO_VERIFY\",\n    requires:[\"second_independent_source\",\"confirmed_event_date\",\"editorial_approval\",\"media_rights_review\"],\n    note:\"Score heuristique, pas une validation des faits ni une autorisation de diffusion.\"\n  };\n  const previous=byKey.get(key);\n  if(!previous||score>previous.priority_score)byKey.set(key,candidate);\n}\nconst top=[...byKey.values()].sort((a,b)=>b.priority_score-a.priority_score).slice(0,12);\nreturn top.map(c=>({json:c}));"
+      }
+    },
+    {
+      "id": "noauto",
+      "name": "EDITORIAL REVIEW REQUIRED - no publishing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        280,
+        320
+      ],
+      "parameters": {}
+    }
+  ],
+  "connections": {
+    "Every hour - editorial radar": {
+      "main": [
+        [
+          {
+            "node": "BBC · Monde",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "BBC · Économie",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "BBC · Technologie",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ONU · Actualités",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BBC · Monde": {
+      "main": [
+        [
+          {
+            "node": "Merge 4 monitored feeds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BBC · Économie": {
+      "main": [
+        [
+          {
+            "node": "Merge 4 monitored feeds",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "BBC · Technologie": {
+      "main": [
+        [
+          {
+            "node": "Merge 4 monitored feeds",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "ONU · Actualités": {
+      "main": [
+        [
+          {
+            "node": "Merge 4 monitored feeds",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Merge 4 monitored feeds": {
+      "main": [
+        [
+          {
+            "node": "Rank impact and deduplicate - review only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rank impact and deduplicate - review only": {
+      "main": [
+        [
+          {
+            "node": "EDITORIAL REVIEW REQUIRED - no publishing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
