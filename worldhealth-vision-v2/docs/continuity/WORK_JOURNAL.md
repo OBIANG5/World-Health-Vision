@@ -281,3 +281,16 @@ Le propriétaire a signalé « A cessé de réfléchir » durant la construction
 **Aucun changement** : aucune vraie voix Gemini/ElevenLabs/OpenAI auditionnée pour la nouvelle identité, aucune vidéo du terrain inventée, aucun rendu Remotion de la nouvelle 3D, aucun montage complet, aucune API de publication, aucune PR fusionnée. Pour reprise, lire `docs/media/engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md`, `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md` et `docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md`.
 
 **Prochaine étape intelligente :** construire le master D00 **vraiment 3D, 9:16**, texture terrestre sous licence, précision GIS, atmosphère bleu/cyan plus forte que les deux arcs, vrai blanc de l'œil et contours du Sahara ; le montrer avant animation/final. Puis raccorder ce visuel au mouvement géographique déjà codé et produire un micro-test 3–6 s, puis seulement suite du workflow voix/montage.
+
+
+---
+
+## 2026-11-13 — correction de confusion entre « prototype géographique » et identité artistique
+
+Le propriétaire a constaté que le globe simplifié sur le site ne ressemblait pas à la référence artistique D00-v6. Décision : **ne pas réduire la qualité visuelle de la Terre** ; préserver D00-v6, conserver la seule logique géographique du prototype et reconstruire l'esthétique en véritable CGI avant de parler de rendu audiovisuel.
+
+La dernière image de référence **a été retrouvée dans le répertoire de cette conversation et ouverte visuellement**, `/mnt/data/a_crisp_ultra_detailed_high_contrast_digital_ill.png`, 1086×1448, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. Ce chemin est **éphémère et non une URL GitHub** ; l'intégration binaire exacte dans le dépôt reste à réaliser.
+
+**Correctifs réellement committés :** `GlobeDirection.tsx` (référence D00-v6 explicitement protégée, labo dans `<details>` replié), `GlobeDirection.css` (lisibilité de la distinction), `media-preview-smoke.mjs` (test automatisé : référence présente, labo replié initialement, ouverture volontaire puis rotation fonctionnelle). Ces changements ne modifient ni le code géographique, ni le logo officiel, ni le prototype de vidéo.
+
+**Suite** : vérifier CI et preview GitHack après les correctifs ; travailler sur une vraie scène D00 photo-CGI 9:16 et non réintroduire le Canvas comme image finale. Lire le plan directeur du manuel de 137 pages pour conserver les futurs jalons voix, montage, vérification et publication.
