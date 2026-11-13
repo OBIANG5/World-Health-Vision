@@ -126,3 +126,20 @@ Racine logique `episodes/YYYY-MM-DD_slug/` (Drive pour les binaires, GitHub pour
 - Le [diagnostic D00 et option Flow](DECISION_HYBRID_GOOGLE_FLOW_D00_2026-11-13.md) demeure valable ; ce nouveau conducteur l'élargit à **tout le reportage**.
 - Le tout premier pilote doit aboutir à un **reportage court complet** avec narration, vrais plans et montage, même si le globe cinématographique final nécessite encore des corrections.
 - **Aucune licence Flow/API supplémentaire ni abonnement ElevenLabs requis pour lancer le pilote avec l'outillage déclaré**, sous réserve de confirmer les options d'interface Vids/Flow et les droits des images retenues.
+
+
+## 10. Deux chemins de montage selon le matériel réellement disponible
+
+**Point découvert après vérification officielle : Google Vids nécessite un ordinateur/navigateur compatible pour la création et le montage ; son visionnage sur téléphone ne signifie pas montage possible sur iPhone.** Source https://support.google.com/a/users/answer/15599399?hl=en. **Ne pas envoyer l'utilisateur dans une impasse mobile.**
+
+| Configuration de l'utilisateur le jour de production | Outil retenu | Conséquence |
+|---|---|---|
+| Ordinateur Windows/Mac utilisable | **Google Vids 9:16** pour montage/voix off en français ; Flow pour plans IA ciblés ; exporter MP4 (https://support.google.com/docs/answer/49114?hl=en) | **Choix privilégié** car inclus dans Google AI Pro, adapté au workflow complet |
+| Seulement un iPhone disponible | **CapCut iPhone** (application gratuite avec achats intégrés ; les fonctions premium ne sont pas présumées gratuites), Google Flow via Web selon accès ; voix enregistrée sur iPhone OU voix TTS externe avec droits/export vérifiés | Route **mobile**. CapCut supporte 9:16 et montage/titres/sons : https://www.capcut.com/fr-fr/resource/how-to-edit-vertical-videos ; https://apps.apple.com/fr/app/capcut-%C3%A9diteur-vid%C3%A9o-photo/id1500855883 |
+| Ordinateur assez puissant et besoin de finition avancée | DaVinci Resolve gratuit, puis FFmpeg pour QA automatisée | **Option**, pas prérequis du premier reportage |
+| Voix Gemini TTS via AI Studio | possible selon modèle et quota du projet | **Alternative distincte** de l'abonnement Google AI Pro : l'API et sa facturation sont séparées, https://ai.google.dev/gemini-api/docs/billing |
+
+**Sous-titres** : la voix française peut provenir de Google Vids, mais Google documente surtout les sous-titres auto de Vids sur l'**anglais** ; pour une sortie française professionnelle, aligner et contrôler le SRT avec Whisper/outil spécialisé, importer/incruster selon l'éditeur. Ne jamais supposer que toutes les fonctionnalités CapCut Pro sont gratuites.
+
+**Règle du chef d'orchestre** : en début d'épisode, choisir la filière ordinateur ou iPhone **à partir du matériel réellement disponible**, puis **rester sur la même** pour le montage au lieu d'imposer plusieurs logiciels. Toute modification de cette filière est documentée dans la fiche épisode.
+
