@@ -171,3 +171,8 @@ Le frontend `frontend/web-v2/src/media/ProductionJourney.tsx` et `ProductionJour
 Commits source UI : `fa26c788b463269f64afbb760a4099d8e2498f35` (interface) et `00224feaaffb97c13a65e2518ee301d7aaefa910` (styles). CI média associée au commit CSS : **success** [run #43457617960](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457617960). Workflow de publication statique [#43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661) **encore in_progress lors de la première vérification** : tant que son statut et `preview-deployment.json` ne sont pas confirmés, ne pas affirmer que le lien public affiche ce nouveau panneau. La preview précédente était `source_commit=e57207ba1b19add8649f39511eda0984798afb78`.
 
 **Aucune modification du renderer globe animée, de la voix finale ni des APIs de publication.**
+
+
+### Confirmation de publication du panneau de continuité (13 novembre, contrôle final)
+
+Le workflow [World-Vision Media Studio real-UI mobile preview #43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661) est désormais **completed / success** (y compris build React, test Playwright iPhone/desktop, publication de la branche de preview). Branche de preview : HEAD `bdd6277fd88b9a5eebefe1e1737ac6ad19d31931`, manifeste `source_commit=00224feaaffb97c13a65e2518ee301d7aaefa910`. **Ce qu'il prouve** : le panneau « D00-v6 non encore validé » et la feuille de route sont intégrés au bundle statique. **Ce qu'il ne prouve pas** : synchronisation instantanée du cache RawGitHack, présence des pixels du concept D00-v6, moteur 3D fonctionnel, ou backend actif. Les captures anciennes du laboratoire restent explicitement distinguées de la nouvelle image dans l'UI.
