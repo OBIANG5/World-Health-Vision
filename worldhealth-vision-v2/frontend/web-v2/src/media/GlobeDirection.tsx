@@ -6,6 +6,7 @@
 import {useEffect,useState} from "react";
 import GeoGlobe from "./GeoGlobe";
 import GeoTargetingLab from "./GeoTargetingLab";
+import CinematicEarth from "./CinematicEarth";
 import type {MediaStory} from "./types";
 import "./GlobeDirection.css";
 
@@ -180,6 +181,19 @@ export default function GlobeDirection({story}:{story?:MediaStory|null}){
         if(fold)fold.open=true;
         fold?.scrollIntoView({behavior:"smooth",block:"start"});
       }}>Ouvrir le laboratoire technique de rotation (apparence provisoire) ↗</a>
+    </div>
+    <div className="wv-cinematic-showcase" data-testid="cinematic-nasa-showcase">
+      <div className="wv-cinematic-stage">
+        <CinematicEarth pose={{centerLon:-9,centerLat:16,radiusRatio:.466}}
+          alt="Nouvelle étude CGI D00 : Terre Blue Marble NASA, atmosphère cyan et œil World-Vision à deux arcs"/>
+      </div>
+      <div className="wv-cinematic-showcase-copy">
+        <span>NOUVELLE BASE VISUELLE · D00 / TERRE CGI</span>
+        <h4>La Terre retrouve sa matière. Le mouvement suivra les actualités.</h4>
+        <p>Texture réelle NASA Blue Marble, projection sphérique GPU, liseré atmosphérique cyan, frontières tirées du GeoJSON et deux arcs de l’œil sur blanc pur. Sans éclairage nocturne des villes.</p>
+        <p>Ce prototype 3D conserve le moteur de ciblage déjà codé. Les six cadres vectoriels suivants sont une archive de nos recherches, pas le modèle final du média.</p>
+        <p className="wv-cinematic-disclaimer">Version CGI de développement distincte de l’image de référence D00-v6, qui n’est pas remplacée. La fidélité artistique sera jugée sur une véritable capture 9:16 avant tout rendu MP4.</p>
+      </div>
     </div>
     <nav className="wv-globe-stage-list" aria-label="Six étapes de l'identité visuelle">
       {STEPS.map(s=><button type="button" key={s.id}
