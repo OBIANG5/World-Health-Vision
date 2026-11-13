@@ -205,8 +205,13 @@ function ReviewForm({story,gate,previewMode}:{
   const submit=()=>{
     if(!ready)return;
     const url=githubLink();
-    const opened=window.open(url,"_blank","noopener,noreferrer");
-    if(!opened)window.location.href=url;
+    const link=document.createElement("a");
+    link.href=url;
+    link.target="_blank";
+    link.rel="noopener noreferrer";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
     setCopyStatus("GitHub est ouvert avec tes notes. Clique sur « Submit new issue » dans GitHub pour les enregistrer définitivement.");
   };
   const copy=async()=>{
