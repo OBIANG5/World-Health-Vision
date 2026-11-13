@@ -6,7 +6,8 @@
  * rendered video. It never changes editorial states or publishes content.
  */
 import {useCallback,useEffect,useMemo,useRef,useState} from "react";
-import GeoGlobe,{loadCountries} from "./GeoGlobe";
+import {loadCountries} from "./GeoGlobe";
+import CinematicEarth from "./CinematicEarth";
 import type {MediaStory} from "./types";
 import {
   START_POSE,GEO_TARGETING_VERSION,interpolateGlobe,listCountryTargets,targetForStory,
@@ -117,19 +118,19 @@ export default function GeoTargetingLab({story}:{story?:MediaStory|null}) {
       <span>INGÉNIERIE GÉOGRAPHIQUE · PROTOTYPE TECHNIQUE</span>
       <h3>Une actualité. Un pays. La Terre s’oriente.</h3>
       <p>Le logiciel charge les frontières du projet World-Vision, identifie le pays depuis son code ISO3, puis calcule une trajectoire sphérique jusqu’à la destination. Ici tu peux tester le mouvement avant son adaptation au globe cinématographique.</p>
-      <p className="wv-geotarget-disclaimer"><strong>Ce qui est réel :</strong> frontières GeoJSON et calcul de rotation. <strong>Ce qui n’est pas encore réalisé :</strong> le rendu satellite 3D approuvé, le zoom vidéo, la voix et le montage final. Ce laboratoire ne valide aucun plan automatiquement.</p>
+      <p className="wv-geotarget-disclaimer"><strong>Ce qui est réel :</strong> texture NASA, calcul sphérique GPU, frontières GeoJSON et rotation géographique. <strong>Encore à valider :</strong> fidélité au concept D00-v6, caméra cinéma, vidéo encodée, voix et montage. Ce laboratoire ne valide aucun plan automatiquement.</p>
     </div>
     <div className="wv-geotarget-layout">
       <div className="wv-geotarget-visual">
         <div className="wv-geotarget-planet">
-          <GeoGlobe pose={pose} alt={chosen?`Prototype géographique orientable : ${chosen.name}, ${chosen.iso3}`:"Prototype géographique : globe neutre"}/>
+          <CinematicEarth pose={pose} alt={chosen?`Terre texturée NASA orientable vers ${chosen.name}, ${chosen.iso3}`:"Terre texturée NASA : globe neutre"}/>
           <div className="wv-geotarget-caption" aria-hidden="true">
             <small>WORLD–VISION · GÉOLOCALISATION</small>
             <strong>{chosen?(progress>.96?chosen.name.toUpperCase():"TERRE → DESTINATION"):"TERRE ENTIÈRE"}</strong>
             <span>{chosen?chosen.iso3:"AUCUN PAYS IMPOSÉ"} · {Math.round(progress*100)} %</span>
           </div>
         </div>
-        <p>Simulation interactive Canvas/GeoJSON ; ce n'est ni le visuel D00-v6 approuvé, ni un MP4, ni une image du terrain.</p>
+        <p>Simulation GPU WebGL texturée NASA + frontières géographiques ; ce n’est pas encore un MP4 ni une validation finale de D00.</p>
       </div>
       <div className="wv-geotarget-controls">
         <div className="wv-geotarget-evidence">
