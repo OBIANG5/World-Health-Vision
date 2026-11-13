@@ -253,3 +253,20 @@ Après présentation du laboratoire Canvas de rotation, le propriétaire a signa
 **Code du nouvel export** : `frontend/web-v2/src/media/CinematicCapture.tsx`, `frontend/web-v2/render-cinematic-d01.mjs`, `.github/workflows/whv-cinematic-motion-d01.yml`. La branche d'aperçu préserve `media-lab/` lors de ses prochains builds. Document canonique : [CINEMATIC_D01_MICROCLIP_2026-11-13.md](../media/CINEMATIC_D01_MICROCLIP_2026-11-13.md).
 
 **À NE PAS CONFONDRE** : ce MP4 est un **prototype de mouvement technique**, pas un reportage, pas une vidéo finale, pas une approbation G1/D00/D01, pas un vrai événement Gabon, pas de voix, pas de publication TikTok/WhatsApp. D00-v6 original reste la référence artistique incomplètement archivée (PNG non committé). La suite doit se concentrer sur **la fidélité artistique de l'œil, de la texture, de la couche atmosphérique et des frontières**, puis sur les cartes/cadrages véritablement liés à une actualité, les vraies séquences et les 14 étapes de production du manuel de 137 pages.
+
+---
+
+
+## ÉTAT D01 — MP4 GABON RÉEL + QA FRAMES (13 novembre 2026)
+
+**Priorité sur les paragraphes antérieurs où D01 n'était qu'une idée :** un véritable **micro-clip de rotation D01** est maintenant produit (MP4 H.264 1080×1920, 4 secondes, 24 fps, 96 images) par le **même globe CGI WebGL et moteur de mouvement géographique** que le Media Studio.
+
+- **Vidéo technique** : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4
+- **SHA-256 vidéo** : `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a` ; manifeste de provenance dans `media-lab/wv-d01-gab-technical-4s.json` sur la branche d'aperçu.
+- **Rendu source** : workflow https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755 **success**.
+- **Vérification visuelle** : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43468666079 **success**, vérification SHA + dimensions/durée/images par FFprobe, 3 frames distinctes extraites à 0, 2, 3,87 secondes. Contact sheet : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/review/contact-sheet.jpg.
+- **Lecteur dans le site** : `frontend/web-v2/src/media/CinematicMotionReview.tsx/.css` intégré à `GlobeDirection.tsx`, avec vérification manifeste, `controls`, `playsInline`, aucun autoplay, poster tiré du MP4 et lien QA. Compile frontend au commit `94336393e7659303780c406bd30a8f3cba5ee5de` réussie. Le build mobile de ce commit doit être confirmé séparément au manifeste `preview-deployment.json`.
+- **Détail intégral** : [D01_GABON_MOTION_REVIEW_2026-11-13.md](../media/D01_GABON_MOTION_REVIEW_2026-11-13.md).
+
+**Limites :** le point choisi est un centre national de GABON démonstratif, pas un événement particulier ; vidéo sans voix, sans actualité réelle, sans marqueur final, et **pas encore conforme/validée au niveau esthétique D00-v6**. Aucune publication TikTok/WhatsApp ni approbation implicite. Le prochain travail : comparer le vrai film à la direction D00-v6 et améliorer la lumière du globe, les deux arcs, le contour atmosphérique et le traitement des frontières, puis aborder le zoom D02 et les vrais rushes. Les neuf parties du manuel de 137 pages restent le parcours audiovisuel complet.
+
