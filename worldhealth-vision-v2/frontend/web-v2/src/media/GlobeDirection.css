@@ -160,3 +160,20 @@
  background:#075572;color:#fff!important;font-weight:800;font-size:12px;
  text-decoration:none;line-height:1.45;min-height:44px}
 .wv-globe-lab-motion-jump:hover{background:#087b94}
+
+/* The photographic D00-v6 design reference is immutable until user approval.
+   Clear technical/artistic separation prevents mistaking the Canvas prototype
+   for a visual downgrade of the approved brand identity. */
+.wv-globe-art-reference{margin:17px 0 20px;padding:17px 19px;
+  background:#062535;border:1px solid rgba(99,210,232,.65);
+  border-left:4px solid #50d2ef;border-radius:10px;max-width:1000px}
+.wv-globe-art-reference>strong{display:block;color:#adf5ff;
+  font-size:12px;font-weight:900;letter-spacing:.1em;margin-bottom:10px}
+.wv-globe-lab-intro .wv-globe-art-reference p{margin:8px 0;line-height:1.7;color:#f0f9fc}
+.wv-globe-lab-intro .wv-globe-art-reference b{color:#fff;font-weight:850}
+.wv-globe-tech-fold{margin:30px 0;border:1px solid rgba(88,181,205,.4);
+  background:#061625;border-radius:13px;padding:10px 16px}
+.wv-globe-tech-fold>summary{cursor:pointer;display:list-item;padding:14px 9px;
+  color:#e3f8fc;font-weight:850;font-size:clamp(13px,2vw,16px);line-height:1.6}
+.wv-globe-tech-fold>summary:focus-visible{outline:2px solid #8ce1ef;outline-offset:3px}
+.wv-globe-tech-fold[open]>summary{border-bottom:1px solid rgba(120,220,238,.25);margin-bottom:18px}
