@@ -163,3 +163,11 @@ Ce nouvel élément documentaire **complète**, mais ne supprime pas, la priorit
 - Ne pas fusionner `feature/world-vision-media-studio` dans `v2` par défaut. L'intégration doit être préparée et testée.
 - À la fin de chaque modification : preuves, tests, capture mobile quand utile, date de release, statut validé/refusé, mise à jour de ce document et de [WORK_JOURNAL.md](WORK_JOURNAL.md).
 - Consigner toute restriction, correction, crédit/licence, statut authentique/fictif, SHA-256, URL du média ou de sa publication **dans le dépôt**, pas seulement dans ChatGPT.
+
+### Site Media Studio — état technique après l'ajout du panneau de continuité
+
+Le frontend `frontend/web-v2/src/media/ProductionJourney.tsx` et `ProductionJourney.css` a été **réellement modifié** : la page du parcours (lien stable `?view=media`) indique D00-v6 en attente de revue, avertit que les six images du laboratoire sont des **frames plus anciennes**, et résume le futur globe ciblé, médias réels, voix, montage et QA ; elle propose aussi un lien vers le **plan directeur complet**. **Cela ne téléverse pas l'image D00-v6 au site.**
+
+Commits source UI : `fa26c788b463269f64afbb760a4099d8e2498f35` (interface) et `00224feaaffb97c13a65e2518ee301d7aaefa910` (styles). CI média associée au commit CSS : **success** [run #43457617960](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457617960). Workflow de publication statique [#43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661) **encore in_progress lors de la première vérification** : tant que son statut et `preview-deployment.json` ne sont pas confirmés, ne pas affirmer que le lien public affiche ce nouveau panneau. La preview précédente était `source_commit=e57207ba1b19add8649f39511eda0984798afb78`.
+
+**Aucune modification du renderer globe animée, de la voix finale ni des APIs de publication.**
