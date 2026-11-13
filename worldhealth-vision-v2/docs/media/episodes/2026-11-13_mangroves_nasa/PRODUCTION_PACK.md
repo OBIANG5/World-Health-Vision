@@ -1,5 +1,14 @@
 # WORLD-VISION · PILOTE #001 — « Les mangroves reviennent »
 
+
+## AVERTISSEMENT DE PRIORITÉ — SUJET REJETÉ PAR LE PROPRIÉTAIRE
+
+**13 novembre 2026 : REFUSÉ.** Le propriétaire considère que cette actualité ne correspond pas au niveau d'intérêt et d'impact attendu pour World-Vision. **Ne pas poursuivre la voix, le montage, les assets, ni présenter ce sujet comme pilote actif.** Cette fiche est conservée uniquement comme historique d'un choix éditorial inadéquat. **Aucun avis de publication.** L'étape actuelle du projet est l'orchestration de production et le verrouillage de l'identité visuelle, pas l'épisode sur les mangroves.
+
+**Règle désormais prioritaire :** proposer un panier de sujets majeurs et classés selon impact mondial, urgence, conséquences humaines, lisibilité, sources primaires/indépendantes, potentiel visuel et pertinence. Le choix du sujet nécessite un accord éditorial ; ne pas sélectionner d'office une « actualité intéressante » à impact limité comme premier reportage.
+
+---
+
 **Date du dossier :** 13 novembre 2026 (Europe/Paris). **Publication scientifique présentée aujourd'hui par NASA Earth Observatory ; étude scientifique parue en juin 2026.**
 
 **Statut :** préproduction éditoriale **réellement terminée** (recherche, recoupement, script V1, storyboard et source de médias). **PAS** de voix encore générée ou approuvée, **PAS** de montage vidéo terminé, **PAS** d'export MP4 de ce reportage, **PAS** de publication.
