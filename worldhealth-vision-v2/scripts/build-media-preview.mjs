@@ -34,4 +34,6 @@ html = html.replace(
 writeFileSync(indexPath, html, "utf8");
 copyFileSync(adapter, path.join(dist, "media-preview-bootstrap.js"));
 writeRealEditorialCase(dist);
+html = readFileSync(indexPath, "utf8").replace("<title>World Health Vision</title>", "<title>World-Vision Media Studio · reportage réel</title>");
+writeFileSync(indexPath, html, "utf8");
 console.log("Prepared authentic UN newsroom dossier + isolated read-only archive adapter.");
