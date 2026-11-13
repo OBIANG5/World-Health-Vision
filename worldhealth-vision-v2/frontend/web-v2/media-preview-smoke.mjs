@@ -162,6 +162,21 @@ try {
     "Simplified lab must not appear as the default artistic shot.");
   await technicalFold.locator("summary").click();
   assert.equal(await technicalFold.evaluate(element=>element.open),true);
+  // A genuine NASA raster must be bundled; WebGL texture failure or a
+  // replacement by the earlier flat vector globe is a release blocker.
+  const nasaAsset=await page.request.get(base+"/earth/blue-marble-topography-nasa.jpg");
+  assert.equal(nasaAsset.status(),200,"Cinematic Earth must ship its real NASA texture");
+  assert.match(nasaAsset.headers()["content-type"]||"",/image\/jpeg/);
+  assert.ok((await nasaAsset.body()).length>400000,"NASA raster unexpectedly small");
+  await page.locator('[data-testid="cinematic-nasa-showcase"]').waitFor();
+  await page.waitForFunction(()=>{
+    const shot=document.querySelector('[data-testid="cinematic-nasa-showcase"]');
+    return shot && shot.querySelector('.wv-cinematic-gl-layer')?.width>250 &&
+      !shot.querySelector('.wv-cinematic-loading') && !shot.querySelector('.wv-cinematic-error');
+  },null,{timeout:20000});
+  await page.locator('.wv-cinematic-stage').screenshot({
+    path:path.join(dist,"media-globe-cinematic-d00-candidate-iphone.png")
+  });
   // The country-motion lab is real and country-driven, not final cinematic art.
   await page.locator("#wv-geotarget").waitFor();
   await page.waitForFunction(()=>document.querySelectorAll("#wv-geotarget-country option").length>190);
