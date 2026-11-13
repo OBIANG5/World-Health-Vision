@@ -320,6 +320,18 @@ export default function ProductionJourney({
       </div>
       <div className="wvj-masthead-count"><strong>14</strong><span>ÉTAPES<br/>DE PRODUCTION</span></div>
     </section>
+    <section className="wvj-current-release" aria-label="Nouveautés du Media Studio">
+      <div className="wvj-current-release-copy">
+        <div className="wvj-current-kicker">PROCHAINE VALIDATION · DIRECTION ARTISTIQUE</div>
+        <h2>Les trois nouvelles ouvertures sont disponibles ici.</h2>
+        <p>Le logo bleu officiel est approuvé. Compare les propositions A (documentaire),
+          B (chiffres) et C (explication), puis note seulement celle que tu choisis.
+          Le montage COP31 original reste refusé 1/10.</p>
+      </div>
+      <button type="button" onClick={()=>onOpenReview("direction")}>
+        Voir A, B et C · noter une proposition ↗
+      </button>
+    </section>
     <div className="wvj-controls">
       <div className="wvj-switch"><button type="button" className={current==="overview"?"active":""} onClick={()=>setCurrent("overview")}>Vue d'ensemble</button><button type="button" className={current!=="overview"?"active":""} onClick={()=>setCurrent(current==="overview"?"radar":current)}>Explorer les étapes</button></div>
       <div className="wvj-subject"><label htmlFor="wvj-story">DOSSIER</label><select id="wvj-story" value={story?.id||selectedId||""} onChange={e=>onSelectStory(e.target.value)}>{stories.map(s=><option value={s.id} key={s.id}>{s.title}</option>)}</select></div>
