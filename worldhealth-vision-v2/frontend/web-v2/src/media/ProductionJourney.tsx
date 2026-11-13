@@ -106,7 +106,7 @@ type Props = {
 const formatPercent = (n: number) => `${Math.max(0, Math.min(n, 100))}%`;
 function evidenceStatus(story: MediaStory, id: ProductionStageId): boolean {
   switch (id) {
-    case "radar": return Boolean(story.detected_at);
+    case "radar": return Boolean(story.radar_scan_id);
     case "verify": return story.verification_report?.verdict === "verified";
     case "score": return story.score.reasons.length > 0;
     case "approval": return story.verification_status === "verified" && ["approved","scripting","assets","rendering","preview_ready","qa","publish_ready","published"].includes(story.status);
@@ -142,7 +142,7 @@ function StepEvidence({id, story, selectedScene, onScene}: {
       <h3>{story.title}</h3>
       <p>{story.summary}</p>
       <div className="wvj-metrics"><div><b>{story.country_name ?? "Monde"}</b><span>Zone suivie</span></div><div><b>{story.sources.length}</b><span>Sources rattachées</span></div><div><b>{story.breaking ? "Oui" : "Non"}</b><span>Signal urgent</span></div></div>
-      <p className="wvj-fine">L'heure de détection correspond au sujet sélectionné. La veille automatique n'est pas déduite de cet exemple.</p>
+      <p className="wvj-fine">{story.radar_scan_id?`Identifiant du scan : ${story.radar_scan_id}`:"Sélection manuelle sur une publication des Nations unies. Aucun scan RADAR automatisé n’est revendiqué pour ce sujet."}</p>
     </div>;
     case "verify": return <div className="wvj-block"><div className="wvj-subtitle">Rapport d'enquête</div>
       <div className="wvj-evidence-highlight"><b>{story.verification_report?.verdict ?? "Pas de rapport VERIFY"}</b><span>{story.verification_report?.distinct_supporting_sources ?? 0} sources distinctes · {story.confidence_score}% confiance enregistrée</span></div>
@@ -237,7 +237,7 @@ function PhoneStage({story,stage,sceneIndex,previewMode}: {
   const haveFile = clean
     ? story.channel_exports.some(e=>e.channel==="tiktok"&&e.render_job.status==="completed"&&Boolean(e.render_job.output_sha256))
     : story.render_job?.status==="completed" && Boolean(story.render_job.output_sha256);
-  const showReal = !previewMode && Boolean(fileUrl) && haveFile && ["render","preview","qa","package","tiktok","publish"].includes(stage);
+  const showReal = Boolean(fileUrl) && haveFile && ["render","preview","qa","package","tiktok","publish"].includes(stage);
   return <div className="wvj-phone-column">
     <div className="wvj-phone-head"><span>MONITEUR 9:16</span><span>{showReal?"FICHIER MP4":"PRÉVISUALISATION CONCEPTUELLE"}</span></div>
     <div className="wvj-phone">
@@ -246,7 +246,7 @@ function PhoneStage({story,stage,sceneIndex,previewMode}: {
         <div className="wvj-phone-grain"/>
         {!clean && <div className="wvj-phone-brand"><i>◉</i> WORLD—VISION</div>}
         <div className="wvj-phone-inner">
-          <span className="wvj-phone-live">{previewMode?"SIMULATION":"STORYBOARD"}</span>
+          <span className="wvj-phone-live">{previewMode?"DOSSIER RÉEL":"STORYBOARD"}</span>
           <span className="wvj-phone-category">{story.country_name ?? "MONDE"} · {story.category}</span>
           <div className="wvj-phone-headline">{text}</div>
           <div className="wvj-phone-rule"/>
@@ -255,7 +255,7 @@ function PhoneStage({story,stage,sceneIndex,previewMode}: {
         <div className="wvj-phone-footer"><span>{scene ? `${scene.start_sec.toFixed(0)}s / ${story.video_draft?.duration_sec ?? 20}s` : "00:00 / 00:20"}</span><span>9:16 · 1080p</span></div>
       </div>}
     </div>
-    <p className="wvj-phone-warning">{showReal ? "Vidéo issue du moteur connecté : vérifier visuellement et à l'écoute avant publication." : "Ceci n'est pas une vidéo rendue. Aperçu graphique du storyboard uniquement."}</p>
+    <p className="wvj-phone-warning">{showReal ? "Vidéo issue du moteur connecté : vérifier visuellement et à l'écoute avant publication." : "Ceci est une représentation graphique du storyboard, pas un vrai MP4 encore disponible pour cette étape."}</p>
   </div>;
 }
 
@@ -308,7 +308,7 @@ export default function ProductionJourney({
       <div className="wvj-masthead-copy"><div className="wvj-eyebrow"><span className="wvj-dot"/> WORLD-VISION · PRODUCTION ENGINE</div>
         <h1>De l'actualité <em>à l'écran.</em></h1>
         <p>Explore le parcours complet d'une vidéo d'information. Chaque étape montre sa mission, ses données, ses contrôles et son livrable.</p>
-        <div className="wvj-mode">{previewMode?"● MODE DÉMONSTRATION · AUCUNE VIDÉO RÉELLE":"● DONNÉES DU MEDIA SERVICE CONNECTÉ"}</div>
+        <div className="wvj-mode">{previewMode?(story?.render_job?.status==="completed"?"● REPORTAGE MP4 RÉEL · ARCHIVE EN LECTURE SEULE":"● ACTUALITÉ RÉELLE · MONTAGE EN COURS"):"● DONNÉES DU MEDIA SERVICE CONNECTÉ"}</div>
       </div>
       <div className="wvj-masthead-count"><strong>14</strong><span>ÉTAPES<br/>DE PRODUCTION</span></div>
     </section>
@@ -319,17 +319,17 @@ export default function ProductionJourney({
     {current==="overview" ? <>
       <section className="wvj-overview">
         <div className="wvj-overview-intro"><span>LE CIRCUIT ÉDITORIAL</span><h2>Une information ne devient pas une vidéo par magie.</h2><p>Ce sont quatorze opérations contrôlées : de la détection du sujet jusqu'aux preuves de publication. Choisis n'importe quel bloc pour entrer dans son espace de travail.</p></div>
-        <div className="wvj-overview-metrics"><div><strong>05</strong><span>PHASES</span></div><div><strong>14</strong><span>ÉTAPES</span></div><div><strong>8</strong><span>CONTRÔLES QA</span></div><div><strong>{previewMode?"DÉMO":`${doneCount}/14`}</strong><span>ÉTAT DU DOSSIER</span></div></div>
+        <div className="wvj-overview-metrics"><div><strong>05</strong><span>PHASES</span></div><div><strong>14</strong><span>ÉTAPES</span></div><div><strong>8</strong><span>CONTRÔLES QA</span></div><div><strong>{story?`${doneCount}/14`:"—"}</strong><span>ÉTAT DU DOSSIER</span></div></div>
       </section>
-      {groups.map((group,gi)=><section className="wvj-group" key={group}><div className="wvj-group-title"><span>{String(gi+1).padStart(2,"0")} / 05</span><h3>{group}</h3></div><div className="wvj-card-grid">{STEPS.filter(s=>s.group===group).map(s=><button type="button" key={s.id} onClick={()=>setCurrent(s.id)} className="wvj-step-card"><span className="wvj-step-top"><b>{s.number}</b><i>{s.icon}</i></span><strong>{s.name}</strong><small>{s.short}</small><span className="wvj-step-card-bottom"><span>{previewMode?"EXPLORER":story&&evidenceStatus(story,s.id)?"DONNÉES PRÉSENTES":"À EXAMINER"}</span><span>↗</span></span></button>)}</div></section>)}
+      {groups.map((group,gi)=><section className="wvj-group" key={group}><div className="wvj-group-title"><span>{String(gi+1).padStart(2,"0")} / 05</span><h3>{group}</h3></div><div className="wvj-card-grid">{STEPS.filter(s=>s.group===group).map(s=><button type="button" key={s.id} onClick={()=>setCurrent(s.id)} className="wvj-step-card"><span className="wvj-step-top"><b>{s.number}</b><i>{s.icon}</i></span><strong>{s.name}</strong><small>{s.short}</small><span className="wvj-step-card-bottom"><span>{story&&evidenceStatus(story,s.id)?"DONNÉES PRODUITES":"EXPLORER"}</span><span>↗</span></span></button>)}</div></section>)}
     </> : selectedStep && <div className="wvj-workspace">
       <nav className="wvj-rail" aria-label="Étapes du processus"><div className="wvj-rail-label">LES 14 ÉTAPES</div>{STEPS.map(step=><button key={step.id} type="button" className={`wvj-rail-item ${step.id===current?"active":""}`} aria-current={step.id===current?"step":undefined} onClick={()=>setCurrent(step.id)}><span className="wvj-rail-num">{step.number}</span><span className="wvj-rail-name"><b>{step.name}</b><small>{step.short}</small></span><span className="wvj-rail-indicator">{!previewMode&&story&&evidenceStatus(story,step.id)?"✓":step.id===current?"●":"·"}</span></button>)}</nav>
       <div className="wvj-page">
         <div className="wvj-page-meta"><button type="button" onClick={()=>setCurrent("overview")}>← Vue d'ensemble</button><span>{selectedStep.group} / ÉTAPE {selectedStep.number} SUR 14</span></div>
         <header className="wvj-page-head"><div className="wvj-page-icon">{selectedStep.icon}</div><div><div className="wvj-page-kicker">{selectedStep.kicker}</div><h2>{selectedStep.title}</h2><p>{selectedStep.description}</p></div></header>
         <div className="wvj-why"><div><span>POURQUOI C'EST IMPORTANT</span><p>{selectedStep.purpose}</p></div><div><span>CE QUI EST PRODUIT</span><p>{selectedStep.output}</p></div></div>
-        {story ? <div className="wvj-evidence"><div className="wvj-evidence-title"><span>DONNÉES DU DOSSIER SÉLECTIONNÉ</span><small>{previewMode?"SCÉNARIO FICTIF":evidenceStatus(story,selectedStep.id)?"PREUVES ENREGISTRÉES":"NON FINALISÉ"}</small></div><StepEvidence id={selectedStep.id} story={story} selectedScene={sceneIndex} onScene={setSceneIndex}/></div> : <div className="wvj-empty">Aucune actualité chargée. Vérifie le service média ou choisis un dossier.</div>}
-        <div className="wvj-action-panel"><div><strong>PASSER À L'ACTION</strong><p>{previewMode?"Cet aperçu permet d'explorer les étapes, sans démarrer de génération ni prétendre publier.":"Les actions sont reliées au véritable backend et suivent les contrôles d'état du sujet."}</p></div><div className="wvj-action-buttons">{task&&<button type="button" disabled={busy||previewMode||!task.allowed} onClick={()=>void task.run()} className="wvj-action-primary">{busy?"Traitement…":task.name}</button>}<button type="button" className="wvj-action-secondary" onClick={onOpenControlRoom}>Ouvrir le Control Room ↗</button></div></div>
+        {story ? <div className="wvj-evidence"><div className="wvj-evidence-title"><span>DONNÉES DU DOSSIER SÉLECTIONNÉ</span><small>{evidenceStatus(story,selectedStep.id)?"DONNÉES CONSIGNÉES":"NON FINALISÉ"}</small></div><StepEvidence id={selectedStep.id} story={story} selectedScene={sceneIndex} onScene={setSceneIndex}/></div> : <div className="wvj-empty">Aucune actualité chargée. Vérifie le service média ou choisis un dossier.</div>}
+        <div className="wvj-action-panel"><div><strong>PASSER À L'ACTION</strong><p>{previewMode?"Archive d’un reportage fondé sur des sources réelles. Les commandes restent désactivées sans serveur connecté : ce site ne fabrique ni rendus ni preuves fictives.":"Les actions sont reliées au véritable backend et suivent les contrôles d’état du sujet."}</p></div><div className="wvj-action-buttons">{task&&<button type="button" disabled={busy||previewMode||!task.allowed} onClick={()=>void task.run()} className="wvj-action-primary">{busy?"Traitement…":task.name}</button>}<button type="button" className="wvj-action-secondary" onClick={onOpenControlRoom}>Ouvrir le Control Room ↗</button></div></div>
         <nav className="wvj-page-footer" aria-label="Naviguer entre les étapes"><button type="button" disabled={index===0} onClick={()=>setCurrent(STEPS[index-1].id)}>← Étape précédente</button><span>{selectedStep.number} / 14</span><button type="button" disabled={index===STEPS.length-1} onClick={()=>setCurrent(STEPS[index+1].id)}>Étape suivante →</button></nav>
       </div>
       {story && <PhoneStage story={story} stage={selectedStep.id} sceneIndex={sceneIndex} previewMode={previewMode}/>}
