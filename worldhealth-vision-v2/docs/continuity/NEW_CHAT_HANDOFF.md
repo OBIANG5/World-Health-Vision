@@ -50,6 +50,16 @@ Le MP4 original de la référence est toujours **uniquement fourni dans le chat*
 
 ---
 
+## CORRECTION EXPRESS du propriétaire — NE PAS PERDRE
+
+La priorité actuelle est **G1, direction audiovisuelle / globe**, pas les travaux plateforme générale. Les maquettes A/B/C ont été **refusées** ; D00–D05 sont des propositions **fixes non approuvées**. Le globe bleu du logo est validé, mais ce n'est pas une animation vidéo. **Un reportage n'a PAS systématiquement plusieurs pays.** Un seul événement en un seul lieu = une seule destination et des images/documents pertinents. La vidéo TikTok à cinq sujets servait à observer le mouvement géographique, pas à imposer un journal multi-pays.
+
+Lire obligatoirement : [EDITORIAL_GLOBE_FORMATS_AND_REVIEW_CONTRACT_2026-11-13.md](../media/art-direction/EDITORIAL_GLOBE_FORMATS_AND_REVIEW_CONTRACT_2026-11-13.md) et [TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md](../media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md). PDF original de **137 pages** accessible via les fichiers/Library lorsqu'il est disponible ; la transcription intégrale n'est pas commitée dans GitHub.
+
+Le code de montage est **partiellement audité**, pas fini. Google Flow / Gemini API, ElevenLabs TTS/Forced Alignment, n8n et Make **ne sont pas connectés** sur preuve de code inspecté. Ne pas réintroduire l'ancienne voix Piper ni lancer de nouveau MP4 complet avant validation des plans.
+
+---
+
 ## Liens incontournables
 
 - Dossier de continuité : [README.md](README.md)
