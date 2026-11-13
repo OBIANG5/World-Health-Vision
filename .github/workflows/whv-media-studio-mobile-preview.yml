@@ -106,6 +106,21 @@ jobs:
           EOF
           echo "Source credit: US Army photographer 1st Lt. Zachary West, 2017 Houston, public domain US federal work."
           test -s worldhealth-vision-v2/docs/media/art-direction/cop31-opening-directions-v1.json
+      - name: Write source-version proof for in-browser release visibility
+        run: |
+          cat > worldhealth-vision-v2/frontend/web-v2/dist/preview-deployment.json <<EOF
+          {
+            "source_branch": "feature/world-vision-media-studio",
+            "source_commit": "${GITHUB_SHA}",
+            "preview_type": "STATIC_REAL_NEWS_EDITORIAL_ARCHIVE",
+            "backend_connected": false,
+            "editorial_sources_real": true,
+            "generated_media_proof": true,
+            "channel_published": false,
+            "human_qa_completed": false
+          }
+          EOF
+          grep -F "${GITHUB_SHA}" worldhealth-vision-v2/frontend/web-v2/dist/preview-deployment.json
       - name: Install browser smoke-test dependency
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
