@@ -1,0 +1,106 @@
+{
+  "schema_version": "world-vision-visual-direction-v1",
+  "story_id": "wv-cop31-un-risk-finance-2026-11-12",
+  "editorial_subject": "COP31 : la plateforme de financement des risques annoncée par six agences de l'ONU",
+  "created_at": "2026-11-13",
+  "review_status": "proposed_awaiting_user_review",
+  "selected_direction": null,
+  "brand": {
+    "approval": "approved_current_official",
+    "original_repo_path": "frontend/web/src/assets/logo.png",
+    "git_blob_sha": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+    "visual_policy": "image bytes preserved; natural opaque offwhite background; no generated replica; future palette change optional"
+  },
+  "facts": [
+    {
+      "text": "6 agences de l'ONU lancent une plateforme lors de la COP31 Antalya 12 novembre 2026",
+      "source_ids": [
+        "unicef",
+        "fao"
+      ]
+    },
+    {
+      "text": ">3 milliards de dollars sont visés pour protéger 75 millions de personnes d'ici 2030",
+      "source_ids": [
+        "unicef",
+        "fao"
+      ]
+    },
+    {
+      "text": "Ce sont des objectifs annoncés, pas des sommes déjà versées",
+      "source_ids": [
+        "unicef",
+        "fao"
+      ]
+    }
+  ],
+  "directions": [
+    {
+      "id": "terrain",
+      "version": "cop31-visual-opening-v1-terrain-logo-bc80fa70",
+      "name": "Le terrain d'abord",
+      "role": "documentation",
+      "description": "Real historical 2017 rescue photo to represent disaster risk, visibly labeled archival. No false implication that photo is from 2026 COP31.",
+      "asset_ids": [
+        "harvey-us-army-2017"
+      ],
+      "status": "review_pending"
+    },
+    {
+      "id": "chiffres",
+      "version": "cop31-visual-opening-v1-chiffres-logo-bc80fa70",
+      "name": "L'information par les chiffres",
+      "role": "data-led opener",
+      "description": "Light-background brand frame with $3bn goal and 75m beneficiaries, cautious caveat on status of financing.",
+      "asset_ids": [],
+      "status": "review_pending"
+    },
+    {
+      "id": "pedagogie",
+      "version": "cop31-visual-opening-v1-pedagogie-logo-bc80fa70",
+      "name": "Comprendre le mécanisme",
+      "role": "explainer",
+      "description": "Three logical steps: alert, pre-arranged money, early intervention; explanatory diagram, not a claim of operational implementation.",
+      "asset_ids": [],
+      "status": "review_pending"
+    }
+  ],
+  "assets": [
+    {
+      "id": "harvey-us-army-2017",
+      "type": "photograph",
+      "credit": "U.S. Army photo / Texas Army National Guard, Hurricane Harvey rescue, August 27 2017",
+      "license": "US Federal Government Work — public domain in USA; use with source/credit and no implied endorsement",
+      "source_url": "https://www.war.gov/Multimedia/Photos/igphoto/2002037959/",
+      "image_url": "https://media.defense.gov/2017/Aug/27/2002037959/-1/-1/0/170827-A-ZW944-005A.JPG",
+      "event_time": "2017-08-27",
+      "actual_location": "Houston, Texas, USA",
+      "not_from_story_event": true,
+      "label_required": "IMAGE D'ARCHIVES · HOUSTON, 2017 · U.S. ARMY",
+      "status": "external_image_preview_only_not_stored_in_repository"
+    }
+  ],
+  "sources": [
+    {
+      "id": "unicef",
+      "url": "https://www.unicef.org/press-releases/un-launches-disaster-risk-financing-platform-cop31-make-humanitarian-responses",
+      "published_date": "2026-11-12",
+      "primary": true
+    },
+    {
+      "id": "fao",
+      "url": "https://www.fao.org/newsroom/detail/un-launches-disaster-risk-financing-platform-at-cop31-to-make-humanitarian-responses-faster-and-more-predictable/en",
+      "published_date": "2026-11-12",
+      "primary": true
+    }
+  ],
+  "review_policy": {
+    "scoring": "1-10 per direction and dimensions",
+    "approval_threshold": "All criteria >=8 and explicit manual positive decision",
+    "version_binding": "Immutable direction IDs; each user's opinion must reference ID",
+    "no_automatic_full_render": true,
+    "no_auto_publish": true,
+    "animation_only_after_approval": true
+  },
+  "notes": "UI still frames are proposals; external archival photo may be temporarily unavailable depending on device. No actual video or animation generated at this stage."
+}
