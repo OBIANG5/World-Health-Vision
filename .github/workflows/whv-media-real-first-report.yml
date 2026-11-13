@@ -51,6 +51,16 @@ jobs:
           assert j['visual_assets']['third_party_media']==[]
           print('Exact real editorial dossier + source evidence verified.')
           PY
+      - name: Install FFmpeg, ffprobe and Chromium rendering system libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            ffmpeg libnss3 libdbus-1-3 libatk1.0-0 \
+            libgbm1 libasound2t64 libxrandr2 libxkbcommon0 \
+            libxfixes3 libxcomposite1 libxdamage1 \
+            libatk-bridge2.0-0 libpango-1.0-0 libcairo2 libcups2
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
       - name: Install verified French TTS engine and source-attributed model
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: |
