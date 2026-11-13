@@ -68,3 +68,20 @@ Ne jamais déduire une approbation de « continue », d'un build vert, d'une abs
 ## Révision de décision
 
 Une décision antérieure peut être supplantée par une décision plus récente explicite : exemple, l'idée d'un logo multicolore dans les premiers échanges a été suivie de **la confirmation explicite du logo bleu comme logo actuel**. Conserver les anciennes versions dans l'historique Git, mais faire figurer **la décision en vigueur** dans cet index.
+
+
+---
+
+## Corrections créatives récentes — D00 œil / globe (13 novembre 2026)
+
+**Ces retours sont des exigences de correction ; ils ne constituent pas une validation de la maquette D00 ni du futur MP4.** Source primaire : messages explicites de l'utilisateur dans le nouveau chat. Référence versionnée : [D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md](../media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md).
+
+| ID | Statut | Retour/décision | Conséquence |
+|---|---|---|---|
+| D-018 | EXIGENCE ACTIVE | Le globe photographique est apprécié pour sa beauté, sa matière et son halo atmosphérique ; il doit rester l'élément principal et occuper plus d'écran. | D00 doit placer la Terre au centre et très grande ; pas d'œil dominant. |
+| D-019 | EXIGENCE ACTIVE | L'œil des deux premières illustrations était incorrect, presque circulaire, avec des traits superflus. S'inspirer des deux arcs du vrai logo. | Exactement deux courbes de paupière, pas d'anneau/ellipse fermée ; arcs élargis hors cadre, aucune extrémité visible. |
+| D-020 | EXIGENCE ACTIVE | Ne pas afficher lumières de villes/pays, ni soleil d'appoint, ni nuages décoratifs en bas. Montrer nettement les frontières de chaque pays visible. | Nécessité d'un overlay géographique fidèle en 3D ; pas de lumière nocturne ni décor solaire/cloud floor. |
+| D-021 | EXIGENCE ACTIVE | Étoiles très peu nombreuses, petites et discrètes ; halo atmosphérique bleu/cyan lumineux conservé, distinct des deux arcs. | Espace sobre ; privilégier le globe et la couche atmosphérique. |
+| D-022 | NON VALIDÉ | Quatrième concept image D00-v4 produit ; sa valeur esthétique reste soumise au jugement du propriétaire ; animation vidéo future prévue par code. | Ne pas marquer D00 validé ni passer à une production vidéo complète. |
+
+Le rendu D00-v4 a été **généré en conversation seulement**, dimensions 1086 × 1448, empreinte SHA-256 `5f97e5f0d29551e187b50106e0aaf2f00e700062a9a2f5845dbf9f9715b6a90e`. Son **PNG n'a pas été importé sur GitHub** ; seuls les instructions, métadonnées, limites et choix de conception sont versionnés. Les images synthétiques ne constituent pas une preuve géographique : les futures frontières devront être calculées par données réelles. Contrat technique : `../media/art-direction/d00-eye-globe-visual-contract-v4.json`.
