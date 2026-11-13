@@ -2,6 +2,7 @@ import React from "react";
 import {
   AbsoluteFill,
   Audio,
+  Img,
   Easing,
   interpolate,
   Sequence,
@@ -13,7 +14,8 @@ import {
 
 /**
  * First fact-checked World-Vision report.
- * A separate Remotion composition using the actual eye/globe brand geometry.
+ * LEGACY REJECTED first-pilot layout, now using the byte-identical approved logo PNG.
+ * The entire composition still requires separate artistic approval before reuse.
  * No photographed or AI-imagined scenes are presented as real COP31 footage.
  */
 export type FirstReportScene = {
@@ -66,19 +68,15 @@ const FadeUp: React.FC<{children:React.ReactNode;offset?:number;delay?:number;st
       transform:`translateY(${interpolate(p,[0,1],[offset,0],clamp)}px)`,...style}}>{children}</div>;
 };
 
-const EyeGlobe:React.FC<{size?:number;muted?:boolean}> = ({size=120,muted=false}) =>
-  <svg width={size} height={size*0.65} viewBox="0 0 200 130" role="img" aria-label="World-Vision eye globe"
-    style={{display:"block",opacity:muted?0.3:1}}>
-    <defs><linearGradient id="wv-eyeglobe" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stopColor="#81e2ff"/><stop offset="100%" stopColor="#1475b1"/></linearGradient></defs>
-    <path d="M13 67 C 54 15 142 14 187 67 C 143 120 54 118 13 67 Z"
-      fill="none" stroke="url(#wv-eyeglobe)" strokeWidth="9" strokeLinejoin="round"/>
-    <circle cx="100" cy="67" r="47" fill="#06436f" stroke="#e4f5fb" strokeWidth="7"/>
-    <ellipse cx="100" cy="67" rx="19" ry="44" fill="none" stroke="#5ec4ed" strokeOpacity=".7" strokeWidth="3"/>
-    <path d="M56 67H144M68 44H132M68 90H132" stroke="#5ec4ed" strokeOpacity=".68" strokeWidth="3" fill="none"/>
-    <path d="M87 24l-12 14 11 15 12-4 12 18 9-3-4 22 16 8-6 16-22 2-3-16-13-14-13-18-18-8 7-22 11-10z"
-      fill="#4eb8e0" opacity=".70"/>
-  </svg>;
+const OfficialLogo:React.FC<{width?:number}> = ({width=110}) =>
+  <div style={{
+    display:"flex",alignItems:"center",justifyContent:"center",
+    width:width,height:width*0.63,background:"#f6f2ed",padding:5,
+    borderRadius:2,flexShrink:0,
+  }}>
+    <Img src={staticFile("brand/world-vision-official.png")}
+      style={{display:"block",width:"100%",height:"100%",objectFit:"contain"}} />
+  </div>;
 
 const OrbitWorld:React.FC<{progress:number;stage:string}> = ({progress,stage}) => {
   const dots=Array.from({length:72},(_,i)=>{
@@ -146,7 +144,7 @@ const NewsScene:React.FC<{scene:FirstReportScene;story:FirstReportStory;index:nu
     <OrbitWorld progress={progress} stage={scene.visual}/>
     <AbsoluteFill style={{background:"linear-gradient(180deg,rgba(2,13,26,.75) 0%,rgba(2,13,26,.13) 43%,rgba(2,13,26,.50) 71%,rgba(1,13,22,.95) 100%)"}}/>
     <div style={{position:"absolute",left:80,top:85,right:175,display:"flex",alignItems:"center",gap:21}}>
-      {!clean && <EyeGlobe size={110}/>}
+      {!clean && <OfficialLogo width={110}/>}
       <div style={{flex:1}}>
         {!clean && <div style={{fontWeight:950,fontSize:38,letterSpacing:2,color:C.white}}>WORLD—VISION</div>}
         <div style={{fontSize:18,letterSpacing:3,fontWeight:700,color:C.cyan,marginTop:10}}>
