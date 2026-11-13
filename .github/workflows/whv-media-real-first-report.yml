@@ -1,0 +1,134 @@
+name: World-Vision - REAL COP31 newsroom video
+
+on:
+  push:
+    branches:
+      - feature/world-vision-media-studio
+    paths:
+      - '.github/workflows/whv-media-real-first-report.yml'
+      - 'worldhealth-vision-v2/docs/media/pilots/**'
+      - 'worldhealth-vision-v2/services/media-renderer/src/WorldVisionFirstReport.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/FirstReportRoot.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/first-report-index.ts'
+      - 'worldhealth-vision-v2/services/media-renderer/render-first-report.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: whv-media-first-real-report
+  cancel-in-progress: false
+
+jobs:
+  verified-real-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      REPORT_DIR: worldhealth-vision-v2/services/media-renderer/pilot-dist/cop31-risk-finance-2026-11-12
+    steps:
+      - name: Checkout canonical Media Studio branch
+        uses: actions/checkout@v4
+      - name: Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Python 3.12 for licensed offline neural narration
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check the approved UN-source dossier
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          src=Path('worldhealth-vision-v2/docs/media/pilots/cop31-risk-finance-2026-11-12.json')
+          j=json.loads(src.read_text())
+          assert j['publication_consent'] is False, 'Not a public post'
+          assert len(j['verified_claims'])>=5
+          assert all(c['sources'] for c in j['verified_claims'])
+          assert j['event_date']=='2026-11-12'
+          assert j['visual_assets']['third_party_media']==[]
+          print('Exact real editorial dossier + source evidence verified.')
+          PY
+      - name: Install verified French TTS engine and source-attributed model
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 -m pip install --disable-pip-version-check 'piper-tts==1.8.0'
+          python3 -m piper.download_voices --data-dir ./voices fr_FR-siwis-medium
+          python3 - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          story=json.loads(Path('../../docs/media/pilots/cop31-risk-finance-2026-11-12.json').read_text())
+          out=Path('public/pilot-narration.wav')
+          out.parent.mkdir(exist_ok=True)
+          command=[
+              'python3','-m','piper','-m','fr_FR-siwis-medium',
+              '--data-dir','./voices','-f',str(out),
+              '--', story['narration'],
+          ]
+          subprocess.run(command,check=True)
+          assert out.stat().st_size>20000, 'Narration wave is missing or empty'
+          print('Actual neural French narration generated:',out.stat().st_size,'bytes')
+          PY
+      - name: Install existing Remotion renderer dependencies
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: npm install --no-audit --no-fund
+      - name: Typecheck original Remotion and new verified report
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: npm run typecheck
+      - name: Prepare Chromium render browser
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: npx --yes @remotion/cli@4.0.542 browser ensure
+      - name: Render REAL branded 9:16 MP4, poster, SHA-256 and archive
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: node render-first-report.mjs
+      - name: Verify rendered media is nonempty, grounded and reproducible
+        run: |
+          set -euo pipefail
+          test -s "${REPORT_DIR}/world-vision-cop31-master.mp4"
+          test -s "${REPORT_DIR}/poster.png"
+          test -s "${REPORT_DIR}/story.json"
+          test -s "${REPORT_DIR}/provenance.json"
+          (cd "${REPORT_DIR}" && sha256sum --check SHA256SUMS)
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=Path('worldhealth-vision-v2/services/media-renderer/pilot-dist/cop31-risk-finance-2026-11-12')
+          s=json.loads((d/'story.json').read_text())
+          p=json.loads((d/'provenance.json').read_text())
+          assert s['status']=='preview_ready'
+          assert s['render_job']['status']=='completed'
+          assert s['render_job']['output_sha256']==p['video_sha256']
+          assert s['verification_report']['verdict']=='verified'
+          assert s['publication_package'] is None
+          assert s['qa_report'] is None
+          assert s['publication_receipts']==[]
+          assert p['human_visual_review'] is False
+          print('Real artifact / source claim chain complete; public posting disabled.')
+          PY
+      - name: Publish REAL video and evidence to SAME existing phone URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --single-branch \
+            --branch whv-media-studio-browser-preview \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            /tmp/whv-media-real-output
+          mkdir -p /tmp/whv-media-real-output/media-pilots/cop31-risk-finance-2026-11-12
+          cp -a "${REPORT_DIR}/." /tmp/whv-media-real-output/media-pilots/cop31-risk-finance-2026-11-12/
+          cd /tmp/whv-media-real-output
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-pilots/cop31-risk-finance-2026-11-12
+          git commit -m "media(real): COP31 fact-checked MP4 + French narration + SHA-256"
+          git push origin HEAD:whv-media-studio-browser-preview
+          echo "Permanent player: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/index.html?view=media"
+      - name: Save audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-vision-cop31-real-report
+          path: ${{ env.REPORT_DIR }}
+          retention-days: 30
+          if-no-files-found: error
