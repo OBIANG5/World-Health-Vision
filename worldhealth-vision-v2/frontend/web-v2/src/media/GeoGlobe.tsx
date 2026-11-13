@@ -97,6 +97,89 @@ function isTurkey(feature:GeoFeature){
   return name.includes("turkey")||name.includes("türkiye")||name==="turkiye";
 }
 
+type Texture={width:number;height:number;pixels:Uint8ClampedArray};
+const landTextures=new Map<string,Texture>();
+function buildTexture(data:FeatureCollection,highlight:boolean):Texture{
+  const key=highlight?"high":"base";
+  const existing=landTextures.get(key);
+  if(existing)return existing;
+  const canvas=document.createElement("canvas");
+  const width=1440,height=720;canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext("2d",{willReadFrequently:true});
+  if(!ctx)throw new Error("2D canvas texture unavailable");
+  // Land geometry is first rasterized in longitude/latitude space.
+  // Reprojecting individual pixels onto the sphere avoids the huge
+  // antimeridian/horizon triangles of naïve vector clipping.
+  const xOf=(lon:number)=>(lon+180)/360*width;
+  const yOf=(lat:number)=>(90-lat)/180*height;
+  for(const feature of data.features){
+    const selected=highlight&&isTurkey(feature);
+    ctx.fillStyle=selected?"#e5af53":"#abc9ad";
+    ctx.strokeStyle=selected?"#f9e1a4":"#6b9b8e";
+    ctx.lineWidth=selected?2.2:0.75;
+    for(const ring of contours(feature)){
+      let previousX:number|null=null;
+      let hasPoints=false;
+      ctx.beginPath();
+      for(const item of ring){
+        if(!Array.isArray(item)||item.length<2)continue;
+        const x=xOf(item[0]),y=yOf(item[1]);
+        if(previousX!==null&&Math.abs(x-previousX)>width*.48){
+          if(hasPoints){ctx.closePath();ctx.fill();ctx.stroke();}
+          ctx.beginPath();ctx.moveTo(x,y);hasPoints=true;
+        }else if(!hasPoints){ctx.moveTo(x,y);hasPoints=true;}
+        else ctx.lineTo(x,y);
+        previousX=x;
+      }
+      if(hasPoints){ctx.closePath();ctx.fill();ctx.stroke();}
+    }
+  }
+  const result={width,height,pixels:ctx.getImageData(0,0,width,height).data};
+  landTextures.set(key,result);
+  return result;
+}
+function drawLandOnSphere(
+  ctx:CanvasRenderingContext2D,w:number,h:number,r:number,cx:number,cy:number,
+  cLon:number,cLat:number,data:FeatureCollection,highlight:boolean
+){
+  const texture=buildTexture(data,highlight);
+  const layer=document.createElement("canvas");
+  layer.width=Math.ceil(w);layer.height=Math.ceil(h);
+  const output=layer.getContext("2d");
+  if(!output)return;
+  const image=output.createImageData(layer.width,layer.height);
+  const phi0=toRadian(cLat),sin0=Math.sin(phi0),cos0=Math.cos(phi0);
+  const minX=Math.max(0,Math.floor(cx-r)),maxX=Math.min(layer.width,Math.ceil(cx+r));
+  const minY=Math.max(0,Math.floor(cy-r)),maxY=Math.min(layer.height,Math.ceil(cy+r));
+  for(let y=minY;y<maxY;y++){
+    const yn=-(y+.5-cy)/r;
+    for(let x=minX;x<maxX;x++){
+      const xn=(x+.5-cx)/r;
+      const rho2=xn*xn+yn*yn;
+      if(rho2>=.9999)continue;
+      const rho=Math.sqrt(rho2);
+      const c=Math.asin(rho);
+      const sinc=Math.sin(c),cosc=Math.cos(c);
+      const lat=Math.asin(cosc*sin0+(rho>0?yn*sinc*cos0/rho:0));
+      let lon=toRadian(cLon)+(rho>0?Math.atan2(xn*sinc,rho*cos0*cosc-yn*sin0*sinc):0);
+      lon=((lon+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
+      const tx=Math.min(texture.width-1,Math.max(0,Math.floor((lon+Math.PI)/(2*Math.PI)*texture.width)));
+      const ty=Math.min(texture.height-1,Math.max(0,Math.floor((Math.PI/2-lat)/Math.PI*texture.height)));
+      const source=(ty*texture.width+tx)*4;
+      const alpha=texture.pixels[source+3];
+      if(alpha===0)continue;
+      const dest=(y*layer.width+x)*4;
+      // Very subtle daylight lift towards the apparent sphere's upper-left.
+      const brightness=0.83+0.18*(1-rho2)+0.045*Math.max(0,-xn-yn);
+      image.data[dest]=Math.min(255,texture.pixels[source]*brightness);
+      image.data[dest+1]=Math.min(255,texture.pixels[source+1]*brightness);
+      image.data[dest+2]=Math.min(255,texture.pixels[source+2]*brightness);
+      image.data[dest+3]=alpha;
+    }
+  }
+  output.putImageData(image,0,0);
+  ctx.drawImage(layer,0,0,w,h);
+}
 function paint(
  ctx:CanvasRenderingContext2D,w:number,h:number,pose:GlobePose,data:FeatureCollection|null
 ){
@@ -136,18 +219,7 @@ function paint(
     ctx.stroke();
   }
   if(data){
-    // Strictly geographic feature outlines; no fake news footage.
-    for(const feature of data.features){
-      const highlight=pose.highlightTurkey&&isTurkey(feature);
-      ctx.fillStyle=highlight?"#e5af53":"#9dbca5";
-      ctx.strokeStyle=highlight?"#fff0c3":"#4e8179";
-      ctx.lineWidth=highlight?Math.max(1,w/360):Math.max(.45,w/1100);
-      for(const ring of contours(feature)){
-        ctx.beginPath();
-        visibleFragment(ctx,ring,proj);
-        ctx.fill();ctx.stroke();
-      }
-    }
+    drawLandOnSphere(ctx,w,h,r,cx,cy,pose.centerLon,pose.centerLat,data,Boolean(pose.highlightTurkey));
   }else{
     ctx.fillStyle="rgba(238,255,252,.6)";
     ctx.font=`600 ${Math.max(10,Math.round(w*.035))}px sans-serif`;
