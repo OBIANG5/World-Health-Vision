@@ -12,6 +12,8 @@
 | [DECISION_REGISTER.md](DECISION_REGISTER.md) | Registre des validations, refus, interdictions et décisions | **À chaque décision humaine** |
 | [WORK_JOURNAL.md](WORK_JOURNAL.md) | Journal append-only des modifications, tests, erreurs et preuves | **À chaque incrément de code ou de média** |
 | [COMMIT_HISTORY_INDEX.md](COMMIT_HISTORY_INDEX.md) | Snapshot de **586 commits vérifiés** de la branche (au moment de l'indexation) | Au besoin ; historique Git natif reste vivant |
+| [BRANCHES_SNAPSHOT_2026-11-13.md](BRANCHES_SNAPSHOT_2026-11-13.md) | Inventaire de **26 branches** au 13 novembre (source, V2, previews, audits) | À chaque changement important de branches |
+| [PREVIEW_RELEASES_AND_CACHE.md](PREVIEW_RELEASES_AND_CACHE.md) | Pourquoi le lien permanent peut paraître ancien et comment prouver le SHA réellement publié | À chaque changement d'hébergement |
 
 ## Comment savoir si l'information est fiable
 
