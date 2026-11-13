@@ -111,6 +111,13 @@ try {
     "Le logo est incorrect, la voix est robotique et les animations ne conviennent pas.");
   // Do not allow approving an identity design with no genuine logo asset.
   await page.locator(".wv-review-stage-tabs button").first().click();
+  await page.locator(".wv-brand-gate").waitFor();
+  assert.equal(await page.locator(".wv-brand-example.old img").count(),1);
+  assert.equal(await page.locator(".wv-brand-example.approved img").count(),0,
+    "Do not invent the missing approved multicolor logo.");
+  const originalLogo=await page.request.get(base+"/brand-archive/legacy-eye-globe-blue.png");
+  assert.equal(originalLogo.status(),200,"Historic eye-globe must be shipped as an actual asset.");
+  await page.getByText(/FICHIER MANQUANT/).first().waitFor();
   await page.locator("#wv-review-overall").selectOption("10");
   for(const aspect of ["logo","couleurs","typographie"]) {
     await page.locator("#wv-review-score-"+aspect).selectOption("10");
