@@ -162,38 +162,6 @@ const jsonForReview=(story:MediaStory,gate:GateId,review:Review)=>{
     notes:"Ce document est un retour utilisateur, non un reçu de publication ni une autorisation de rendu automatique.",
   };
 };
-const markdownForReview=(review:ReturnType<typeof jsonForReview>):string=>{
-  const heading=`# Évaluation World-Vision — ${review.gate_name}`;
-  const rows=Object.entries(review.category_scores).map(([id,val])=>
-    `| ${CRITERIA[id]} | ${val===null?"Non noté":val+"/10"} | ${review.blocking_categories.includes(id)?"BLOQUANT":"—"} |`).join("\n");
-  const detail=JSON.stringify(review,null,2);
-  return [
-    heading,
-    "",
-    `**Dossier :** ${review.story_title}`,
-    `**Décision :** ${STANCE[review.decision]} | **Note générale :** ${review.overall_score}/10`,
-    `**Version évaluée :** \`${review.artifact_ref??"Aucun livrable encore déposé"}\``,
-    `**SHA-256 master :** \`${review.video_sha256??"Aucun MP4"}\``,
-    `**Date :** ${review.reviewed_at}`,
-    "",
-    "| Aspect | Note | Priorité |",
-    "|---|---:|---|",
-    rows,
-    "",
-    "## Commentaires",
-    review.feedback||"Aucun commentaire supplémentaire.",
-    "",
-    "## Modifications prioritaires",
-    review.correction_priorities||"Non précisées.",
-    "",
-    "<details><summary>Données structurées (pour retrouver l'avis et comparer les versions)</summary>",
-    "",
-    "~~~json",detail,"~~~","","</details>",
-    "",
-    "> Cet avis ne déclenche pas un rendu ni une publication. Il doit être traité et validé dans la branche Media Studio.",
-  ].join("\n");
-};
-
 function ReviewForm({story,gate,previewMode}:{
   story:MediaStory;gate:GateId;previewMode:boolean;
 }){
