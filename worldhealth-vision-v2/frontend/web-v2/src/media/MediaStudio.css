@@ -572,3 +572,15 @@ body:has(.wv-media-shell),
   .wv-media-viewnav{max-width:100%;overflow-x:auto;min-width:0}
   .wv-media-viewnav button{padding:9px 7px;font-size:9px}
 }
+
+.wv-media-version-strip{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:7px 14px;padding:10px clamp(14px,3vw,35px);
+  color:#c5d7d9;background:#123040;border-bottom:1px solid #5c94a853;
+  font-size:10px;line-height:1.5;letter-spacing:.025em
+}
+.wv-media-version-strip strong{font-weight:850;color:#e7faf5}
+.wv-media-version-strip a{color:#a3e0f7;font-weight:800;text-decoration:underline}
+@media(max-width:700px){
+ .wv-media-version-strip{font-size:10px;padding:9px 13px}
+}
