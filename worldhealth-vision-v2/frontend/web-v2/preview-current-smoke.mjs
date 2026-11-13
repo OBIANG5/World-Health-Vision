@@ -23,7 +23,8 @@ try {
   assert((await phone.locator(".whv-service-status").innerText()).includes("Aperçu"),
     "The static preview must not falsely claim that a real backend is connected");
   const eye = await phone.locator(".eye-stage").boundingBox();
-  assert(eye && eye.width / eye.height > 1.4, "The mobile eye layout is distorted");
+  assert(eye && eye.width / eye.height > 1.31 && eye.height >= 220,
+    "The mobile Electric Earth is cropped or excessively tall");
   await phone.screenshot({ path: "dist/preview-mobile-current.png" });
 
   async function openTool(label, panel, closeButton) {
