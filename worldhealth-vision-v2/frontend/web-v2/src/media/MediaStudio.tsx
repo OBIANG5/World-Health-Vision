@@ -722,6 +722,8 @@ export default function MediaStudio() {
         <span>Les nouveautés sont sous <strong>Direction artistique</strong> (A/B/C).</span>
         <a href="https://github.com/OBIANG5/World-Health-Vision/tree/whv-media-studio-browser-preview"
            target="_blank" rel="noreferrer">Vérifier les fichiers publiés sur GitHub ↗</a>
+        <a href="https://github.com/OBIANG5/World-Health-Vision/issues/11"
+           target="_blank" rel="noreferrer">Historique intégral & reprise du projet ↗</a>
       </div>}
       {screen === "review" ? (
         <ReviewStudio
