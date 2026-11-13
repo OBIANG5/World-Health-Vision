@@ -299,3 +299,18 @@ La dernière image de référence **a été retrouvée dans le répertoire de ce
 ### Sauvegarde locale exportable de l'original D00-v6
 
 Le fichier PNG original (1086×1448, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`) a également été **copié sans modification des octets** dans une archive téléchargeable de la conversation, `World-Vision_D00-v6_reference_originale.zip`, avec manifeste de provenance et rappel de la non-validation. **Important** : cette archive est un artefact téléchargeable du chat, **pas encore un fichier committé sur GitHub** ; son lien `sandbox:` est spécifique à la conversation. Conserver/exporter ce ZIP avant de changer de chat si nécessaire.
+
+
+---
+
+## 13 novembre 2026 — premier incrément de Terre phototexturée CGI (retour aux vrais détails)
+
+À la demande « arrête de perdre du temps, la suite intelligente pour le média », intervention effective dans le code : **nouveau renderer `CinematicEarth.tsx` avec shader sphérique WebGL, photo-texture equirectangulaire NASA Blue Marble, éclairage diurne, halo cyan, blancs purs dans l'œil à deux arcs et frontières nationales GeoJSON**. Le laboratoire géociblé utilise désormais ce globe ; le Media Studio l'affiche au-dessus des anciennes maquettes comme **candidat CGI à revoir**. Les six maquettes historiques sont conservées, et l'identité D00-v6 issue du chat demeure la référence de comparaison, **sans approbation automatique**.
+
+Build GitHub Actions modifié pour embarquer une source NASA avec provenance, contrôle JPEG/taille et empreinte SHA-256. Source exacte téléchargée et vérifiée : `9743175942473681d78838ca1042553dab4779cf957fb6d8f22a81fb796f7797`. Nouveau test navigateur : texture obligatoire, shader WebGL actif, capture D00 9:16 sur iPhone.
+
+**Preuves :** commit de source publié `2f9fedd46ae2ee77e3984814b3d47710e0a25c27`, workflow mobile https://github.com/OBIANG5/World-Health-Vision/actions/runs/43464929633 = **completed/success**. Manifeste de preview pointant ce même SHA ; screenshot `media-globe-cinematic-d00-candidate-iphone.png` dans `whv-media-studio-browser-preview` (SHA blob `1e1b718b3e010d065ec1ff3aef9da79711e48b9c`). Capture réellement consultée dans le chat : Terre bleue, relief et pays sahariens tracés, œil blanc et atmosphère apparents.
+
+**Limites non masquées :** ce n'est pas une vidéo exportée, le design n'a pas encore la validation artistique du propriétaire et le PNG d'origine D00-v6 n'a pas été committé. L'outil est un premier CGI contrôlable. Ne pas substituer un dessin plat ni chercher à prétendre que la référence IA et le shader sont pixel-identiques.
+
+**Reprise suivante :** inspection esthétique du CGI avec le propriétaire ; calage fidèle aux deux arcs/au halo du D00-v6 ; puis D01 au pays ciblé et micro-clip de 3–6 secondes, montage et voix selon `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`. Document technique [CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md](../media/CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md).
