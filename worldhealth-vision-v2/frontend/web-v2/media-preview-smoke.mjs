@@ -178,6 +178,11 @@ try {
     path:path.join(dist,"media-globe-cinematic-d00-candidate-iphone.png")
   });
   // The country-motion lab is real and country-driven, not final cinematic art.
+  // D01 clip review exists alongside D00 CGI, but must not fabricate a video.
+  await page.locator("#wv-d01-motion-review").waitFor();
+  assert.equal(await page.locator('#wv-d01-motion-review video[autoplay]').count(),0,
+    "A technical preview must never autoplay on iPhone");
+  assert.match(await page.locator("#wv-d01-motion-review").textContent(),/ANIMATION GÉOGRAPHIQUE/);
   await page.locator("#wv-geotarget").waitFor();
   await page.waitForFunction(()=>document.querySelectorAll("#wv-geotarget-country option").length>190);
   await page.locator("#wv-geotarget-country").selectOption("GAB");
