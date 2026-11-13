@@ -51,6 +51,25 @@ try {
   await page.locator('[data-review-gate="video"]').waitFor();
   // The exact user 1/10 refusal is loaded from durable GitHub-backed archive
   // even if Safari has lost the local browser cache.
+  const archivedResponse=await page.request.get(base+"/review-archive/cop31-video.json");
+  assert.equal(archivedResponse.status(),200,"Published refusal must be present in dist/ for iPhone.");
+  const archiveRecord=await archivedResponse.json();
+  assert.equal(archiveRecord.github_issue,9);
+  const selectedStory=await page.evaluate(async()=>{
+    const response=await window.fetch("/api/media/stories");
+    const stories=await response.json();
+    return stories[0]?{
+      story:stories[0].id,
+      hash:stories[0].render_job?.output_sha256||null,
+      status:stories[0].render_job?.status||"none",
+    }:null;
+  });
+  console.log("GitHub issue archive / active MP4",JSON.stringify({
+    issue:archiveRecord.github_issue,
+    story:archiveRecord.story_id,expected:archiveRecord.artifact_ref,
+    selectedStory,
+  }));
+  assert.equal(selectedStory.hash,archiveRecord.artifact_ref);
   await page.getByText("AVIS DURABLE · GITHUB #9").waitFor();
   assert.equal(await page.locator("#wv-review-overall").inputValue(),"1");
   assert.equal(await page.locator("#wv-review-score-logo").inputValue(),"1");
