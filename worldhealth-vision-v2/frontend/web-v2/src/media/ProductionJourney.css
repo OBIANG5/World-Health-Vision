@@ -233,3 +233,28 @@ radial-gradient(ellipse at 10% 85%,rgba(151,102,80,.5),transparent 48%),linear-g
   .wvj-phone-headline{font-size:23px}
 }
 @media(prefers-reduced-motion:reduce){.wvj-step-card{transition:none}}
+
+/* Actual 9:16 newsroom MP4: the visible start of the production journey. */
+.wvj-featured-real{margin:0 clamp(20px,5vw,76px) 42px;border:1px solid rgba(81,193,232,.42);
+  border-radius:19px;display:grid;grid-template-columns:minmax(0,1fr) minmax(245px,320px);gap:32px;
+  padding:30px 38px;background:linear-gradient(120deg,#143549,#0c2332 65%,#102d42);box-shadow:0 14px 70px #04121b99}
+.wvj-featured-details{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.wvj-featured-details>span{font-size:10px;font-weight:880;letter-spacing:.12em;color:#8de0f9}
+.wvj-featured-details h2{font-size:clamp(29px,3vw,48px);letter-spacing:-.057em;line-height:1.09;max-width:600px;margin:19px 0}
+.wvj-featured-details p{font-size:16px;line-height:1.5;color:#deeef4;max-width:620px}
+.wvj-featured-facts{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0}
+.wvj-featured-facts b{font-size:12px;background:#0d2839;padding:10px 12px;border-radius:6px;color:#bbeaf6;border:1px solid #3c7d9959}
+.wvj-featured-note{font-size:11px;color:#adcad4;line-height:1.65;max-width:560px}
+.wvj-featured-details button{align-self:flex-start;border:0;background:#eef6e9;color:#093047;font-weight:850;font-size:12px;
+  padding:14px 17px;border-radius:8px;margin-top:27px}
+.wvj-featured-player{min-width:0;display:flex;flex-direction:column;align-items:center;gap:11px}
+.wvj-featured-player video{width:100%;max-height:565px;aspect-ratio:9/16;background:#03121d;border:5px solid #173e53;
+  border-radius:13px;object-fit:contain;box-shadow:0 22px 50px #0008}
+.wvj-featured-player>div{font-size:9px;text-align:center;color:#92bdcc;overflow-wrap:anywhere}
+@media(max-width:720px){
+  .wvj-featured-real{margin:0 16px 31px;display:flex;flex-direction:column;padding:22px 18px;gap:24px}
+  .wvj-featured-details h2{font-size:31px;margin:13px 0}
+  .wvj-featured-details p{font-size:13px}
+  .wvj-featured-details button{width:100%;text-align:center;margin-top:20px}
+  .wvj-featured-player video{max-width:270px;max-height:500px}
+}
