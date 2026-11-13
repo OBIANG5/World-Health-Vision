@@ -370,3 +370,24 @@ Après bascule du projet vers un système de production basé sur le manuel 137 
 **Décision outil économique :** ne pas utiliser Flow pour le pilote, car NASA met à disposition deux vraies photographies satellites et NOAA une photographie illustrative ; les zooms et transitions relèvent du montage. La prochaine action dépend des outils d'édition disponibles et doit porter sur **la voix puis le montage complet**, pas sur une autre animation de Terre codée.
 
 **Limites vérifiées :** pas de vraie voix Google Vids auditionnée, pas de téléchargement des photos dans ce repo au moment de cette entrée, aucun MP4 complet ni diffusion. Chaque source et lieu doivent être crédités ; droits NASA et NOAA vérifiés à la source avant l'export final. Les chiffres mondiaux reposent sur 1984–2023 ; les photos locales sur 2010/2026.
+
+
+---
+
+## 13 novembre — correction stratégique du radar et de l'automatisation de toute la production
+
+L'utilisateur a rejeté le pilote NASA mangroves : sujet jugé peu accrocheur, inadapté à la ligne de World-Vision. Il a aussi rappelé deux exigences fondamentales oubliées : **la vraie identité visuelle œil/globe/logo doit figurer dans le modèle de chaque reportage** et **l'objectif est une usine orchestrée par un seul endroit**, pas le passage manuel entre de multiples sites et pas la réécriture d'un logiciel vidéo.
+
+**Actions réelles GitHub :**
+- Pilot `docs/media/episodes/2026-11-13_mangroves_nasa/PRODUCTION_PACK.md` marqué `REFUSÉ / ARRÊTÉ`, sans effacer l'historique.
+- `automation/n8n/world-vision-radar-v1.n8n.json` : **workflow n8n importable de 8 nœuds**, RSS (BBC World/Business/Technology + ONU), Schedule Trigger chaque heure, Merge, Code scoring/déduplication et sortie des candidats `TO_VERIFY`, **aucun déclencheur de publication ni achat/API**. Workflow `active:false`.
+- Un test synthétique du nœud de classement a été exécuté sur le code extrait du fichier réel : **syntaxe JS valide**, 3 entrées de test → **2 sorties sans doublon**, séisme classé **95/100**, lifestyle **32/100**, toutes les sorties `TO_VERIFY`. Ce test **n'est pas un test des vrais flux RSS sur une instance n8n**.
+- `automation/brand/WORLD_VISION_BRAND_LOCK.json` : logo bleu G0 officiel (SHA blob), D00-v6 concept (SHA-256), cahier de composition, assets obligatoires, garde-fous, blocage du master si identité non approuvée.
+- `automation/WORLD_VISION_AUTOMATION_COCKPIT.md` : choix n8n + moteur à templates Shotstack, état des outils réellement connectés, limites API des abonnements, calendrier d'intégration, cycle éditorial et QA.
+- Continuité racine, état courant et conducteur multi-outils mis à jour en tête pour qu'aucun futur chat ne reprenne le mauvais pilote.
+
+**Investigation services** : n8n Cloud Starter 20 €/mois facturé annuellement, Community Edition auto-hébergée ; Make Free alternatif 1000 crédits mensuels et deux scénarios actifs ; Shotstack dispose d'une intégration n8n vérifiée avec modèles et rendu cloud ; Flow de Google AI Pro donne accès à l'application mais pas automatiquement à une API de rendu. Toutes les licences/quotas restant liés aux comptes réels et aux APIs doivent être contrôlés avant achat.
+
+**Ce qui NE fonctionne PAS encore** : n8n non connecté à ce chat, workflow RADAR non exécuté sur flux réel depuis une instance, aucun tableau éditorial persistant connecté, Shotstack non connecté, modèle vidéo encore à créer une fois avec le vrai logo et la D00-v6, aucune TTS/API ni chaîne de diffusion intégrée, aucun MP4 complet automatisé. **Ne jamais écrire que le système est déjà en production.**
+
+**La prochaine opération la plus utile** est l'activation d'une instance n8n (ou la voie moins chère Make si nécessaire), l'import et la mise en marche du radar après test; puis Google Drive + un seul modèle de rendu Shotstack/Creatomate et les gates humains.
