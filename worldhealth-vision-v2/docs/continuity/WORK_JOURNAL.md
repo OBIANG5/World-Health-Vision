@@ -355,3 +355,18 @@ Livrables réellement écrits et committés :
 - Mise à jour de `CONTINUITE_WORLD_VISION.md` et `CURRENT_STATE_AND_NEXT_STEP.md`.
 
 **Ne pas surpromettre :** c'est un conducteur de travail versionné, pas un moteur Flow/Vids automatisé ni un premier reportage finalisé. Objectif réel suivant : mener **un reportage complet de 40–50 secondes** au bout (un sujet réellement sourcé, une vraie voix, un montage vérifié), sans laisser le CGI du globe bloquer la production.
+
+
+---
+
+## 13 novembre — premier épisode éditorial NASA mangroves (pilote de la méthode multi-outils)
+
+Après bascule du projet vers un système de production basé sur le manuel 137 pages et sur les abonnements ChatGPT Plus / Google AI Pro, le **premier épisode réel est démarré**. Sujet : publication NASA Earth Observatory du 13 novembre 2026 sur la reprise des mangroves mondiales et comparaison de vraies images Landsat prises en 2010/2026 au Myanmar. Sources factuelles croisées avec la publication scientifique présentée par Tulane University et l'explication écologique NOAA.
+
+**Éléments créés et versionnés dans GitHub** :
+- `docs/media/episodes/2026-11-13_mangroves_nasa/voix_off_fr_v1.txt` (script narratif français exact, 112 mots environ, non approuvé et pas encore enregistré vocalement).
+- `docs/media/episodes/2026-11-13_mangroves_nasa/PRODUCTION_PACK.md` (fact-check, sources et nuances, médias NASA haute définition à télécharger, licences, six plans chronométrés, texte exact, auditions voix, choix Vids sur PC ou CapCut sur iPhone, exports/QA, statut des 14 étapes).
+
+**Décision outil économique :** ne pas utiliser Flow pour le pilote, car NASA met à disposition deux vraies photographies satellites et NOAA une photographie illustrative ; les zooms et transitions relèvent du montage. La prochaine action dépend des outils d'édition disponibles et doit porter sur **la voix puis le montage complet**, pas sur une autre animation de Terre codée.
+
+**Limites vérifiées :** pas de vraie voix Google Vids auditionnée, pas de téléchargement des photos dans ce repo au moment de cette entrée, aucun MP4 complet ni diffusion. Chaque source et lieu doivent être crédités ; droits NASA et NOAA vérifiés à la source avant l'export final. Les chiffres mondiaux reposent sur 1984–2023 ; les photos locales sur 2010/2026.
