@@ -185,3 +185,22 @@ Prochaine action soumise à validation :
 **Décisions préservées :** G0 logo bleu approuvé ; MP4 COP31 1/10 refusé ; A/B/C refusées ; G1 direction D00–D05 fixes et non approuvées ; un seul pays si événement local ; services externes non prouvés connectés. **Aucun changement audiovisuel ou déploiement n'a été réalisé dans cette session de lecture.**
 
 **Prochaine action maintenue :** inspecter la capture du D00 réellement publiée et améliorer seulement ce premier plan, montrer le rendu sur téléphone, recueillir l'avis explicite avant toute animation ou passage à D01–D05.
+
+
+---
+
+## 2026-11-13 — G1/D00, itérations du globe dans l'œil, nouvelle image et exigences
+
+**Demande utilisateur :** construire minutieusement l'identité audiovisuelle World-Vision, avec globe géant tournant plus tard ; forme de l'œil tirée des **deux arcs du vrai logo**. Retours successifs : globe beau, mais arc/cercle trop visible ou incorrect ; garder exactement deux arcs fins non fermés, plus grands que le cadre, sans afficher leurs extrémités. Augmenter la taille de la Terre, conserver l'atmosphère bleue, rendre les frontières nationales très claires, éliminer les lumières nocturnes, le petit soleil, les nuages décoratifs hors planète et réduire les étoiles.
+
+**Travail de cette session :** véritable logo PNG officiel lu dans GitHub et inspecté visuellement (SHA blob `bc80fa70cebd566768bfb1703a0f1f636a78c196`). Nouvelle proposition d'image fixe D00-v4 générée dans le chat ; dimensions 1086 × 1448, SHA-256 `5f97e5f0d29551e187b50106e0aaf2f00e700062a9a2f5845dbf9f9715b6a90e`. Elle n'est **pas validée** et n'est **pas encore un rendu 9:16, une géographie certifiée ou un film**.
+
+**Éléments enregistrés sur GitHub :**
+- [Historique précis des quatre images et des retours](../media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md).
+- [Contrat JSON exploitable pour le futur globe codé](../media/art-direction/d00-eye-globe-visual-contract-v4.json).
+- Décisions de conception et corrections D-018 à D-022 ajoutées dans `DECISION_REGISTER.md`.
+- État courant maintenu dans `CURRENT_STATE_AND_NEXT_STEP.md`.
+
+**Limitation de sauvegarde :** le PNG D00-v4 est un fichier généré dans la session ChatGPT ; **son binaire n'a pas été envoyé sur GitHub**. Son hash et ses caractéristiques y sont inscrits pour éviter les confusions de version. Le PNG source officiel du logo reste inchangé. Aucun nouveau build du site d'aperçu, aucun MP4 et aucun rendu Three.js/Blender/Remotion n'ont été exécutés ici.
+
+**Prochaine étape après avis humain :** corriger les défauts éventuels de cette proposition, puis réaliser un vrai globe 3D reproductible avec frontières GeoJSON, émission atmosphérique contrôlée et arcs paramétriques, d'abord en still vertical 1080×1920 ; ne passer aux mouvements caméra/globe de 3–6 s qu'après validation.
