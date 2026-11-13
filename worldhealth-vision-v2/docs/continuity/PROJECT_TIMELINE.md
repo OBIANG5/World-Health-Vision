@@ -86,6 +86,12 @@ Une image documentaire distante n'avait d'abord pas chargé ; corrigé par un JP
 ### 13 novembre — défaut de visibilité du « lien permanent »
 Le lien avec `?view=media` arrive par défaut sur « Parcours vidéo » alors que A/B/C sont sous « Noter & valider » → « Direction artistique ». RawGitHack met aussi temporairement en cache les fichiers de branche. Correction demandée : nouvel accès A/B/C visible sur l'accueil et affichage du SHA de version de la preview, sans changer le lien permanent.
 
+### 13 novembre — récupération effective d'une référence vidéo géographique
+
+Le propriétaire a réexpédié **un vrai MP4 de 64,921667 s** (SHA-256 `4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb`). Le contenu visible est une vidéo TikTok géopolitique qui montre la Terre, des zooms géographiques, des contours nationaux, des drapeaux et des connexions spatiales pour cinq nouvelles. L'analyse chronométrée par captures, les droits non établis et une proposition **D « Le globe raconte l'actualité »** ont été enregistrés dans `docs/media/references/`.
+
+**La vidéo a été analysée, mais le MP4 tiers n'a PAS été ajouté au dépôt**, et cette étude n'autorise pas à copier le travail du créateur ou à sauter les validations. A/B/C sont toujours non approuvées, D est une piste à maquetter, pas un rendu validé. Le texte exact du prompt historique disparu demeure inconnu.
+
 ## 5. État de code versus état de production
 
 **Produit V2** : du code applicatif de fond et des branches de preview existent ; il faut vérifier séparément les déploiements backend et la fraîcheur des données avant d'affirmer qu'il fonctionne 24/7.
