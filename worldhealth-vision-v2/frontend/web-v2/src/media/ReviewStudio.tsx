@@ -6,7 +6,7 @@
  * On deliberate submission, GitHub opens a PRE-FILLED issue that the user
  * must submit themselves; this avoids ever exposing a GitHub token in JS.
  */
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import type {MediaStory} from "./types";
 import "./ReviewStudio.css";
 
@@ -96,7 +96,9 @@ function artifactRef(story:MediaStory,gate:GateId):string|null {
 }
 function readDraft(key:string):Review {
   try {
-    const raw=window.localStorage.getItem(key);
+    let raw:string|null=null;
+    try{raw=window.localStorage.getItem(key);}catch{/* Browser may deny durable storage */}
+    if(!raw){try{raw=window.sessionStorage.getItem(key);}catch{/* Ignore */}}
     if(!raw)return {...START,scores:{},blockers:[]};
     const parsed=JSON.parse(raw) as Partial<Review>;
     if(parsed.version!==1)return {...START,scores:{},blockers:[]};
@@ -115,6 +117,24 @@ function readDraft(key:string):Review {
     };
   }catch{return {...START,scores:{},blockers:[]};}
 }
+function persistDraft(key:string,review:Review):boolean {
+  const json=JSON.stringify(review);
+  let written=false;
+  try{window.localStorage.setItem(key,json);written=true;}catch{/* Safari privacy settings may deny access */}
+  try{window.sessionStorage.setItem(key,json);written=true;}catch{/* Session storage may also be disabled */}
+  return written;
+}
+function isEmptyDraft(review:Review):boolean {
+  return review.global===null &&
+    Object.values(review.scores).every(value=>value===null) &&
+    review.blockers.length===0 && !review.notes.trim() && !review.priorities.trim();
+}
+type ArchivedReview = {
+  story_id:string;gate_id:string;artifact_ref:string;video_sha256:string;
+  decision:Decision;overall_score:number;category_scores:Record<string,number>;
+  blocking_categories:string[];feedback:string;correction_priorities:string;
+  github_issue:number;github_issue_url:string;reviewed_at:string;
+};
 const STANCE:Record<Decision,string> = {
   a_corriger:"À corriger",
   refuse:"Refusé",
@@ -181,38 +201,73 @@ function ReviewForm({story,gate,previewMode}:{
   const ref=artifactRef(story,gate);
   const storageKey=`wv-review-v1:${story.id}:${gate}:${ref||"missing"}`;
   const [review,setReview]=useState<Review>(()=>readDraft(storageKey));
+  const reviewRef=useRef(review);
   const [copyStatus,setCopyStatus]=useState("");
+  const [storageWarning,setStorageWarning]=useState(false);
+  const [archived,setArchived]=useState<ArchivedReview|null>(null);
+  // Save on every interaction, BEFORE a view/tab or external link can unmount
+  // this component. React effects alone can run too late on iOS webviews.
+  const applyReview=(next:Review)=>{
+    reviewRef.current=next;
+    setReview(next);
+    if(!persistDraft(storageKey,next))setStorageWarning(true);
+  };
+  const update=(patch:Partial<Review>)=>applyReview({...reviewRef.current,...patch});
+  const fromArchive=(saved:ArchivedReview):Review=>({
+    version:1,global:saved.overall_score,
+    decision:saved.decision,notes:saved.feedback||"",priorities:saved.correction_priorities||"",
+    scores:{...saved.category_scores},blockers:[...saved.blocking_categories],
+  });
   useEffect(()=>{
-    try{window.localStorage.setItem(storageKey,JSON.stringify(review));}catch{/* storage blocked: export still works */}
-  },[storageKey,review]);
+    let alive=true;
+    void (async()=>{
+      try{
+        const response=await fetch("./review-archive/cop31-video.json",{cache:"no-store"});
+        if(!response.ok)return;
+        const saved=await response.json() as ArchivedReview;
+        if(!alive||saved.story_id!==story.id||saved.gate_id!==gate||saved.artifact_ref!==ref)return;
+        setArchived(saved);
+        if(isEmptyDraft(reviewRef.current))applyReview(fromArchive(saved));
+      }catch{/* The live API may not expose a public static review archive */}
+    })();
+    return ()=>{alive=false;};
+  },[story.id,gate,ref]);
+  useEffect(()=>{
+    const save=()=>{persistDraft(storageKey,reviewRef.current);};
+    window.addEventListener("pagehide",save);
+    document.addEventListener("visibilitychange",save);
+    return ()=>{
+      window.removeEventListener("pagehide",save);
+      document.removeEventListener("visibilitychange",save);
+    };
+  },[storageKey]);
   const ratedCount=g.required.filter(id=>review.scores[id]!=null).length;
   const average=g.required.reduce((a,id)=>a+(review.scores[id]??0),0)/(ratedCount||1);
-  const allStrong=review.global!==null&&review.global>=8&&ratedCount>=Math.min(3,g.required.length)&&
-    g.required.every(id=>review.scores[id]==null || (review.scores[id]??0)>=8)&&review.blockers.length===0;
+  const allStrong=review.global!==null&&review.global>=8&&ratedCount===g.required.length&&
+    g.required.every(id=>(review.scores[id]??0)>=8)&&review.blockers.length===0;
   const hasArtifact=Boolean(ref);
   const acceptanceBlocked=review.decision==="valide"&&(!hasArtifact||!allStrong);
-  const ready=review.global!==null&&!acceptanceBlocked&&(
-    review.decision==="valide"||review.notes.trim().length>3||review.priorities.trim().length>3
-  );
-  const update=(update:Partial<Review>)=>setReview(prev=>({...prev,...update}));
+  // A low score and an explicit refusal ARE meaningful feedback, even if
+  // the user doesn't type any comments. Do not silently disable the CTA.
+  const ready=review.global!==null&&!acceptanceBlocked;
   const payload=()=>jsonForReview(story,gate,review);
   const githubLink=()=>{
     const data=payload();
     const title=`[WV-REVIEW] ${data.gate_id} · ${STANCE[data.decision]} · ${data.artifact_ref?.slice(0,12)||"sans-asset"}`;
-    const body=markdownForReview(data);
-    return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
-  };
-  const submit=()=>{
-    if(!ready)return;
-    const url=githubLink();
-    const link=document.createElement("a");
-    link.href=url;
-    link.target="_blank";
-    link.rel="noopener noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setCopyStatus("GitHub est ouvert avec tes notes. Clique sur « Submit new issue » dans GitHub pour les enregistrer définitivement.");
+    // Compact enough for in-app iOS browsers. The detailed JSON stays
+    // available in the Copy / Export controls if comments are very long.
+    const summary=[
+      `# ${data.gate_name} — ${STANCE[data.decision]} (${data.overall_score}/10)`,
+      `Dossier: ${data.story_id}`,
+      `Vidéo SHA-256: ${data.video_sha256||"Aucun MP4"}`,
+      `Livrable: ${data.artifact_ref||"Aucun"}`,
+      `Notes: ${Object.entries(data.category_scores).map(([k,v])=>`${k}=${v}/10`).join(", ")}`,
+      `Bloquants: ${data.blocking_categories.join(", ")||"aucun"}`,
+      `Commentaires: ${data.feedback.slice(0,450)||"(aucun)"}`,
+      `Corrections: ${data.correction_priorities.slice(0,350)||"(non précisées)"}`,
+      `Source: world-vision-review-v1; avis de l'utilisateur à confirmer; aucun rendu ni publication autorisés.`,
+    ].join("\n");
+    return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(summary)}`;
   };
   const copy=async()=>{
     if(review.global===null)return;
@@ -241,6 +296,17 @@ function ReviewForm({story,gate,previewMode}:{
         <code>{ref?ref.length>32?`${ref.slice(0,18)}…${ref.slice(-8)}`:ref:"—"}</code>
       </div>
     </div>
+    {archived && <div className="wv-review-archive" role="status">
+      <div><span>AVIS DURABLE · GITHUB #{archived.github_issue}</span>
+        <strong>Version déjà refusée — {archived.overall_score}/10</strong>
+        <p>{archived.blocking_categories.length} critères bloquants · {new Date(archived.reviewed_at).toLocaleDateString("fr-FR")}</p>
+      </div>
+      <div className="wv-review-archive-actions">
+        <a href={archived.github_issue_url} target="_blank" rel="noreferrer">Voir l'avis sur GitHub ↗</a>
+        <button type="button" onClick={()=>{applyReview(fromArchive(archived));setCopyStatus("Notes sauvegardées sur GitHub rechargées.");}}>
+          Restaurer les notes 1/10</button>
+      </div>
+    </div>}
     {(gate==="video"||gate==="montage") && story.render_job?.status==="completed"&&story.render_job.output_url&&
       <div className="wv-review-watch">
         <video controls playsInline preload="metadata" src={story.render_job.output_url}
@@ -269,13 +335,13 @@ function ReviewForm({story,gate,previewMode}:{
         </div>
         <div className="wv-review-metric-control">
           <select id={`wv-review-score-${id}`} value={review.scores[id]??""}
-            onChange={e=>setReview(prev=>({...prev,scores:{...prev.scores,[id]:e.target.value?Number(e.target.value):null}}))}>
+            onChange={e=>update({scores:{...reviewRef.current.scores,[id]:e.target.value?Number(e.target.value):null}})}>
             <option value="">Note de 1 à 10</option>
             {SCORE_OPTIONS.map(n=><option key={n} value={n}>{n} / 10</option>)}
           </select>
           <label className="wv-review-blocker">
             <input type="checkbox" checked={review.blockers.includes(id)}
-              onChange={e=>setReview(prev=>({...prev,blockers:e.target.checked?[...prev.blockers,id]:prev.blockers.filter(k=>k!==id)}))}/>
+              onChange={e=>update({blockers:e.target.checked?[...reviewRef.current.blockers,id]:reviewRef.current.blockers.filter(k=>k!==id)})}/>
             <span>Bloquant</span>
           </label>
         </div>
@@ -304,7 +370,7 @@ function ReviewForm({story,gate,previewMode}:{
       </div>
       {review.decision==="valide"&&acceptanceBlocked&&
         <p className="wv-review-warning">Validation impossible : il faut un livrable réel identifié, une note globale d'au moins 8/10,
-          au moins trois aspects notés à 8/10 ou plus et aucun point bloquant.
+          chaque aspect noté à 8/10 ou plus et aucun point bloquant.
           Une mauvaise note ou un point bloquant nécessite « À corriger » ou « Refusé ».</p>}
       <p className="wv-review-context">Les notes ne débloquent pas un nouveau rendu. Elles ne sont prises en compte dans le processus
         qu'après une validation explicite et l'enregistrement de l'avis dans GitHub.</p>
@@ -314,14 +380,23 @@ function ReviewForm({story,gate,previewMode}:{
         <p>{previewMode?"Brouillon local à ton téléphone ; GitHub nécessite ton clic final de confirmation.":"Compte rendu local et publication manuelle sécurisée dans GitHub."}</p>
       </div>
       <div className="wv-review-actions">
-        <button type="button" className="wv-review-primary" disabled={!ready} onClick={submit}>
-          Transmettre l'avis à GitHub ↗</button>
+        {ready ?
+          <a id="wv-review-gh-link" className="wv-review-primary" href={githubLink()}
+            onClick={()=>persistDraft(storageKey,reviewRef.current)}>
+            Ouvrir GitHub pour enregistrer ↗</a> :
+          <button type="button" disabled className="wv-review-primary">
+            Note nécessaire avant l'enregistrement</button>}
         <button type="button" disabled={review.global===null} onClick={()=>void copy()}>Copier pour ChatGPT</button>
         <button type="button" disabled={review.global===null} onClick={download}>Exporter JSON</button>
       </div>
       {copyStatus&&<p role="status" className="wv-review-status">{copyStatus}</p>}
+      {storageWarning&&<p role="alert" className="wv-review-warning">
+        Ce navigateur bloque le stockage local. Copie ton avis ou confirme-le sur GitHub avant de quitter cette page.
+      </p>}
       <p className="wv-review-fine">Le bouton GitHub n'enregistre pas directement l'avis : un formulaire prérempli s'ouvre
-        et tu dois cliquer sur « Submit new issue » dans GitHub. Ensuite, cet avis est durable, consultable depuis
+        et tu dois cliquer sur « Submit new issue » dans GitHub. Si le navigateur intégré bloque GitHub,
+        ouvre le lien dans Safari, ou utilise « Copier pour ChatGPT » comme tu viens de le faire.
+        Pour les commentaires longs, copie le JSON complet. Ensuite, cet avis est durable, consultable depuis
         ChatGPT avec le connecteur GitHub. Aucune clé de ton compte GitHub n'est exposée dans le site.</p>
     </div>
   </div>;
