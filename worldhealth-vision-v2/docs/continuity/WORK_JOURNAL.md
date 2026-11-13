@@ -294,3 +294,8 @@ La dernière image de référence **a été retrouvée dans le répertoire de ce
 **Correctifs réellement committés :** `GlobeDirection.tsx` (référence D00-v6 explicitement protégée, labo dans `<details>` replié), `GlobeDirection.css` (lisibilité de la distinction), `media-preview-smoke.mjs` (test automatisé : référence présente, labo replié initialement, ouverture volontaire puis rotation fonctionnelle). Ces changements ne modifient ni le code géographique, ni le logo officiel, ni le prototype de vidéo.
 
 **Suite** : vérifier CI et preview GitHack après les correctifs ; travailler sur une vraie scène D00 photo-CGI 9:16 et non réintroduire le Canvas comme image finale. Lire le plan directeur du manuel de 137 pages pour conserver les futurs jalons voix, montage, vérification et publication.
+
+
+### Sauvegarde locale exportable de l'original D00-v6
+
+Le fichier PNG original (1086×1448, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`) a également été **copié sans modification des octets** dans une archive téléchargeable de la conversation, `World-Vision_D00-v6_reference_originale.zip`, avec manifeste de provenance et rappel de la non-validation. **Important** : cette archive est un artefact téléchargeable du chat, **pas encore un fichier committé sur GitHub** ; son lien `sandbox:` est spécifique à la conversation. Conserver/exporter ce ZIP avant de changer de chat si nécessaire.
