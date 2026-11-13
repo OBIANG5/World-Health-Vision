@@ -1,0 +1,362 @@
+/**
+ * World-Vision — revue humaine et validation granulaire.
+ *
+ * Scoring is deliberately not a publishing or rendering endpoint.
+ * The static phone archive has no authenticated backend. Drafts stay local.
+ * On deliberate submission, GitHub opens a PRE-FILLED issue that the user
+ * must submit themselves; this avoids ever exposing a GitHub token in JS.
+ */
+import {useEffect, useMemo, useState} from "react";
+import type {MediaStory} from "./types";
+import "./ReviewStudio.css";
+
+type GateId = "identite" | "script" | "medias" | "voix" | "animation" | "montage" | "publication" | "video";
+type Decision = "a_corriger" | "refuse" | "valide";
+type Review = {
+  version: 1;
+  global: number | null;
+  notes: string;
+  priorities: string;
+  decision: Decision;
+  scores: Record<string,number|null>;
+  blockers: string[];
+};
+const repo = "OBIANG5/World-Health-Vision";
+const GATES:ReadonlyArray<{
+  id:GateId;number:string;name:string;subtitle:string;deliverable:string;
+  required:string[];hint:string;
+}> = [
+  {id:"identite",number:"00",name:"Identité & logo",subtitle:"Charte World-Vision",
+    deliverable:"Logo original approuvé, déclinaisons et planche de charte",
+    required:["logo","couleurs","typographie","lisibilite"],
+    hint:"Le fichier du vrai logo validé n'est pas encore disponible ici. Aucun dessin approchant n'est approuvable."},
+  {id:"script",number:"01",name:"Sujet & script",subtitle:"Accroche, faits, angle",
+    deliverable:"Script versionné et affirmations liées aux sources",
+    required:["accroche","exactitude","narration","rythme"],
+    hint:"Relis le récit et compare toutes les affirmations aux sources primaires avant de l'approuver."},
+  {id:"medias",number:"02",name:"Images & plans",subtitle:"Pertinence et authenticité",
+    deliverable:"Sélection de plans avec licences, sources et autorisations",
+    required:["images","authenticite","luminosite","variete"],
+    hint:"Une illustration générée n'est pas une image de l'événement réel. Les plans doivent être authentiques ou explicitement illustratifs."},
+  {id:"voix",number:"03",name:"Voix & narration",subtitle:"Écoute comparative",
+    deliverable:"Extrait de voix vérifié, avec diction et prosodie validées",
+    required:["voix","diction","rythme","mixage"],
+    hint:"La voix Piper du pilote est un premier essai rejeté ; il faut auditionner de vraies alternatives."},
+  {id:"animation",number:"04",name:"Animations",subtitle:"Prototype de 3 à 6 s",
+    deliverable:"Micro-animation mobile, avant le rendu intégral",
+    required:["animations","transitions","luminosite","lisibilite"],
+    hint:"Une animation indépendante est nécessaire. La vidéo COP31 complète n'est pas une validation de ce prototype."},
+  {id:"montage",number:"05",name:"Montage & sound design",subtitle:"Rythme, plans, transitions",
+    deliverable:"Version candidate avec voix et plans déjà approuvés",
+    required:["montage","rythme","transitions","mixage","sous_titres"],
+    hint:"Un rendu techniquement encodé peut être rejeté artistiquement. Tous les blocs doivent déjà avoir été validés."},
+  {id:"publication",number:"06",name:"Exports & diffusion",subtitle:"TikTok, WhatsApp, conformité",
+    deliverable:"Exports conformes, manifestes et preuves de canal",
+    required:["conformite","sources","lisibilite","sous_titres"],
+    hint:"Ce jalon ne peut pas être approuvé si aucun export autorisé n'a été produit."},
+  {id:"video",number:"07",name:"Vidéo complète",subtitle:"Notation finale sur 10",
+    deliverable:"Le MP4 exact, avec hash SHA-256 et évaluation de tous ses aspects",
+    required:["logo","couleurs","luminosite","images","authenticite","voix","diction",
+      "animations","transitions","rythme","mixage","sous_titres","exactitude","montage","lisibilite"],
+    hint:"Tu peux noter et refuser le pilote COP31 tel qu'il existe. Ce retour ne publie jamais la vidéo."},
+] as const;
+const CRITERIA:Record<string,string> = {
+  logo:"Logo officiel & placement",
+  couleurs:"Couleurs & identité visuelle",
+  typographie:"Typographie & hiérarchie",
+  lisibilite:"Lisibilité sur téléphone",
+  accroche:"Accroche et intérêt immédiat",
+  exactitude:"Fiabilité des faits et des sources",
+  narration:"Qualité du texte et des explications",
+  rythme:"Rythme général et durée",
+  images:"Pertinence et qualité des images",
+  authenticite:"Authenticité des plans & droits",
+  luminosite:"Luminosité et contraste",
+  variete:"Variété des plans et compositions",
+  voix:"Voix : naturel et expressivité",
+  diction:"Prononciation et articulation",
+  mixage:"Qualité sonore et mixage",
+  animations:"Fluidité et originalité des animations",
+  transitions:"Transitions",
+  montage:"Cohérence du montage final",
+  sous_titres:"Sous-titres et zones sûres",
+  conformite:"Conformité du canal de publication",
+  sources:"Sources et crédits à l'écran",
+};
+const SCORE_OPTIONS = [1,2,3,4,5,6,7,8,9,10] as const;
+const START:Review = {version:1,global:null,notes:"",priorities:"",decision:"a_corriger",scores:{},blockers:[]};
+
+function artifactRef(story:MediaStory,gate:GateId):string|null {
+  if(gate==="video"||gate==="montage")return story.render_job?.output_sha256 || null;
+  if(gate==="voix")return story.voiceover?.id || null;
+  if(gate==="script")return story.creative_package?.version ? `creative-v${story.creative_package.version}` : null;
+  if(gate==="medias")return story.asset_bundle?.assets.length ? `assets-${story.asset_bundle.assets.length}` : null;
+  if(gate==="publication")return story.publication_package?.manifest_sha256||null;
+  return null;
+}
+function readDraft(key:string):Review {
+  try {
+    const raw=window.localStorage.getItem(key);
+    if(!raw)return {...START,scores:{},blockers:[]};
+    const parsed=JSON.parse(raw) as Partial<Review>;
+    if(parsed.version!==1)return {...START,scores:{},blockers:[]};
+    const scores:Record<string,number|null>={};
+    for(const [criterion,number] of Object.entries(parsed.scores || {})){
+      if(CRITERIA[criterion] && typeof number==="number" && Number.isInteger(number) && number>=1&&number<=10){
+        scores[criterion]=number;
+      }
+    }
+    return {version:1,
+      global:typeof parsed.global==="number"&&parsed.global>=1&&parsed.global<=10?parsed.global:null,
+      decision:["a_corriger","refuse","valide"].includes(parsed.decision||"")?parsed.decision as Decision:"a_corriger",
+      notes:typeof parsed.notes==="string"?parsed.notes.slice(0,2500):"",
+      priorities:typeof parsed.priorities==="string"?parsed.priorities.slice(0,1500):"",
+      scores,blockers:(parsed.blockers || []).filter(s=>Boolean(CRITERIA[s])),
+    };
+  }catch{return {...START,scores:{},blockers:[]};}
+}
+const STANCE:Record<Decision,string> = {
+  a_corriger:"À corriger",
+  refuse:"Refusé",
+  valide:"Je valide",
+};
+const jsonForReview=(story:MediaStory,gate:GateId,review:Review)=>{
+  const g=GATES.find(item=>item.id===gate)!;
+  return {
+    schema_version:"world-vision-review-v1",
+    kind:"editorial_human_feedback",
+    reviewed_at:new Date().toISOString(),
+    source:"World-Vision Media Studio",
+    story_id:story.id,
+    story_title:story.title,
+    gate_id:gate,
+    gate_name:g.name,
+    artifact_ref:artifactRef(story,gate),
+    video_sha256:story.render_job?.output_sha256||null,
+    decision:review.decision,
+    overall_score:review.global,
+    category_scores:Object.fromEntries(g.required.map(id=>[id,review.scores[id]??null])),
+    blocking_categories:review.blockers.filter(id=>g.required.includes(id)),
+    feedback:review.notes.trim(),
+    correction_priorities:review.priorities.trim(),
+    notes:"Ce document est un retour utilisateur, non un reçu de publication ni une autorisation de rendu automatique.",
+  };
+};
+const markdownForReview=(review:ReturnType<typeof jsonForReview>):string=>{
+  const heading=`# Évaluation World-Vision — ${review.gate_name}`;
+  const rows=Object.entries(review.category_scores).map(([id,val])=>
+    `| ${CRITERIA[id]} | ${val===null?"Non noté":val+"/10"} | ${review.blocking_categories.includes(id)?"BLOQUANT":"—"} |`).join("\n");
+  const detail=JSON.stringify(review,null,2);
+  return [
+    heading,
+    "",
+    `**Dossier :** ${review.story_title}`,
+    `**Décision :** ${STANCE[review.decision]} | **Note générale :** ${review.overall_score}/10`,
+    `**Version évaluée :** \`${review.artifact_ref??"Aucun livrable encore déposé"}\``,
+    `**SHA-256 master :** \`${review.video_sha256??"Aucun MP4"}\``,
+    `**Date :** ${review.reviewed_at}`,
+    "",
+    "| Aspect | Note | Priorité |",
+    "|---|---:|---|",
+    rows,
+    "",
+    "## Commentaires",
+    review.feedback||"Aucun commentaire supplémentaire.",
+    "",
+    "## Modifications prioritaires",
+    review.correction_priorities||"Non précisées.",
+    "",
+    "<details><summary>Données structurées (pour retrouver l'avis et comparer les versions)</summary>",
+    "",
+    "~~~json",detail,"~~~","","</details>",
+    "",
+    "> Cet avis ne déclenche pas un rendu ni une publication. Il doit être traité et validé dans la branche Media Studio.",
+  ].join("\n");
+};
+
+function ReviewForm({story,gate,previewMode}:{
+  story:MediaStory;gate:GateId;previewMode:boolean;
+}){
+  const g=GATES.find(item=>item.id===gate)!;
+  const ref=artifactRef(story,gate);
+  const storageKey=`wv-review-v1:${story.id}:${gate}:${ref||"missing"}`;
+  const [review,setReview]=useState<Review>(()=>readDraft(storageKey));
+  const [copyStatus,setCopyStatus]=useState("");
+  useEffect(()=>{
+    try{window.localStorage.setItem(storageKey,JSON.stringify(review));}catch{/* storage blocked: export still works */}
+  },[storageKey,review]);
+  const ratedCount=g.required.filter(id=>review.scores[id]!=null).length;
+  const average=g.required.reduce((a,id)=>a+(review.scores[id]??0),0)/(ratedCount||1);
+  const allStrong=review.global!==null&&review.global>=8&&ratedCount>=Math.min(3,g.required.length)&&
+    g.required.every(id=>review.scores[id]==null || (review.scores[id]??0)>=8)&&review.blockers.length===0;
+  const hasArtifact=Boolean(ref);
+  const acceptanceBlocked=review.decision==="valide"&&(!hasArtifact||!allStrong);
+  const ready=review.global!==null&&!acceptanceBlocked&&(
+    review.decision==="valide"||review.notes.trim().length>3||review.priorities.trim().length>3
+  );
+  const update=(update:Partial<Review>)=>setReview(prev=>({...prev,...update}));
+  const payload=()=>jsonForReview(story,gate,review);
+  const githubLink=()=>{
+    const data=payload();
+    const title=`[WV-REVIEW] ${data.gate_id} · ${STANCE[data.decision]} · ${data.artifact_ref?.slice(0,12)||"sans-asset"}`;
+    const body=markdownForReview(data);
+    return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+  };
+  const submit=()=>{
+    if(!ready)return;
+    const url=githubLink();
+    const opened=window.open(url,"_blank","noopener,noreferrer");
+    if(!opened)window.location.href=url;
+    setCopyStatus("GitHub est ouvert avec tes notes. Clique sur « Submit new issue » dans GitHub pour les enregistrer définitivement.");
+  };
+  const copy=async()=>{
+    if(review.global===null)return;
+    const data=JSON.stringify(payload(),null,2);
+    try{
+      await navigator.clipboard.writeText(data);
+      setCopyStatus("Évaluation copiée : colle-la dans ChatGPT ou conserve-la dans tes documents.");
+    }catch{setCopyStatus("La copie n'a pas été autorisée par le navigateur. Utilise le lien GitHub.");}
+  };
+  const download=()=>{
+    if(review.global===null)return;
+    const blob=new Blob([JSON.stringify(payload(),null,2)+"\n"],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement("a");
+    link.href=url;
+    link.download=`world-vision-review-${gate}-${(ref||"none").slice(0,12)}.json`;
+    document.body.append(link);link.click();link.remove();
+    URL.revokeObjectURL(url);
+    setCopyStatus("Sauvegarde JSON créée sur ton appareil. Elle n'a pas été envoyée au serveur.");
+  };
+  return <div className="wv-review-panel" data-review-gate={gate}>
+    <div className="wv-review-target">
+      <div><span>LIVRABLE À ÉVALUER</span><h3>{g.deliverable}</h3><p>{g.hint}</p></div>
+      <div className={`wv-review-evidence ${hasArtifact?"available":"missing"}`}>
+        <b>{hasArtifact?"Version retrouvée":"Pas de livrable validable"}</b>
+        <code>{ref?ref.length>32?`${ref.slice(0,18)}…${ref.slice(-8)}`:ref:"—"}</code>
+      </div>
+    </div>
+    {(gate==="video"||gate==="montage") && story.render_job?.status==="completed"&&story.render_job.output_url&&
+      <div className="wv-review-watch">
+        <video controls playsInline preload="metadata" src={story.render_job.output_url}
+          poster="./media-pilots/cop31-risk-finance-2026-11-12/poster-preview.jpg" aria-label="Vidéo réelle à évaluer"/>
+        <div><strong>Vidéo du pilote COP31 — refusée artistiquement</strong>
+          <p>Regarde et écoute avant de noter. La note concerne précisément ce MP4, identifié par son SHA-256.</p>
+          <code>{story.render_job.output_sha256}</code>
+        </div>
+      </div>}
+    <div className="wv-review-main-score">
+      <div><span>NOTE GÉNÉRALE</span><h3>Combien sur 10 ?</h3><p>La note ne signifie jamais automatiquement « validé ».</p></div>
+      <div className="wv-review-main-select">
+        <label htmlFor="wv-review-overall">Ta note globale</label>
+        <select id="wv-review-overall" value={review.global??""}
+          onChange={e=>update({global:e.target.value?Number(e.target.value):null})}>
+          <option value="">— / 10</option>
+          {SCORE_OPTIONS.map(n=><option value={n} key={n}>{n}/10</option>)}
+        </select>
+      </div>
+    </div>
+    <div className="wv-review-section-title"><div><span>CRITÈRES DÉTAILLÉS</span><h3>Évalue chaque aspect</h3></div><span>{ratedCount} / {g.required.length} notés</span></div>
+    <div className="wv-review-metrics">
+      {g.required.map(id=><div className="wv-review-metric" key={id}>
+        <div><label htmlFor={`wv-review-score-${id}`}>{CRITERIA[id]}</label>
+          <span>{review.scores[id]!=null?`${review.scores[id]}/10`:"Non noté"}</span>
+        </div>
+        <div className="wv-review-metric-control">
+          <select id={`wv-review-score-${id}`} value={review.scores[id]??""}
+            onChange={e=>setReview(prev=>({...prev,scores:{...prev.scores,[id]:e.target.value?Number(e.target.value):null}}))}>
+            <option value="">Note de 1 à 10</option>
+            {SCORE_OPTIONS.map(n=><option key={n} value={n}>{n} / 10</option>)}
+          </select>
+          <label className="wv-review-blocker">
+            <input type="checkbox" checked={review.blockers.includes(id)}
+              onChange={e=>setReview(prev=>({...prev,blockers:e.target.checked?[...prev.blockers,id]:prev.blockers.filter(k=>k!==id)}))}/>
+            <span>Bloquant</span>
+          </label>
+        </div>
+      </div>)}
+    </div>
+    <div className="wv-review-mini-summary">
+      <span>Moyenne des aspects renseignés</span>
+      <strong>{ratedCount?average.toFixed(1).replace(".",",")+"/10":"—"}</strong>
+    </div>
+    <div className="wv-review-feedback-fields">
+      <label htmlFor="wv-review-notes">Qu'est-ce qui ne va pas ? Qu'est-ce qui te plaît ?</label>
+      <textarea id="wv-review-notes" value={review.notes} maxLength={2500} rows={4}
+        onChange={e=>update({notes:e.target.value})}
+        placeholder="Ex. : voix robotique, logo incorrect, transitions trop lentes, plans répétitifs…"/>
+      <label htmlFor="wv-review-priorities">Corrections prioritaires pour la prochaine version</label>
+      <textarea id="wv-review-priorities" value={review.priorities} maxLength={1500} rows={3}
+        onChange={e=>update({priorities:e.target.value})}
+        placeholder="Ex. : 1) reprendre le logo exact 2) tester trois voix 3) créer un vrai plan d'ouverture."/>
+    </div>
+    <div className="wv-review-verdict">
+      <span>TA DÉCISION HUMAINE</span>
+      <div role="group" aria-label="Décision de validation">
+        {(["a_corriger","refuse","valide"] as const).map(choice=>
+          <button type="button" key={choice} className={review.decision===choice?"selected":""}
+            aria-pressed={review.decision===choice} onClick={()=>update({decision:choice})}>{STANCE[choice]}</button>)}
+      </div>
+      {review.decision==="valide"&&acceptanceBlocked&&
+        <p className="wv-review-warning">Validation impossible : il faut un livrable réel identifié, une note globale d'au moins 8/10,
+          au moins trois aspects notés à 8/10 ou plus et aucun point bloquant.
+          Une mauvaise note ou un point bloquant nécessite « À corriger » ou « Refusé ».</p>}
+      <p className="wv-review-context">Les notes ne débloquent pas un nouveau rendu. Elles ne sont prises en compte dans le processus
+        qu'après une validation explicite et l'enregistrement de l'avis dans GitHub.</p>
+    </div>
+    <div className="wv-review-submit">
+      <div><strong>Enregistrer tes observations</strong>
+        <p>{previewMode?"Brouillon local à ton téléphone ; GitHub nécessite ton clic final de confirmation.":"Compte rendu local et publication manuelle sécurisée dans GitHub."}</p>
+      </div>
+      <div className="wv-review-actions">
+        <button type="button" className="wv-review-primary" disabled={!ready} onClick={submit}>
+          Transmettre l'avis à GitHub ↗</button>
+        <button type="button" disabled={review.global===null} onClick={()=>void copy()}>Copier pour ChatGPT</button>
+        <button type="button" disabled={review.global===null} onClick={download}>Exporter JSON</button>
+      </div>
+      {copyStatus&&<p role="status" className="wv-review-status">{copyStatus}</p>}
+      <p className="wv-review-fine">Le bouton GitHub n'enregistre pas directement l'avis : un formulaire prérempli s'ouvre
+        et tu dois cliquer sur « Submit new issue » dans GitHub. Ensuite, cet avis est durable, consultable depuis
+        ChatGPT avec le connecteur GitHub. Aucune clé de ton compte GitHub n'est exposée dans le site.</p>
+    </div>
+  </div>;
+}
+
+export default function ReviewStudio({story,onOpenJourney,previewMode}:{
+  story:MediaStory|null;onOpenJourney:()=>void;previewMode:boolean;
+}){
+  const [gate,setGate]=useState<GateId>(() => {
+    const candidate=new URLSearchParams(window.location.search).get("gate");
+    return GATES.some(item=>item.id===candidate)?candidate as GateId:"video";
+  });
+  useEffect(()=>{
+    const url=new URL(window.location.href);
+    url.searchParams.set("gate",gate);
+    window.history.replaceState({}, "",url.pathname+url.search+url.hash);
+  },[gate]);
+  const g=useMemo(()=>GATES.find(item=>item.id===gate)!,[gate]);
+  const evidence=story?artifactRef(story,gate):null;
+  return <main className="wv-review-shell">
+    <header className="wv-review-hero">
+      <div><div className="wv-review-eyebrow">WORLD-VISION · QUALITÉ ÉDITORIALE</div>
+        <h1>Tu notes.<br/><em>On améliore.</em></h1>
+        <p>Chaque étape est évaluée séparément, de 1 à 10, avant tout nouveau montage.
+          Une note faible ou un refus signifie : on corrige ce composant, on ne passe pas au suivant.</p>
+      </div>
+      <div className="wv-review-badge"><strong>7+1</strong><span>JALONS<br/>À VALIDER</span></div>
+    </header>
+    <nav className="wv-review-stage-tabs" aria-label="Choisir un jalon à évaluer">
+      {GATES.map(item=><button key={item.id} type="button" aria-current={gate===item.id?"step":undefined}
+        className={gate===item.id?"active":""} onClick={()=>setGate(item.id)}>
+        <span>{item.number}</span><b>{item.name}</b>
+      </button>)}
+    </nav>
+    <section className="wv-review-intro">
+      <div><span>JALON {g.number} / 07</span><h2>{g.name}</h2><p>{g.subtitle} · {g.deliverable}</p></div>
+      <button onClick={onOpenJourney} type="button">← Retour au parcours</button>
+    </section>
+    {!story?<div className="wv-review-empty">Aucun dossier chargé. Vérifie le Media Studio ou sélectionne un reportage.</div>:
+      <ReviewForm key={`${story.id}:${gate}:${evidence||"missing"}`} story={story} gate={gate} previewMode={previewMode}/>}
+    <footer className="wv-review-footer">World-Vision · Le moteur technique reste conservé. L'approbation humaine précède chaque nouvelle production.</footer>
+  </main>;
+}
