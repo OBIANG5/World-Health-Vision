@@ -1,0 +1,24 @@
+{
+  "schema_version": "world-vision-human-decision-v1",
+  "decision_type": "brand_identity_selection",
+  "date": "2026-11-13",
+  "story_id": null,
+  "gate_id": "identite",
+  "decision": "approve_current",
+  "approval_source": "explicit_user_message_in_chat",
+  "graded_numeric": false,
+  "rating": null,
+  "scope": "current official World-Vision logo and its unchanged eye-globe form; future palette is a separate revision",
+  "source_repo_path": "frontend/web/src/assets/logo.png",
+  "source_git_blob_sha": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+  "canonical_frontend_path": "worldhealth-vision-v2/frontend/web-v2/public/brand/world-vision-official.png",
+  "canonical_renderer_path": "worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png",
+  "user_intent": "Proceed with this official blue eye/globe logo now; adding green and other world colors is deferred.",
+  "future_work": "Explore globe green and multicolor treatments later as separately reviewable brand v2; do not mutate v1",
+  "non_authorizations": [
+    "previous video remains rejected 1/10",
+    "no automatic full video render",
+    "no public channel publication",
+    "no approval of voice, image assets, motion or full storyboard"
+  ]
+}
