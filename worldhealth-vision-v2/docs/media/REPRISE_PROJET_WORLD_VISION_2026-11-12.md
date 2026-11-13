@@ -1,5 +1,17 @@
 # World-Vision — reprise sans perte du projet (12 novembre 2026)
 
+> **ARCHIVE HISTORIQUE AU 12/11/2026 — NE PAS UTILISER COMME ÉTAT ACTUEL.**
+> Les informations ci-dessous documentent une étape antérieure. Pour la version effective,
+> voir [CONTINUITE_WORLD_VISION.md](../../../CONTINUITE_WORLD_VISION.md),
+> [CURRENT_STATE_AND_NEXT_STEP.md](../continuity/CURRENT_STATE_AND_NEXT_STEP.md),
+> [DECISION_REGISTER.md](../continuity/DECISION_REGISTER.md)
+> et [NEW_CHAT_HANDOFF.md](../continuity/NEW_CHAT_HANDOFF.md).
+> Depuis, un vrai MP4 COP31 a été produit puis explicitement **REFUSÉ 1/10**,
+> le logo bleu œil-globe a été **validé officiellement** sans note chiffrée,
+> et trois propositions A/B/C sont disponibles sur le site mais non validées.
+> L'aperçu est statique, non un moteur de production 24/7.
+
+
 ## Portée et règles non négociables
 
 - Dépôt canonique : `OBIANG5/World-Health-Vision`.
