@@ -566,3 +566,9 @@ body:has(.wv-media-shell),
   overflow-y:auto!important;
   overscroll-behavior-y:auto;
 }
+
+/* Three-way top-level editorial navigation: readable on mobile. */
+@media(max-width:700px){
+  .wv-media-viewnav{max-width:100%;overflow-x:auto;min-width:0}
+  .wv-media-viewnav button{padding:9px 7px;font-size:9px}
+}
