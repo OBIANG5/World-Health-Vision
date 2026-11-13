@@ -6,16 +6,18 @@
  */
 import {useEffect} from "react";
 import GlobeDirection from "./GlobeDirection";
+import type {MediaStory} from "./types";
 export type DirectionId="terrain"|"chiffres"|"pedagogie"|"globe";
 
 export default function CreativeDirections({
- selected,onSelect,
+ selected,onSelect,story,
 }:{
  selected:DirectionId;
  onSelect:(id:DirectionId)=>void;
+ story?:MediaStory|null;
 }){
  useEffect(()=>{
    if(selected!=="globe")onSelect("globe");
  },[selected,onSelect]);
- return <GlobeDirection/>;
+ return <GlobeDirection story={story}/>;
 }
