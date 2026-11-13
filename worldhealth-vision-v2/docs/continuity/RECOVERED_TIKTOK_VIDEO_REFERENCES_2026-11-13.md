@@ -2,6 +2,20 @@
 
 Date de récupération de contexte : **13 novembre 2026**.
 
+## Mise à jour vérifiée — l'une des vidéos a été REÇUE et inspectée
+
+Le propriétaire a **réenvoyé dans ce chat un MP4 TikTok de 64,921667 s**, dont le filigrane visible indique `@focus.geopolitique`. Cette vidéo correspond bien à l'inspiration **globe qui se déplace de pays en pays**. Elle montre des étapes Mexique → Royaume-Uni → Riyad/Bruxelles → Soudan du Sud → Turquie/Chine, avec géographie satellite, contours rouges et sous-titres.
+
+- **SHA-256 exact :** `4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb`
+- **Fiche vérifiée :** [analyse minutée de la vraie vidéo](../media/references/2026-11-13-focus-geopolitique-video-reference.md)
+- **Manifest JSON :** [identité technique, scènes, statut des droits et idée D](../media/references/2026-11-13-focus-geopolitique-video-reference.json)
+- **Fichier MP4 original :** encore **dans la conversation seulement** ; **pas copié sur GitHub ni Drive** par cette opération. Vidéo tierce : droits de réutilisation non établis.
+- **Autre vidéo parmi les deux références :** toujours non récupérée ici.
+
+Le rappel qualitatif ci-dessous reste comme trace historique de la situation **avant cet envoi** et ne doit plus être interprété comme l'état courant.
+
+---
+
 > **Attention — statut : contexte conversationnel récupéré, fichiers originaux NON récupérés.**
 > L'utilisateur a indiqué avoir partagé deux vidéos TikTok peu avant ce message. Des traces de la conversation antérieure ont permis de retrouver ses préférences et un résumé qualitatif, mais ni les deux vidéos, ni leurs liens, ni leurs fichiers originaux ne sont présents dans les éléments récupérés. **Ne jamais prétendre les avoir visionnées à nouveau** ni avoir authentifié leur identité.
 
