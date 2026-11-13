@@ -120,15 +120,11 @@ try {
   await page.getByText(/OFFICIEL ACTUEL|ORIGINAL APPROUVÉ/).first().waitFor();
   await page.evaluate(()=>window.scrollTo(0,0));
   await page.screenshot({path:path.join(dist,"media-studio-brand-iphone.png"),fullPage:true});
-  await page.locator("#wv-review-overall").selectOption("10");
-  for(const aspect of ["logo","couleurs","typographie"]) {
-    await page.locator("#wv-review-score-"+aspect).selectOption("10");
-  }
-  await page.getByRole("button",{name:"Je valide",exact:true}).click();
-  assert.equal(await page.locator("#wv-review-gh-link").count(),0);
-  assert.equal(await page.getByRole("button",{name:/Note nécessaire avant l'enregistrement/}).isDisabled(),true);
+  await page.getByText("Logo officiel actuel : validé par toi").waitFor();
+  assert.equal(await page.locator("#wv-review-overall").count(),0,
+    "Explicit human logo approval must not trigger an invented numerical score.");
   // Choose an art direction and verify that feedback is version-specific.
-  await page.locator(".wv-review-stage-tabs button").filter({hasText:"Direction artistique"}).click();
+  await page.getByRole("button",{name:/Étape suivante : les trois directions artistiques/}).click();
   await page.locator(".wv-direction-item").first().waitFor();
   assert.equal(await page.locator(".wv-direction-item").count(),3);
   assert.equal(await page.locator(".wv-direction-canvas").count(),3);
