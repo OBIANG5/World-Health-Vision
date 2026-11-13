@@ -1,5 +1,18 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## DÉCISION PRIORITAIRE DU 13 NOVEMBRE — AUTOMATISATION ET IDENTITÉ, FIN DU PILOTE MANGROVES
+
+**C'est désormais le point de reprise ACTUEL ; il annule les anciennes mentions « pilote mangroves actif » et « continuer à coder le globe » figurant plus bas dans l'historique.** L'utilisateur a **rejeté** l'actualité NASA mangroves comme insuffisamment marquante. Il exige : **(1)** sélection de **3 à 5 actualités mondiales majeures** avec classement/validation, **(2)** logo bleu œil-globe officiel et globe D00-v6 intégrés à chaque production pertinente, **(3)** **un centre de production automatisé**, sans ouvrir une multitude de sites, **(4)** usage des meilleurs logiciels existants au lieu de tout recoder.
+
+**Livrables réellement nouveaux** : [AUTOMATION_COCKPIT](worldhealth-vision-v2/automation/WORLD_VISION_AUTOMATION_COCKPIT.md), [workflow n8n importable RADAR](worldhealth-vision-v2/automation/n8n/world-vision-radar-v1.n8n.json), [contrat de marque obligatoire](worldhealth-vision-v2/automation/brand/WORLD_VISION_BRAND_LOCK.json). Le workflow lit 4 flux RSS et classe des candidats toutes les heures ; **non importé/activé sur une instance n8n** faute de compte connecté. n8n est l'orchestrateur envisagé, Shotstack (ou Creatomate si meilleur test) le moteur vidéo à templates ; Google Drive conserve les assets, Gemini/API et TTS sont des intégrations à connecter séparément. Google Flow Pro **n'ouvre pas d'accès API inclus** et ne peut pas être annoncé comme automatisé.
+
+**État actuel, sans surpromesse** : code de workflow/documentation versionné dans GitHub, **aucune plateforme n8n ni moteur Shotstack connecté**, aucun nouveau MP4. L'ancien pilote mangroves a été marqué **REFUSÉ** dans son dossier et ne doit pas être poursuivi. L'image D00-v6 (SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`) existe en conversation et n'a pas encore ses octets committés à GitHub ; sa validation comme ouverture vidéo reste à obtenir.
+
+**Prochaine action réelle** : l'utilisateur active/autorise une instance n8n Cloud d'essai, importe le workflow existant, vérifie les sources/classements puis connecte une file d'approbation. Ensuite un modèle vidéo World-Vision sous Shotstack/Creatomate avec assets de marque, voix, rendu, QA et permissions de publication.
+
+---
+
+
 
 ## PILOTE REPORTAGE #001 — MANGROVES NASA, SCRIPT ET STORYBOARD (13 NOV 2026)
 
