@@ -45,6 +45,46 @@ try {
   await page.locator(".wvj-subject option").first().waitFor({state:"attached"});
   assert.match(await page.locator(".wvj-subject option").first().textContent(),/COP31/);
   assert.equal(await page.locator(".wvj-step-card").count(),14);
+  // Real pilot: grade the exact video, preserve the user's 1-to-10 values
+  // across reloads, and verify secure handoff without creating a fake issue.
+  await page.getByRole("button",{name:/Noter & valider/}).click();
+  await page.locator('[data-review-gate="video"]').waitFor();
+  await page.locator("#wv-review-overall").selectOption("2");
+  await page.locator("#wv-review-score-logo").selectOption("1");
+  await page.locator("#wv-review-score-voix").selectOption("2");
+  await page.locator("#wv-review-score-animations").selectOption("1");
+  await page.locator("#wv-review-notes").fill("Le logo est incorrect, la voix est robotique et les animations ne conviennent pas.");
+  await page.locator("#wv-review-priorities").fill("Récupérer le logo exact, comparer trois voix, valider un micro-clip.");
+  await page.getByRole("button",{name:"Refusé",exact:true}).click();
+  assert.equal(await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).isEnabled(),true);
+  await page.evaluate(() => {
+    window.__wvTestIssueUrl = null;
+    window.open = (url) => {window.__wvTestIssueUrl = String(url);return {};};
+  });
+  await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).click();
+  const issueUrl = await page.evaluate(() => window.__wvTestIssueUrl);
+  assert.ok(issueUrl && issueUrl.startsWith("https://github.com/OBIANG5/World-Health-Vision/issues/new?"));
+  const issue = new URL(issueUrl);
+  assert.match(issue.searchParams.get("title"),/WV-REVIEW/);
+  assert.match(issue.searchParams.get("body"),/2\/10/);
+  assert.match(issue.searchParams.get("body"),/Le logo est incorrect/);
+  assert.match(issue.searchParams.get("body"),/artifact_ref/);
+  await page.reload({waitUntil:"networkidle"});
+  await page.locator('[data-review-gate="video"]').waitFor();
+  assert.equal(await page.locator("#wv-review-overall").inputValue(),"2");
+  assert.equal(await page.locator("#wv-review-score-logo").inputValue(),"1");
+  assert.equal(await page.locator("#wv-review-score-voix").inputValue(),"2");
+  assert.equal(await page.locator("#wv-review-notes").inputValue(),
+    "Le logo est incorrect, la voix est robotique et les animations ne conviennent pas.");
+  // Do not allow approving an identity design with no genuine logo asset.
+  await page.locator(".wv-review-stage-tabs button").first().click();
+  await page.locator("#wv-review-overall").selectOption("10");
+  for(const aspect of ["logo","couleurs","typographie"]) {
+    await page.locator("#wv-review-score-"+aspect).selectOption("10");
+  }
+  await page.getByRole("button",{name:"Je valide",exact:true}).click();
+  assert.equal(await page.getByRole("button",{name:/Transmettre l'avis à GitHub/}).isDisabled(),true);
+  await page.getByRole("button",{name:/Parcours vidéo/}).click();
   const scrollState = await page.evaluate(() => ({
     doc:document.documentElement.scrollHeight,
     viewport:window.innerHeight,
