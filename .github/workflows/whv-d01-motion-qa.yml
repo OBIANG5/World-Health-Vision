@@ -23,6 +23,10 @@ jobs:
       - name: Validate real MP4 and extract first middle last frames
         run: |
           set -euo pipefail
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
           F=published/media-lab/wv-d01-gab-technical-4s.mp4
           M=published/media-lab/wv-d01-gab-technical-4s.json
           test -s "$F" && test -s "$M"
