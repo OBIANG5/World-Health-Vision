@@ -65,6 +65,13 @@ jobs:
           python-version: '3.12'
       - name: Install limited audition dependencies
         run: python -m pip install --disable-pip-version-check edge-tts
+      - name: Guarantee FFmpeg for audition workers
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -1
       - name: Render two independent voice styles in CI matrix
         run: |
           set -euo pipefail
