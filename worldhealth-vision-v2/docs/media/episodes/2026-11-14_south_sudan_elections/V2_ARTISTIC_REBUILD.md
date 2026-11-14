@@ -25,7 +25,7 @@ Vidéo MP4 transmise le 14 novembre, 168,5 secondes, format 512×910/30 images/s
 8. **Contrôle** : le run fournit neuf photogrammes dont plusieurs dans les 3 premières secondes, un manifeste de provenance et les pistes audio authentiques ; succès CI ne vaut pas acceptation artistique.
 
 ## Script V2 segmenté
-- « Quinze ans d'indépendance. Zéro élection nationale. »
+- « Quinze ans d'indépendance. Aucune élection nationale. »
 - « Au Soudan du Sud, indépendant depuis deux mille onze, le premier scrutin se fait toujours attendre. »
 - « Les citoyens devaient élire leur président et leurs députés le vingt-deux décembre. »
 - « Mais nouveau report : le vote est désormais fixé au onze février deux mille vingt-sept. »
@@ -46,3 +46,13 @@ La commission n'a pas donné de cause officielle. La violence est un contexte di
 
 ### Règles de sûreté
 V2 est initialement une **candidate de montage non publiable** ; conserver tous les retours du propriétaire. Aucune approbation artistique implicite. Respect des données géographiques, des sources et des droits de voix et images.
+
+## État de rendu revu et vérifié (14 novembre 2026)
+
+- GitHub Actions V2 (correctif artistique inclus) : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43593856519 — réussite technique.
+- MP4 réel : 26,414388 s, 1080×1920, 30 images/s, H.264 + AAC, empreinte SHA-256 : 512a77a8de55fa05cf24904568577c653d9d1ef8586827b89150b077086d6295.
+- Photogrammes revus : 0,7 / 1,8 / 2,8 s confirment une Terre réellement tournée jusqu'à la région de Juba, et six autres images vérifient les scènes, la carte-dates et l'absence de barres techniques. L'ouverture du globe a été agrandie et la signature blanche de fin réduite après une première revue critique.
+- Lecteur stable : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/index.html
+- Voix test v2 : Microsoft Neural Remy, déployée et réellement audible mais **NON auditée subjectivement par un humain et NON licenciée pour diffusion commerciale**. Ne pas déclarer « voix approuvée ».
+- Audition A/B/C : workflow GitHub .github/workflows/whv-south-sudan-voice-casting-v2.yml ; page de choix : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/voice-auditions/index.html (seulement après succès).
+- Le propriétaire doit donner son avis sur le visuel V2 et choisir une voix ou rejeter les trois. Les droits, le master éditorial et la publication restent bloqués jusqu'à approbation.
