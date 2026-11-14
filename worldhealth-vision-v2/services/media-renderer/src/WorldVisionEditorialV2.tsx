@@ -158,13 +158,13 @@ const Treaty:React.FC=()=>{
    <Img src={staticFile(root+"new-start-prague-2010.jpg")} style={{width:"100%",
      height:"100%",objectFit:"contain",objectPosition:"center center"}}/>
   </div>
-  <div style={{position:"absolute",left:82,top:1120,fontFamily:"WV-Text",
+  <div style={{position:"absolute",left:82,top:1111,fontFamily:"WV-Text",
     color:C.muted,fontSize:26,fontWeight:600}}>
     ARCHIVES · PRAGUE · 8 AVRIL 2010
   </div>
   <div style={{opacity:article}}>
-   <Title top={1197} size={115} color={C.cyan}>TRAITÉ EXPIRÉ.</Title>
-   <div style={{position:"absolute",left:84,top:1323,fontFamily:"WV-Text",
+   <Title top={1169} size={115} color={C.cyan}>TRAITÉ EXPIRÉ.</Title>
+   <div style={{position:"absolute",left:84,top:1301,fontFamily:"WV-Text",
      color:C.white,fontSize:31,fontWeight:700}}>
      5 FÉVRIER 2026
    </div>
