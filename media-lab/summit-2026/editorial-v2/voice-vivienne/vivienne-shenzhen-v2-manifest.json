@@ -1,0 +1,545 @@
+{
+  "id": "world-vision-001-shenzhen-vivienne-v2",
+  "status": "USER_PREFERRED_VOICE_AUDITION_ONLY_NOT_MASTER",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "rate": "+11%",
+  "pitch": "+0Hz",
+  "voice_preferred_by_user": true,
+  "this_take_approved_by_user": false,
+  "approved_by_user": false,
+  "source_type": "edge-tts-noncommercial-audition",
+  "publishing_rights_cleared": false,
+  "commercial_use_authorized": false,
+  "license_notice": "Edge TTS invocation does not itself prove commercial speech rights; use authorized Azure Speech terms/licensing before publication.",
+  "editorial_source": "SCRIPT_V1.md",
+  "script_file_sha256": "cbb0a1f5a599399591e05710c94f0dc57c35649e7f00e058a853443893f10921",
+  "spoken_script": "Trois puissances nucléaires. Une même table. Et une rencontre inédite. Jeudi 19 novembre, Donald Trump, Vladimir Poutine et Xi Jinping doivent se réunir à Shenzhen, en Chine. Au cœur des discussions : réduire les arsenaux nucléaires. Le dernier grand traité entre Washington et Moscou a expiré en février. Trump veut maintenant associer Pékin, qui reste réticent. La guerre en Iran devrait aussi être abordée. Mais selon Washington, pas celle en Ukraine. Et attention : aucun accord n’est attendu pour le moment. Alors, véritable tournant diplomatique, ou simple démonstration de puissance ?",
+  "verbatim_except_silent_outro": true,
+  "full_script_paragraphs": [
+    "Trois puissances nucléaires. Une même table. Et une rencontre inédite.",
+    "Jeudi 19 novembre, Donald Trump, Vladimir Poutine et Xi Jinping doivent se réunir à Shenzhen, en Chine.",
+    "Au cœur des discussions : réduire les arsenaux nucléaires. Le dernier grand traité entre Washington et Moscou a expiré en février. Trump veut maintenant associer Pékin, qui reste réticent.",
+    "La guerre en Iran devrait aussi être abordée. Mais selon Washington, pas celle en Ukraine.",
+    "Et attention : aucun accord n’est attendu pour le moment.",
+    "Alors, véritable tournant diplomatique, ou simple démonstration de puissance ?",
+    "World-Vision. Voir le monde, le comprendre."
+  ],
+  "silent_outro": "World-Vision. Voir le monde, le comprendre.",
+  "outro_read_aloud": false,
+  "continuous_single_utterance": true,
+  "audio_padded_per_scene": false,
+  "atempo_used": false,
+  "silence_inserted_artificially": false,
+  "audio_duration_sec": 30.912,
+  "last_word_boundary_sec": 30.597,
+  "visual_outro_start_sec": 39.1,
+  "fits_visual_script_without_timestretch": true,
+  "word_boundaries": [
+    {
+      "text": "Trois",
+      "start": 0.05,
+      "duration": 0.225
+    },
+    {
+      "text": "puissances",
+      "start": 0.275,
+      "duration": 0.417
+    },
+    {
+      "text": "nucléaires",
+      "start": 0.692,
+      "duration": 0.586
+    },
+    {
+      "text": "Une",
+      "start": 1.579,
+      "duration": 0.18
+    },
+    {
+      "text": "même",
+      "start": 1.759,
+      "duration": 0.203
+    },
+    {
+      "text": "table",
+      "start": 1.962,
+      "duration": 0.484
+    },
+    {
+      "text": "Et",
+      "start": 2.753,
+      "duration": 0.135
+    },
+    {
+      "text": "une",
+      "start": 2.888,
+      "duration": 0.09
+    },
+    {
+      "text": "rencontre",
+      "start": 2.978,
+      "duration": 0.428
+    },
+    {
+      "text": "inédite",
+      "start": 3.406,
+      "duration": 0.574
+    },
+    {
+      "text": "Jeudi 19 novembre",
+      "start": 4.313,
+      "duration": 1.059
+    },
+    {
+      "text": "Donald",
+      "start": 5.687,
+      "duration": 0.225
+    },
+    {
+      "text": "Trump",
+      "start": 5.912,
+      "duration": 0.405
+    },
+    {
+      "text": "Vladimir",
+      "start": 6.543,
+      "duration": 0.349
+    },
+    {
+      "text": "Poutine",
+      "start": 6.892,
+      "duration": 0.315
+    },
+    {
+      "text": "et",
+      "start": 7.207,
+      "duration": 0.045
+    },
+    {
+      "text": "Xi",
+      "start": 7.252,
+      "duration": 0.124
+    },
+    {
+      "text": "Jinping",
+      "start": 7.376,
+      "duration": 0.507
+    },
+    {
+      "text": "doivent",
+      "start": 7.883,
+      "duration": 0.146
+    },
+    {
+      "text": "se",
+      "start": 8.029,
+      "duration": 0.09
+    },
+    {
+      "text": "réunir",
+      "start": 8.119,
+      "duration": 0.304
+    },
+    {
+      "text": "à",
+      "start": 8.423,
+      "duration": 0.034
+    },
+    {
+      "text": "Shenzhen",
+      "start": 8.457,
+      "duration": 0.495
+    },
+    {
+      "text": "en",
+      "start": 9.155,
+      "duration": 0.022
+    },
+    {
+      "text": "Chine",
+      "start": 9.178,
+      "duration": 0.45
+    },
+    {
+      "text": "Au",
+      "start": 9.932,
+      "duration": 0.113
+    },
+    {
+      "text": "cœur",
+      "start": 10.045,
+      "duration": 0.191
+    },
+    {
+      "text": "des",
+      "start": 10.236,
+      "duration": 0.079
+    },
+    {
+      "text": "discussions",
+      "start": 10.315,
+      "duration": 0.586
+    },
+    {
+      "text": "réduire",
+      "start": 11.295,
+      "duration": 0.304
+    },
+    {
+      "text": "les",
+      "start": 11.599,
+      "duration": 0.068
+    },
+    {
+      "text": "arsenaux",
+      "start": 11.667,
+      "duration": 0.394
+    },
+    {
+      "text": "nucléaires",
+      "start": 12.061,
+      "duration": 0.586
+    },
+    {
+      "text": "Le",
+      "start": 12.995,
+      "duration": 0.101
+    },
+    {
+      "text": "dernier",
+      "start": 13.097,
+      "duration": 0.236
+    },
+    {
+      "text": "grand",
+      "start": 13.333,
+      "duration": 0.158
+    },
+    {
+      "text": "traité",
+      "start": 13.491,
+      "duration": 0.315
+    },
+    {
+      "text": "entre",
+      "start": 13.806,
+      "duration": 0.203
+    },
+    {
+      "text": "Washington",
+      "start": 14.009,
+      "duration": 0.439
+    },
+    {
+      "text": "et",
+      "start": 14.448,
+      "duration": 0.034
+    },
+    {
+      "text": "Moscou",
+      "start": 14.482,
+      "duration": 0.428
+    },
+    {
+      "text": "a",
+      "start": 14.91,
+      "duration": 0.113
+    },
+    {
+      "text": "expiré",
+      "start": 15.023,
+      "duration": 0.405
+    },
+    {
+      "text": "en",
+      "start": 15.428,
+      "duration": 0.056
+    },
+    {
+      "text": "février",
+      "start": 15.484,
+      "duration": 0.541
+    },
+    {
+      "text": "Trump",
+      "start": 16.34,
+      "duration": 0.304
+    },
+    {
+      "text": "veut",
+      "start": 16.644,
+      "duration": 0.101
+    },
+    {
+      "text": "maintenant",
+      "start": 16.745,
+      "duration": 0.315
+    },
+    {
+      "text": "associer",
+      "start": 17.061,
+      "duration": 0.327
+    },
+    {
+      "text": "Pékin",
+      "start": 17.387,
+      "duration": 0.417
+    },
+    {
+      "text": "qui",
+      "start": 18.086,
+      "duration": 0.113
+    },
+    {
+      "text": "reste",
+      "start": 18.198,
+      "duration": 0.236
+    },
+    {
+      "text": "réticent",
+      "start": 18.435,
+      "duration": 0.586
+    },
+    {
+      "text": "La",
+      "start": 19.339,
+      "duration": 0.191
+    },
+    {
+      "text": "guerre",
+      "start": 19.531,
+      "duration": 0.214
+    },
+    {
+      "text": "en",
+      "start": 19.745,
+      "duration": 0.045
+    },
+    {
+      "text": "Iran",
+      "start": 19.79,
+      "duration": 0.315
+    },
+    {
+      "text": "devrait",
+      "start": 20.105,
+      "duration": 0.236
+    },
+    {
+      "text": "aussi",
+      "start": 20.342,
+      "duration": 0.259
+    },
+    {
+      "text": "être",
+      "start": 20.601,
+      "duration": 0.146
+    },
+    {
+      "text": "abordée",
+      "start": 20.747,
+      "duration": 0.45
+    },
+    {
+      "text": "Mais",
+      "start": 21.509,
+      "duration": 0.135
+    },
+    {
+      "text": "selon",
+      "start": 21.644,
+      "duration": 0.214
+    },
+    {
+      "text": "Washington",
+      "start": 21.858,
+      "duration": 0.653
+    },
+    {
+      "text": "pas",
+      "start": 22.77,
+      "duration": 0.09
+    },
+    {
+      "text": "celle",
+      "start": 22.86,
+      "duration": 0.18
+    },
+    {
+      "text": "en",
+      "start": 23.041,
+      "duration": 0.045
+    },
+    {
+      "text": "Ukraine",
+      "start": 23.086,
+      "duration": 0.529
+    },
+    {
+      "text": "Et",
+      "start": 23.953,
+      "duration": 0.079
+    },
+    {
+      "text": "attention",
+      "start": 24.032,
+      "duration": 0.541
+    },
+    {
+      "text": "aucun",
+      "start": 24.91,
+      "duration": 0.158
+    },
+    {
+      "text": "accord",
+      "start": 25.068,
+      "duration": 0.315
+    },
+    {
+      "text": "n’est",
+      "start": 25.383,
+      "duration": 0.079
+    },
+    {
+      "text": "attendu",
+      "start": 25.462,
+      "duration": 0.383
+    },
+    {
+      "text": "pour",
+      "start": 25.845,
+      "duration": 0.135
+    },
+    {
+      "text": "le",
+      "start": 25.98,
+      "duration": 0.068
+    },
+    {
+      "text": "moment",
+      "start": 26.047,
+      "duration": 0.327
+    },
+    {
+      "text": "Alors",
+      "start": 26.678,
+      "duration": 0.372
+    },
+    {
+      "text": "véritable",
+      "start": 27.354,
+      "duration": 0.462
+    },
+    {
+      "text": "tournant",
+      "start": 27.815,
+      "duration": 0.27
+    },
+    {
+      "text": "diplomatique",
+      "start": 28.086,
+      "duration": 0.631
+    },
+    {
+      "text": "ou",
+      "start": 29.043,
+      "duration": 0.045
+    },
+    {
+      "text": "simple",
+      "start": 29.088,
+      "duration": 0.327
+    },
+    {
+      "text": "démonstration",
+      "start": 29.414,
+      "duration": 0.507
+    },
+    {
+      "text": "de",
+      "start": 29.921,
+      "duration": 0.079
+    },
+    {
+      "text": "puissance",
+      "start": 30.0,
+      "duration": 0.597
+    }
+  ],
+  "word_boundaries_available": true,
+  "silence_threshold_db": -35,
+  "silence_limit_sec": 0.65,
+  "silences": [
+    {
+      "start": 1.219,
+      "end": 1.675,
+      "duration": 0.456
+    },
+    {
+      "start": 2.387,
+      "end": 2.869,
+      "duration": 0.483
+    },
+    {
+      "start": 3.973,
+      "end": 4.369,
+      "duration": 0.396
+    },
+    {
+      "start": 9.567,
+      "end": 10.014,
+      "duration": 0.447
+    },
+    {
+      "start": 10.954,
+      "end": 11.306,
+      "duration": 0.352
+    },
+    {
+      "start": 12.557,
+      "end": 13.058,
+      "duration": 0.502
+    },
+    {
+      "start": 15.96,
+      "end": 16.413,
+      "duration": 0.454
+    },
+    {
+      "start": 18.99,
+      "end": 19.455,
+      "duration": 0.465
+    },
+    {
+      "start": 21.142,
+      "end": 21.583,
+      "duration": 0.441
+    },
+    {
+      "start": 23.55,
+      "end": 24.006,
+      "duration": 0.456
+    },
+    {
+      "start": 24.596,
+      "end": 24.92,
+      "duration": 0.323
+    },
+    {
+      "start": 26.353,
+      "end": 26.756,
+      "duration": 0.403
+    }
+  ],
+  "long_noneditorial_pauses": [],
+  "objective_silence_qc_passed": true,
+  "wav_sha256": "96b8ebf4a2692ad67170b98e66144784508a0ca29e6884a65c1b2882db858b7b",
+  "mp3_sha256": "b30dd0b21d33c3d563a579c9cd02c1d727c2ff97771ed5bcca7459eae403a473",
+  "sample_mp3_sha256": "35e988ab451dac32bca6e43aee98b6cf05cfb28a5218f97b90b01cece8319f72",
+  "wav_bytes": 5935182,
+  "mp3_bytes": 743085,
+  "audition_reference": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/voice-auditions/vivienne.mp3",
+  "needs_full_listening": true,
+  "requires_explicit_final_voice_approval": true,
+  "recommended_next_step": "Listen to Vivienne for the complete Shenzhen script before aligning visual cuts and subtitles. Never publish this edge-tts preview."
+}
