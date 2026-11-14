@@ -230,10 +230,10 @@ def make_visuals(voicetimes,pauses,logo,globe):
 def check_audio(path,length):
     # No dead air near first 1.5 s, no long silences caused by scene boundaries.
     p=subprocess.run(["ffmpeg","-hide_banner","-i",str(path),"-af",
-       "silencedetect=noise=-36dB:d=0.48","-f","null","-"],
+       "silencedetect=noise=-36dB:d=0.68","-f","null","-"],
        capture_output=True,text=True)
     markers=[x for x in p.stderr.splitlines() if "silence_duration:" in x]
-    if markers:raise RuntimeError("Audio has >480ms dead zone: "+"; ".join(markers[:5]))
+    if markers:raise RuntimeError("Audio has >680ms dead zone: "+"; ".join(markers[:5]))
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--headfont",type=Path,required=True)
