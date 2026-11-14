@@ -87,11 +87,11 @@
     "prohibit_fake_meeting_footage": true,
     "prohibit_logo_duplication_in_crossfades": true,
     "keep_real_archival_credits_in_metadata": true,
-    "title_max_bottom_px": 1300,
+    "title_max_bottom_px": 1330,
     "caption_safe_region_px": {
       "x_min": 105,
       "x_max": 975,
-      "y_top": 1400,
+      "y_top": 1350,
       "y_bottom": 1555
     },
     "mobile_ui_avoid_bottom_px": 355,
