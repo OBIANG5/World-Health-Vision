@@ -508,3 +508,17 @@ Nouvelle instruction utilisateur : « une vidéo par une vidéo » ; ChatGPT doi
 **Suite recommandée :** vérifier la qualité réelle du clip S04 sur téléphone, puis fournir S03B avec des images authentiques de Shenzhen licenciées, avant de produire S05. En parallèle rechercher une voix française naturelle approuvable puis aligner les 13 sous-titres, sans changer le script validé.
 
 ---
+
+### 14 NOV. 2026 — REFINEMENT S04 V2 / TRÈS IMPORTANT
+
+Une inspection visuelle des **vrais** photogrammes GitHub S04 V1 a révélé une **grille de fond exagérément lumineuse** en raison d'une mauvaise composition alpha PIL (RGBA direct). Le script a été corrigé pour composer la grille sur RGB avec transparence, puis revenir à RGBA; **V1 n'a pas été supprimée**.
+
+**V2 sélectionnée comme candidate technique :** GitHub Actions [#43586235979](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43586235979) SUCCESS ; 7,9 secondes / 237 frames / 1080×1920 / H.264 / silence ; MP4 SHA-256 `5ae78d45850aa9eeb51c30f3f83e99a93cac244f327233fd04257c01906e97a1`, 1 109 346 octets.
+- [V2 vidéo mobile](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.mp4)
+- [V2 planche de contrôle](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04-v2/contact-sheet.jpg)
+- [V1 originale archivée](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.mp4)
+- [Journal JSON source et empreintes](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.json)
+- Statut : **TECHNICAL V2 READY / HUMAN ART REVIEW REQUIRED**, ni voix ni publication. Le `SEGMENT_LEDGER.json` pointe désormais vers V2 tout en conservant V1.
+- Source photographique S04 inchangée, White House 2010, et logo G0 inchangé.
+- Recherche S03B engagée : choisir une **image réelle vérifiable de Shenzhen** ; ne jamais montrer faux lieu de réunion. Une photo CC0 de 2025 trouvée sur Wikimedia Commons a été écartée artistiquement car peu représentative du skyline ; d'autres options sont encore à comparer.
+---
