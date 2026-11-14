@@ -74,7 +74,7 @@ def check(data, *, strict=False, logo_path=None):
         category = scene.get("visual_kind")
         if any(word in title.upper() for word in BANNED):
             errors.append(f"Chapter {i}: operational/map label baked into editorial image.")
-        if len(spoken) < 20:
+        if category != "outro" and len(spoken) < 20:
             errors.append(f"Chapter {i}: narration missing.")
         if category not in ("documentary_photo", "documentary_video",
                             "verified_map", "editorial_motion", "outro"):
