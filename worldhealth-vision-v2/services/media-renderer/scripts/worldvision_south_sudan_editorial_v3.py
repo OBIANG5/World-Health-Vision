@@ -129,7 +129,7 @@ def scene_png(kind,logo):
         im=photograph("independence.jpg",(.49,.44),.86)
         im=note_title(im,["L'ONU", "ALERTE."],topline="VIOLENCES ET TENSIONS")
     elif kind=="outro":
-        im=photograph("flag_juba_hires.jpg",(.36,.50),.9)
+        im=photograph("mother_child_juba_2011.jpg",(.48,.36),.94)
         im=note_title(im,["LE PREMIER VOTE", "SE FAIT ATTENDRE."],topline="QUINZE ANS APRÈS L'INDÉPENDANCE")
         # Exact approved G0 bitmap. Keep its own background as part of asset;
         # no added plaque, no slogan read aloud, and no unrelated ornament.
@@ -247,7 +247,8 @@ def main():
         if not f.is_file():raise FileNotFoundError(str(f))
     assert sha(args.v2_reference)==V2_EXPECTED_SHA,"User-approved V2 geographic globe is modified/missing"
     assert run(["git","hash-object",str(args.logo)]).strip()==LOGO_GIT_BLOB,"Official G0 logo mismatch"
-    if not A.joinpath("flag_juba_hires.jpg").exists():raise FileNotFoundError("New 2160px Juba flag photo not downloaded")
+    for n in ["flag_juba_hires.jpg","mother_child_juba_2011.jpg"]:
+        if not A.joinpath(n).exists():raise FileNotFoundError(f"Archive file missing: {n}")
     O=OUT;O.mkdir(parents=True,exist_ok=True)
     lines=read_script()
     audio,segments,pauses,orig,ratefactor=make_audio(lines)
@@ -297,6 +298,7 @@ def main():
       "visuals":[{"type":kind,"seconds":round(sec,3)} for p,sec,kind in shots],
       "documentary_media":[
         {"file":"flag_juba_hires.jpg","caption":"Juba 9 July 2011","author":"U.S. Department of State / Jenn Warren","license":"public domain US federal government","url":"https://commons.wikimedia.org/wiki/File:Flag_of_South_Sudan_in_to_the_Independence_Day.jpg"},
+        {"file":"mother_child_juba_2011.jpg","caption":"Mother and child at Juba independence celebrations, 9 July 2011","author":"Sarah Taylor/USAID Africa Bureau","license":"public domain, U.S. federal government","url":"https://commons.wikimedia.org/wiki/File:Mother_and_child_on_South_Sudans_independence_day_(5926201660).jpg"},
         {"file":"crowd_vertical.jpg","caption":"Juba 9 July 2011","license":"US Government public domain"},
         {"file":"president.jpg","caption":"Portrait Salva Kiir, 2020","license":"CC0 1.0"},
         {"file":"flag_man.jpg","caption":"South Sudan 9 July 2011","license":"US Government public domain"},
