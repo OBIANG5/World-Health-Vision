@@ -1,4 +1,4 @@
-name: World-Vision Editorial V2 — genuine 11.6s opening pilot
+name: World-Vision Editorial V2 — genuine 10.4s natural Vivienne-timed opening pilot
 
 on:
   workflow_dispatch:
@@ -63,11 +63,11 @@ jobs:
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: |
           set -euo pipefail
-          MP4=output/editorial-v2/opening-pilot-11p6s-v2.mp4
+          MP4=output/editorial-v2/opening-pilot-10p4s-v3.mp4
           python3 quality/quality_gate_v2.py --mode pilot --video "$MP4"
           R=output/editorial-v2/review-frames
           mkdir -p "$R"
-          for pair in '0.7:leaders-a' '2.8:leaders-b' '4.7:globe-first' '6.6:globe-moving' '9.1:transition' '10.3:shenzhen' '11.3:shenzhen-final'; do
+          for pair in '0.7:leaders-a' '2.8:leaders-b' '4.7:globe-first' '6.6:globe-moving' '9.1:transition' '9.6:shenzhen' '10.2:shenzhen-final'; do
             IFS=: read -r sec name <<< "$pair"
             ffmpeg -y -loglevel error -ss "$sec" -i "$MP4" -frames:v 1 \
               -vf scale=540:960 -q:v 3 "$R/$name.jpg"
@@ -104,15 +104,15 @@ jobs:
             git reset --hard FETCH_HEAD
             DST=media-lab/summit-2026/editorial-v2
             mkdir -p "$DST/review-frames"
-            cp "$GITHUB_WORKSPACE/$SRC/opening-pilot-11p6s-v2.mp4" \
-               "$GITHUB_WORKSPACE/$SRC/opening-pilot-11p6s-v2.json" "$DST/"
+            cp "$GITHUB_WORKSPACE/$SRC/opening-pilot-10p4s-v3.mp4" \
+               "$GITHUB_WORKSPACE/$SRC/opening-pilot-10p4s-v3.json" "$DST/"
             cp "$GITHUB_WORKSPACE/$SRC/review-frames/"*.jpg "$DST/review-frames/"
             git add "$DST"
             if git diff --cached --quiet; then success=1; break; fi
-            git commit -m "preview(media-v2): updated true-frame reviewed 11.6s V2 pilot"
+            git commit -m "preview(media-v2): updated true-frame reviewed 10.4s V2 pilot"
             if git push origin HEAD:whv-media-studio-browser-preview; then success=1; break; fi
             echo "Concurrent preview branch update; reapply our latest artifacts (attempt $attempt)"
             sleep "$attempt"
           done
           test "$success" = 1
-          echo "View mobile: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/opening-pilot-11p6s-v2.mp4"
+          echo "View mobile: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/opening-pilot-10p4s-v3.mp4"
