@@ -17,6 +17,7 @@ const base=path.dirname(fileURLToPath(import.meta.url));
 const mode=process.argv[2]||"hook";
 if(!["hook","full"].includes(mode))throw new Error("Only hook and full modes are supported");
 const required=["public/brand/world-vision-official.png",
+ "public/fonts/Manrope-variable.ttf",
  "public/episodes/summit-2026/trump.jpg",
  "public/episodes/summit-2026/putin.jpg",
  "public/episodes/summit-2026/xi.jpg"];
@@ -29,6 +30,9 @@ for(const relative of required){
  if(!existsSync(absolute))throw new Error("MANDATORY ASSET MISSING: "+relative+" — refusing substitute graphics.");
 }
 const sha256=filepath=>createHash("sha256").update(readFileSync(filepath)).digest("hex");
+const fontFile=path.join(base,"public/fonts/Manrope-variable.ttf");
+if(sha256(fontFile)!=="3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6")
+  throw new Error("Manrope font hash mismatch: never render with a substituted font.");
 const d00Hash="8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2";
 if(mode==="full"){
  const d00Video=path.join(base,"public/episodes/summit-2026/segment02-original-d00.mp4");
