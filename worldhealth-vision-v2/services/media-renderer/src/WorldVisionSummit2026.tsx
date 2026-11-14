@@ -1,5 +1,5 @@
 import React from "react";
-import {AbsoluteFill,Img,Sequence,Audio,Easing,interpolate,spring,staticFile,useCurrentFrame,useVideoConfig} from "remotion";
+import {AbsoluteFill,Img,Video,Sequence,Audio,Easing,interpolate,spring,staticFile,useCurrentFrame,useVideoConfig} from "remotion";
 
 /**
  * Script-locked newsroom edit for World-Vision #001 / Shenzhen.
@@ -156,35 +156,33 @@ const Hook:React.FC=()=>{
 const Globe:React.FC=()=>{
  const f=useCurrentFrame();
  return <Base>
-  <Img src={staticFile(rootAssets+"eye-earth-d00-v6.png")} style={{position:"absolute",top:245,left:-140,
-    width:1360,height:1480,objectFit:"contain",transform:`scale(${scale(f,94,1.02,1.08)})`,
-    filter:"saturate(1.05) contrast(1.05)"}}/>
-  <AbsoluteFill style={{background:"linear-gradient(180deg,rgba(1,7,22,.65),transparent 28%,transparent 66%,rgba(1,9,22,.91) 92%)"}}/>
-  <Logo/>
-  <div style={{position:"absolute",left:79,bottom:460,right:180,fontSize:75,
-    color:S.white,fontWeight:950,lineHeight:1.02,textShadow:"0 3px 16px #010f23"}}>
-    <div>LE MONDE</div><div style={{color:S.cyan}}>RETIENT SON SOUFFLE.</div>
-  </div>
-  <Credit text="Identité visuelle D00-v6 World-Vision · œuvre originale conservée, sans globe redessiné"/>
-  <Barcode topic="SIGNATURE WORLD-VISION" progress={(f+135)/SUMMIT_FRAMES}/>
+   {/*
+     Exact 3.1s D00-v6 art film already rendered from original PNG, verified
+     SHA-256 95c47d... and archived as video in Canva. NOT a rebuilt Earth.
+   */}
+   <AbsoluteFill>
+     <Video src={staticFile(rootAssets+"segment02-original-d00.mp4")} muted/>
+   </AbsoluteFill>
+   <AbsoluteFill style={{background:"linear-gradient(180deg,rgba(1,8,22,.62),transparent 25%,transparent 71%,rgba(2,11,28,.76))"}}/>
+   <Logo/>
+   <div style={{position:"absolute",left:79,bottom:480,right:180,fontSize:62,
+     color:S.white,fontWeight:950,lineHeight:1.04,textShadow:"0 3px 16px #010f23"}}>
+     LE MONDE <span style={{color:S.cyan}}>RETIENT SON SOUFFLE.</span>
+   </div>
+   <Credit text="Identité D00-v6 originale · mouvement cinématographique préservé"/>
+   <Barcode topic="SIGNATURE WORLD-VISION" progress={(f+135)/SUMMIT_FRAMES}/>
  </Base>;
 };
 
 const Shenzhen:React.FC=()=>{
- const f=useCurrentFrame();const p=enter(f,30,12);
- return <Base>
-  <Photo name="shenzhen.jpg"/>
-  <Logo/>
-  <div style={{position:"absolute",top:460,left:80,padding:"18px 22px",
-    fontSize:28,letterSpacing:3,fontWeight:800,background:S.panel,borderLeft:"6px solid "+S.cyan}}>JEUDI 19 NOVEMBRE 2026</div>
-  <AnimatedHeadline lines={["SHENZHEN.","CHINE."]} top={900} size={120} accent={0}/>
-  <div style={{position:"absolute",top:1270,left:81,right:180,fontSize:35,lineHeight:1.26,
-    fontWeight:780,opacity:p,transform:`translateY(${(1-p)*35}px)`}}>
-    RENCONTRE ANNONCÉE EN MARGE DU SOMMET APEC.
-  </div>
-  <Credit text="Illustration d'archives de Shenzhen · la réunion n'a pas encore eu lieu."/>
-  <Barcode topic="CHINE / DIPLOMATIE" progress={(f+228)/SUMMIT_FRAMES}/>
- </Base>;
+ return <AbsoluteFill style={{background:S.ink}}>
+   {/*
+      Genuine NASA/Natural Earth geographic locator S03, 147 frames at 30 fps.
+      The source is an independently reviewed MP4, never a drawn fake map.
+      Its GUI already contains the original G0 logo (pixel-identical asset).
+   */}
+   <Video src={staticFile(rootAssets+"segment03-shenzhen-4p9s.mp4")} muted/>
+ </AbsoluteFill>;
 };
 
 const Nuclear:React.FC=()=>{
@@ -284,13 +282,14 @@ const Outro:React.FC=()=>{
 const CaptionOverlay:React.FC=()=>{
  const frame=useCurrentFrame(),s=frame/SUMMIT_FPS;
  const c=captionPlan.find(x=>s>=x.start&&s<x.end);
+ const overLocator=s>=7.6&&s<12.5;
  if(!c)return null;
  const progress=P((s-c.start)/.34),f=interpolate(progress,[0,1],[15,0],clamp);
- return <div style={{position:"absolute",zIndex:82,left:75,right:182,bottom:354,
+ return <div style={{position:"absolute",zIndex:82,left:75,right:182,bottom:overLocator?1430:354,
    display:"flex",justifyContent:"center",pointerEvents:"none"}}>
   <div style={{background:"rgba(1,12,29,.92)",border:"1px solid rgba(68,202,243,.45)",
    padding:"19px 24px 21px",borderRadius:11,
-   fontSize:c.t.length>78?29:c.t.length>52?32:37,fontWeight:830,
+   fontSize:overLocator?31:c.t.length>78?29:c.t.length>52?32:37,fontWeight:830,
    lineHeight:1.27,textAlign:"center",color:"#fff",
    textShadow:"0 2px 4px #001020",
    transform:`translateY(${f}px)`,opacity:progress,
