@@ -124,14 +124,20 @@ jobs:
         env:
           REMOTION_DISABLE_UPDATE_CHECK: '1'
         run: node render-nextgen-brand.mjs
+      - name: Stage original eye and preview in one flat, reproducible artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=worldhealth-vision-v2/services/media-renderer
+          mkdir -p "$ROOT/output/nextgen/brand-package"
+          cp "$ROOT/output/nextgen/worldvision-official-g0-outro-v2.mp4" "$ROOT/output/nextgen/brand-package/"
+          cp "$ROOT/output/nextgen/logo-extraction.json" "$ROOT/output/nextgen/brand-package/"
+          cp "$ROOT/public/brand/world-vision-eye-original-transparent.png" "$ROOT/output/nextgen/brand-package/"
       - name: Preserve render as artifact
         uses: actions/upload-artifact@v4
         with:
           name: worldvision-original-g0-outro-candidate
-          path: |
-            worldhealth-vision-v2/services/media-renderer/output/nextgen/worldvision-official-g0-outro-v2.mp4
-            worldhealth-vision-v2/services/media-renderer/output/nextgen/logo-extraction.json
-            worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-eye-original-transparent.png
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/brand-package/
           retention-days: 14
 
   publish-review-assets:
