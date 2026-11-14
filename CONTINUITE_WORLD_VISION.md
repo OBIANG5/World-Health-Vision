@@ -1,6 +1,21 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 
+## ACTUALITÉ EN PRÉPRODUCTION : BROOKLYN / EFFONDREMENT FLATBUSH — 14/11/2026
+
+Le propriétaire a choisi **l'actualité n° 1 (Brooklyn, immeuble effondré)**. Nous sommes à l'étape **script + sélection des vrais rushes** et PAS ENCORE au montage FASTLANE. Un script V2 plus émotionnel a été proposé dans le chat, sans approbation mot par mot pour l'instant. Ne pas lancer de voix ni changer ce texte sans demander la validation éditoriale.
+
+- Branche: feature/worldvision-brooklyn-editorial-pack-2026-11-14. [PR #31](https://github.com/OBIANG5/World-Health-Vision/pull/31).
+- Pack: worldhealth-vision-v2/docs/media/episodes/2026-11-14_brooklyn_flatbush/STORYBOARD_PROPOSED_V2.json + EDITORIAL_SOURCES_AND_RIGHTS.md.
+- Faits: 1321 Flatbush Avenue, Brooklyn, le 11 novembre 2026 à ~16:01, bâtiment de 3 étages effondré dans l'excavation du chantier 2625 Bedford Ave, huit morts dont deux enfants, 18 blessés, 250 secours. **Enquête, aucune causalité prouvée du chantier.**
+- **Moment humain fort** : une femme enceinte extraite vivante après plus de deux heures, mari confirme le 13 novembre femme et bébé à naître vivants, femme grièvement blessée.
+- Storyboard avec ~10 plans 48 s: globe très bref ~1,5 s puis vrai effondrement à l'image, destruction, vraie recherche, extraction, témoignage du mari, bilan, excavation, enquête et **vraie signature animée 3 s**.
+- Vraies séquences trouvées: Storyful caméra de porte James A Williams https://video.storyful.com/record/41716 ; CBS sauvetage https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-survivor-rescued/ ; WABC mari https://abc7ny.com/live-updates/brooklyn-building-collapse-live-updates-1-dead-flatbush/20034152/ ; Reuters Connect drone https://www.reutersconnect.com/item/drone-2-killed-several-injured-in-building-collapse-in-brooklyn-new-york/dGFnOnJldXRlcnMuY29tLDIwMjY6bmV3c21sX09XQU5BQ0VOMVJSV0MxTk1URlc4VllKUkFVQ1JVSlo .
+- **BLOCAGE RÉEL** : ce sont des extraits de presse/surveillance avec droits de tiers. La visualisation sur une page ne constitue PAS une autorisation de téléchargement/republication. Pas de vraie licence / fichier exploitable à ce stade. Ne pas maquiller le blocage en montage rempli de stock footage présenté comme les scènes de Brooklyn.
+- Référence vocale choisie: Vivienne C5.2 « impact média », **prise neuve pour ce sujet** à valider après le script, pas l'audio C5.2 qui dit les mots d'une autre actualité.
+- Se souvenir du contrat FASTLANE : d'abord le storyboard et la voix validés, ensuite l'assemblage seulement, idéalement sous cinq minutes.
+
+
 ## NOUVELLE STRATÉGIE CONFIRMÉE — MONTAGE EN MOINS DE 5 MINUTES (14 NOVEMBRE 2026)
 
 **Utilisateur :** voix Guinée trop lente et insatisfaisante ; ne plus consacrer une heure à refaire les mêmes images. Dorénavant nous préparons ENSEMBLE le sujet, l'angle, le script, toutes les vidéos/images, les animations utiles, la prise de voix et la fin. GitHub doit s'occuper UNIQUEMENT du **montage rapide de ces éléments déjà validés**, du globe de localisation, de la signature animée et des contrôles de sortie. Objectif <300 s **pour la seule étape d'assemblage**, pas pour le sourcing ni pour l'art vivant. Les clips non préparés ou sans droits bloquent le montage : ne jamais improviser des images génériques.
