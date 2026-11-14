@@ -78,7 +78,7 @@ export const RemotionRoot: React.FC = () => {
       height={1920}
       fps={SUMMIT_FPS}
       durationInFrames={SUMMIT_FRAMES}
-      defaultProps={{voiceFilename:null,previewWatermark:true}}
+      defaultProps={{voiceFilename:null}}
     />
     <Composition
       id="WorldVisionShort"
