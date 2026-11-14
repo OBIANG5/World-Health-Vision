@@ -31,9 +31,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install renderer dependencies from lockfile
+      - name: Install renderer dependencies (existing repo has no lockfile)
         working-directory: worldhealth-vision-v2/services/media-renderer
-        run: npm ci
+        run: npm install --no-audit --no-fund
       - name: Acquire authentic archival portraits — NO synthetic political images
         shell: bash
         run: |
