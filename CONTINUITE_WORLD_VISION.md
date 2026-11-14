@@ -1,5 +1,16 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## NOUVELLE VIDÉO EN COURS — GUINÉE / BALATO / SIGUIRI, 14 NOVEMBRE 2026
+
+Le propriétaire a **choisi définitivement comme narration** le dernier script retravaillé de la version 2 sur les affrontements de Balato. **Ne pas réécrire.** Script exact : [SCRIPT_LOCK_V1.json](https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-guinee-siguiri-v1-2026-11-14/worldhealth-vision-v2/docs/media/episodes/2026-11-14_guinee_siguiri/SCRIPT_LOCK_V1.json), SHA-256 : `0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac`, 109 mots, dix segments. Ouverture exacte : « Dix morts. Treize blessés. En Guinée, une opération contre l’orpaillage illégal a tourné au drame. »
+
+**Branche dédiée** : `feature/worldvision-guinee-siguiri-v1-2026-11-14` ; [PR #22](https://github.com/OBIANG5/World-Health-Vision/pull/22) en brouillon. Moteur Python : `worldhealth-vision-v2/services/media-renderer/scripts/worldvision_guinee_siguiri_v1.py`. CI : `.github/workflows/worldvision-guinee-siguiri-v1.yml`. Nouveau lecteur iPhone après succès : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/guinee-siguiri-2026-11-14/index.html . Toute vidéo créée pour revue uniquement, pas de licence commerciale voix acquise, pas de publication autorisée automatiquement.
+
+**Retours auteur à appliquer obligatoirement :** précédente vidéo Soudan du Sud publiée notée 4–5/10 ; voix Vivienne **trop rapide, pas assez émotionnelle/humaine** ; photos peu parlantes, montage sans véritable accroche émotionnelle. Pour la Guinée : voix Vivienne plus lente avec pauses naturelles **sans accélération artificielle**, vrai globe NASA vers Balato/Siguiri dès l'ouverture, meilleurs plans réellement utiles aux phrases, image de Siguiri documentée USAID domaine public, illustrations extérieures aux événements clairement tracées, aucune fausse scène de violence. Le bilan de dix morts et treize blessés est **provisoire** et attribué aux autorités, cinq morts étrangers non identifiés ; enquête en cours.
+
+Mise à jour de l'état du run et du MP4 **uniquement après vérification GitHub**. Les fichiers de preuve et crédits doivent rester dans le dossier de production. Ne pas modifier la vidéo Soudan du Sud et ne pas empiéter sur l'autre production Shenzhen.
+
+
 ## RETOUR APRÈS PUBLICATION — 14 NOVEMBRE 2026, À LIRE AVANT LA PROCHAINE VIDÉO
 
 La vidéo Soudan du Sud V3 a **été publiée par le propriétaire** ; **note propriétaire 4–5/10** (l'ancienne mention « non publiée » n'est plus à jour). **Ne pas refaire l'épisode**, préparer un sujet différent choisi parmi la liste d'origine (notamment #9 Guinée/Siguiri, #8 Kenya/Syokimau, #6 Guinée équatoriale/Jesús Owono). Avant toute nouvelle production, **abandonner la cadence Vivienne trop rapide : viser une voix plus humaine, plus lente, plus expressive, sans compression artificielle, et mieux synchroniser émotion, preuve et image.** Les images de l'épisode précédent ont été jugées insuffisamment évocatrices. Choisir des images vérifiables, fortes, pertinentes et légalement réutilisables ; ne pas fabriquer de faux documents d'actualité. Un outil qui exporte un MP4 ne garantit pas un reportage regardable : validation artistique distincte.
