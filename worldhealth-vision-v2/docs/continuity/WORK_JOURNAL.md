@@ -405,3 +405,31 @@ Nouvelle instruction utilisateur : « une vidéo par une vidéo » ; ChatGPT doi
 **Référence de méthode créée** : `docs/media/MONTAGE_ONLY_HANDOFF_2026-11-13.md` ; sélection de scènes, voix FR, Flow / Vids uniquement pour les plans concernés, Remotion/FFmpeg pour rendu et QA. **Aucune nouvelle vidéo produite dans ce tour**, car aucun nouveau script validé / aucun fichier sonore et visuel approuvé.
 
 **Prochain acte concret** : sur réception du script approuvé, préparer le découpage précis, sélectionner des clips authentiques/licenciés, proposer les prompts Flow si nécessaire et lancer une production de film réel une fois les assets/voix accessibles, en préservant G0 et D00-v6.
+
+
+## 14 NOVEMBRE 2026 — SOMMET TRUMP XI POUTINE : PREMIER HOOK EN VRAI MP4 ET MONTAGE 43 S CODÉ
+
+**Instruction actuelle du propriétaire** : construire **un montage professionnel** basé sur le script accepté, pas seulement du texte ni un nouvel éditeur. Le style de marque doit reprendre le **PNG logo G0 officiel** exact et le visuel **D00-v6 original** pour une brève introduction. Le sommet du 19 novembre à Shenzhen **n'a pas encore eu lieu** ; utiliser des archives explicitement étiquetées, aucune fausse scène de sommet.
+
+**Vrai code et premier artefact produit :**
+- Composition Remotion professionnelle séparée `services/media-renderer/src/WorldVisionSummit2026.tsx` (8 plans, 43 secondes, 13 segments de sous-titres reprenant mot à mot le script, photos d'archives, typographie bleu nuit/cyan, zones sûres, logo exact ; **aucune couleur rose/orange de l'ancien template**).
+- Entrée ajoutée à `services/media-renderer/src/Root.tsx` sans écraser l'ancien moteur.
+- `services/media-renderer/render-summit-preview.mjs` (vidéo 1080×1920 à 30fps, vérification du Git blob du logo `bc80fa70cebd566768bfb1703a0f1f636a78c196`, SHA-256 D00 attendu `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`, master complet bloqué si assets D00 originaux et voix WAV approuvée manquent).
+- `.github/workflows/whv-summit-hook-preview.yml` (téléchargement des vrais portraits à licences vérifiées, build Remotion, 3 captures FFmpeg, publication même branche d'aperçu). **Hook corrigé et livré** via `media-lab/summit-2026/hook-4p5s-preview.mp4` sur `whv-media-studio-browser-preview`, MP4 de **4,5 s 1080×1920, sans voix**, SHA-256 `8e0975eb2fe66cb502271d23c542b120271f9b9d3df989306dd2840a1e1bf05a` au premier contrôle après correction des collisions. Capture `media-lab/summit-2026/review/contact-sheet.jpg`.
+- Test de conservation **mot à mot du script** dans `summit-2026-contract.test.mjs`, comparé avec `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/SCRIPT_V1.md` ; 13 segments, aucune coupure du texte, 43 secondes. Contrôle unitaire également ajouté au workflow ; les dernières exécutions doivent être vérifiées avant d'affirmer vert.
+- SRT préparatoire `SOUS_TITRES_BROUILLON_43S.srt` sur le dossier d'épisode, **non encore aligné à une vraie voix**, 13 sous-titres.
+- Import **sans redessin** dans Canva connecté : original globe D00-v6 Canva media `MAHa4F1Owfk`, logo officiel exact téléchargé depuis Github Canva media `MAHa4H6Rel4`. Importation GDrive depuis l'ancien file-ref non aboutie : ne pas prétendre D00 dans Drive ou en binaire dans Github.
+
+**Preuves et limites** :
+- Premier hook animé a été généré par l'action [#43579184494](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43579184494), statut **success** : trois images vérifiées avec logo officiel exact et portraits de Trump, Poutine et Xi ; collision texte/labels corrigée et rerendu par l'action [#43579354004](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43579354004) success.
+- Le **master 43 s n'existe PAS** à ce stade : le rendu est volontairement bloqué tant que l'image D00 originale n'a pas été **copiée en tant que binaire exact dans l'asset du renderer**, et la vraie voix française choisie/validée n'est pas fournie.
+- Photos Reuters/AP sous licence **non utilisées** dans le hook ; photos d'archives d'origine White House / Kremlin téléchargées par Github Action, attributions dans `MONTAGE_PLAN_V1.md`.
+- L'audition/choix de voix française et l'alignement réel des sous-titres restent à faire. Aucun MP4 n'est approuvé pour publication.
+
+**LIENS** :
+- Vidéo hook https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4
+- Dossier storyboard https://github.com/OBIANG5/World-Health-Vision/blob/feature/world-vision-media-studio/worldhealth-vision-v2/docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/MONTAGE_PLAN_V1.md
+
+**Suite obligatoire (pas une autre refonte)** : revue qualitative du hook et correction ; intégrer le PNG D00-v6 ORIGINAL **une seule fois** au renderer, générer/tester une vraie voix française via outil Google accessible puis produire tout le master Remotion de 43 s, aligner SRT sur WAV, QA iPhone et rendre à l'utilisateur. **Ne jamais remplacer l'image par une reconstruction du globe.**
+
+---
