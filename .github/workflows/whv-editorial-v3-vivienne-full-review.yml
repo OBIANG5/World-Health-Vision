@@ -1,0 +1,153 @@
+name: World-Vision — full V3 33.7s cinematic review with user-chosen Vivienne
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [rebuild/editorial-v2-quality-gates]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_mux_vivienne_review_v3.py'
+      - '.github/workflows/whv-editorial-v3-vivienne-full-review.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worldvision-editorial-v3-vivienne-full-review
+  cancel-in-progress: true
+
+jobs:
+  cinematic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - name: Checkout editorial source and canonical voice policy
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Node 22 for Remotion engine
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Dependencies and FFmpeg
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+          cd worldhealth-vision-v2/services/media-renderer
+          npm install --no-audit --no-fund
+          node --check render-editorial-v2.mjs
+          python3 -m py_compile \
+            scripts/worldvision_mux_vivienne_review_v3.py \
+            quality/quality_gate_v2.py
+      - name: Verify V3 storyboard, original globe, authentic photos and licensed font assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 worldhealth-vision-v2/services/media-renderer/quality/quality_gate_v2.py --mode source
+          bash worldhealth-vision-v2/services/media-renderer/scripts/setup_editorial_v2_assets.sh
+      - name: Retrieve actual continuous Vivienne audio (not old Henri) and verify SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/output/editorial-v2/voice-vivienne
+          mkdir -p "$D"
+          ROOT=https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/voice-vivienne
+          curl -fL --retry 5 --retry-all-errors --max-time 180 \
+            "$ROOT/vivienne-shenzhen-v2-continuous-review.wav" \
+            -o "$D/vivienne-shenzhen-v2-continuous-review.wav"
+          curl -fL --retry 5 --retry-all-errors --max-time 120 \
+            "$ROOT/vivienne-shenzhen-v2-manifest.json" \
+            -o "$D/vivienne-shenzhen-v2-manifest.json"
+          echo '96b8ebf4a2692ad67170b98e66144784508a0ca29e6884a65c1b2882db858b7b  '"$D/vivienne-shenzhen-v2-continuous-review.wav" | sha256sum --check --
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('worldhealth-vision-v2/services/media-renderer/output/editorial-v2/voice-vivienne/vivienne-shenzhen-v2-manifest.json').read_text())
+          assert j['voice']=='fr-FR-VivienneMultilingualNeural'
+          assert abs(j['last_word_boundary_sec']-30.597)<.05
+          assert not j['audio_padded_per_scene'] and not j['outro_read_aloud']
+          assert j['this_take_approved_by_user'] is False
+          print('Verified Vivienne 30.597s last spoken word; only original end card stays silent')
+          PY
+      - name: Render true complete 33.7s V3 film WITHOUT old captions or filler logo
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        shell: bash
+        env:
+          REMOTION_DISABLE_UPDATE_CHECK: '1'
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          node render-editorial-v2.mjs full
+          python3 quality/quality_gate_v2.py --mode visual \
+            --video output/editorial-v2/full-silent-picture-33p7s-v3.mp4
+      - name: Mix original Vivienne audio to picture at native 1x, leave silent brand signoff
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python3 scripts/worldvision_mux_vivienne_review_v3.py \
+            --picture output/editorial-v2/full-silent-picture-33p7s-v3.mp4 \
+            --voice-wav output/editorial-v2/voice-vivienne/vivienne-shenzhen-v2-continuous-review.wav \
+            --voice-manifest output/editorial-v2/voice-vivienne/vivienne-shenzhen-v2-manifest.json \
+            --output output/editorial-v2/full-vivienne-review-33p7s-v3.mp4
+      - name: Sample frames for actual 33.7s mobile audiovisual inspection
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          F=output/editorial-v2/full-vivienne-review-33p7s-v3.mp4
+          OUT=output/editorial-v2/review-full-v3
+          mkdir -p "$OUT"
+          for sample in '1.8:leaders' '5.3:globe' '9.7:city' '12.5:new-start' \
+                        '17.8:china' '21.7:agenda' '26.9:question' '32.3:silent-brand'; do
+            IFS=':' read -r second name <<< "$sample"
+            ffmpeg -y -v error -ss "$second" -i "$F" -frames:v 1 \
+              -vf scale=540:960 -q:v 3 "$OUT/$name.jpg"
+          done
+          ffmpeg -y -v error -i "$OUT/leaders.jpg" -i "$OUT/city.jpg" -i "$OUT/new-start.jpg" \
+            -filter_complex hstack=inputs=3 -q:v 3 "$OUT/contact-sheet-opening.jpg"
+          ffmpeg -y -v error -i "$OUT/china.jpg" -i "$OUT/question.jpg" -i "$OUT/silent-brand.jpg" \
+            -filter_complex hstack=inputs=3 -q:v 3 "$OUT/contact-sheet-ending.jpg"
+          python3 - <<'PY'
+          from pathlib import Path
+          from hashlib import sha256
+          d=Path('output/editorial-v2/review-full-v3')
+          names=['leaders','globe','city','new-start','china','agenda','question','silent-brand']
+          assert len(set(sha256((d/(n+'.jpg')).read_bytes()).hexdigest() for n in names))>=7
+          print('Eight real video frames from full 33.7s Vivienne review verified, no placeholder')
+          PY
+      - name: Archive new complete video safely on shared review branch (no force push)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SRC="$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/output/editorial-v2"
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-vivienne-v3-full-review
+          cd /tmp/wv-vivienne-v3-full-review
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            OUT=media-lab/summit-2026/editorial-v2/full-vivienne-v3
+            mkdir -p "$OUT/review-frames"
+            cp "$SRC/full-vivienne-review-33p7s-v3.mp4" \
+               "$SRC/full-vivienne-review-33p7s-v3.json" "$OUT/"
+            cp "$SRC/review-full-v3/"*.jpg "$OUT/review-frames/"
+            git add "$OUT"
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "review(worldvision): actual 33.7s video + original Vivienne 1x audio, no filler, signature silent"
+            if git push origin HEAD:whv-media-studio-browser-preview; then
+              success=1
+              break
+            fi
+            echo "Preview concurrent update, retry preserving remote history ($attempt)"
+            sleep "$attempt"
+          done
+          test "$success" = 1
+          echo "iPhone 33.7s Vivienne preview: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/full-vivienne-review-33p7s-v3.mp4"
