@@ -59,3 +59,11 @@ test("Geographic segment S03 also uses exact clean premium version",()=>{
  const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
  assert.ok(render.includes("59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe"));
 });
+
+test("S01 stand-alone clean plate has no subtitles until the approved master voice",()=>{
+ assert.match(component,/\{voiceFilename&&<CaptionOverlay\/>\}/);
+ assert.match(component,/const manrope=staticFile\("fonts\/Manrope-variable\.ttf"\)/);
+ assert.match(component,/fontFamily:"WorldVision-Manrope, sans-serif"/);
+ const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
+ assert.match(render,/3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6/);
+});
