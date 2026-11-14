@@ -185,25 +185,11 @@ const Shenzhen:React.FC=()=>{
  </AbsoluteFill>;
 };
 
-const Nuclear:React.FC=()=>{
- const f=useCurrentFrame();
- return <Base subtle>
-  <Logo/><div style={{position:"absolute",left:79,top:370,fontSize:28,
-    letterSpacing:4,color:S.cyan,fontWeight:900}}>AU CŒUR DE L'AGENDA</div>
-  <AnimatedHeadline lines={["LE RISQUE","NUCLÉAIRE."]} size={123} top={550} accent={1}/>
-  <div style={{position:"absolute",top:960,left:80,width:830,height:225,border:"1px solid "+S.border,
-    background:"rgba(11,48,78,.7)",padding:"27px 40px"}}>
-    <div style={{fontWeight:950,fontSize:49}}>NEW START</div>
-    <div style={{fontSize:27,color:S.ice,marginTop:16,fontWeight:740}}>TRAITÉ AMÉRICANO-RUSSE EXPIRÉ EN FÉVRIER</div>
-    <BlueLine/>
-  </div>
-  <div style={{position:"absolute",left:78,top:1260,width:830,fontSize:34,lineHeight:1.33,color:S.white}}>
-    Objectif annoncé : ouvrir une discussion entre Washington, Moscou et Pékin.
-  </div>
-  <Credit text="Sources : Reuters · AP · AFP · déclarations de la Maison-Blanche"/>
-  <Barcode topic="CONTRÔLE DES ARMEMENTS" progress={(f+375)/SUMMIT_FRAMES}/>
- </Base>;
-};
+// S04 is an immutable clean-plate MP4: no draft texts, debug status or
+// production labels may be drawn on top; master uses this verified file only.
+const Nuclear:React.FC=()=><AbsoluteFill style={{background:S.ink}}>
+  <Video src={staticFile(rootAssets+"segment04-new-start-v3-clean-7p9s.mp4")} muted/>
+</AbsoluteFill>;
 
 const Beijing:React.FC=()=>{
  const f=useCurrentFrame();
