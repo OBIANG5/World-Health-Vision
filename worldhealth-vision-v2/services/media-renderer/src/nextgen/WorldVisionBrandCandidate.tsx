@@ -59,18 +59,20 @@ export const WorldVisionBrandOutroCandidate: React.FC<{tone?: "midnight" | "grap
   const textOpacity = interpolate(f, [14, 35], [0, 1],
     {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
   const background = tone === "midnight"
-    ? "radial-gradient(ellipse 840px 760px at 50% 41%, #143C60 0%, #071A31 62%, #030C19 100%)"
-    : "radial-gradient(ellipse 850px 720px at 50% 38%, #2C3749 0%, #101827 64%, #080F1C 100%)";
+    ? "radial-gradient(ellipse 810px 790px at 50% 45%, #75A8C7 0%, #386688 34%, #102840 64%, #050C18 100%)"
+    : "radial-gradient(ellipse 920px 1120px at 50% 44%, #F0F5F8 0%, #CBD9E3 52%, #9DB2C2 100%)";
+  const headlineColor = tone === "midnight" ? "#FFFFFF" : "#083252";
+  const taglineColor = tone === "midnight" ? "#E3F0F7" : "#264E66";
   return (
     <AbsoluteFill style={{
       background,
-      overflow: "hidden", color: C.white, alignItems: "center",
+      overflow: "hidden", color: headlineColor, alignItems: "center",
       justifyContent: "center",
     }}>
       <style>{fonts}</style>
       <AbsoluteFill style={{
         background:
-          "radial-gradient(ellipse 710px 560px at 50% 43%,rgba(150,217,248,.055),transparent 75%)",
+          "radial-gradient(ellipse 710px 560px at 50% 43%,rgba(210,236,250,.06),transparent 75%)",
       }}/>
       <div style={{
         width: "100%", display: "flex", flexDirection: "column",
@@ -85,7 +87,7 @@ export const WorldVisionBrandOutroCandidate: React.FC<{tone?: "midnight" | "grap
         }}>WORLD-VISION</div>
         <div style={{
           marginTop: 31, fontFamily: "WV-DM", fontSize: 36,
-          fontWeight: 500, textAlign: "center", color: "#C5DCE7",
+          fontWeight: 500, textAlign: "center", color: taglineColor,
           letterSpacing: -.5, opacity: textOpacity,
         }}>Voir le monde, le comprendre.</div>
       </div>
