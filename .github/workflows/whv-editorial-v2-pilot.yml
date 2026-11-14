@@ -89,26 +89,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # A second renderer can push another file to the shared preview branch.
+          # Fetch-and-reset + repack artifacts before EVERY push; no force pushes,
+          # no rebasing content changes, no losing concurrent scene results.
+          SRC=worldhealth-vision-v2/services/media-renderer/output/editorial-v2
           git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
             "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-editorial-v2
-          SRC=worldhealth-vision-v2/services/media-renderer/output/editorial-v2
-          DST=/tmp/wv-editorial-v2/media-lab/summit-2026/editorial-v2
-          mkdir -p "$DST/review-frames"
-          cp "$SRC/opening-pilot-11p6s-v2.mp4" "$SRC/opening-pilot-11p6s-v2.json" "$DST/"
-          cp "$SRC/review-frames/"*.jpg "$DST/review-frames/"
           cd /tmp/wv-editorial-v2
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add media-lab/summit-2026/editorial-v2
-          if ! git diff --cached --quiet; then
-            git commit -m "preview(worldvision): V2 11.6s source-locked editorial pilot, no logo hold"
-            pushed=0
-            for attempt in 1 2 3 4 5; do
-              git fetch origin whv-media-studio-browser-preview
-              git rebase origin/whv-media-studio-browser-preview
-              if git push origin HEAD:whv-media-studio-browser-preview; then pushed=1; break; fi
-              sleep 2
-            done
-            test "$pushed" = 1
-          fi
+          success=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            DST=media-lab/summit-2026/editorial-v2
+            mkdir -p "$DST/review-frames"
+            cp "$GITHUB_WORKSPACE/$SRC/opening-pilot-11p6s-v2.mp4" \
+               "$GITHUB_WORKSPACE/$SRC/opening-pilot-11p6s-v2.json" "$DST/"
+            cp "$GITHUB_WORKSPACE/$SRC/review-frames/"*.jpg "$DST/review-frames/"
+            git add "$DST"
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "preview(media-v2): updated true-frame reviewed 11.6s V2 pilot"
+            if git push origin HEAD:whv-media-studio-browser-preview; then success=1; break; fi
+            echo "Concurrent preview branch update; reapply our latest artifacts (attempt $attempt)"
+            sleep "$attempt"
+          done
+          test "$success" = 1
           echo "View mobile: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/opening-pilot-11p6s-v2.mp4"
