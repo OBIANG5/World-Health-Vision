@@ -1,0 +1,27 @@
+{
+  "id": "future-episode-neutral-voice-rehearsal",
+  "status": "AUDITION_ONLY",
+  "publication_authorized": false,
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "note": "Text invented for voice rehearsal only. No current-event claim.",
+  "segments": [
+    {
+      "text": "Une annonce vient de retenir l'attention. Et derrière ce titre, une question essentielle se pose.",
+      "editorial_intent": "Accroche intense, mais sans sensationnalisme.",
+      "rate_delta_percent": -2,
+      "pause_after_ms": 100
+    },
+    {
+      "text": "Que savons-nous vraiment aujourd'hui ? Les premières informations méritent d'être examinées avec prudence.",
+      "editorial_intent": "Factuel, serein, respiration nette après la question.",
+      "rate_delta_percent": 2,
+      "pause_after_ms": 135
+    },
+    {
+      "text": "Voici ce qui est confirmé. Et surtout, ce qu'il reste encore à vérifier.",
+      "editorial_intent": "Conclure avec curiosité et nuance.",
+      "rate_delta_percent": -3,
+      "pause_after_ms": 100
+    }
+  ]
+}
