@@ -1,0 +1,52 @@
+{
+  "id": "worldvision-c4-mississippi-hospital-natural-flow",
+  "status": "AUDITION_ONLY",
+  "publication_authorized": false,
+  "source_voice": "fr-FR-VivienneMultilingualNeural",
+  "source_model_locked": true,
+  "approved_parent_version": "c_impact",
+  "approved_final_signature": "worldvision-original-g0-graphite.mp4",
+  "date": "2026-11-14",
+  "story": "Collision du 13 novembre 2026 entre le pétrolier Atlantic Asphalt et le bateau de croisière American Heritage, à quai à La Nouvelle-Orléans.",
+  "sources": [
+    "https://apnews.com/article/757bed7a70ceb72f0d7140143fe2a764",
+    "https://www.cbsnews.com/news/tanker-cruise-collision-mississippi-river-new-orleans/",
+    "https://www.upi.com/Top_News/US/2026/11/13/tanker-collision-mississippi-river/8481794604372/"
+  ],
+  "verification": "32 hospitalized, no critical injuries, vessel docked, causal investigation ongoing",
+  "test_objective": "Minimize cadence reset after Mississippi and artificial end-stop on hôpital by changing linguistic and punctuation context. No phoneme surgery; no pauses inserted or cut.",
+  "variants": [
+    {
+      "id": "c4_reference",
+      "label": "C4.1 — Impact fidèle",
+      "rate": "+8%",
+      "pitch": "+0Hz",
+      "script": "Un bateau de croisière chavire à La Nouvelle-Orléans ! Un navire-citerne vient de le heurter alors qu'il est à quai sur le Mississippi, et plusieurs passagers tombent dans l'eau. Trente-deux personnes sont transportées à l'hôpital, mais aucun blessé critique n'est signalé. Comment un navire a-t-il pu heurter ce bateau à quai ?",
+      "rationale": "Keep original impact structure, but replace full-stop after Mississippi and hôpital with connected clauses."
+    },
+    {
+      "id": "c4_flow",
+      "label": "C4.2 — Enchaînement fluide",
+      "rate": "+7%",
+      "pitch": "+0Hz",
+      "script": "Sur le Mississippi, à La Nouvelle-Orléans, un navire-citerne vient de percuter un bateau de croisière qui était à quai ! Sous le choc, le bateau chavire, des passagers tombent à l'eau. Les secours conduisent trente-deux personnes à l'hôpital, sans qu'aucune soit dans un état critique. Comment une telle collision a-t-elle pu se produire ?",
+      "rationale": "Put Mississippi inside flowing opening sentence; avoid falling intonation on hospital by joining clinical qualifier."
+    },
+    {
+      "id": "c4_newsroom",
+      "label": "C4.3 — Journal télévisé",
+      "rate": "+8%",
+      "pitch": "+0Hz",
+      "script": "Un navire-citerne frappe un bateau de croisière à quai, à La Nouvelle-Orléans ! Le choc renverse le bateau sur le fleuve Mississippi, et des passagers se retrouvent à l'eau. Trente-deux personnes ont été conduites à l'hôpital, sans blessures critiques signalées. Les autorités enquêtent maintenant sur les circonstances de cet accident.",
+      "rationale": "Fact-first news cadence; Mississippi carried into a coordinated clause; shorten hospital register and leave final uncertainty."
+    },
+    {
+      "id": "c4_empathy",
+      "label": "C4.4 — Impact humain",
+      "rate": "+6%",
+      "pitch": "+0Hz",
+      "script": "Ils étaient à bord d'un bateau de croisière, à quai à La Nouvelle-Orléans, quand un navire-citerne le percute ! Sur le Mississippi, le bateau bascule et des passagers se retrouvent dans l'eau. Trente-deux personnes sont emmenées à l'hôpital, mais selon les autorités, aucune n'est dans un état critique. L'enquête doit maintenant expliquer comment cela a pu arriver.",
+      "rationale": "Human-first emotional arc without presenting any invented firsthand dialogue; smooth stress after Mississippi and hospital."
+    }
+  ]
+}
