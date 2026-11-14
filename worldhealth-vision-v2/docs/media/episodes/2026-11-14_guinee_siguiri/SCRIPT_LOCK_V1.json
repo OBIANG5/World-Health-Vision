@@ -1,0 +1,31 @@
+{
+  "episode": "guinee-balato-siguiri-gold-mining-clashes-2026-11-14",
+  "status": "USER_SELECTED_LOCKED_VERBATIM",
+  "language": "fr-FR",
+  "script_lines": [
+    "Dix morts. Treize blessés. En Guinée, une opération contre l’orpaillage illégal a tourné au drame.",
+    "Tout se joue à Balato, près de Siguiri.",
+    "Neuf jours après l’interdiction de l’exploitation illégale, une patrouille vient contrôler son application.",
+    "Des barricades bloquent la route. Puis, des tirs éclatent.",
+    "Mais le bilan révèle un autre choc : cinq des personnes tuées sont étrangères. Leurs identités restent inconnues.",
+    "Pourquoi une telle tension ?",
+    "L’État accuse l’exploitation illégale de détruire les terres et de polluer les rivières.",
+    "Pourtant, pour des milliers de familles, l’orpaillage est un moyen de vivre.",
+    "Et une question reste entière : qui a tiré le premier ?",
+    "Une enquête est ouverte pour établir les responsabilités."
+  ],
+  "sha256_utf8_joined_with_lf": "0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac",
+  "script_word_count_approx": 109,
+  "explicit_consent_to_rewrite": false,
+  "approved_for_publication": false,
+  "notes": [
+    "Script exactly selected by user. Do not change wording under narration, motion or duration pressure.",
+    "Attribution to official sources for numbers and barricades belongs in narration context/metadata, not as a substitute for verification.",
+    "First three sentences must remain intact and intelligible."
+  ],
+  "source_urls": [
+    "https://gouvernement.gov.gn/wp-content/uploads/2026/11/COMMUNIQUE-NA%C2%B0-008-MATD-CAB-2026-DU-GOUVERNEMENT-RELATIF-AUX-EVENEMENTS-SURVENUS-LE-11-NOVEMBRE-2026-A-BALATO-PREFECTURE-DE-KINTINIAN-DU-12112026.pdf",
+    "https://apnews.com/article/3bf55251d4da7159b04e031c8783d7a4",
+    "https://www.reuters.com/world/africa/10-killed-clashes-guinea-after-artisanal-mining-ban-2026-11-13/"
+  ]
+}
