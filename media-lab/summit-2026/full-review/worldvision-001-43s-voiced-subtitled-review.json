@@ -12,6 +12,45 @@
   "subtitle_cues": 13,
   "subtitles_matched_to_actual_word_boundaries": true,
   "clean_segment_mp4s": true,
+  "video_scene_order_checked_against_actual_sources": true,
+  "scene_frame_comparison": {
+    "00.80s": {
+      "source": "01.mp4",
+      "mean_pixel_delta": 0.212
+    },
+    "05.00s": {
+      "source": "02-BRAND-ONLY-NOT-D00.mp4",
+      "mean_pixel_delta": 0.008
+    },
+    "08.00s": {
+      "source": "03.mp4",
+      "mean_pixel_delta": 0.127
+    },
+    "11.50s": {
+      "source": "03.mp4",
+      "mean_pixel_delta": 0.184
+    },
+    "16.40s": {
+      "source": "04.mp4",
+      "mean_pixel_delta": 0.169
+    },
+    "24.00s": {
+      "source": "05.mp4",
+      "mean_pixel_delta": 0.229
+    },
+    "30.00s": {
+      "source": "06.mp4",
+      "mean_pixel_delta": 0.061
+    },
+    "37.10s": {
+      "source": "07.mp4",
+      "mean_pixel_delta": 0.215
+    },
+    "41.80s": {
+      "source": "08.mp4",
+      "mean_pixel_delta": 0.053
+    }
+  },
   "music": "original mathematically synthesized quiet atmospheric bed",
   "narrative_source": "2026-11-14 approved SCRIPT_V1.md",
   "publication_authorized": false,
@@ -56,6 +95,6 @@
       "frames": 90
     }
   ],
-  "sha256": "84bc1bb1d8cb4ac1f67fe9185514a1ce100c6bf4542c117a050759b5d85c1e9b",
-  "bytes": 6705592
+  "sha256": "842ec6ad663379d82d5d51349b6d6b4f68e3dcbefdb0019919d9afe469d5a2e3",
+  "bytes": 10850086
 }
