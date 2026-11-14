@@ -8,6 +8,7 @@ review are outstanding. This tool NEVER 'certifies beautiful images'.
 from __future__ import annotations
 import argparse
 import json
+import math
 from pathlib import Path
 
 WIDTH=1080
@@ -57,6 +58,32 @@ def check(episode,profile):
         blocking.append("Future speed change (proposed +6%) not approved by user.")
     if editorial.get("source_narration_requires_human_approval") is not True:
         errors.append("Narration release gate was disabled.")
+    # The selected C5.2 MP3 ALREADY narrates the New Orleans collision.
+    # It can be reused for that same event, never dubbed over new news.
+    if editorial.get("existing_selected_C52_recording_available"):
+        if episode.get("episode_id")!=selected.get("source_event_id"):
+            errors.append("Approved C5.2 only narrates its original New Orleans event.")
+        if editorial.get("narration_draft")!=selected.get("exact_transcript"):
+            errors.append("Visual plan narration is not the actual C5.2 recording transcript.")
+        if editorial.get("selected_audio_source")!=profile["canonical_project_assets"]["reference_mp3"]:
+            errors.append("Episode attempts to use a different or nonexistent voice master.")
+        if abs(editorial.get("selected_audio_seconds",0)-selected.get("duration_seconds_approx",0))>.04:
+            errors.append("Approved C5.2 reference duration mismatch.")
+        if not editorial.get("audio_approved_for_story_working_cut"):
+            errors.append("Selected sample must be explicitly authorized as working cut.")
+        if editorial.get("future_speed_change_approved") is not False:
+            errors.append("Future +6% hypothesis cannot overwrite selected +8% C5.2.")
+        fps=rendition.get("fps",30)
+        audio_duration=editorial.get("selected_audio_seconds",0)
+        expected_outro_start=math.ceil(audio_duration*fps)/fps
+        expected_total_frames=math.ceil(audio_duration*fps)+round(3*fps)
+        if abs(rendition.get("outro_start_seconds",0)-expected_outro_start)>.01:
+            errors.append("Outro timing must begin exactly when selected C5.2 speech ends.")
+        if rendition.get("total_frames")!=expected_total_frames:
+            errors.append("Invalid render length: would reintroduce extended silence or cut the outro.")
+        if rendition.get("narration_audio_file")!=editorial.get("selected_audio_source"):
+            errors.append("Renderer not bound to verified voice MP3.")
+
     if rendition.get("brand_outro")!="worldvision-original-g0-graphite.mp4":
         errors.append("Approved steel-light original G0 outro was replaced.")
     if rendition.get("brand_mark")!="official_original_eye_transparent":
