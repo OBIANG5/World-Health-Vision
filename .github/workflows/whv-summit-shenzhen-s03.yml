@@ -40,7 +40,7 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/wv-geography
           curl -fsSL --retry 5 --retry-all-errors --max-time 180 \
-            'https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography/january/world.topo.200401.3x5400x2700.jpg' \
+            'https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography/july/world.topo.200407.3x5400x2700.jpg' \
             -o /tmp/wv-geography/nasa-blue-marble-topography.jpg
           curl -fsSL --retry 5 --retry-all-errors --max-time 180 \
             'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson' \
@@ -69,36 +69,36 @@ jobs:
             --texture /tmp/wv-geography/nasa-blue-marble-topography.jpg \
             --geojson /tmp/wv-geography/countries.geojson \
             --logo public/brand/world-vision-official.png \
-            --output output/summit-2026/segment03-shenzhen-4p9s.mp4
+            --output output/summit-2026/segment03-shenzhen-july-v2-4p9s.mp4
       - name: Check frame differences and release metadata
         working-directory: worldhealth-vision-v2/services/media-renderer
         shell: bash
         run: |
           set -euo pipefail
-          F=output/summit-2026/segment03-shenzhen-4p9s.mp4
-          mkdir -p output/summit-2026/review-s03
+          F=output/summit-2026/segment03-shenzhen-july-v2-4p9s.mp4
+          mkdir -p output/summit-2026/review-s03-july-v2
           for entry in 0.3:start 1.65:turn 2.65:target 4.35:end; do
             sec="$(echo "$entry" | cut -d: -f1)"
             label="$(echo "$entry" | cut -d: -f2)"
             ffmpeg -y -v error -ss "$sec" -i "$F" -frames:v 1 \
-              -vf scale=480:853 -q:v 3 "output/summit-2026/review-s03/$label.jpg"
+              -vf scale=480:853 -q:v 3 "output/summit-2026/review-s03-july-v2/$label.jpg"
           done
           ffmpeg -y -v error \
-            -i output/summit-2026/review-s03/start.jpg \
-            -i output/summit-2026/review-s03/turn.jpg \
-            -i output/summit-2026/review-s03/target.jpg \
-            -i output/summit-2026/review-s03/end.jpg \
+            -i output/summit-2026/review-s03-july-v2/start.jpg \
+            -i output/summit-2026/review-s03-july-v2/turn.jpg \
+            -i output/summit-2026/review-s03-july-v2/target.jpg \
+            -i output/summit-2026/review-s03-july-v2/end.jpg \
             -filter_complex hstack=inputs=4 -q:v 3 \
-            output/summit-2026/review-s03/contact-sheet.jpg
+            output/summit-2026/review-s03-july-v2/contact-sheet.jpg
           python - <<'PY'
           import hashlib,json
           from pathlib import Path
-          j=json.loads(Path('output/summit-2026/segment03-shenzhen-4p9s.json').read_text())
+          j=json.loads(Path('output/summit-2026/segment03-shenzhen-july-v2-4p9s.json').read_text())
           assert j['geography']['target_city']=='Shenzhen'
           assert j['geography']['precision'].startswith('city centre')
           assert j['portrait']['frames']==147
           assert abs(j['duration']-4.9)<0.05
-          x=Path('output/summit-2026/review-s03')
+          x=Path('output/summit-2026/review-s03-july-v2')
           digests=[hashlib.sha256((x/f'{z}.jpg').read_bytes()).hexdigest()
                    for z in ['start','turn','target','end']]
           assert len(set(digests))==4,'Geographic turn appears frozen'
@@ -115,11 +115,11 @@ jobs:
           git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
             "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-release
           OUT=/tmp/wv-release/media-lab/summit-2026
-          mkdir -p "$OUT/review-s03"
+          mkdir -p "$OUT/review-s03-july-v2"
           SRC=worldhealth-vision-v2/services/media-renderer/output/summit-2026
-          cp "$SRC/segment03-shenzhen-4p9s.mp4" "$OUT/"
-          cp "$SRC/segment03-shenzhen-4p9s.json" "$OUT/"
-          cp "$SRC/review-s03/"* "$OUT/review-s03/"
+          cp "$SRC/segment03-shenzhen-july-v2-4p9s.mp4" "$OUT/"
+          cp "$SRC/segment03-shenzhen-july-v2-4p9s.json" "$OUT/"
+          cp "$SRC/review-s03-july-v2/"* "$OUT/review-s03-july-v2/"
           cd /tmp/wv-release
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -128,4 +128,4 @@ jobs:
             git commit -m "preview(summit): 4.9s geographic Earth turn to Shenzhen"
             git push origin HEAD:whv-media-studio-browser-preview
           fi
-          echo "Preview: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-4p9s.mp4"
+          echo "Preview: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v2-4p9s.mp4"
