@@ -574,3 +574,29 @@ Suite à la demande de supprimer définitivement les mentions de production et d
 **État :** S01 V2, S03 V3 (rotation Shenzhen, clean plate) et S04 V3 (New START, clean plate) sont techniquement vérifiées. Les clips ne sont PAS approuvés artistiquement pour publication. S02 D00-v6 reste source originale distincte, S03B images authentiques de la ville manque, S05–S08 à produire ; narration, synchronisation et master 43s absents. Ne pas renommer un artefact dans le master sans hash ni QA.
 
 ---
+
+## 14 NOV 2026 — S03B RÉELLE VUE DE SHENZHEN ET RACCORD CIRCULAIRE V2
+
+**Dernière décision utilisateur :** poursuivre la vidéo World-Vision « Trump, Poutine, Xi — réunion annoncée à Shenzhen le 19 novembre 2026 », de manière professionnelle, une séquence authentique à la fois. Surtout, AUCUNE mention technique dans les pixels (« Prévisualisation », « sans voix », « motion design », identifiant de segment, QA). Manrope hash-locked, logo officiel exact, aucune recréation du globe original.
+
+**Nouvelle séquence S03B réalisée :** vrai panorama urbain de Shenzhen (Lianhuashan / Futian), photo photographiée par **Renek78 le 13 septembre 2025**, publiée CC0 1.0, source https://commons.wikimedia.org/wiki/File:02_View_from_Lianhuashan,_Shenzhen_in_2025.jpg ; photo SHA-256 `213604b3c78690367db2be0f8152e687923c1a4fb56474a095019cc8ae22bfa6`. Film issu de photo réelle, 2,7 secondes, 81 frames 30fps vertical 1080x1920 H264, MP4 SHA-256 `cd0dfa113ec71d95b615fba341f0aec5db8953ad1ca520dc292db6c11540f016`, 729265 octets. Véritable logo G0 et police Manrope, sans voix, sans textes de fabrication. **Photo de la ville uniquement — PAS de salle de réunion.** Workflow [#43589613072](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43589613072) succès, six photogrammes distincts vérifiés.
+- [Voir S03B vrai film mobile 2,7 s](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03b-shenzhen-city-v1-2p7s.mp4)
+- [Contrôle visuel S03B](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03b-v1/contact-sheet.jpg)
+- Source Python `services/media-renderer/scripts/worldvision_segment03b_shenzhen_city.py` et CI `.github/workflows/whv-summit-s03b-shenzhen-city.yml`.
+
+**RACCORD FINAL DE TRAVAIL S03→S03B réalisé : 7,1 secondes = 4,9 secondes du S03 NASA géoréférencé + 2,7 secondes du S03B photo de ville - 0,5 seconde de chevauchement, playback RATE 1x.** 
+- V1 `s03-to-s03b-shenzhen-matchcut-7p1s.mp4` techniquement correcte mais **rejetée artistiquement** car un fondu entier superposait deux logos et les titres.
+- V2 `s03-to-s03b-shenzhen-matchcut-v2-circleopen-7p1s.mp4`, ouverture circulaire de 0,5 s, fait la transition map→ville avec moins de titres fantômes. Exécution [#43590163241](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43590163241) **SUCCESS**, 213 frames /30fps / 7,1 secondes / H264 1080x1920 / pas de voix. SHA-256 `8ab698002dfd82375423e6866b5bf0a7e602af5a7bba3a0ebafdce3b9191ef37`, 4010873 octets. Photogrammes inspectés, **validation artistique utilisateur toujours nécessaire**.
+- [Voir V2 RACCORDE 7,1 s sur iPhone](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/s03-to-s03b-shenzhen-matchcut-v2-circleopen-7p1s.mp4)
+- [Comparer images arrivée globe→ville](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-transition-v2/contact-sheet.jpg)
+- Workflow `.github/workflows/whv-summit-s03-s03b-transition-v2.yml`.
+
+**EDL du 43s réellement mise à jour dans le code Remotion** : S01 00:00–04:50 ; original S02 D00-v6 coupé 04:50–05:40 (0,9 s au naturel); S03 globe NASA 05:40–10:30 (4,9 s intégral); S03B 09:80–12:50 (2,7 s intégral), cercle d'ouverture 0,5 s ; S04 New START 12:50–20:40 ; S05–S08 selon découpage original jusqu'à 43 s. Le code Remotion `WorldVisionSummit2026.tsx` utilise `clipPath: circle(...)` au lieu de fondu global, et le script de master `render-summit-preview.mjs` refuse tout SHA absent ou incohérent, dont S03B. Test contrat renforcé (13 sous-titres verrouillés texte exact + 0,5s recouvrement + font Manrope et clean plate).
+
+**Source de vérité** `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/EDL_V3_REAL_CITY_MATCHCUT.md` et `SEGMENT_LEDGER.json`, maintenant 9 plans visuels incluant le petit S03B ajouté, correspondant aux 8 séquences originales. Original NASA, photo CC0 et anciennes versions conservés.
+
+**N'EXISTE PAS ENCORE** : voix FR approuvée, alignement 13 sous-titres à une vraie voix, S05–S08 vidéo autonome, master final 43 s, approbation artistique S03B/raccord, fichier binaire exact S02 dans renderer final. Pas de réunion tenue ni de faux bâtiment de sommet. Tout est archivé pour un nouveau chat.
+
+**NEXT** : contrôle artistique de S03B / raccord V2 sur téléphone, puis produire S05 (Xi / réserve de Pékin) avec photos d'archives authentiques, Manrope, logos exacts, aucune mention technique brûlée, sans refaire d'éditeur. Avant publication vérifier les faits politiques de dernière minute et les droits des images.
+
+---
