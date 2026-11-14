@@ -20,10 +20,33 @@ class EpisodeAcceptanceTests(unittest.TestCase):
         v=self.result()
         self.assertEqual(v["status"],"BLOCKED")
         self.assertEqual(v["structural_errors"],[])
-        self.assertEqual(v["number_of_shots"],6)
+        self.assertEqual(v["number_of_shots"],5)
         self.assertGreater(len(v["real_world_release_blockers"]),5)
         self.assertFalse(v["aesthetic_quality_certified"])
         self.assertFalse(v["publishing_authorized"])
+    def test_approved_C52_sample_is_exact_same_new_orleans_event(self):
+        e=self.episode
+        self.assertEqual(e["episode_id"],self.profile["selected_reference"]["source_event_id"])
+        self.assertEqual(e["editorial"]["narration_draft"],
+                         self.profile["selected_reference"]["exact_transcript"])
+        self.assertEqual(e["render"]["total_frames"],513)
+        self.assertTrue(e["editorial"]["existing_selected_C52_recording_available"])
+        self.assertEqual(self.result()["structural_errors"],[])
+    def test_legacy_28_second_silence_not_allowed(self):
+        def mutate(e):
+            e["render"]["total_frames"]=840
+            e["render"]["outro_start_seconds"]=25.0
+        errs=self.result(mutate)["structural_errors"]
+        self.assertTrue(any("Invalid render length" in x for x in errs))
+        self.assertTrue(any("Outro timing" in x for x in errs))
+    def test_no_source_transcript_mismatch(self):
+        def mutate(e):e["editorial"]["narration_draft"]+=" Autre narration."
+        self.assertTrue(any("actual C5.2 recording transcript" in x
+                            for x in self.result(mutate)["structural_errors"]))
+    def test_no_voice_for_unrelated_news(self):
+        def mutate(e):e["episode_id"]="wv-999-unrelated"
+        self.assertTrue(any("original New Orleans event" in x
+                            for x in self.result(mutate)["structural_errors"]))
     def test_no_random_voice(self):
         def mutate(e):e["editorial"]["voice_model"]="fr-FR-DeniseNeural"
         self.assertIn("Unauthorized narrator substituted.",self.result(mutate)["structural_errors"])
