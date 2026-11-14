@@ -81,7 +81,7 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/south-sudan-2026-11-14/review/*.jpg
       - name: Publish candidate and proof on permanent phone preview branch
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           git clone --quiet --depth 1 --branch whv-media-studio-browser-preview "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-south-sudan-viewer
