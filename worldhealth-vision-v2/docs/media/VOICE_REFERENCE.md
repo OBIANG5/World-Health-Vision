@@ -22,3 +22,39 @@
 6. Ne jamais créer ou réutiliser d'imitation de voix d'un journaliste connu.
 
 Cette référence doit être lue au début de tout nouveau chat qui poursuit World-Vision. Les nouvelles branches doivent la reprendre explicitement ; ne pas choisir de voix de secours par habitude.
+
+
+## Décision utilisateur renforcée — 14 novembre 2026, suite vidéo n°001
+
+Cette décision supplante les expériences comparatives A/B/C où d'autres voix
+avaient été suggérées à tort pour remplacer Vivienne.
+
+- **AUCUN CHANGEMENT DE TIMBRE** : seul
+  `fr-FR-VivienneMultilingualNeural` est autorisé pour les auditions Edge.
+  Denise, Sylvie, Coralie, Remy et Henri ne sont pas candidats à la succession.
+- Le test V2 Vivienne (13,4 secondes) semblait plus vivant mais les
+  micro-blancs et l'impression de phrases collées ont été REJETÉS.
+  Il retirait **2,008 secondes** de silences par montage sur la voix ;
+  ne pas reproduire cette méthode agressive.
+- Nouvelle expérimentation V3 sur la prochaine actualité :
+  **quatre rédactions et rythmes, une seule synthèse continue par prise,
+  aucune coupe de silence ni collage d'éléments vocaux**.
+  Pipeline : `services/media-renderer/scripts/worldvision_vivienne_only_v3.py`.
+  Les prises doivent être écoutées par une personne, aucune amélioration
+  subjective garantie.
+- Vivienne haute définition Azure DragonHD garde le personnage vocal Vivienne
+  et peut être expérimentée séparément si un accès Azure Speech licite est
+  configuré. Ne PAS le simuler via Edge ni affirmer que les essais V3 sont HD.
+- Aucune publication automatique des voix de démonstration avant
+  confirmation des droits et approbation artistique.
+
+La signature G0 authentique, **fond acier clair**, a été validée
+expressément par l'utilisateur comme signature de fin.
+Garder l'oeil officiel, les continents et l'animation ; changer de
+fond ou d'identité sans nouvelle décision est interdit.
+Lien conservé :
+https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4
+
+La vidéo déjà publiée de 33,7 secondes reste immuable ; pas de mise à jour
+rétroactive. La vraie source d'évolution est la nouvelle branche
+`improve/worldvision-vivienne-only-v3-editorial-2026-11-14`.
