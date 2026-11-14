@@ -1,0 +1,28 @@
+{
+  "status": "AUDITION_ONLY_NO_PUBLICATION_RIGHTS",
+  "variant": "vivienne_continuous",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "requested_voice": "fr-FR-VivienneMultilingualNeural",
+  "used_fallback_voice": false,
+  "rate": "+4%",
+  "comparison_script_sha256": "ce4a07be6ed50bf4ffefc2e6409a5fabf61d3d4dbeb32d7a30a68bc984463ff6",
+  "same_script_as_other_candidates": true,
+  "same_voice_as_previous_user_preference": true,
+  "original_audio_sha256": "f8bd111387852257544504ec76655e79378f19c11f69e4c4a963722108f7ad19",
+  "polished_audio_sha256": "df4baa093e586eeb2b403ef0a25a8bf97c46212ce7c3efa494893fa7aa876018",
+  "duration_sec": 13.44,
+  "word_boundaries_count": 47,
+  "surgery": {
+    "source_duration_sec": 15.408,
+    "post_duration_sec": 13.4,
+    "removed_duration_sec": 2.008,
+    "interior_silences_observed": 10,
+    "surgical_cuts": 9,
+    "unchanged_speech_segments": true,
+    "cuts_are_in_silence_not_speech": true
+  },
+  "engine": "edge-tts (technical audition; commercial rights NOT verified)",
+  "naturalness_claim": "No proof of emotion improvement; listen to full take.",
+  "rights_verified": false,
+  "publication_authorized": false
+}

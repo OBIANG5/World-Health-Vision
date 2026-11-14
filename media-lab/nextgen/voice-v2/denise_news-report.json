@@ -1,0 +1,28 @@
+{
+  "status": "AUDITION_ONLY_NO_PUBLICATION_RIGHTS",
+  "variant": "denise_news",
+  "voice": "fr-FR-DeniseNeural",
+  "requested_voice": "fr-FR-DeniseNeural",
+  "used_fallback_voice": false,
+  "rate": "+2%",
+  "comparison_script_sha256": "ce4a07be6ed50bf4ffefc2e6409a5fabf61d3d4dbeb32d7a30a68bc984463ff6",
+  "same_script_as_other_candidates": true,
+  "same_voice_as_previous_user_preference": false,
+  "original_audio_sha256": "8029cfcc668767211af31d05b1f3485af41fc5f587255d847072273b0d27244c",
+  "polished_audio_sha256": "2a1ea559cfd639dab20e4b610b8eb060d7a0c0dc80b86baeee83ae192ca03392",
+  "duration_sec": 15.984,
+  "word_boundaries_count": 47,
+  "surgery": {
+    "source_duration_sec": 19.608,
+    "post_duration_sec": 15.944,
+    "removed_duration_sec": 3.664,
+    "interior_silences_observed": 11,
+    "surgical_cuts": 10,
+    "unchanged_speech_segments": true,
+    "cuts_are_in_silence_not_speech": true
+  },
+  "engine": "edge-tts (technical audition; commercial rights NOT verified)",
+  "naturalness_claim": "No proof of emotion improvement; listen to full take.",
+  "rights_verified": false,
+  "publication_authorized": false
+}

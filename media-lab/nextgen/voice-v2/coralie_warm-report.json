@@ -1,0 +1,28 @@
+{
+  "status": "AUDITION_ONLY_NO_PUBLICATION_RIGHTS",
+  "variant": "coralie_warm",
+  "voice": "fr-CA-SylvieNeural",
+  "requested_voice": "fr-FR-CoralieNeural",
+  "used_fallback_voice": true,
+  "rate": "+3%",
+  "comparison_script_sha256": "ce4a07be6ed50bf4ffefc2e6409a5fabf61d3d4dbeb32d7a30a68bc984463ff6",
+  "same_script_as_other_candidates": true,
+  "same_voice_as_previous_user_preference": false,
+  "original_audio_sha256": "779e18c7e2939ac3068456fcf567ef904fcb63579cb1029da82e589f4abac988",
+  "polished_audio_sha256": "4757e3f8ad22cbce3ddbd542890ce5e0bbae1afd965124ed3ffb13afd19fb6c2",
+  "duration_sec": 16.008,
+  "word_boundaries_count": 47,
+  "surgery": {
+    "source_duration_sec": 19.128,
+    "post_duration_sec": 15.96,
+    "removed_duration_sec": 3.168,
+    "interior_silences_observed": 11,
+    "surgical_cuts": 9,
+    "unchanged_speech_segments": true,
+    "cuts_are_in_silence_not_speech": true
+  },
+  "engine": "edge-tts (technical audition; commercial rights NOT verified)",
+  "naturalness_claim": "No proof of emotion improvement; listen to full take.",
+  "rights_verified": false,
+  "publication_authorized": false
+}
