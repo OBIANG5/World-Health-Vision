@@ -78,6 +78,9 @@ jobs:
           # Genuine live-action stock video for livelihood beat, NOT footage
           # from the Balato 2026 clashes; source and author recorded in manifest.
           curl -fLsS --retry 5 --retry-all-errors --max-time 300             'https://videos.pexels.com/video-files/28657918/12445295_3840_2160_24fps.mp4'             -o "$D/real_worker_illustration.mp4"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 240             'https://videos.pexels.com/video-files/40458553/17288330_1920_1080_30fps.mp4'             -o "$D/gold_panning_illustration.mp4"
+          test "$(stat -c%s "$D/gold_panning_illustration.mp4")" -gt 100000
+          ffprobe -v error -show_entries stream=codec_type,width,height -show_entries format=duration -of json "$D/gold_panning_illustration.mp4"
           test "$(stat -c%s "$D/real_worker_illustration.mp4")" -gt 1000000
           ffprobe -v error -show_entries stream=codec_type,width,height -show_entries format=duration -of json "$D/real_worker_illustration.mp4"
           python - <<'PY'
@@ -148,7 +151,7 @@ jobs:
           assert not m['voice_commercial_license_verified'] and not m['publication_authorized']
           assert len(m['visual_timeline'])==15
           assert (d/'review/contact-sheet.jpg').is_file()
-          assert len(list((d/'review').glob('frame-*.jpg')))==9
+          assert len(list((d/'review').glob('frame-*.jpg')))==12
           assert 'Guinea' in m['geography']['globe']
           print('QA PASS | Script immutable | Slower Vivienne | Actual video | User artistic approval outstanding')
           PY
