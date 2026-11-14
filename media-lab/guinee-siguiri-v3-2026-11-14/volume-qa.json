@@ -1,0 +1,17 @@
+{
+  "reason": "Propriétaire: voix de la V3 trop basse sur smartphone, note artistique globale 6/10.",
+  "old_lufs": -16.4,
+  "new_lufs": -13.67,
+  "loudness_gain_lu": 2.73,
+  "old_true_peak_dbtp": -1.99,
+  "new_true_peak_dbtp": -1.38,
+  "unchanged_video_stream": true,
+  "unmodified_script": true,
+  "identical_vivienne_words_and_timing": true,
+  "no_new_synthetic_voice": true,
+  "voice_license_verified_for_commercial_use": false,
+  "user_artistic_score_before_change": "6/10",
+  "visual_emotional_direction_approved": false,
+  "output_sha256": "d739c50dd25c21a11ecd264c235b82ec1f2665f001efded44f4021ba86ab2411",
+  "status": "technical pass, owner artistic evaluation outstanding"
+}
