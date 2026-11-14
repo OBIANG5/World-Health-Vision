@@ -25,6 +25,6 @@
   "captions_baked": false,
   "read_outro": false,
   "note": "Source design proof: never declare a final film from codec checks alone.",
-  "sha256": "84cc554f833a41ad1f41f2af1f6d4dd21ac4ee071d7be85989571cf8563c8f6a",
-  "bytes": 6180997
+  "sha256": "da44aa05e730fb871dfdc25410e0908da69f5863d0e77c9820e9b4f6bc41882a",
+  "bytes": 6094863
 }
