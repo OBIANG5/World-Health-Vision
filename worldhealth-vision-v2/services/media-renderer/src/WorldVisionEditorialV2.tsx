@@ -170,24 +170,28 @@ const China:React.FC=()=>{
   </div>
  </Main>;
 };
+const DiplomaticArchive:React.FC<{name:string;country:string;statement:string;accent?:boolean}>=
+ ({name,country,statement,accent=false})=>{
+ return <Main>
+  <ArchivePhoto name={name} zoom={1.11} focus="center 31%" shade={.33}/>
+  <AbsoluteFill style={{background:"linear-gradient(180deg,rgba(4,17,32,.30),transparent 23%,rgba(3,14,28,.22) 38%,#061528 77%)"}}/>
+  <Overline top={287}>DOSSIERS DIPLOMATIQUES</Overline>
+  <Title top={1040} size={185} color={accent?C.cyan:C.white}>{country}</Title>
+  <div style={{position:"absolute",left:91,top:1296,right:105,
+    fontFamily:"WV-Text",fontSize:34,fontWeight:700,color:C.white}}>{statement}</div>
+ </Main>;
+};
+
 const Agenda:React.FC=()=>{
  const f=useCurrentFrame();
- return <Main bg={C.navy2}>
-  <AbsoluteFill style={{background:"radial-gradient(circle at 73% 28%,rgba(65,146,173,.20),transparent 56%)"}}/>
-  <Overline top={282}>LES AUTRES DOSSIERS</Overline>
-  <div style={{opacity:smooth(f,0,18),position:"absolute",left:90,right:100,top:492}}>
-   <div style={{fontFamily:"WV-Editorial",fontSize:182,fontWeight:700,
-     color:C.white,lineHeight:.85}}>IRAN</div>
-   <div style={{fontFamily:"WV-Text",fontSize:36,fontWeight:600,
-     color:C.muted,marginTop:35}}>Devrait être abordé.</div>
-  </div>
-  <div style={{position:"absolute",left:90,right:105,top:856,
-    borderTop:"2px solid rgba(166,206,218,.34)",paddingTop:80,opacity:smooth(f,27,44)}}>
-   <div style={{fontFamily:"WV-Editorial",fontSize:182,fontWeight:700,
-     color:C.cyan,lineHeight:.85}}>UKRAINE</div>
-   <div style={{fontFamily:"WV-Text",fontSize:36,fontWeight:600,
-     color:C.muted,marginTop:35}}>Non prévue selon Washington.</div>
-  </div>
+ const p=smooth(f,107,122);
+ return <Main>
+  <DiplomaticArchive name="tehran-azadi-2025.jpg" country="IRAN" statement="À l'ordre du jour annoncé"/>
+  {/* Non-transparent 15-frame documentary wipe: no ghosted double headlines. */}
+  <AbsoluteFill style={{clipPath:`inset(0 ${100-100*p}% 0 0)`}}>
+   <DiplomaticArchive name="kyiv-street-2023.jpg" country="UKRAINE"
+    statement="Pas prévue selon Washington" accent/>
+  </AbsoluteFill>
  </Main>;
 };
 const Uncertainty:React.FC=()=>{
