@@ -35,10 +35,13 @@ jobs:
           python-version: '3.11'
       - name: Install lightweight contact sheet dependency
         run: python -m pip install --quiet 'pillow>=11,<13'
-      - name: Confirm ffmpeg and ffprobe
+      - name: Install and confirm FFmpeg explicitly on cloud runner
         run: |
-          ffmpeg -version | head -1
-          ffprobe -version | head -1
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          command -v ffmpeg
+          command -v ffprobe
       - name: Test real synthetic assembly, no news content generated
         working-directory: worldhealth-vision-v2/services/media-renderer/fastlane
         run: |
@@ -70,8 +73,12 @@ jobs:
           assert e['script_approved_by_user'] is True
           print('LOCKED package ready:',e['episode_id'])
           PY
-      - name: Install contact sheet dependency
-        run: python -m pip install --quiet 'pillow>=11,<13'
+      - name: Install FFmpeg and contact sheet dependency
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python -m pip install --quiet 'pillow>=11,<13'
       - name: Run timed assembly only (target 300s)
         env:
           PACKAGE: ${{ inputs.manifest }}
