@@ -40,6 +40,11 @@ jobs:
           sudo apt-get install -y fonts-inter || true
           python -m pip install -q Pillow requests yt-dlp
           ffmpeg -version | head -1
+      - name: Reject broken renderer code BEFORE lengthy footage downloads
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python -m py_compile scripts/worldvision_002_true_archives_render.py
+          python -m py_compile scripts/worldvision_download_dvids.py
       - name: Verify all real public-domain archival shots and acquire video
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: |
