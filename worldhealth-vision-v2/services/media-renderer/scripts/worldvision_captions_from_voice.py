@@ -99,7 +99,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
   # Reposition above the original source footers: the old 1664 baseline
   # overlapped the 1620px editorial barcode. Keep top captions clear of
   # original locator headers (at ~280px). This changes subtitle overlay ONLY.
-  pos=r"{\an8\pos(540,352)}" if 4.5<=at<12.5 else r"{\an2\pos(540,1548)}"
+  # The New START photo has a genuine small editorial label around y=1400.
+  # Put its subtitles under the label, above the bottom 1920px safe zone.
+  if 4.5<=at<12.5:pos=r"{\an8\pos(540,352)}"
+  elif 12.5<=at<20.4:pos=r"{\an2\pos(540,1690)}"
+  else:pos=r"{\an2\pos(540,1548)}"
   lines=[x.replace("{","").replace("}","") for x in wrap(cue["text"],34)]
   text=pos+r"\N".join(lines)
   rows.append(f"Dialogue: 0,{stamp(cue['start'],True)},{stamp(cue['end'],True)},News,,0,0,0,,{text}")
@@ -107,7 +111,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
  # Document layout QA in metadata, not in pixels.
  for cue in cues:
-  cue["caption_position"]=("top_352" if 4.5<=cue["provisional_start"]<12.5 else "bottom_1548")
+  cue["caption_position"]=("top_352" if 4.5<=cue["provisional_start"]<12.5 else "bottom_1690" if 12.5<=cue["provisional_start"]<20.4 else "bottom_1548")
  audit={"id":"WorldVision001","script_verbatim":True,"speech_time_aligned":True,
         "voice_sha256":voice["sha256"],"cues":cues,
         "cue_count":len(cues),"captions_clean_plate":False,
