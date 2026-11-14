@@ -50,7 +50,7 @@ const outputDir=path.join(base,"output","summit-2026");
 mkdirSync(outputDir,{recursive:true});
 const output=path.join(outputDir,mode==="hook"?"hook-4p5s-preview.mp4":"report-43s-master-candidate.mp4");
 const bundled=await bundle({entryPoint:path.join(base,"src","index.ts"),onProgress:()=>undefined});
-const inputProps={voiceFilename:mode==="full"?"episodes/summit-2026/voice-fr-approved.wav":null,previewWatermark:mode!=="full"};
+const inputProps={voiceFilename:mode==="full"?"episodes/summit-2026/voice-fr-approved.wav":null};
 const comp=await selectComposition({serveUrl:bundled,id:"WorldVisionSummit2026",inputProps});
 if(comp.width!==1080||comp.height!==1920||comp.fps!==30)throw new Error("Unexpected composition profile");
 await renderMedia({composition:comp,serveUrl:bundled,outputLocation:output,
