@@ -1,5 +1,12 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## RETOUR APRÈS PUBLICATION — 14 NOVEMBRE 2026, À LIRE AVANT LA PROCHAINE VIDÉO
+
+La vidéo Soudan du Sud V3 a **été publiée par le propriétaire** ; **note propriétaire 4–5/10** (l'ancienne mention « non publiée » n'est plus à jour). **Ne pas refaire l'épisode**, préparer un sujet différent choisi parmi la liste d'origine (notamment #9 Guinée/Siguiri, #8 Kenya/Syokimau, #6 Guinée équatoriale/Jesús Owono). Avant toute nouvelle production, **abandonner la cadence Vivienne trop rapide : viser une voix plus humaine, plus lente, plus expressive, sans compression artificielle, et mieux synchroniser émotion, preuve et image.** Les images de l'épisode précédent ont été jugées insuffisamment évocatrices. Choisir des images vérifiables, fortes, pertinentes et légalement réutilisables ; ne pas fabriquer de faux documents d'actualité. Un outil qui exporte un MP4 ne garantit pas un reportage regardable : validation artistique distincte.
+
+La règle complète est dans `worldhealth-vision-v2/docs/media/EDITORIAL_VIDEO_QUALITY_GATES.md` sur `feature/worldvision-south-sudan-v3-locked-vivienne-2026-11-14`; consigner chaque nouvelle note dans l'[Issue #18](https://github.com/OBIANG5/World-Health-Vision/issues/18). La vidéo a été publiée par l'utilisateur mais **la situation des droits du test TTS Vivienne reste distincte** ; ne pas déduire une licence de cette publication.
+
+
 ## DERNIER RENDU DU SOUDAN DU SUD — V3 VIVIENNE (14/11/2026)
 - **MP4 effectivement généré et accessible sur iPhone**, 22,367 secondes, H.264/AAC 1080×1920, 30 i/s : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v3/index.html
 - Le script original est **strictement verrouillé et vérifié en CI** (SHA `a5104cedab538771d1c649da242c7b32b4f438514a4230d3e5bb31628139afb9`). Voix **Vivienne** (`fr-FR-VivienneMultilingualNeural`). Globe géographique approuvé de la V2 intact, les 3 premières secondes.
