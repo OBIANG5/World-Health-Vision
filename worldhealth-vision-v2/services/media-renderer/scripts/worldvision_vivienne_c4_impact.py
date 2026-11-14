@@ -37,7 +37,7 @@ def validate(brief):
         assert var["pitch"]=="+0Hz", "Do not move the tone of Vivienne"
         assert var["rate"] in ("+6%","+7%","+8%")
         text=var["script"]
-        assert "Mississippi" in text and "Trente-deux" in text
+        assert "Mississippi" in text and re.search(r"\btrente-deux\b", text, re.I)
         assert "hôpital" in text and "La Nouvelle-Orléans" in text
         assert len(text)>=180 and text.count(".")>=2
         assert "Voir le monde, le comprendre" not in text
