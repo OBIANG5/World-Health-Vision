@@ -1,0 +1,76 @@
+{
+  "name": "World-Vision v2 scene storyboard",
+  "status": "QUALITY_REVIEW_ONLY",
+  "artistic_approved": false,
+  "source_composition": "WVEditorialV2",
+  "frames": [
+    {
+      "label": "leaders",
+      "frame": 57,
+      "second": 1.9,
+      "sha256": "1c24c2eaf2565231d29d79b792fcd13d0f40a01d13d468fd7006d8e6460b6618",
+      "bytes": 2058217
+    },
+    {
+      "label": "globe",
+      "frame": 207,
+      "second": 6.9,
+      "sha256": "da9bf8b6e70baae8f59a5938c7a4382e06ab1040aa2227b08c09e07a4bbbbba1",
+      "bytes": 1054687
+    },
+    {
+      "label": "city",
+      "frame": 315,
+      "second": 10.5,
+      "sha256": "7fda841cdee41a9ded4905ef2b308fe3de20c0d009187c6eaf01b75a3a6b56d2",
+      "bytes": 1854459
+    },
+    {
+      "label": "newstart-archive",
+      "frame": 402,
+      "second": 13.4,
+      "sha256": "e52e06103965264bbae7231678c509aecea3639662fd9ac899c5242e0c4b2da7",
+      "bytes": 1958446
+    },
+    {
+      "label": "newstart-expiry",
+      "frame": 527,
+      "second": 17.566666666666666,
+      "sha256": "b3fd13730041c17ee78a8368e7973796a134c7222bd925daf680468f53a4df06",
+      "bytes": 1935936
+    },
+    {
+      "label": "china",
+      "frame": 680,
+      "second": 22.666666666666668,
+      "sha256": "3d4c1dc05994ed3c22024e44956a563a6cbdf99879e56d23066c567099fd850e",
+      "bytes": 2716132
+    },
+    {
+      "label": "iran-ukraine",
+      "frame": 885,
+      "second": 29.5,
+      "sha256": "4eb5faa3bae44036cb452684e0f6af0622e83379d784f945e3172fbb22509adc",
+      "bytes": 993676
+    },
+    {
+      "label": "uncertainty",
+      "frame": 1076,
+      "second": 35.86666666666667,
+      "sha256": "57db2e31957da0877f240d0dbb9c1aeda1abaa96a78263e3aeec4ffa8da245d2",
+      "bytes": 2584693
+    },
+    {
+      "label": "silent-signature",
+      "frame": 1220,
+      "second": 40.666666666666664,
+      "sha256": "6e2192edb31d5d4205c30b23aebe258d6e452b444efe80ca77abfcf469d09a5c",
+      "bytes": 827258
+    }
+  ],
+  "output_type": "real Remotion stills, not generated illustrations",
+  "official_logo_source": "G0 SHA-pinned",
+  "globe": "real NASA/Natural Earth segment preserved",
+  "voice_used": false,
+  "publishable": false
+}
