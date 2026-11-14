@@ -43,8 +43,8 @@
         "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4",
         "description": "Earlier S01 preview with provisional unsynced captions rendered in a default serif font; not approved for final assembly."
       },
-      "sha256": "3a73172cd565f1b8d075166a6ae8f50572af77dceb97e91999c7d53a63456979",
-      "bytes": 1774610,
+      "sha256": "985d5f77f6de53a68fa49e6efc84ad2e37dd7c5c3ed48b6f4e6a492058cb37d2",
+      "bytes": 1774834,
       "font_family": "Manrope Variable, SHA256 pinned",
       "font_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
       "clean_plate": true,
@@ -52,7 +52,7 @@
       "technical_labels_in_video": false,
       "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s01-v2/contact-sheet.jpg",
       "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587829876",
-      "notes": "S01 V2 actual 4.5s MP4 with genuine archival portraits, original G0, Manrope variable font. Provisional caption overlay removed entirely from standalone hook; subtitles only after approved final voice. 3 review frames inspected. Still subject to artistic approval."
+      "notes": "S01 V2 actual 4.5s MP4 with genuine archival portraits, original G0, Manrope variable font. Provisional caption overlay removed entirely from standalone hook; subtitles only after approved final voice. 3 review frames inspected. Still subject to artistic approval. Canonical currently archived S01 video hash corrected to 985d5f (latest verified original G0 + Manrope render)."
     },
     {
       "id": "S02",
@@ -287,7 +287,7 @@
   "editorial_gates": {
     "S01": "V2 Manrope clean preview QA success GitHub Actions #43587829876, user art approval pending. No voice.",
     "S02": "Human artistic review required",
-    "master": "43s voice+subtitle review technical pass #43592437584, 9 source-frame comparisons, still NOT publishable: original S02 Canva binary unavailable and user art/voice approval pending. Previous incorrect 43s render never use.",
+    "master": "43s voice/music/subtitle review is technically rendered & checked after subtitle collision fixes on Actions #43593381913. NOT publishable until 0.9s exact D00-v6 extracted from Canva and human art/voice approval.",
     "S04": "V3 clean plate produced, source & metadata guard and CI successful on Actions #43587064217; user review pending.",
     "S03": "V3 clean plate technical success Actions #43587396877; artist approval pending.",
     "S03B": "S03B authentic CC0 city V1 and circular 7.1s V2 assembled, technical QA success, human art review pending",
@@ -306,7 +306,7 @@
     "audio_present": false
   },
   "assembly_plan": "EDL_V3_REAL_CITY_MATCHCUT.md: S01 0–4.5, S02 4.5–5.4 (0.9s 1x excerpt), S03 5.4–10.3 (full 4.9s 1x), S03B 9.8–12.5 (full 2.7s 1x, circleopen 0.5s overlap), S04 12.5–20.4. Full final 43s requires user approved voice and source assets.",
-  "active_edition": "43s complete voiced/subtitled review, immutable preview commit 8984a6017f3aade5e1205d68cce1170ad05da741, verified 1290 frames correct order. No original D00 clip within assembled film (0.9s G0 bridge), no human approval, no publication.",
+  "active_edition": "Canonical 43s reviewed video SHA 51af719fb66d (commit 076848fc3933), clean-plate sources S01..S08 and 13 real speech synchronized captions. Original S02 is recorded in Canva but 0.9s clip replaced by an explicitly documented G0 placeholder only in review. No final approved master.",
   "transitions": {
     "S03_to_S03B": {
       "status": "V2_CIRCLEOPEN_QA_PASSED_WAITING_ART_REVIEW",
@@ -344,17 +344,17 @@
     "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43591484608",
     "human_voice_approved": false
   },
-  "master_status": "43S_FULL_VOICED_SUBTITLED_REVIEW_RENDERED_QA_PASSED_NOT_AUTHORIZED_FOR_PUBLICATION",
+  "master_status": "43S_COMPLETE_TECHNICAL_REVIEW_FINAL_S02_ORIGINAL_AND_ART_VOICE_APPROVAL_PENDING",
   "full_review_43s": {
-    "status": "COMPLETE_WATCHABLE_REVIEW_QA_PASSED",
+    "status": "43S_FULL_EDIT_QA_PASSED_CAPTIONS_COLLISION_FIXED_REQUIRES_S02_AND_HUMAN_REVIEW",
     "file": "worldvision-001-43s-voiced-subtitled-review.mp4",
-    "url": "https://raw.githack.com/OBIANG5/World-Health-Vision/8984a6017f3aade5e1205d68cce1170ad05da741/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.mp4",
-    "source_branch_commit": "8984a6017f3aade5e1205d68cce1170ad05da741",
-    "qa_manifest_url": "https://github.com/OBIANG5/World-Health-Vision/blob/8984a6017f3aade5e1205d68cce1170ad05da741/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.json",
-    "srt_url": "https://github.com/OBIANG5/World-Health-Vision/blob/8984a6017f3aade5e1205d68cce1170ad05da741/media-lab/summit-2026/full-review/captions.srt",
-    "contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/8984a6017f3aade5e1205d68cce1170ad05da741/media-lab/summit-2026/full-review/review-frames/contact-sheet.jpg",
+    "url": "https://raw.githack.com/OBIANG5/World-Health-Vision/076848fc393393dd90f5adc326e2cf9e9b3783d8/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.mp4",
+    "source_branch_commit": "076848fc393393dd90f5adc326e2cf9e9b3783d8",
+    "qa_manifest_url": "https://github.com/OBIANG5/World-Health-Vision/blob/076848fc393393dd90f5adc326e2cf9e9b3783d8/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.json",
+    "srt_url": "https://github.com/OBIANG5/World-Health-Vision/blob/076848fc393393dd90f5adc326e2cf9e9b3783d8/media-lab/summit-2026/full-review/captions.srt",
+    "contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/076848fc393393dd90f5adc326e2cf9e9b3783d8/media-lab/summit-2026/full-review/review-frames/contact-sheet.jpg",
     "render_source": "services/media-renderer/scripts/worldvision_assemble_preview.py",
-    "success_workflow": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43592437584",
+    "success_workflow": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43593381913",
     "duration_sec": 43,
     "frames": 1290,
     "dimensions": "1080x1920",
@@ -362,11 +362,11 @@
     "container": "mp4",
     "video_codec": "h264",
     "audio_codec": "aac",
-    "bytes": 10850086,
-    "sha256": "842ec6ad663379d82d5d51349b6d6b4f68e3dcbefdb0019919d9afe469d5a2e3",
+    "bytes": 10842639,
+    "sha256": "51af719fb66df3cbc5619b3181952c811dab1af88e476bd52b598203427ab87d",
     "voice": "fr-FR-HenriNeural, exact SCRIPT_V1, provisional artistic candidate",
     "spoken_word_boundaries": 92,
-    "subtitles": "13 script-locked cues synchronized to actual word boundaries",
+    "subtitles": "13 exact script phrases time-synced to 92 word boundaries; visual collision fixes verified on screenshots",
     "sound": "Original synthesized restrained ambient bed",
     "scene_order_checks": 9,
     "source_frame_verification": "9 actual master moments compared against correct source at mean RGB pixel absolute errors <0.23",
@@ -379,6 +379,15 @@
     "human_voice_approved": false,
     "human_visual_approved": false,
     "publication_authorized": false,
-    "qa_note": "Initial FFmpeg concat demuxer produced wrong temporal ordering despite 1290 frames. REJECTED AND REPLACED. Correct 43s review assembled using per-stream PTS-reset FFmpeg concat filter, then verified with 9 pixel-to-source comparisons. User still needs to approve visual/voice and source S02 must be restored."
+    "qa_note": "Verified 1290 frames, 43 seconds, H264/AAC, natural-speed source frames matching by RGB, original caption text unchanged, 3-position ASS layout. Still exact D00 source clip unavailable as file; user voice/art approval pending.",
+    "latest_branch_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.mp4",
+    "captions_new_positions": "Top locator 352px, S04 below archive text 1690px, all other segments above footer 1548px",
+    "previous_caption_review": {
+      "sha256": "842ec6ad663379d82d5d51349b6d6b4f68e3dcbefdb0019919d9afe469d5a2e3",
+      "bytes": 10850086,
+      "file": "worldvision-001-43s-voiced-subtitled-review.mp4",
+      "commit": "8984a6017f3aade5e1205d68cce1170ad05da741",
+      "reason": "Technical review with earlier caption baseline; bottom subtitles were near source footers and S04 label. Kept in branch history."
+    }
   }
 }
