@@ -1,0 +1,124 @@
+name: World-Vision S04 — nuclear arms and authentic New START archive
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/world-vision-media-studio]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_segment04_new_start.py'
+      - '.github/workflows/whv-summit-s04-new-start.yml'
+permissions:
+  contents: write
+concurrency:
+  group: wv-summit-s04-preview
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout existing production branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python for verified archive renderer
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet numpy pillow
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Fetch original public-domain 2010 signing photo, verify exact official G0
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=worldhealth-vision-v2/services/media-renderer/assets/summit-2026
+          mkdir -p "$OUT"
+          SRC='https://upload.wikimedia.org/wikipedia/commons/2/21/Obama_and_Medvedev_sign_New_START.jpg'
+          ALT='https://obamawhitehouse.archives.gov/sites/default/files/image/image_file/P040810CK-0386_0.jpg'
+          if ! curl -fsSL --retry 4 --retry-all-errors --max-time 100 \
+            --user-agent 'World-Vision Editorial 1.0 (noncommercial archival test)' \
+            "$SRC" -o "$OUT/new-start-prague-2010.jpg"; then
+            curl -fsSL --retry 3 --retry-all-errors --max-time 120 "$ALT" \
+              -o "$OUT/new-start-prague-2010.jpg"
+          fi
+          file "$OUT/new-start-prague-2010.jpg"
+          python - <<'PY'
+          from PIL import Image
+          f='worldhealth-vision-v2/services/media-renderer/assets/summit-2026/new-start-prague-2010.jpg'
+          image=Image.open(f)
+          assert image.format=='JPEG' and image.width>=1500 and image.height>=900,image.size
+          print('Genuine White House signing photo accepted:',image.size)
+          PY
+          G0=worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png
+          test "$(git hash-object "$G0")" = "bc80fa70cebd566768bfb1703a0f1f636a78c196"
+          sha256sum "$OUT/new-start-prague-2010.jpg" "$G0"
+      - name: Compile and render 237 frames, preserving safe editorial areas
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_segment04_new_start.py
+          python scripts/worldvision_segment04_new_start.py \
+            --photo assets/summit-2026/new-start-prague-2010.jpg \
+            --logo public/brand/world-vision-official.png \
+            --output output/summit-2026/segment04-new-start-7p9s.mp4
+      - name: Verify codec, fps, frames, absence of sound, moving frame proof
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          F=output/summit-2026/segment04-new-start-7p9s.mp4
+          R=output/summit-2026/review-s04
+          mkdir -p "$R"
+          for item in '0.85:arms' '2.30:arms-end' '3.72:treaty' '5.42:treaty-end' '6.79:expiry' '7.51:expiry-end'; do
+            time="${item%%:*}"
+            name="${item##*:}"
+            ffmpeg -y -v error -ss "$time" -i "$F" -frames:v 1 -vf scale=540:960 \
+              -q:v 3 "$R/$name.jpg"
+          done
+          ffmpeg -y -v error -i "$R/arms.jpg" -i "$R/treaty.jpg" -i "$R/expiry.jpg" \
+            -filter_complex hstack=inputs=3 -q:v 3 "$R/contact-sheet.jpg"
+          python - <<'PY'
+          import json,hashlib,subprocess
+          from pathlib import Path
+          f=Path('output/summit-2026/segment04-new-start-7p9s.mp4')
+          meta=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(f)]))
+          v=next(s for s in meta['streams'] if s['codec_type']=='video')
+          assert (v['width'],v['height'])==(1080,1920)
+          assert v['codec_name']=='h264'
+          assert v['nb_frames']=='237'
+          assert abs(float(meta['format']['duration'])-7.9)<.06
+          assert not [s for s in meta['streams'] if s['codec_type']=='audio']
+          r=Path('output/summit-2026/review-s04')
+          sha=[hashlib.sha256((r/(n+'.jpg')).read_bytes()).hexdigest() for n in ('arms','arms-end','treaty','treaty-end','expiry','expiry-end')]
+          assert len(set(sha))==6,'Animation frames are not changing'
+          print('QA PASSED: 1080x1920, 30 fps, 237 frames, silent H.264; 6 distinct photos')
+          PY
+          ffprobe -v error -show_entries format=duration -show_entries stream=codec_name,width,height,r_frame_rate,nb_frames -of json "$F"
+      - name: Archive actual MP4, proof images and JSON in permanent review branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/wv-s04-release
+          F=worldhealth-vision-v2/services/media-renderer/output/summit-2026
+          OUT=/tmp/wv-s04-release/media-lab/summit-2026
+          mkdir -p "$OUT/review-s04"
+          cp "$F/segment04-new-start-7p9s.mp4" "$F/segment04-new-start-7p9s.json" "$OUT/"
+          cp "$F/review-s04/"*.jpg "$OUT/review-s04/"
+          cd /tmp/wv-s04-release
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/summit-2026
+          if ! git diff --cached --quiet; then
+            git commit -m "preview(summit): S04 7.9s New START verified archives and QA"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
+          echo "Watch: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.mp4"
