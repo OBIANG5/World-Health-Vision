@@ -141,7 +141,7 @@ jobs:
           assert 15<=m['duration_seconds']<=60
           assert m['voice_no_time_stretch']
           assert not m['voice_commercial_license_verified'] and not m['publication_authorized']
-          assert len(m['visual_timeline'])==11
+          assert len(m['visual_timeline'])==14
           assert (d/'review/contact-sheet.jpg').is_file()
           assert len(list((d/'review').glob('frame-*.jpg')))==9
           assert 'Guinea' in m['geography']['globe']
