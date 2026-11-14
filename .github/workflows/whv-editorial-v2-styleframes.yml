@@ -6,6 +6,8 @@ on:
     branches: [rebuild/editorial-v2-quality-gates]
     paths:
       - 'worldhealth-vision-v2/services/media-renderer/render-editorial-v2-stills.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/WorldVisionEditorialV2.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/setup_editorial_v2_assets.sh'
       - '.github/workflows/whv-editorial-v2-styleframes.yml'
 
 permissions:
