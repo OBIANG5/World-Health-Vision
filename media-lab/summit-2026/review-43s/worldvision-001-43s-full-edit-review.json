@@ -1,0 +1,71 @@
+{
+  "id": "WorldVision001",
+  "status": "43S_EDIT_COMPLETE_TECHNICAL_REVIEW_NOT_PUBLICATION",
+  "review_file": "worldvision-001-43s-full-edit-review.mp4",
+  "sha256": "a8d0c578ad2113bc9cc2f9349cf274284f3c82abf4c07a1540a28673d0ae0bff",
+  "bytes": 11974699,
+  "duration_seconds": 43.0,
+  "fps": 30,
+  "frames": 1290,
+  "resolution": [
+    1080,
+    1920
+  ],
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "voice_sha256": "97eb96df880aaf8443f3e484951d1f0ce9e024e544e153f77bf1d3f20a0dd739",
+  "voice_kind": "fr-FR-HenriNeural",
+  "caption_cues": 13,
+  "caption_timing": "precise neural WordBoundary metadata",
+  "text_verbatim": true,
+  "final_master": false,
+  "publishable": false,
+  "artistically_approved": false,
+  "narrator_approved": false,
+  "real_s02_original_not_available_as_bytes": true,
+  "s02_original_asset_location": "Canva VAHa4ZT_ySo, video original archived, 3.1s",
+  "s02_original_clip_required_sha256": "95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a",
+  "s02_needed_excerpt_start_seconds": 0.0,
+  "s02_needed_excerpt_duration_seconds": 0.9,
+  "s02_review_substitute": "Original G0 static hold for 27 frames; NOT the D00-v6 video; blocked from final publication",
+  "clips": [
+    {
+      "file": "01-hook.mp4",
+      "frames": 135
+    },
+    {
+      "file": "02-official-g0-hold-9tenths-REVIEW-ONLY.mp4",
+      "frames": 27
+    },
+    {
+      "file": "03-globe-city.mp4",
+      "frames": 213
+    },
+    {
+      "file": "04-newstart.mp4",
+      "frames": 237
+    },
+    {
+      "file": "05-china.mp4",
+      "frames": 186
+    },
+    {
+      "file": "06-agenda.mp4",
+      "frames": 216
+    },
+    {
+      "file": "07-uncertainty.mp4",
+      "frames": 186
+    },
+    {
+      "file": "08-outro.mp4",
+      "frames": 90
+    }
+  ],
+  "must_replace_s02_before_final": true,
+  "audio_present": true,
+  "word_boundaries": 92,
+  "no_fake_news_footage": true,
+  "music": "none",
+  "note": "Do not publish this proof. Restore exact D00 video and get human art/voice approval."
+}

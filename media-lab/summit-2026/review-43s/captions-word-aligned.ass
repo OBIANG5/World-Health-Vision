@@ -1,0 +1,27 @@
+[Script Info]
+Title: World-Vision #001 approved script word-synced
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+ScaledBorderAndShadow: yes
+WrapStyle: 2
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: News,Manrope,48,&H00FFFFFF,&H000000FF,&HBB081326,&H66031424,-1,0,0,0,100,100,0,0,1,3.0,0.4,2,110,110,265,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.04,0:00:02.33,News,,0,0,0,,{\an2\pos(540,1664)}Trois puissances nucléaires. Une\Nmême table.
+Dialogue: 0,0:00:02.78,0:00:03.84,News,,0,0,0,,{\an2\pos(540,1664)}Et une rencontre inédite.
+Dialogue: 0,0:00:04.55,0:00:07.95,News,,0,0,0,,{\an8\pos(540,292)}Jeudi 19 novembre, Donald Trump,\NVladimir Poutine et Xi Jinping
+Dialogue: 0,0:00:07.98,0:00:09.96,News,,0,0,0,,{\an8\pos(540,292)}doivent se réunir à Shenzhen, en\NChine.
+Dialogue: 0,0:00:12.54,0:00:14.96,News,,0,0,0,,{\an2\pos(540,1664)}Au cœur des discussions : réduire\Nles arsenaux nucléaires.
+Dialogue: 0,0:00:15.47,0:00:18.26,News,,0,0,0,,{\an2\pos(540,1664)}Le dernier grand traité entre\NWashington et Moscou a expiré en\Nfévrier.
+Dialogue: 0,0:00:20.45,0:00:22.30,News,,0,0,0,,{\an2\pos(540,1664)}Trump veut maintenant associer\NPékin,
+Dialogue: 0,0:00:22.44,0:00:23.54,News,,0,0,0,,{\an2\pos(540,1664)}qui reste réticent.
+Dialogue: 0,0:00:26.65,0:00:28.54,News,,0,0,0,,{\an2\pos(540,1664)}La guerre en Iran devrait aussi\Nêtre abordée.
+Dialogue: 0,0:00:29.12,0:00:31.40,News,,0,0,0,,{\an2\pos(540,1664)}Mais selon Washington, pas celle\Nen Ukraine.
+Dialogue: 0,0:00:33.83,0:00:35.75,News,,0,0,0,,{\an2\pos(540,1664)}Et attention : aucun accord n’est\Nattendu pour le moment.
+Dialogue: 0,0:00:36.17,0:00:39.34,News,,0,0,0,,{\an2\pos(540,1664)}Alors, véritable tournant\Ndiplomatique, ou simple\Ndémonstration de puissance ?
+Dialogue: 0,0:00:40.03,0:00:42.36,News,,0,0,0,,{\an2\pos(540,1664)}World-Vision. Voir le monde, le\Ncomprendre.
