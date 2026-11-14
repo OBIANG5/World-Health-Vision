@@ -1,0 +1,40 @@
+name: World-Vision — prepare 3 international reportages in parallel (safe)
+
+on:
+  push:
+    branches: [improve/worldvision-vivienne-only-v3-editorial-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-three-episode-preproduction.yml'
+      - 'worldhealth-vision-v2/docs/media/editorial_candidates_2026-11-14.json'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_episode_queue.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_episode_queue.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  three-parallel-briefs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Validate three story candidates, rights and brand locks
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 -m unittest discover -v -s nextgen -p 'test_episode_queue.py'
+      - name: Prepare three independent episodes with bounded parallel workers
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 scripts/worldvision_episode_queue.py \
+            --queue ../../docs/media/editorial_candidates_2026-11-14.json \
+            --workers 3 \
+            --output output/nextgen/editorial-queue
+      - name: Save per-episode storyboards as downloadable review artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: three-international-reportages-preproduction-only
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/editorial-queue/
+          retention-days: 30
