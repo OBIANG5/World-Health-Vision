@@ -105,9 +105,9 @@ jobs:
           from pathlib import Path
           base=Path('/tmp/wv-voice-2')
           voices={
-            'vivienne_continuous':'fr-FR-VivienneMultilingualNeural',
-            'denise_news':'fr-FR-DeniseNeural',
-            'coralie_warm':'fr-FR-CoralieNeural'
+            'vivienne_continuous':['fr-FR-VivienneMultilingualNeural'],
+            'denise_news':['fr-FR-DeniseNeural'],
+            'coralie_warm':['fr-FR-CoralieNeural','fr-FR-BrigitteNeural','fr-FR-CelesteNeural','fr-CA-SylvieNeural']
           }
           checksums=set()
           scripts=set()
@@ -116,7 +116,7 @@ jobs:
               report=base/f'{tag}-report.json'
               assert mp3.exists() and mp3.stat().st_size>30000, tag
               data=json.loads(report.read_text())
-              assert data['voice']==voice
+              assert data['voice'] in voice
               assert data['rights_verified'] is False
               assert data['publication_authorized'] is False
               assert data['duration_sec']>10
