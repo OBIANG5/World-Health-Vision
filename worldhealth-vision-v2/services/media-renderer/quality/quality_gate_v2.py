@@ -37,7 +37,7 @@ def qa_static(source,contract):
            "Leaders must CUT DIRECTLY to moving globe; never add a G0-only intertitle")
     ensure(found[1]["end"]-found[2]["start"]==15,
            "Globe→real city must overlap exactly 15 frames (0.5 sec), no double-opacity logos")
-    ensure(found[-1]["end"]==contract["timeline"]["frames"]==1263,
+    ensure(found[-1]["end"]==contract["timeline"]["frames"]==1011,
            "Invalid total frame count")
     ensure(all(s["end"]>s["start"] for s in found),"Zero/negative-length scene")
     ensure(all(found[k+1]["start"]<=found[k]["end"] for k in range(len(found)-1)),
@@ -90,12 +90,16 @@ def qa_voice(report,contract):
     for key in ("sha256","audio_sha256"):
         ensure(voice.get(key)!=rejected_sha,
                "Exact rejected synthetic narration has been submitted again")
+    ensure(voice.get("voice")==contract["audio"]["preferred_voice"],
+           "Only the user-chosen Vivienne voice may be used for this production")
+    ensure(voice.get("publishing_rights_cleared") is True,
+           "Commercial rights must be documented; Edge TTS audition cannot be the release audio")
     ensure(voice.get("approved_by_user") is True,
            "No voice approval: audio cannot be baked into a publishable video")
-    ensure(voice.get("source_type") in ("human_recording","human_approved_voice"),
-           "Voice provenance must be recorded human or explicitly auditioned+approved")
+    ensure(voice.get("source_type") in ("licensed_microsoft_azure_speech","licensed_vivienne_provider"),
+           "Release requires authorized Vivienne synthesis, not unlicensed Edge TTS audition")
     last=float(voice.get("last_spoken_timestamp_sec",100))
-    ensure(last<=39.1,"No spoken World-Vision slogan at final signature")
+    ensure(last<=30.7,"No spoken World-Vision slogan at final signature (from 30.7s)")
     ensure(not voice.get("audio_padded_per_scene",False),
            "Padding voice blocks to match fixed scene lengths causes artificial silence")
     ensure(voice.get("objective_silence_qc_passed") is True,
@@ -136,7 +140,7 @@ def main():
     info=qa_static(SCENE_FILE.read_text(encoding="utf8"),contract)
     if args.mode in ("pilot","visual"):
         ensure(args.video is not None,"Video proof required")
-        info["video"]=qa_video(args.video,348 if args.mode=="pilot" else 1263)
+        info["video"]=qa_video(args.video,312 if args.mode=="pilot" else 1011)
     elif args.mode=="release":
         ensure(args.video is not None and args.voice_report is not None,
                "Both final video and independently approved narration required")
