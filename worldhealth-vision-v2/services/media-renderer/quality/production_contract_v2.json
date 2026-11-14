@@ -1,0 +1,130 @@
+{
+  "version": "WORLD_VISION_EDITORIAL_V2_2026_11_14",
+  "state": "REBUILD_NOT_APPROVED",
+  "reason": "User explicitly rejected previous 43-second documentary, including voice, type, timing, visuals, temporary G0 intertitle and captions.",
+  "timeline": {
+    "fps": 30,
+    "frames": 1263,
+    "duration_seconds": 42.1,
+    "allow_shorter_than_previous_target": true,
+    "scenes": [
+      {
+        "id": "leaders",
+        "start": 0,
+        "end": 135
+      },
+      {
+        "id": "globe",
+        "start": 135,
+        "end": 282
+      },
+      {
+        "id": "city",
+        "start": 267,
+        "end": 348
+      },
+      {
+        "id": "new-start",
+        "start": 348,
+        "end": 585
+      },
+      {
+        "id": "china",
+        "start": 585,
+        "end": 771
+      },
+      {
+        "id": "agenda",
+        "start": 771,
+        "end": 987
+      },
+      {
+        "id": "uncertainty",
+        "start": 987,
+        "end": 1173
+      },
+      {
+        "id": "signature",
+        "start": 1173,
+        "end": 1263
+      }
+    ]
+  },
+  "fonts": {
+    "headline": {
+      "family": "Barlow Condensed",
+      "git_blob_sha": "9e480f467d703009e3abfce290b2ec2b7d24e188",
+      "size_pixels_range": [
+        105,
+        200
+      ]
+    },
+    "supporting": {
+      "family": "DM Sans",
+      "git_blob_sha": "c672f98060af9b2c85fca704ebd5ad9a8717c1df",
+      "size_pixels_range": [
+        25,
+        38
+      ]
+    },
+    "captions": {
+      "family": "DM Sans",
+      "min_size_px": 70,
+      "max_size_px": 84,
+      "max_lines": 2,
+      "max_chars_per_line": 29
+    },
+    "font_source_commit": "29b4ec6df2522a8aee279414b78a07910b065874",
+    "no_fallback_to_dejavu": true
+  },
+  "visuals": {
+    "original_official_logo_git_blob": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+    "globe_video_sha256": "59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe",
+    "permitted_globe_source": "segment03-shenzhen-july-v3-clean-4p9s.mp4",
+    "prohibit_brand_only_shot_between_hook_and_globe": true,
+    "prohibit_progress_bars": true,
+    "prohibit_debug_labels": true,
+    "prohibit_fake_meeting_footage": true,
+    "prohibit_logo_duplication_in_crossfades": true,
+    "keep_real_archival_credits_in_metadata": true,
+    "title_max_bottom_px": 1300,
+    "caption_safe_region_px": {
+      "x_min": 105,
+      "x_max": 975,
+      "y_top": 1400,
+      "y_bottom": 1555
+    },
+    "mobile_ui_avoid_bottom_px": 355,
+    "no_blurred_or_unreadable_tiny_footer": true,
+    "no_simulated_nuclear_weapon_images": true
+  },
+  "audio": {
+    "rejected_voice": "fr-FR-HenriNeural",
+    "rejected_voice_sha256": "97eb96df880aaf8443f3e484951d1f0ce9e024e544e153f77bf1d3f20a0dd739",
+    "do_not_reuse_rejected_voice": true,
+    "do_not_pad_scenes_to_fixed_length": true,
+    "do_not_read_logo_or_slogan_in_outro": true,
+    "last_spoken_timestamp_max_sec": 39.1,
+    "max_noneditorial_interior_silence_sec": 0.65,
+    "require_audition_and_user_approval": true,
+    "narration_should_follow_story_not_synthetic_padded_blocks": true,
+    "voice_source_policy": "recorded human or an auditioned and explicitly approved high-quality voice; unknown/old TTS rejected"
+  },
+  "rejected_assets": {
+    "rejected_master": [
+      "worldvision-001-43s-voiced-subtitled-review.mp4",
+      "worldvision-001-43s-full-edit-review.mp4"
+    ],
+    "rejected_old_middle_scene": "02-BRAND-ONLY-NOT-D00.mp4",
+    "rejected_old_audionarrator": "fr-FR-HenriNeural",
+    "never_claim_publication_approval_from_codec_tests": true
+  },
+  "signoff": {
+    "editorial_fact_check": false,
+    "mobile_visual_review": false,
+    "full_video_audio_listening": false,
+    "human_voice_approved": false,
+    "final_original_sources_verified": false,
+    "user_release_approved": false
+  }
+}
