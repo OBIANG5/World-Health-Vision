@@ -1,110 +1,106 @@
 import React from "react";
 import {
-  AbsoluteFill, Easing, interpolate, spring, useCurrentFrame,
-  useVideoConfig,
+  AbsoluteFill, Img, Easing, interpolate, spring,
+  staticFile, useCurrentFrame, useVideoConfig,
 } from "remotion";
 
 /**
- * FUTURE BRAND DIRECTION — experimental isolated composition.
- * Transparent vector EYE, not an opaque PNG tile. The eye/globe is a NEW
- * graphic candidate (not a copy of the user's canonical eye logo).
- * Do not substitute it in an already published episode without approval.
- * Brand signature is completely silent.
+ * World-Vision original G0 eye — same blue eye, same actual continents.
+ * Pixel-extracted from official public/brand/world-vision-official.png.
+ * Never redraw it using SVG or any generated representation.
+ * This composition is a future, silent outro CANDIDATE, not a replacement
+ * for the already published Shenzhen film.
  */
 const C = {
-  navy: "#061528", white: "#F6FAFC",
-  cyan: "#70DAEB", muted: "#B8CBD8",
+  navy: "#072D4F",
+  ocean: "#147EAC",
+  white: "#FAFCFE",
+  secondary: "#E1F5FB",
 };
+const originalTransparentEye = staticFile("brand/world-vision-eye-original-transparent.png");
+const fontText = staticFile("fonts/DMSans-variable.ttf");
+const fonts = [
+  "@font-face {font-family: 'WV-DM'; src:url('" + fontText + "') format('truetype'); font-weight:100 1000;}",
+].join("\n");
 
-export const NextGenEye: React.FC<{size?: number}> = ({size = 360}) => {
+/** Exact G0 eye artwork. Sizing and motion only, never drawing new paths. */
+export const OriginalG0Eye: React.FC<{width?: number}> = ({width = 590}) => {
   const f = useCurrentFrame();
-  const pulse = interpolate(f, [0, 25, 55, 90], [0.92, 1, 1.015, 1],
+  const pulse = interpolate(f, [0, 25, 60, 89], [0.96, 1, 1.012, 1],
+    {extrapolateLeft: "clamp", extrapolateRight: "clamp",
+     easing: Easing.inOut(Easing.quad)});
+  const opacity = interpolate(f, [0, 19], [0, 1],
     {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
-  const reveal = interpolate(f, [4, 25], [0, 1], {
-    easing: Easing.out(Easing.cubic), extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
   return (
-    <svg width={size} height={size * .60} viewBox="0 0 420 252"
-      role="img" aria-label="Proposition d'œil-globe World-Vision"
-      style={{transform: "scale(" + pulse + ")", overflow: "visible"}}>
-      <defs>
-        <linearGradient id="wveye" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={C.white}/>
-          <stop offset="100%" stopColor={C.cyan}/>
-        </linearGradient>
-        <radialGradient id="wvplanet">
-          <stop offset="0%" stopColor="#258BC0"/>
-          <stop offset="85%" stopColor="#0A3F70"/>
-          <stop offset="100%" stopColor="#09283E"/>
-        </radialGradient>
-      </defs>
-      <g opacity={reveal} fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M23 126 Q114 24 210 24 Q306 24 397 126 Q306 228 210 228 Q114 228 23 126Z"
-          stroke="url(#wveye)" strokeWidth="12"/>
-        <circle cx="210" cy="126" r="81" fill="url(#wvplanet)"
-          stroke={C.cyan} strokeWidth="5"/>
-        <ellipse cx="210" cy="126" rx="35" ry="81"
-          stroke="#A9E8E9" strokeWidth="3" opacity=".85"/>
-        <path d="M129 126H291 M146 87Q210 103 274 87 M146 164Q210 149 274 164"
-          stroke="#C3F6F4" strokeWidth="3" opacity=".78"/>
-        <path d="M157 75l27 8 14 22-11 18-29 8-4 32-15-27 8-29z
-                 M218 158l24-24 24 8-4 22-23 20-17-5z"
-          fill="#69BDA0" fillOpacity=".9" stroke="none"/>
-      </g>
-    </svg>
+    <Img src={originalTransparentEye}
+      style={{
+        display: "block",
+        width,
+        height: "auto",
+        objectFit: "contain",
+        opacity,
+        transform: "scale(" + pulse.toFixed(4) + ")",
+        filter: "drop-shadow(0 15px 18px rgba(0,35,65,.10))",
+      }}/>
   );
 };
 
-const BrandLine: React.FC<{children: React.ReactNode;size: number;
-  weight?: number; color?: string; marginTop?: number; tracking?: number}> =
-  ({children,size,weight=600,color=C.white,marginTop=0,tracking=0}) => (
-    <div style={{
-      color, fontFamily: "Arial, sans-serif", fontSize: size,
-      fontWeight: weight, letterSpacing: tracking,
-      marginTop, textAlign: "center", whiteSpace: "nowrap",
-      lineHeight: 1.16,
-    }}>{children}</div>
-  );
-
-/** Demo-only 90-frame Remotion end screen; no input audio. */
+/**
+ * Navy/blue GLOBAL background (never a small off-white block underneath the
+ * logo). The eye is source-exact, including its earth and contour colors.
+ * The wordmark is typeset separately. No logo source text has been altered.
+ */
 export const WorldVisionBrandOutroCandidate: React.FC = () => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
-  const t = spring({fps, frame: f, config: {damping: 200, mass: 0.65,
-    stiffness: 95}});
+  const arrival = spring({
+    fps, frame: f, config: {damping: 200, mass: .70, stiffness: 90},
+  });
+  const textOpacity = interpolate(f, [14, 35], [0, 1],
+    {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
   return (
-    <AbsoluteFill style={{background: C.navy, overflow: "hidden",
-      alignItems: "center", justifyContent: "center"}}>
+    <AbsoluteFill style={{
+      background: "linear-gradient(165deg, #4BA2C8 0%, #238AAF 47%, #0C507E 100%)",
+      overflow: "hidden", color: C.white, alignItems: "center",
+      justifyContent: "center",
+    }}>
+      <style>{fonts}</style>
       <AbsoluteFill style={{
-        opacity: 0.8, pointerEvents: "none",
-        background: "radial-gradient(ellipse 510px 460px at 50% 47%,rgba(20,95,135,.23),transparent 74%)",
+        background:
+          "radial-gradient(ellipse 710px 560px at 50% 43%,rgba(230,249,255,.20),transparent 75%)",
       }}/>
       <div style={{
         width: "100%", display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        transform: "translateY(" + ((1-t)*32) + "px)",
-        opacity: t,
+        transform: "translateY(" + ((1-arrival)*22).toFixed(2) + "px)",
       }}>
-        <NextGenEye size={358}/>
-        <BrandLine size={74} weight={800} marginTop={56} tracking={-.8}>
-          WORLD-VISION
-        </BrandLine>
-        <BrandLine size={35} weight={500} marginTop={29} color={C.muted}>
-          Voir le monde, le comprendre.
-        </BrandLine>
+        <OriginalG0Eye width={600}/>
+        <div style={{
+          marginTop: 50, fontFamily: "WV-DM", fontSize: 75,
+          fontWeight: 800, letterSpacing: -2.1, lineHeight: 1.1,
+          textAlign: "center", opacity: textOpacity,
+        }}>WORLD-VISION</div>
+        <div style={{
+          marginTop: 31, fontFamily: "WV-DM", fontSize: 36,
+          fontWeight: 500, textAlign: "center", color: C.secondary,
+          letterSpacing: -.5, opacity: textOpacity,
+        }}>Voir le monde, le comprendre.</div>
       </div>
     </AbsoluteFill>
   );
 };
 
-/** Small transparent eye overlay; prevents the screenshot's white icon tile. */
+/** Identity overlay based on the SAME true-source image, no generic sticker. */
 export const WorldVisionCornerMarkCandidate: React.FC = () => (
-  <div style={{position: "absolute", zIndex: 12,
-    left: 80, top: 106, display: "flex", alignItems: "center",
-    gap: 14, filter: "drop-shadow(0 4px 12px rgba(0,0,0,.35))"}}>
-    <NextGenEye size={76}/>
-    <div style={{color: C.white, font: "700 29px Arial, sans-serif",
-      letterSpacing: .7}}>WORLD-VISION</div>
+  <div style={{
+    position: "absolute", zIndex: 12, left: 76, top: 112,
+    display: "flex", alignItems: "center", gap: 12,
+  }}>
+    <style>{fonts}</style>
+    <OriginalG0Eye width={92}/>
+    <div style={{
+      color: C.white, fontFamily: "WV-DM", fontSize: 29, fontWeight: 800,
+      letterSpacing: -.8, textShadow: "0 2px 12px rgba(0,0,0,.35)",
+    }}>WORLD-VISION</div>
   </div>
 );
