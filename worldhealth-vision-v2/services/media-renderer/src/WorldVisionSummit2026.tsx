@@ -252,23 +252,32 @@ const Uncertainty:React.FC=()=>{
  </Base>;
 };
 
+// Original G0 only: the D00-v6 source film is not available to Remotion at
+// this time. Preserve it for the opening S02; no synthesized replacement
+// image and no fake earth for the ending. A crisp brand-only outro is editorially sound.
 const Outro:React.FC=()=>{
- const f=useCurrentFrame(),p=enter(f,30,3);
+ const f=useCurrentFrame();
+ const arrival=enter(f,30,2);
+ const line=interpolate(f,[6,34],[0,1],clamp);
  return <Base>
-  <Img src={staticFile(rootAssets+"eye-earth-d00-v6.png")} style={{
-    position:"absolute",left:-70,top:190,width:1220,height:1400,objectFit:"contain",
-    transform:`scale(${scale(f,90,1.0,1.05)})`,
-    opacity:.93}}/>
-  <AbsoluteFill style={{background:"linear-gradient(180deg,rgba(2,12,30,.55),transparent 35%,rgba(3,14,32,.60) 72%,#031126 100%)"}}/>
-  <div style={{position:"absolute",left:80,right:80,bottom:390,
-    textAlign:"center",opacity:p,transform:`translateY(${(1-p)*45}px)`}}>
-    <div style={{fontSize:73,fontWeight:950,letterSpacing:1,color:S.white}}>WORLD–VISION</div>
-    <BlueLine length={600}/>
-    <div style={{fontSize:34,fontWeight:730,marginTop:22,color:S.ice}}>VOIR LE MONDE, LE COMPRENDRE.</div>
-  </div>
-  <Logo/>
-  <Credit text="Images d'archives et illustration de marque · ne représente pas un sommet déjà tenu"/>
-  <Barcode topic="WORLD-VISION" progress={1}/>
+   <AbsoluteFill style={{background:"radial-gradient(circle at 50% 43%,rgba(34,138,187,.22),transparent 45%),linear-gradient(160deg,#061c34,#031126 78%)"}}/>
+   <div style={{position:"absolute",left:0,right:0,top:480,display:"flex",justifyContent:"center",
+     opacity:arrival,transform:`translateY(${(1-arrival)*20}px) scale(${.96+.04*arrival})`}}>
+     <div style={{width:330,height:330,background:"#f7f4ee",borderRadius:28,
+       display:"flex",alignItems:"center",justifyContent:"center",
+       boxShadow:"0 24px 120px rgba(0,4,18,.40)"}}>
+       <Img src={brand} style={{width:"100%",height:"100%",objectFit:"contain"}}/>
+     </div>
+   </div>
+   <div style={{position:"absolute",left:76,right:76,top:980,
+     textAlign:"center",opacity:arrival}}>
+      <div style={{fontSize:77,fontWeight:800,letterSpacing:-2,color:S.white}}>WORLD-VISION</div>
+      <div style={{height:4,width:interpolate(line,[0,1],[0,600],clamp),
+        margin:"35px auto",borderRadius:10,background:S.cyan}}/>
+      <div style={{fontSize:31,fontWeight:500,letterSpacing:1.4,color:S.ice}}>
+        Voir le monde, le comprendre.
+      </div>
+   </div>
  </Base>;
 };
 
