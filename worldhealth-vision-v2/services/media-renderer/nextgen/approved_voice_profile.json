@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "profile_id": "worldvision-vivienne-c52-impact-media",
+  "selection_source": "User explicitly selected Vivienne C5.2 Impact média on 2026-11-14",
+  "selected_reference": {
+    "variant_id": "c5_broadcast",
+    "label": "C5.2 — Impact média",
+    "voice_id": "fr-FR-VivienneMultilingualNeural",
+    "rate": "+8%",
+    "pitch": "+0Hz",
+    "duration_seconds_approx": 14.088,
+    "sample_story": "New Orleans Mississippi cruise ship collision Nov 13 2026"
+  },
+  "approved_scope": "VOICE_STYLE_AND_SAMPLE_REFERENCE_ONLY",
+  "not_approved": "No final narration for a new story, no commercial publishing rights approved",
+  "provenance": {
+    "repository": "OBIANG5/World-Health-Vision",
+    "branch": "whv-media-studio-browser-preview",
+    "original_review_path": "media-lab/nextgen/vivienne-c5-linked/c5_broadcast-review-only.mp3",
+    "original_raw_path": "media-lab/nextgen/vivienne-c5-linked/c5_broadcast-raw-service.mp3",
+    "original_report_path": "media-lab/nextgen/vivienne-c5-linked/c5_broadcast-report.json",
+    "review_git_blob_sha": "cd2254c1557b815fd63a4861af9086d26d960da6",
+    "raw_git_blob_sha": "b36aca061d634e68be464e805284d3aa1735a5f6"
+  },
+  "canonical_project_assets": {
+    "reference_mp3": "worldhealth-vision-v2/services/media-renderer/public/voice/vivienne-c52-impact-media-reference.mp3",
+    "raw_reference_mp3": "worldhealth-vision-v2/services/media-renderer/public/voice/vivienne-c52-impact-media-raw.mp3",
+    "source_report": "worldhealth-vision-v2/services/media-renderer/public/voice/vivienne-c52-reference-report.json"
+  },
+  "policy": {
+    "voice_immutable": "Do not replace fr-FR-VivienneMultilingualNeural with another TTS speaker",
+    "reference_audio_immutable": true,
+    "render_audio_wav_again_for_new_story": true,
+    "never_reuse_old_story_narration_as_new_story": true,
+    "future_story_rate_percent": 6,
+    "future_story_rate_status": "PROPOSED_NOT_APPROVED",
+    "reason_for_rate_reconsideration": "User says current +8% is a little too fast",
+    "read_one_take_per_script": true,
+    "add_artificial_pauses": false,
+    "splice_speech_segments": false,
+    "clip_silences_automatically": false,
+    "postmaster_normalization_only": true,
+    "requires_full_human_listening": true,
+    "commercial_voice_rights_verified": false,
+    "allow_automatic_tiktok_publication": false
+  },
+  "branding": {
+    "original_official_logo_path": "worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png",
+    "logo_alpha_path": "worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-eye-original-transparent.png",
+    "outro_approved_variant": "worldvision-original-g0-graphite.mp4",
+    "outro_reference_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4",
+    "do_not_generate_new_logo": true
+  },
+  "editorial_quality": {
+    "no_generic_visuals_for_conflicts": true,
+    "real_footage_sources_dates_rights": true,
+    "subtitle_overlap_must_fail": true,
+    "no_operational_map_labels": true,
+    "source_accuracy": true,
+    "user_preview_on_phone": true,
+    "one_story_one_assets_folder": true
+  }
+}
