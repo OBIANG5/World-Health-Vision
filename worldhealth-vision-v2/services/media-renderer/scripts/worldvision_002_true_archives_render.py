@@ -111,8 +111,11 @@ def scene_movie(src,scene,work,mask):
  # Avoid reference to old 720px raster renderer. Native sharp canvas 1080x1920.
  # TWO uses of the same authentic film: deep blurred environmental background
  # + central high-detail shot feathered into the background. No toy vessels.
+ # The 2014 Coast Guard clip contains large editorial credits at the bottom;
+ # crop the upper 70% before compositing, not by hiding names with fake stickers.
+ source_pre="[0:v]fps=30"+(",crop=iw:ih*0.70:0:0" if scene["id"]=="01" else "")+",split=2[a][b];"
  filt=(
-  "[0:v]fps=30,split=2[a][b];"
+  source_pre
   "[a]scale=1080:1920:force_original_aspect_ratio=increase,"
   "crop=1080:1920,gblur=sigma=34,"
   "eq=brightness=-0.17:contrast=1.10:saturation=0.67[bg];"
@@ -175,13 +178,20 @@ def main():
  run(["ffmpeg","-y","-hide_banner","-loglevel","error",
       "-f","concat","-safe","0","-i",str(concat),
       "-c","copy","-an",str(story)],timeout=80)
- all_list=a.work/"all-list.txt"
- all_list.write_text("file '"+str(story.resolve())+"'\n"+
-                     "file '"+str(a.outro.resolve())+"'\n")
+ # IMPORTANT: the approved outro H.264 stream uses different codec
+ # parameter sets. Concatenating with `-c copy` silently produced a file
+ # with only 423 video frames, 14.1s, despite an advertised 17.1s container!
+ # Decode, concatenate, and REENCODE to enforce exactly 513 frames.
  silent=a.work/"full-silent.mp4"
  run(["ffmpeg","-y","-hide_banner","-loglevel","error",
-      "-f","concat","-safe","0","-i",str(all_list),
-      "-c","copy","-an",str(silent)],timeout=100)
+      "-i",str(story),"-i",str(a.outro),
+      "-filter_complex",
+      "[0:v]fps=30,format=yuv420p,setpts=PTS-STARTPTS[a];"
+      "[1:v]fps=30,format=yuv420p,setpts=PTS-STARTPTS[b];"
+      "[a][b]concat=n=2:v=1:a=0,format=yuv420p[v]",
+      "-map","[v]","-frames:v","513","-r","30","-an",
+      "-c:v","libx264","-preset","veryfast","-crf","19",
+      "-pix_fmt","yuv420p",str(silent)],timeout=280)
  # Voice original MP3 exactly — do not synthesize or time-stretch.
  run(["ffmpeg","-y","-hide_banner","-loglevel","error","-i",str(silent),
       "-i",str(a.voice),
@@ -193,8 +203,14 @@ def main():
  video=next(s for s in actual["streams"] if s["codec_type"]=="video")
  audio=next(s for s in actual["streams"] if s["codec_type"]=="audio")
  duration=float(actual["format"]["duration"])
- if (video["width"],video["height"])!=(W,H) or abs(duration-17.1)>.035:
-  raise RuntimeError(f"Final movie geometry/duration mismatch {duration}")
+ vd=float(video.get("duration") or 0)
+ nf=int(video.get("nb_frames") or 0)
+ if ((video["width"],video["height"])!=(W,H) or abs(duration-17.1)>.035
+      or abs(vd-17.1)>.035 or nf!=513):
+  raise RuntimeError(
+    f"CRITICAL FINAL QA: expected 513 VIDEO frames and 17.1 VIDEO seconds, "
+    f"got frames={nf}, video duration={vd}, container duration={duration}"
+  )
  # Chroma safe, avoids media files appearing "impossible de lire" on iOS.
  if not video["codec_name"]=="h264" or not audio["codec_name"]=="aac":
   raise RuntimeError("Mobile incompatibility: require H.264/AAC.")
