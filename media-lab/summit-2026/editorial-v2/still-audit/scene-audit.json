@@ -20,50 +20,50 @@
     },
     {
       "label": "city",
-      "frame": 315,
-      "second": 10.5,
-      "sha256": "7fda841cdee41a9ded4905ef2b308fe3de20c0d009187c6eaf01b75a3a6b56d2",
-      "bytes": 1854459
+      "frame": 298,
+      "second": 9.933333333333334,
+      "sha256": "93609b58779fef4f4c75f74db877f8c7ecfd18971141b4360513ce5698c0d743",
+      "bytes": 1856256
     },
     {
       "label": "newstart-archive",
-      "frame": 402,
-      "second": 13.4,
-      "sha256": "88699d5813fde0dffcb33276d9e7bbdaf12e064d5d2db1636654fed73a8d1566",
-      "bytes": 1669966
+      "frame": 375,
+      "second": 12.5,
+      "sha256": "c1c18a31badff7d09849c41ea9fe669624433f75c0f2d78084dace8cf777f4a8",
+      "bytes": 1670719
     },
     {
       "label": "newstart-expiry",
-      "frame": 527,
-      "second": 17.566666666666666,
-      "sha256": "7cdc91179c3ce486781d8d38aea2ece1b21482d3e6d6a562ec08b9d9ebb88a0f",
-      "bytes": 1681630
+      "frame": 460,
+      "second": 15.333333333333334,
+      "sha256": "4e2ecc8ac782b2a19c6e41afcf2cd0095b7c3850007c547eff03d81b5f77d3e3",
+      "bytes": 1680149
     },
     {
       "label": "china",
-      "frame": 680,
-      "second": 22.666666666666668,
-      "sha256": "3ea7d6c0583afcd02e260c39c18f5d8007e832aa1740d8a9f3545b5fe42aaa5b",
-      "bytes": 2765617
+      "frame": 539,
+      "second": 17.966666666666665,
+      "sha256": "e4e791dc2ca394fadc511a04dec0d9e1344ccda6872dd9a47b5c7e58c41d815a",
+      "bytes": 2766666
     },
     {
       "label": "iran-ukraine",
-      "frame": 885,
-      "second": 29.5,
-      "sha256": "07b7eabe4dcf7c4815bc603de423d0911f4d58fedc16ec0396d755b6f4e1baac",
-      "bytes": 2181868
+      "frame": 667,
+      "second": 22.233333333333334,
+      "sha256": "349233179742aad12af5e3f4473200853ad506fe6b7a7f6fef026b286776f2d4",
+      "bytes": 2172478
     },
     {
       "label": "uncertainty",
-      "frame": 1076,
-      "second": 35.86666666666667,
-      "sha256": "8335c38b430b9b89d9e2581d903430cd280d4939f21021c139036bdd4d97bc37",
-      "bytes": 2641900
+      "frame": 824,
+      "second": 27.466666666666665,
+      "sha256": "e6da061b3a1fab246efaae56e15afd702e2ae6381359406cc16ca45a784e16a7",
+      "bytes": 2643681
     },
     {
       "label": "silent-signature",
-      "frame": 1220,
-      "second": 40.666666666666664,
+      "frame": 972,
+      "second": 32.4,
       "sha256": "6e2192edb31d5d4205c30b23aebe258d6e452b444efe80ca77abfcf469d09a5c",
       "bytes": 827258
     }
