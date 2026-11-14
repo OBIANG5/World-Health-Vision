@@ -58,8 +58,23 @@
       "start_sec": 7.6,
       "duration_sec": 4.9,
       "visual": "Verified location on a precise map plus licensed Shenzhen imagery and date",
-      "status": "NOT_STARTED",
-      "master_file": "S03_SHENZHEN.mp4"
+      "status": "TECHNICAL_MP4_RENDERED_QA_PASSED_WAITING_ART_REVIEW",
+      "master_file": "segment03-shenzhen-4p9s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-4p9s.mp4",
+      "sha256": "6bfb45a57794c7dbfc7dc9af9ddb818c67eae327f60216b46bf32f0afb7ba10e",
+      "bytes": 4066692,
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03/contact-sheet.jpg",
+      "render_source": "services/media-renderer/scripts/worldvision_segment03_shenzhen.py",
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43582303226",
+      "nasa_sha256": "9743175942473681d78838ca1042553dab4779cf957fb6d8f22a81fb796f7797",
+      "natural_earth_sha256": "392a03db8aa3ba82c105852655620129b11182b95dfc34ef046827ea7d0e5b8c",
+      "target_city": {
+        "name": "Shenzhen",
+        "lat": 22.5431,
+        "lon": 114.0579,
+        "precision": "city centre; no building-level venue publicly verified"
+      },
+      "notes": "Real geographic rotation: 14°E,12°N to Shenzhen 114.0579°E,22.5431°N, approximately 2.1 s quintic easing, within 4.9 s stand-alone shot. NOT the original D00 static globe: must match-cut from S02. No voice/audio yet, human art review required."
     },
     {
       "id": "S04",
@@ -122,5 +137,6 @@
     "sha256": "95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a",
     "contact_sheet": "WorldVision_S02_contact_sheet.jpg",
     "audio_present": false
-  }
+  },
+  "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded."
 }
