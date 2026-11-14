@@ -1,4 +1,4 @@
-name: World-Vision summit — real 4.5s hook and brand QA
+name: World-Vision S01 V2 — clean portraits with Manrope type
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: wv-summit-hook-preview
+  group: wv-summit-hook-v2-preview
   cancel-in-progress: true
 
 jobs:
@@ -59,6 +59,16 @@ jobs:
             test "$(file --brief --mime-type "$path")" = "image/jpeg"
           done
           sha256sum "$DIR"/*.jpg > "$DIR/portrait-sha256.txt"
+      - name: Install cryptographically pinned Manrope in Remotion public assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          F=worldhealth-vision-v2/services/media-renderer/public/fonts/Manrope-variable.ttf
+          mkdir -p "$(dirname "$F")"
+          curl --fail --location --retry 5 --retry-all-errors --max-time 120 \
+            'https://raw.githubusercontent.com/google/fonts/29b4ec6df2522a8aee279414b78a07910b065874/ofl/manrope/Manrope%5Bwght%5D.ttf' \
+            -o "$F"
+          echo '3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6  '"$F" | sha256sum --check --
       - name: Install FFmpeg and ffprobe needed for video QA
         shell: bash
         run: |
@@ -104,16 +114,16 @@ jobs:
             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/wv-published
           OUT=/tmp/wv-published/media-lab/summit-2026
           mkdir -p "$OUT"
-          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/hook-4p5s-preview.mp4 "$OUT/"
-          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/hook-report.json "$OUT/"
-          mkdir -p "$OUT/review"
-          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/review/* "$OUT/review/"
+          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/hook-4p5s-preview.mp4 "$OUT/hook-v2-clean-manrope-4p5s.mp4"
+          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/hook-report.json "$OUT/hook-v2-clean-manrope-report.json"
+          mkdir -p "$OUT/review-s01-v2"
+          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/review/* "$OUT/review-s01-v2/"
           cd /tmp/wv-published
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add media-lab/summit-2026
           if ! git diff --cached --quiet; then
-            git commit -m "preview(summit): 4.5s branded archival hook with QA frames"
+            git commit -m "preview(summit): S01 V2 Manrope clean clip with no unsynced captions"
             git push origin HEAD:whv-media-studio-browser-preview
           fi
-          echo "Public review: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4"
+          echo "Public review: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/media-lab/summit-2026/hook-v2-clean-manrope-4p5s.mp4"
