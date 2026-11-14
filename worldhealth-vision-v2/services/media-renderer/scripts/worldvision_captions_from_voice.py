@@ -96,11 +96,18 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
   # The globe→city contains its own location title in the lower thirds:
   # during these shots put narration near top below the official logo.
   at=cue["provisional_start"]
-  pos=r"{\an8\pos(540,292)}" if 4.5<=at<12.5 else r"{\an2\pos(540,1664)}"
+  # Reposition above the original source footers: the old 1664 baseline
+  # overlapped the 1620px editorial barcode. Keep top captions clear of
+  # original locator headers (at ~280px). This changes subtitle overlay ONLY.
+  pos=r"{\an8\pos(540,352)}" if 4.5<=at<12.5 else r"{\an2\pos(540,1548)}"
   lines=[x.replace("{","").replace("}","") for x in wrap(cue["text"],34)]
   text=pos+r"\N".join(lines)
   rows.append(f"Dialogue: 0,{stamp(cue['start'],True)},{stamp(cue['end'],True)},News,,0,0,0,,{text}")
  a.output_stem.with_suffix(".ass").write_text(ass_header+"\n".join(rows)+"\n",encoding="utf8")
+
+ # Document layout QA in metadata, not in pixels.
+ for cue in cues:
+  cue["caption_position"]=("top_352" if 4.5<=cue["provisional_start"]<12.5 else "bottom_1548")
  audit={"id":"WorldVision001","script_verbatim":True,"speech_time_aligned":True,
         "voice_sha256":voice["sha256"],"cues":cues,
         "cue_count":len(cues),"captions_clean_plate":False,
