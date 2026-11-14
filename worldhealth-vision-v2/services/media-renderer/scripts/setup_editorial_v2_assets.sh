@@ -25,6 +25,14 @@ download putin.jpg 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Vla
 download xi.jpg 'https://upload.wikimedia.org/wikipedia/commons/5/5a/Xi_Jinping_%28November_2024%29_01.jpg'
 download shenzhen-city-2025.jpg 'https://upload.wikimedia.org/wikipedia/commons/5/57/02_View_from_Lianhuashan%2C_Shenzhen_in_2025.jpg'
 download new-start-prague-2010.jpg 'https://upload.wikimedia.org/wikipedia/commons/2/21/Obama_and_Medvedev_sign_New_START.jpg'
+# Neutral documentary archive photos, not footage of the announced 2026 meeting.
+# Tehran: Safa Daneshvar, Azadi Tower, 31 July 2025, CC0 1.0
+# https://commons.wikimedia.org/wiki/File:040509-AzadiTower-IMG_8560-2.jpg
+download tehran-azadi-2025.jpg 'https://upload.wikimedia.org/wikipedia/commons/a/a3/040509-AzadiTower-IMG_8560-2.jpg'
+# Kyiv: Angelina Bulatchyk, city street, 21 Sep 2023, CC BY 4.0.
+# Reuse must credit and link author/license in publication caption.
+# https://commons.wikimedia.org/wiki/File:Kyiv_photo.jpg
+download kyiv-street-2023.jpg 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Kyiv_photo.jpg'
 sha256sum "$DIR"/*.jpg > "$DIR/archival-photo-source-sha256.txt"
 curl -fL --retry 5 --retry-all-errors --max-time 180 \
  'https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4' \
