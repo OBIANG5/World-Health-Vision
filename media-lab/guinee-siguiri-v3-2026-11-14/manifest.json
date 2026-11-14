@@ -1,0 +1,231 @@
+{
+  "episode": "Guinea Balato / Siguiri 2026-11-11",
+  "version": "V3 AUTHENTIC GUINEA VISUAL REBUILD",
+  "voice": "Vivienne — EXACT ORIGINAL V2 AAC STREAM (no synthesis, no splicing or tempo changes)",
+  "source_master": "owner-approved-voice-v2.mp4",
+  "source_video_sha256": "7fd2082b086f570c046d9595db2c0fc8e0705accb9177da71e7712b6504f39b2",
+  "script_sha256": "0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac",
+  "script_verbatim": [
+    "Dix morts. Treize blessés. En Guinée, une opération contre l’orpaillage illégal a tourné au drame.",
+    "Tout se joue à Balato, près de Siguiri.",
+    "Neuf jours après l’interdiction de l’exploitation illégale, une patrouille vient contrôler son application.",
+    "Des barricades bloquent la route. Puis, des tirs éclatent.",
+    "Mais le bilan révèle un autre choc : cinq des personnes tuées sont étrangères. Leurs identités restent inconnues.",
+    "Pourquoi une telle tension ?",
+    "L’État accuse l’exploitation illégale de détruire les terres et de polluer les rivières.",
+    "Pourtant, pour des milliers de familles, l’orpaillage est un moyen de vivre.",
+    "Et une question reste entière : qui a tiré le premier ?",
+    "Une enquête est ouverte pour établir les responsabilités."
+  ],
+  "audio_bitstream_identical_to_v2": true,
+  "audio_adts_sha256": "e32eeaa1eff4f85107c07d6ab9523056228ffa7b84a4f2d2680d0c64a325c9c5",
+  "duration_seconds": 47.133333,
+  "video_sha256": "ea5598ec106c0b43c1d8cf71d947d789c0b4ff12e086c5f563038581babe8e96",
+  "retained_visual_indices": [
+    0,
+    12,
+    15
+  ],
+  "all_other_visuals_replaced": true,
+  "replaced_visual_count": 13,
+  "total_visual_count": 16,
+  "ledger": [
+    {
+      "index": 0,
+      "start": 0.0,
+      "duration_seconds": 3.0,
+      "original_visual": "globe_guinea_verified_geography",
+      "source_type": "original_approved_github_v2_video",
+      "retained_from_v2": true
+    },
+    {
+      "index": 1,
+      "start": 3.0,
+      "duration_seconds": 3.066666666666667,
+      "original_visual": "gold_panning_video",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 2,
+      "start": 6.066666666666666,
+      "duration_seconds": 3.2333333333333334,
+      "original_visual": "location",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 3,
+      "start": 9.3,
+      "duration_seconds": 2.7333333333333334,
+      "original_visual": "ban",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 4,
+      "start": 12.033333333333333,
+      "duration_seconds": 2.533333333333333,
+      "original_visual": "ban_context",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 5,
+      "start": 14.566666666666666,
+      "duration_seconds": 3.6333333333333333,
+      "original_visual": "confront",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 6,
+      "start": 18.2,
+      "duration_seconds": 3.6333333333333333,
+      "original_visual": "foreign",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 7,
+      "start": 21.833333333333332,
+      "duration_seconds": 3.2333333333333334,
+      "original_visual": "foreign_context",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 8,
+      "start": 25.066666666666666,
+      "duration_seconds": 1.6333333333333333,
+      "original_visual": "why",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 9,
+      "start": 26.7,
+      "duration_seconds": 2.9,
+      "original_visual": "river",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 10,
+      "start": 29.6,
+      "duration_seconds": 2.3666666666666667,
+      "original_visual": "river_close",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 11,
+      "start": 31.966666666666665,
+      "duration_seconds": 2.2,
+      "original_visual": "families",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 12,
+      "start": 34.166666666666664,
+      "duration_seconds": 2.6666666666666665,
+      "original_visual": "worker_illustration",
+      "source_type": "original_approved_github_v2_video",
+      "retained_from_v2": true
+    },
+    {
+      "index": 13,
+      "start": 36.833333333333336,
+      "duration_seconds": 4.066666666666666,
+      "original_visual": "question",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 14,
+      "start": 40.9,
+      "duration_seconds": 3.2333333333333334,
+      "original_visual": "justice",
+      "source_type": "licensed_authentic_2024_guinea_photo_or_official_statement",
+      "retained_from_v2": false
+    },
+    {
+      "index": 15,
+      "start": 44.13333333333333,
+      "duration_seconds": 3.0,
+      "original_visual": "worldvision_owner_uploaded_blue_signature_video",
+      "source_type": "original_approved_github_v2_video",
+      "retained_from_v2": true
+    }
+  ],
+  "geography": "Accurate NASA/Natural Earth original V2 globe and a new photography-backed Guinea locator",
+  "new_documentary_sources": [
+    {
+      "file": "01.jpg",
+      "sha256": "9d7e4a606459e19eb554dc24d5def2aa6d29d4533d992e1131b82307377fb1a5",
+      "captured": "2024-07-21",
+      "country": "Guinea",
+      "author": "LincolnGN / Wikimedia Commons (EXIF lists Henri)",
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International",
+      "url": "https://commons.wikimedia.org/wiki/File:Les_Orpailleurs_du_Quotidien_01.jpg",
+      "modified": "Cropped, adjusted color, editorial typography and slow camera push; not footage from 2026"
+    },
+    {
+      "file": "02.jpg",
+      "sha256": "f5791bfe4b089e7a7e32552388b57bbc4d2083624444d8ce2e07efa48a7b84a7",
+      "captured": "2024-07-21",
+      "country": "Guinea",
+      "author": "LincolnGN / Wikimedia Commons (EXIF lists Henri)",
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International",
+      "url": "https://commons.wikimedia.org/wiki/File:Les_Orpailleurs_du_Quotidien_02.jpg",
+      "modified": "Cropped, adjusted color, editorial typography and slow camera push; not footage from 2026"
+    },
+    {
+      "file": "03.jpg",
+      "sha256": "f593887be7dbf509d95d51916fed535a9725936d157a481f350d93be297d0eeb",
+      "captured": "2024-07-21",
+      "country": "Guinea",
+      "author": "LincolnGN / Wikimedia Commons (EXIF lists Henri)",
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International",
+      "url": "https://commons.wikimedia.org/wiki/File:Les_Orpailleurs_du_Quotidien_03.jpg",
+      "modified": "Cropped, adjusted color, editorial typography and slow camera push; not footage from 2026"
+    },
+    {
+      "file": "04.jpg",
+      "sha256": "dd029116b751131b7a9be1373fff2dcafee9da1b8f8540b0508792a395a3f1a2",
+      "captured": "2024-07-21",
+      "country": "Guinea",
+      "author": "LincolnGN / Wikimedia Commons (EXIF lists Henri)",
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International",
+      "url": "https://commons.wikimedia.org/wiki/File:Les_Orpailleurs_du_Quotidien_04.jpg",
+      "modified": "Cropped, adjusted color, editorial typography and slow camera push; not footage from 2026"
+    },
+    {
+      "file": "05.jpg",
+      "sha256": "d507eb8dfeae07183474951770db459bdfee0fcec189ec45a6258c08c360295f",
+      "captured": "2024-07-21",
+      "country": "Guinea",
+      "author": "LincolnGN / Wikimedia Commons (EXIF lists Henri)",
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International",
+      "url": "https://commons.wikimedia.org/wiki/File:Les_Orpailleurs_du_Quotidien_05.jpg",
+      "modified": "Cropped, adjusted color, editorial typography and slow camera push; not footage from 2026"
+    }
+  ],
+  "new_official_document": {
+    "file": "official_statement.jpg",
+    "sha256": "3c5571400feb47c16603982cfc789c44a31355ef5b9482f23f833031217035d7",
+    "file_page2": "official_statement_page2.jpg",
+    "sha256_page2": "7a9dd71264d2bc4784b79fa9d5769237397d09a43e738f5086f9774ed66c6a48",
+    "publisher": "Ministère de l’Administration du Territoire et de la Décentralisation, République de Guinée",
+    "publication_date": "2026-11-12",
+    "url": "https://gouvernement.gov.gn/wp-content/uploads/2026/11/COMMUNIQUE-NA%C2%B0-008-MATD-CAB-2026-DU-GOUVERNEMENT-RELATIF-AUX-EVENEMENTS-SURVENUS-LE-11-NOVEMBRE-2026-A-BALATO-PREFECTURE-DE-KINTINIAN-DU-12112026.pdf",
+    "derivation": "Extracted first page from official government PDF, cropped on real communiqué"
+  },
+  "provenance": "All added photographs were actually taken in Guinea in July 2024; they show gold panning context, NOT the deadly Balato clashes of 11 November 2026.",
+  "cc_by_sa_4_0_reuse_notice": "The edited photographic assets are used under CC BY-SA 4.0. Attribution, adaptation disclosure, license link and share-alike obligations must accompany publication. Verify applicability to combined video with rights holder/legal review.",
+  "owner_approved_shots_preserved": "0: globe; 12: worker real motion; 15: owner's last blue closing signature, unchanged from V2",
+  "license_for_voice_commercial_use_verified": false,
+  "user_artistic_approval": false,
+  "authorized_for_publication": false
+}
