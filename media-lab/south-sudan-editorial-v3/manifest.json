@@ -61,6 +61,13 @@
       "url": "https://commons.wikimedia.org/wiki/File:Flag_of_South_Sudan_in_to_the_Independence_Day.jpg"
     },
     {
+      "file": "mother_child_juba_2011.jpg",
+      "caption": "Mother and child at Juba independence celebrations, 9 July 2011",
+      "author": "Sarah Taylor/USAID Africa Bureau",
+      "license": "public domain, U.S. federal government",
+      "url": "https://commons.wikimedia.org/wiki/File:Mother_and_child_on_South_Sudans_independence_day_(5926201660).jpg"
+    },
+    {
       "file": "crowd_vertical.jpg",
       "caption": "Juba 9 July 2011",
       "license": "US Government public domain"
@@ -92,7 +99,7 @@
     "target_city": "Juba",
     "region": "South Sudan"
   },
-  "video_sha256": "97c4a8b94ea955a40dccd4c4b042412c01c3ac53d74ca01b1112e6aacc44a11d",
+  "video_sha256": "69c893be34941c418b695858dba78665265d03635dc70e84872b398de065579a",
   "duration_seconds": 22.367,
   "resolution": "1080x1920",
   "fps": 30,
