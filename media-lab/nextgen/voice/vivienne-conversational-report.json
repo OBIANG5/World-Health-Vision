@@ -7,7 +7,7 @@
   "segmented_delivery": true,
   "seams_require_human_review": true,
   "original_brief_sha256": "c614d29b63a2d6d260dd8f82bcb2bb77506620cc21a26c06c54d73b632aa079c",
-  "clip_sha256": "4906987a88f8a200ab4fb9921683f11670d675a8d9e752ceb09d269f7024c162",
+  "clip_sha256": "ba0c87f69223109b2fc6bd56758ef5334e50c24d0cbe596014a2bdbe605336c4",
   "audio_assessment": {
     "status": "OBJECTIVE_DIAGNOSTICS_NOT_HUMAN_REVIEW",
     "source": "output/nextgen/voice/conversational/vivienne-conversational-review.wav",
@@ -43,9 +43,9 @@
         "seconds": 0.62
       },
       {
-        "start": 12.39,
+        "start": 12.389,
         "end": 12.908,
-        "seconds": 0.518
+        "seconds": 0.519
       },
       {
         "start": 13.503,
