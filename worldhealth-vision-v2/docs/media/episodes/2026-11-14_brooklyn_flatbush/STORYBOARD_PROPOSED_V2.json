@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "episode_id": "WV003-brooklyn-flatbush-collapse",
+  "status": "PREPRODUCTION_SCRIPT_PROPOSED_NOT_APPROVED",
+  "scope": "WORLD_VISION_MEDIA_NOT_HEALTH_SOFTWARE",
+  "event_date": "2026-11-11",
+  "verification_date": "2026-11-14",
+  "location": {
+    "name": "1321 Flatbush Avenue",
+    "address": "1321 Flatbush Avenue, Brooklyn, New York, USA",
+    "adjacent_excavation": "2625 Bedford Avenue, Brooklyn, New York, USA"
+  },
+  "script_status": "USER_CHOSE_TOPIC_ONLY_NOT_YET_SCRIPT",
+  "script_lines": [
+    "À New York, un immeuble s'effondre en quelques secondes. Huit morts. Parmi eux, deux enfants.",
+    "Nous sommes à Brooklyn, le 11 novembre. Un bâtiment de trois étages vient de s'écrouler dans une excavation voisine.",
+    "Mais au milieu des décombres, un espoir : une femme enceinte est retrouvée vivante.",
+    "Après plus de deux heures, les secours parviennent à l'évacuer. Son mari apprend qu'elle a survécu. Leur bébé aussi.",
+    "Au total, dix-huit personnes sont blessées.",
+    "Et une question demeure : les travaux voisins ont-ils joué un rôle dans cette catastrophe ?",
+    "Les autorités enquêtent. Pour l'instant, la cause exacte de l'effondrement reste inconnue."
+  ],
+  "script_text": "À New York, un immeuble s'effondre en quelques secondes. Huit morts. Parmi eux, deux enfants.\n\nNous sommes à Brooklyn, le 11 novembre. Un bâtiment de trois étages vient de s'écrouler dans une excavation voisine.\n\nMais au milieu des décombres, un espoir : une femme enceinte est retrouvée vivante.\n\nAprès plus de deux heures, les secours parviennent à l'évacuer. Son mari apprend qu'elle a survécu. Leur bébé aussi.\n\nAu total, dix-huit personnes sont blessées.\n\nEt une question demeure : les travaux voisins ont-ils joué un rôle dans cette catastrophe ?\n\nLes autorités enquêtent. Pour l'instant, la cause exacte de l'effondrement reste inconnue.",
+  "script_sha256": "TO_BE_COMPUTED_ON_USER_APPROVAL_NOT_LOCKED",
+  "voice_reference": {
+    "voice": "fr-FR-VivienneMultilingualNeural",
+    "reference_profile": "worldvision-vivienne-c52-impact-media",
+    "reference_branch": "production/worldvision-vivienne-c52-voice-lock-2026-11-14",
+    "new_utterance_for_this_story_mandatory": true,
+    "rate_approved_for_this_story": false,
+    "commercial_license_verified": false
+  },
+  "verified_facts": [
+    "1321 Flatbush Avenue s'est effondré le 11 novembre vers 16:01 dans une excavation voisine",
+    "Huit morts dont deux enfants, 18 blessés selon les autorités new-yorkaises les 12-13 novembre",
+    "Plus de 250 personnels d'urgence ont participé aux secours",
+    "Une femme enceinte a été secourue plus de deux heures après l'effondrement",
+    "Selon le témoignage du mari le 13 novembre, la femme et le bébé à naître étaient vivants, la femme ayant de graves blessures",
+    "Des travaux d'excavation avaient lieu au terrain voisin; la cause exacte reste indéterminée, enquête en cours"
+  ],
+  "factual_cautions": [
+    "Ne pas attribuer la cause à la construction adjacente sans conclusion officielle.",
+    "Ne pas annoncer que la femme enceinte est indemne; elle a subi de graves blessures.",
+    "Ne pas présenter les 98 violations immobilières comme des violations directement responsables de l'effondrement : dossiers mêlant nuisibles et fuites.",
+    "Ne pas copier sans droits les images de surveillance, enfants ou secouristes.",
+    "Les titres sur les victimes doivent rester respectueux; aucune reconstitution trompeuse d'un décès."
+  ],
+  "sources": {
+    "official_fdny": "https://www.nyc.gov/site/fdny/news/PI5526/mayor-mamdani-fdny-commissioner-bonsignore-provide-on-major-technical-rescue-brooklyn",
+    "official_transcript": "https://www.nyc.gov/mayors-office/news/2026/11/transcript--mayor-mamdani-holds-press-conference-on-brooklyn-bui",
+    "abc_facts": "https://abcnews.com/US/rescue-operations-underway-after-building-collapses-brooklyn-new/story?id=138059620",
+    "abc_friday": "https://abc7ny.com/live-updates/brooklyn-building-collapse-live-updates-1-dead-flatbush/20034152/",
+    "cbs_rescue": "https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-survivor-rescued/",
+    "cbs_interior": "https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-video-inside-apartment/",
+    "cbs_investigation": "https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-flatbush-avenue-nyc-cleanup-investigation/",
+    "storyful_cctv": "https://video.storyful.com/record/41716",
+    "storyful_roof": "https://video.storyful.com/record/41712",
+    "reuters_aerial": "https://www.reutersconnect.com/item/drone-2-killed-several-injured-in-building-collapse-in-brooklyn-new-york/dGFnOnJldXRlcnMuY29tLDIwMjY6bmV3c21sX09XQU5BQ0VOMVJSV0MxTk1URlc4VllKUkFVQ1JVSlo"
+  },
+  "total_indicative_seconds": 48,
+  "shots": [
+    {
+      "order": 1,
+      "role": "globe",
+      "indicative_seconds": 1.5,
+      "spoken_excerpt": "À New York...",
+      "exact_visual_requirement": "Animation du véritable globe World-Vision localisant très rapidement NYC/Brooklyn, dézoomer assez tôt pour révéler le fait réel",
+      "emotion_and_retention_function": "Orienter en moins de deux secondes, sans voler le hook",
+      "reference_urls": [],
+      "rights_status": "owned_subject_to_asset_check",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "Réutiliser globe déjà validé; changement géographique contrôlé, pas une nouvelle carte inventée."
+    },
+    {
+      "order": 2,
+      "role": "documentary_video",
+      "indicative_seconds": 4.5,
+      "spoken_excerpt": "un immeuble s'effondre ... Huit morts",
+      "exact_visual_requirement": "VRAIE vidéo de caméra de porte montrant le bâtiment de Flatbush au moment où il cède ; le choc doit être lisible au plus tard à 2 secondes du début",
+      "emotion_and_retention_function": "Premier hook : preuve visuelle forte, pas explosion/effondrement animé imaginaire",
+      "reference_urls": [
+        "https://video.storyful.com/record/41716"
+      ],
+      "rights_status": "NOT_CLEARED",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "James A Williams via Storyful; lien pour référence UNIQUEMENT, ne pas copier/extraire sans autorisation."
+    },
+    {
+      "order": 3,
+      "role": "documentary_video",
+      "indicative_seconds": 5,
+      "spoken_excerpt": "Parmi eux, deux enfants. Nous sommes à Brooklyn...",
+      "exact_visual_requirement": "Vraie séquence de l'après-effondrement montrant l'intérieur exposé et l'excavation ; soit panoramique réel de drone sous droits, soit photo autorisée de scène réelle",
+      "emotion_and_retention_function": "Montrer l'échelle de la perte, ne jamais montrer des mineurs identifiables en détresse sans nécessité",
+      "reference_urls": [
+        "https://www.reutersconnect.com/item/drone-2-killed-several-injured-in-building-collapse-in-brooklyn-new-york/dGFnOnJldXRlcnMuY29tLDIwMjY6bmV3c21sX09XQU5BQ0VOMVJSV0MxTk1URlc4VllKUkFVQ1JVSlo",
+        "https://video.storyful.com/record/41712"
+      ],
+      "rights_status": "NOT_CLEARED",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "Pas de vieux immeuble quelconque présenté comme celui-ci."
+    },
+    {
+      "order": 4,
+      "role": "documentary_video",
+      "indicative_seconds": 5,
+      "spoken_excerpt": "Mais au milieu des décombres, un espoir...",
+      "exact_visual_requirement": "Plans réels de sauveteurs FDNY recherchant des personnes, vrais gestes et matière : retirer briques, stretcher, mouvements",
+      "emotion_and_retention_function": "Relance à l'instant du changement d'émotion : de la peur à l'espoir",
+      "reference_urls": [
+        "https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-survivor-rescued/",
+        "https://www.nyc.gov/site/fdny/news/PI5526/mayor-mamdani-fdny-commissioner-bonsignore-provide-on-major-technical-rescue-brooklyn"
+      ],
+      "rights_status": "NOT_CLEARED",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "La présence sur un site officiel n'implique pas une licence de republication."
+    },
+    {
+      "order": 5,
+      "role": "documentary_video",
+      "indicative_seconds": 7,
+      "spoken_excerpt": "une femme enceinte est retrouvée vivante... l'évacuer",
+      "exact_visual_requirement": "Extrait authentique montrant cette femme consciente extraite sur une civière, sous angle respectueux sans faux portrait ni zoom de voyeurisme",
+      "emotion_and_retention_function": "Moment humain central ; respiration narrative, ne pas manipuler la condition médicale",
+      "reference_urls": [
+        "https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-survivor-rescued/"
+      ],
+      "rights_status": "NOT_CLEARED",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "CBS enregistre l'extraction vers 18h30; ne pas insinuer absence de blessure."
+    },
+    {
+      "order": 6,
+      "role": "documentary_video",
+      "indicative_seconds": 5,
+      "spoken_excerpt": "Son mari apprend ... Leur bébé aussi.",
+      "exact_visual_requirement": "VRAI témoignage du mari diffusé par WABC/CBS, courte phrase émotionnelle ou visage identifiable uniquement si droits et pertinence",
+      "emotion_and_retention_function": "Deuxième re-hook : soulagement après le danger",
+      "reference_urls": [
+        "https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-survivor-rescued/",
+        "https://abc7ny.com/live-updates/brooklyn-building-collapse-live-updates-1-dead-flatbush/20034152/"
+      ],
+      "rights_status": "NOT_CLEARED",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "Le 13 novembre le mari confirme qu'elle et l'enfant à naître sont vivants malgré blessures graves. Ne pas mélanger les dates."
+    },
+    {
+      "order": 7,
+      "role": "documentary_video",
+      "indicative_seconds": 4,
+      "spoken_excerpt": "Au total, dix-huit personnes sont blessées.",
+      "exact_visual_requirement": "Plan réel FDNY auprès des décombres, pas de compteur criard ni simulation de victimes",
+      "emotion_and_retention_function": "Retour à la gravité globale en une seule phrase",
+      "reference_urls": [
+        "https://www.nyc.gov/site/fdny/news/PI5526/mayor-mamdani-fdny-commissioner-bonsignore-provide-on-major-technical-rescue-brooklyn",
+        "https://video.storyful.com/record/41712"
+      ],
+      "rights_status": "NOT_CLEARED",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "Bilan 8 morts/18 blessés publié le 12–13 nov."
+    },
+    {
+      "order": 8,
+      "role": "documentary_video",
+      "indicative_seconds": 6,
+      "spoken_excerpt": "les travaux voisins ont-ils joué un rôle...",
+      "exact_visual_requirement": "Images réelles du puits d'excavation contigu à 2625 Bedford Avenue et bâtiment en bordure, plan d'ensemble + gros plan structural réels",
+      "emotion_and_retention_function": "Troisième re-hook d'enquête, sans sous-entendre que le chantier est responsable",
+      "reference_urls": [
+        "https://www.reutersconnect.com/item/drone-2-killed-several-injured-in-building-collapse-in-brooklyn-new-york/dGFnOnJldXRlcnMuY29tLDIwMjY6bmV3c21sX09XQU5BQ0VOMVJSV0MxTk1URlc4VllKUkFVQ1JVSlo",
+        "https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-flatbush-avenue-nyc-cleanup-investigation/"
+      ],
+      "rights_status": "NOT_CLEARED",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "Ordre d'arrêt des travaux et enquête avérés; cause NON établie."
+    },
+    {
+      "order": 9,
+      "role": "documentary_video",
+      "indicative_seconds": 7,
+      "spoken_excerpt": "Les autorités enquêtent...",
+      "exact_visual_requirement": "Vraie prise de parole NYC/FDNY sobre et/ou plan réel du site au crépuscule, puis sortie vers l'identité média",
+      "emotion_and_retention_function": "Clore par une question réelle et une information non tranchée",
+      "reference_urls": [
+        "https://www.nyc.gov/mayors-office/news/2026/11/transcript--mayor-mamdani-holds-press-conference-on-brooklyn-bui",
+        "https://www.cbsnews.com/newyork/news/brooklyn-building-collapse-flatbush-avenue-nyc-cleanup-investigation/"
+      ],
+      "rights_status": "NOT_CLEARED",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "Éviter capture statique de conférence pendant 7 s, diversifier plans."
+    },
+    {
+      "order": 10,
+      "role": "outro",
+      "indicative_seconds": 3,
+      "spoken_excerpt": "[fin de narration]",
+      "exact_visual_requirement": "Véritable signature ANIMÉE World-Vision de 3s avec l'œil et le globe sur fond cohérent, sans carré blanc",
+      "emotion_and_retention_function": "Signature courte sans voler du temps de rétention",
+      "reference_urls": [],
+      "rights_status": "owned_subject_to_asset_check",
+      "editorial_user_approved": false,
+      "downloaded_and_verified": false,
+      "asset_sha256": null,
+      "notes": "Privilégier le fichier vidéo original fourni par l'utilisateur, pas une photo réanimée."
+    }
+  ],
+  "asset_approval_status": "BLOCKED_MOST_SOURCE_FOOTAGE_NOT_LICENSED",
+  "ready_for_fastlane": false,
+  "next_action": "Faire approuver le script V2 et sécuriser des clips de l'événement réutilisables avant tout rendu. Après acceptation du storyboard, préparer un nouveau fichier audio Vivienne complet et son timing.",
+  "post_render_quality_gates": [
+    "1100x? NO: 1080x1920 vertical exact",
+    "Full script identical and under 60s",
+    "Mobile intelligibility -14 LUFS target",
+    "No white logo background",
+    "Original strong movements rather than Ken Burns repeated",
+    "Visuals match line spoken",
+    "True preview footage provenance documented",
+    "Voice one take C5.2 style approved for this story",
+    "Clip and narrator rights verified before commercial use",
+    "Real screenshot review + audio playback on phone"
+  ]
+}
