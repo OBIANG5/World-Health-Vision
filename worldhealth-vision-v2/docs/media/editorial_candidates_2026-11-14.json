@@ -1,0 +1,146 @@
+{
+  "project": "WORLD-VISION",
+  "date": "2026-11-14",
+  "status": "EDITORIAL_DISCOVERY_ONLY",
+  "user_locked": {
+    "logo_source": "worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png",
+    "outro_background": "graphite (acier clair)",
+    "outro_reference": "media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4",
+    "voice": "fr-FR-VivienneMultilingualNeural",
+    "other_voice_models_allowed": false,
+    "voice_audition_release": "USER_APPROVAL_REQUIRED",
+    "no_subtitle_overlap": true,
+    "no_generic_conflict_photo": true,
+    "no_operational_map_label": true,
+    "original_published_film_immutable": true
+  },
+  "method": "Prioritize factual global relevance plus the availability of an authentic and licensable moving image of the exact event, not clicks alone. Prospective ratings are editorial judgments, not predicted views.",
+  "candidates": [
+    {
+      "id": "WV002-new-orleans-20261113",
+      "rank": 1,
+      "working_title": "Le choc sur le Mississippi : un navire-citerne fait chavirer un bateau de croisière",
+      "editorial_hook": "Un navire-citerne heurte un bateau de croisière à quai. Des passagers sont secourus dans le Mississippi.",
+      "location": "La Nouvelle-Orléans, Louisiane, États-Unis",
+      "event_date": "2026-11-13",
+      "fact_status": "CONFIRMED",
+      "facts": [
+        "Le pétrolier transportant des produits d'asphalte Atlantic Asphalt a heurté le bateau American Heritage pendant qu'il était à quai à La Nouvelle-Orléans.",
+        "Le bateau de croisière a chaviré partiellement et des personnes sont tombées dans le Mississippi.",
+        "Les autorités ont annoncé 32 hospitalisations sans blessure critique et aucun passager porté disparu.",
+        "L'enquête doit déterminer l'origine exacte de la collision; ne pas annoncer une défaillance de direction comme établie."
+      ],
+      "sources": [
+        "https://apnews.com/article/757bed7a70ceb72f0d7140143fe2a764",
+        "https://www.wwno.org/local-regional-news/2026-11-13/tanker-strikes-paddlewheel-cruise-ship-in-new-orleans-32-injured-no-passengers-missing",
+        "https://www.wdsu.com/article/new-orleans-cruise-ship-struck-tanker-river-video/74426522"
+      ],
+      "asset_leads": [
+        {
+          "type": "event-video",
+          "description": "WDSU/B. Kern footage captures moment of contact",
+          "url": "https://www.wdsu.com/article/new-orleans-cruise-ship-struck-tanker-river-video/74426522",
+          "license": "NOT_CLEARED",
+          "used_in_render": false
+        },
+        {
+          "type": "rescue-footage",
+          "description": "WDSU footage of responders and passengers",
+          "url": "https://www.wpbf.com/article/new-orleans-cruise-ship-tanker-collision-rescue-video/74428008",
+          "license": "NOT_CLEARED",
+          "used_in_render": false
+        }
+      ],
+      "motion_plan": [
+        "Use actual opening impact footage ONLY after licensed; avoid recreations masquerading as reportage.",
+        "Show simple verified river/port locator, not fake street coordinates.",
+        "Display small factual counter 32 hospitalizations with verified date.",
+        "End with cause still under investigation; segue to selected G0 outro."
+      ],
+      "voice_audition": "nextgen/vivienne_v3_brief.json",
+      "rights_gate": "BLOCKED",
+      "factcheck_gate": "MUST_REFRESH_ON_PUBLICATION",
+      "ready_to_publish": false,
+      "priority_reason": "Rare authenticated moving footage of exact incident; strong clear hook; rights require action."
+    },
+    {
+      "id": "WV003-hormuz-20261114",
+      "rank": 2,
+      "working_title": "Trois pétroliers en feu après des mines, selon l'Iran",
+      "editorial_hook": "Trois pétroliers touchés par des mines près d'Ormuz, affirme Téhéran. Les routes maritimes sous tension.",
+      "location": "Détroit d'Ormuz, Iran/Oman",
+      "event_date": "2026-11-14",
+      "fact_status": "IRANIAN_MILITARY_CLAIM_NOT_INDEPENDENTLY_CONFIRMED",
+      "facts": [
+        "Les autorités iraniennes affirment que trois navires-citernes ont heurté des mines et pris feu près du détroit d'Ormuz.",
+        "Les nationalités et les noms des trois navires n'ont pas été divulgués dans les annonces initiales.",
+        "Une image diffusée par les Gardiens de la révolution porte sur un navire et n'est pas la preuve visuelle indépendante de tous les incidents."
+      ],
+      "sources": [
+        "https://english.ahram.org.eg/NewsContent/2/8/582465/World/Region/Iran-reports-three-incidents-of-oil-tankers-hit-by.aspx",
+        "https://apnews.com/article/ade76bebaf22135168aac6eb3016bc19"
+      ],
+      "asset_leads": [
+        {
+          "type": "state-video",
+          "description": "IRGC images state-provided; verification and re-use rights pending",
+          "url": "https://english.ahram.org.eg/NewsContent/2/8/582465/World/Region/Iran-reports-three-incidents-of-oil-tankers-hit-by.aspx",
+          "license": "NOT_CLEARED",
+          "used_in_render": false
+        }
+      ],
+      "motion_plan": [
+        "Map of Hormuz only on validated geography; never place an unconfirmed incident as precise pin.",
+        "Label claims as Iranian statements on screen.",
+        "Use verified maritime archival b-roll ONLY with 'archives' caption if cleared."
+      ],
+      "rights_gate": "BLOCKED",
+      "factcheck_gate": "SOURCE_REQUIRES_ATTRIBUTION",
+      "ready_to_publish": false,
+      "priority_reason": "High worldwide impact and strong stakes, but poorer independently verified event footage."
+    },
+    {
+      "id": "WV004-donbas-nato-20261114",
+      "rank": 3,
+      "working_title": "Donbass contre OTAN ? Une idée évoquée lors des négociations, selon Zelensky",
+      "editorial_hook": "Le Donbass en échange de l'OTAN : une question américaine évoquée, selon Zelensky.",
+      "location": "Ukraine / Abu Dhabi, Émirats arabes unis",
+      "event_date": "2026-11-14",
+      "fact_status": "ATTRIBUTED_TO_ZELENSKY_NOT_AGREED_PROPOSAL",
+      "facts": [
+        "Volodymyr Zelensky dit que des négociateurs américains ont évoqué l'hypothèse d'un retrait ukrainien du Donbass en échange de l'adhésion à l'OTAN.",
+        "Le président ukrainien a réaffirmé ne pas vouloir céder des territoires.",
+        "Il ne s'agit pas d'un accord signé ni d'une offre acceptée."
+      ],
+      "sources": [
+        "https://www.reuters.com/world/europe/us-floated-idea-ukraine-ceding-donbas-nato-membership-zelenskiy-says-2026-11-14/",
+        "https://apnews.com/article/f9a8629626c087424f05adc85d127780"
+      ],
+      "asset_leads": [
+        {
+          "type": "archive",
+          "description": "Historic maps, public statements; ensure source/date and rights",
+          "url": "https://www.reuters.com/world/europe/us-floated-idea-ukraine-ceding-donbas-nato-membership-zelenskiy-says-2026-11-14/",
+          "license": "NOT_CLEARED",
+          "used_in_render": false
+        }
+      ],
+      "motion_plan": [
+        "Use true geographic maps and clear notional terms; no imaginary peace signing footage.",
+        "Do not equate a question raised with a diplomatic deal."
+      ],
+      "rights_gate": "BLOCKED",
+      "factcheck_gate": "SOURCE_ATTRIBUTION_REQUIRED",
+      "ready_to_publish": false,
+      "priority_reason": "Globally important and debate-oriented, but actual images mostly politicians/maps."
+    }
+  ],
+  "parallel_production_policy": {
+    "at_most_concurrent_heavy_renders": 2,
+    "independent_episode_dirs": true,
+    "voice_first_before_visual_render": true,
+    "fast_facts_and_licensing_in_parallel": true,
+    "approve_assets_and_voice_per_episode": true,
+    "do_not_launch_three_full_renders_until_individual_quality_gates_pass": true
+  }
+}

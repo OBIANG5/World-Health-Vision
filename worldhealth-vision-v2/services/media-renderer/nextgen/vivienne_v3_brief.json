@@ -1,0 +1,55 @@
+{
+  "id": "wv-002-news-voice-lab-2026-11-14",
+  "status": "AUDITION_ONLY",
+  "publication_authorized": false,
+  "editorial_approval": false,
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "news_candidate": "La Nouvelle-Orléans — collision navire-citerne et bateau de croisière du 13 novembre 2026",
+  "factcheck_status": "FACTS_VERIFIED_FOR_AUDITION_NOT_PUBLISHING",
+  "fact_sources": [
+    "https://apnews.com/article/757bed7a70ceb72f0d7140143fe2a764",
+    "https://www.wwno.org/local-regional-news/2026-11-13/tanker-strikes-paddlewheel-cruise-ship-in-new-orleans-32-injured-no-passengers-missing",
+    "https://www.wdsu.com/article/new-orleans-cruise-ship-struck-tanker-river-video/74426522"
+  ],
+  "rights_notice": "edge-tts auditions only; no commercial use verified. Copyrighted news footage not downloaded or licensed.",
+  "source_text_policy": "Different edits of the SAME verified facts and EXACTLY SAME voice; compare delivery and editorial writing, not model switching.",
+  "audio_processing_policy": "No silence removal; no clip concatenation; raw continuous voice, plus optional gentle filtering, not auto-humanize.",
+  "variants": [
+    {
+      "id": "a_naturelle",
+      "label": "Vivienne — naturelle",
+      "rate": "-3%",
+      "pitch": "+0Hz",
+      "interpretation": "cadence journaliste conversationnelle, sobre; une prise continue",
+      "script": "Un navire-citerne percute un bateau de croisière, à quai, à La Nouvelle-Orléans. Le choc a fait chavirer le bateau sur le Mississippi. Trente-deux personnes ont été hospitalisées, mais aucune blessure critique n'a été signalée. Comment un tel accident a-t-il pu se produire ?",
+      "notes": "Une seule prise brute. Aucune suppression automatique de silences."
+    },
+    {
+      "id": "b_retenue",
+      "label": "Vivienne — tension maîtrisée",
+      "rate": "+2%",
+      "pitch": "+0Hz",
+      "interpretation": "plus directe, contrastes dans ponctuation, pas d'exclamations sensationnalistes",
+      "script": "Un navire-citerne percute un bateau de croisière à quai. À La Nouvelle-Orléans, le choc fait chavirer le bateau sur le Mississippi. Trente-deux personnes sont hospitalisées. Aucune blessure critique n'est signalée. Et maintenant, une question : comment cet accident a-t-il pu se produire ?",
+      "notes": "Même faits, syntaxe plus brève et rythme différent sans couper l'audio."
+    },
+    {
+      "id": "c_impact",
+      "label": "Vivienne — accroche plus énergique",
+      "rate": "+8%",
+      "pitch": "+0Hz",
+      "interpretation": "première phrase à impact, question finale claire, continuité sans collage",
+      "script": "Un bateau de croisière chavire à La Nouvelle-Orléans ! Un navire-citerne vient de le heurter alors qu'il est à quai sur le Mississippi. Trente-deux personnes sont transportées à l'hôpital. Aucun blessé critique n'est signalé. Mais comment un navire a-t-il pu heurter ce bateau à quai ?",
+      "notes": "Même faits, réalisation plus nerveuse et ton d'actualité; ne pas confondre urgence narrative et exagération."
+    },
+    {
+      "id": "d_pedagogique",
+      "label": "Vivienne — émotion retenue",
+      "rate": "-7%",
+      "pitch": "+0Hz",
+      "interpretation": "le récit part des passagers, pauses de ponctuation naturelles, ton empathique",
+      "script": "Ils étaient à bord d'un bateau de croisière, à l'arrêt, sur le Mississippi. À La Nouvelle-Orléans, un navire-citerne vient le percuter. Le bateau chavire. Trente-deux personnes sont hospitalisées, heureusement sans blessures critiques signalées. Ce qui reste à comprendre, c'est l'origine de la collision.",
+      "notes": "Même fait principal, accent sur le vécu; formulation ne présume pas de la cause."
+    }
+  ]
+}

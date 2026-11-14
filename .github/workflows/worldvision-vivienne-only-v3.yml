@@ -1,0 +1,148 @@
+name: World-Vision — Vivienne ONLY V3 (no cuts, four continuous takes)
+
+on:
+  push:
+    branches: [improve/worldvision-vivienne-only-v3-editorial-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-vivienne-only-v3.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_only_v3.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/vivienne_v3_brief.json'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_vivienne_only_v3.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/vivienne-v3-listen.html'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-vivienne-only-v3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Validate fixed approved voice and detect forbidden automatic splices
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 -m unittest discover -v -s nextgen -p 'test_vivienne_only_v3.py'
+          python3 -m py_compile scripts/worldvision_vivienne_only_v3.py
+
+  voice:
+    name: Vivienne-only ${{ matrix.variant }}
+    needs: preflight
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [a_naturelle, b_retenue, c_impact, d_pedagogique]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Prepare synthesis and FFmpeg
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check 'edge-tts>=7.2,<8'
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Generate exactly one full Vivienne take, no cuts or fillers
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 scripts/worldvision_vivienne_only_v3.py \
+            --variant '${{ matrix.variant }}' \
+            --brief nextgen/vivienne_v3_brief.json \
+            --out output/nextgen/voice-v3/${{ matrix.variant }}
+      - name: Verify voice identity, files and continuity report
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          k='${{ matrix.variant }}'
+          root=Path('output/nextgen/voice-v3')/k
+          meta=json.loads((root/(k+'-report.json')).read_text())
+          assert meta['voice']=='fr-FR-VivienneMultilingualNeural'
+          assert meta['new_voice_substituted'] is False
+          assert meta['one_uninterrupted_tts_request'] is True
+          assert meta['audio_spliced'] is False
+          assert meta['silences_cut_automatically'] is False
+          assert meta['publishing_authorized'] is False
+          assert (root/(k+'-review-only.mp3')).stat().st_size>40000
+          assert (root/(k+'-raw-service.mp3')).stat().st_size>40000
+          print(k,meta['review_duration_sec'],'s',len(meta['gaps']['pauses_over_450ms']),'natural long pauses')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vivienne-v3-${{ matrix.variant }}-review-only
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice-v3/${{ matrix.variant }}/*-raw-service.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice-v3/${{ matrix.variant }}/*-review-only.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice-v3/${{ matrix.variant }}/*-report.json
+          retention-days: 21
+
+  publish-review:
+    needs: voice
+    runs-on: ubuntu-latest
+    permissions: {contents: write}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: vivienne-v3-*-review-only
+          merge-multiple: true
+          path: /tmp/wv-vivienne3
+      - name: Verify 4 versions all same VOICE and no splice before preview
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          roots=Path('/tmp/wv-vivienne3')
+          ids=('a_naturelle','b_retenue','c_impact','d_pedagogique')
+          raw_hashes=[]
+          for id in ids:
+              meta=json.loads((roots/(id+'-report.json')).read_text())
+              assert meta['voice']=='fr-FR-VivienneMultilingualNeural'
+              assert not meta['audio_spliced']
+              assert meta['gaps']['automatic_pause_cuts']==0
+              assert meta['rights_verified'] is False
+              assert (roots/(id+'-review-only.mp3')).stat().st_size>40000
+              assert (roots/(id+'-raw-service.mp3')).stat().st_size>40000
+              raw_hashes.append(meta['raw_mp3_sha256'])
+          assert len(set(raw_hashes))==4
+          PY
+      - name: Preserve MP3 originals and stable phone listening page on review branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-v3preview
+          cd /tmp/wv-v3preview
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          done=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            mkdir -p media-lab/nextgen/vivienne-only-v3
+            cp /tmp/wv-vivienne3/*.mp3 /tmp/wv-vivienne3/*.json \
+               media-lab/nextgen/vivienne-only-v3/
+            cp "$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/nextgen/vivienne-v3-listen.html" \
+               media-lab/nextgen/vivienne-only-v3/index.html
+            git add media-lab/nextgen/vivienne-only-v3
+            if git diff --cached --quiet; then done=1; break; fi
+            git commit -m "review(worldvision): four original uninterrupted Vivienne V3 takes, raw + mastered and iPhone player"
+            if git push origin HEAD:whv-media-studio-browser-preview; then done=1; break; fi
+            sleep "$attempt"
+          done
+          test "$done" = 1
+          echo "Stable listening page: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/vivienne-only-v3/index.html"
