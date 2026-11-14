@@ -520,8 +520,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background:#fff !important;color:var(--wv-ink) !important;
 }
 .whv-page :is(.rt-panel,.ds-panel,.tv-panel,.re-panel,.cur-panel,.al-panel,.adv-panel,.prf-panel)
-  :is(h3,h4,p,label,small,strong) {color:inherit;}
-.whv-page :is(.rt-panel,.ds-panel,.tv-panel,.re-panel,.cur-panel,.al-panel,.adv-panel,.prf-panel)
   :is(input,select,textarea) {
   background:#fff !important;border-color:#cfd9e7 !important;color:#14253e !important;
 }
