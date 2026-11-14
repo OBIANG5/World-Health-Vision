@@ -1,0 +1,86 @@
+{
+  "status": "COMPLETE_PREVIEW_NOT_AUTOMATICALLY_PUBLISHABLE",
+  "video_path": "output/wv002-delivery/WORLD_VISION_002_ARCHIVES_REAL_FILM_17s.mp4",
+  "bytes": 6688441,
+  "sha256": "110eb8a6bf8e885a024fbf5d4ad76a475545de748c273f81ae9a37ad6e0e4083",
+  "duration_sec": 17.1,
+  "width": 1080,
+  "height": 1920,
+  "frames_expected": 513,
+  "fps": 30,
+  "voice": "exact user-selected Vivienne C5.2 Impact média",
+  "voice_duration": 14.088,
+  "outro": "original approved G0 graphite / steel-light 3 sec",
+  "outro_has_narration": false,
+  "all_shots_are_actual_2026_collision": false,
+  "real_official_footage_only": true,
+  "footage_type": "2014/2016/2022 USCG ARCHIVE, explicitly labelled in each shot",
+  "publishing_rights_of_voice_verified": false,
+  "provenance": [
+    {
+      "id": 445860,
+      "date": "2016-01-11",
+      "where": "Mississippi near Baton Rouge, Louisiana",
+      "role": "Mississippi aerial",
+      "suffix": "river_aerial",
+      "official_page": "https://www.dvidshub.net/video/445860",
+      "public_domain_mark_verified": true,
+      "resolution": [
+        1920,
+        1080
+      ],
+      "duration": 38.08,
+      "raw_bytes": 31614893,
+      "review_clip": "river_aerial_review.mp4",
+      "contact_sheet": "river_aerial_contact.jpg",
+      "source_date_must_be_on_screen": true,
+      "is_actual_2026_collision_footage": false,
+      "result": "OK"
+    },
+    {
+      "id": 350155,
+      "date": "2014-07-10",
+      "where": "Port of New Orleans",
+      "role": "Maritime commercial ship inspection",
+      "suffix": "port_ship",
+      "official_page": "https://www.dvidshub.net/video/350155",
+      "public_domain_mark_verified": true,
+      "resolution": [
+        720,
+        406
+      ],
+      "duration": 88.725333,
+      "raw_bytes": 10170338,
+      "review_clip": "port_ship_review.mp4",
+      "contact_sheet": "port_ship_contact.jpg",
+      "source_date_must_be_on_screen": true,
+      "is_actual_2026_collision_footage": false,
+      "result": "OK"
+    },
+    {
+      "id": 869071,
+      "date": "2022-12-20",
+      "where": "Southwest Pass, Louisiana",
+      "role": "Coast Guard tanker medevac (separate event!)",
+      "suffix": "tanker_context",
+      "official_page": "https://www.dvidshub.net/video/869071",
+      "public_domain_mark_verified": true,
+      "resolution": [
+        720,
+        480
+      ],
+      "duration": 110.043267,
+      "raw_bytes": 48147916,
+      "review_clip": "tanker_context_review.mp4",
+      "contact_sheet": "tanker_context_contact.jpg",
+      "source_date_must_be_on_screen": true,
+      "is_actual_2026_collision_footage": false,
+      "result": "OK"
+    }
+  ],
+  "video_visual_quality_approved_by_user": false,
+  "no_caricatured_ships": true,
+  "no_generic_header_footer": true,
+  "subtitle_overlay": false,
+  "note": "This film uses honest historical imagery, NOT the actual impact. User must judge aesthetics. Audio Edge commercial terms still require verification."
+}
