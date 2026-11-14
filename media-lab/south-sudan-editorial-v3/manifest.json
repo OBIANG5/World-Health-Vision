@@ -1,0 +1,104 @@
+{
+  "episode": "south-sudan-first-national-election-delay-V3",
+  "status": "REVIEW_ONLY_NO_PUBLICATION",
+  "script_lock_sha256": "a5104cedab538771d1c649da242c7b32b4f438514a4230d3e5bb31628139afb9",
+  "script_full_exact": [
+    "Imagine un pays indépendant depuis quinze ans… mais qui n'a encore jamais organisé d'élections nationales !",
+    "C'est le Soudan du Sud.",
+    "Le pays devait enfin voter le 22 décembre. Mais nouveau coup de théâtre : les élections sont repoussées au 11 février 2027 !",
+    "Aucune raison officielle n'a été donnée.",
+    "Pendant ce temps, l'ONU alerte sur les violences et les tensions politiques.",
+    "Quinze ans après l'indépendance, les Sud-Soudanais attendent toujours leur premier scrutin national."
+  ],
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "voice_reference": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/voice-auditions/vivienne.mp3",
+  "voice_approved_as_preference": true,
+  "voice_approved_as_final_master": false,
+  "voice_commercial_license_verified": false,
+  "audio_source": "Edge Neural unofficial preview only, never a promise of usage rights",
+  "voice_original_duration_sec": 22.338,
+  "voice_final_atempo": 1.0,
+  "visuals": [
+    {
+      "type": "approved_globe",
+      "seconds": 3.0
+    },
+    {
+      "type": "independence",
+      "seconds": 1.8
+    },
+    {
+      "type": "country",
+      "seconds": 1.3
+    },
+    {
+      "type": "original_date",
+      "seconds": 2.767
+    },
+    {
+      "type": "new_date",
+      "seconds": 3.667
+    },
+    {
+      "type": "reason",
+      "seconds": 1.967
+    },
+    {
+      "type": "un",
+      "seconds": 3.467
+    },
+    {
+      "type": "outro",
+      "seconds": 4.4
+    }
+  ],
+  "documentary_media": [
+    {
+      "file": "flag_juba_hires.jpg",
+      "caption": "Juba 9 July 2011",
+      "author": "U.S. Department of State / Jenn Warren",
+      "license": "public domain US federal government",
+      "url": "https://commons.wikimedia.org/wiki/File:Flag_of_South_Sudan_in_to_the_Independence_Day.jpg"
+    },
+    {
+      "file": "crowd_vertical.jpg",
+      "caption": "Juba 9 July 2011",
+      "license": "US Government public domain"
+    },
+    {
+      "file": "president.jpg",
+      "caption": "Portrait Salva Kiir, 2020",
+      "license": "CC0 1.0"
+    },
+    {
+      "file": "flag_man.jpg",
+      "caption": "South Sudan 9 July 2011",
+      "license": "US Government public domain"
+    },
+    {
+      "file": "independence.jpg",
+      "caption": "South Sudan 9 July 2011",
+      "license": "US Government public domain"
+    }
+  ],
+  "separate_ai_illustration_in_canva": {
+    "asset_id": "MAHa5KhTKE0",
+    "title": "Conceptual election ballot box",
+    "integrated_into_video": false,
+    "not_real_event": true
+  },
+  "geography": {
+    "video_reference_sha256": "512a77a8de55fa05cf24904568577c653d9d1ef8586827b89150b077086d6295",
+    "target_city": "Juba",
+    "region": "South Sudan"
+  },
+  "video_sha256": "97c4a8b94ea955a40dccd4c4b042412c01c3ac53d74ca01b1112e6aacc44a11d",
+  "duration_seconds": 22.367,
+  "resolution": "1080x1920",
+  "fps": 30,
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "technical_qa_passed": true,
+  "artistic_user_approval": false,
+  "publication_authorized": false
+}
