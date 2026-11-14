@@ -142,13 +142,12 @@ const Hook:React.FC=()=>{
             transform:`scale(${scale(f,135,1.1,1.17)})`}}/>
           <div style={{position:"absolute",bottom:0,left:0,right:0,height:350,
             background:"linear-gradient(transparent,rgba(2,12,29,.94))"}}/>
-          <div style={{position:"absolute",left:12,bottom:40,fontWeight:950,fontSize:27,letterSpacing:1,
+          <div style={{position:"absolute",left:17,bottom:260,fontWeight:950,fontSize:26,letterSpacing:1,
             textShadow:"0 2px 8px #000"}}>{p.label}</div>
        </div>})}
    </div>
    <AnimatedHeadline lines={["TROIS PUISSANCES.","UNE SEULE TABLE."]} size={74} top={1200} accent={1}/>
-   <div style={{position:"absolute",left:79,top:1505,fontSize:26,letterSpacing:4,color:S.ice,fontWeight:900}}>UNE RENCONTRE INÉDITE</div>
-   <Logo/>
+    <Logo/>
    <Credit text="Portraits d'archives · Maison-Blanche, Kremlin, Maison-Blanche (2024–2025)"/>
    <Barcode topic="LE SOMMET ANNONCÉ" progress={f/SUMMIT_FRAMES}/>
  </Base>;
