@@ -49,8 +49,10 @@ PHRASES=[
  "Et attention :",
  "aucun accord n’est attendu",
  "pour le moment.",
- "Alors, véritable tournant diplomatique,",
- "ou simple démonstration de puissance ?"
+ "Alors, véritable",
+ "tournant diplomatique,",
+ "ou simple démonstration",
+ "de puissance ?"
 ]
 def digest(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def norm(s):
