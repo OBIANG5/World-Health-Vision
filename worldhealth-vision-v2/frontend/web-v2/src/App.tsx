@@ -348,21 +348,21 @@ function AppContent() {
         aria-expanded={showToolsMenu && navDomain === "markets"}
         onClick={(event) => openNavDomain("markets", event.currentTarget)}>
         {lang === "fr" ? "Économie & marchés" : "Economy & markets"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
+        <span className="whv-nav-chevron" aria-hidden="true"><WorldIcon name="chevron" size={13}/></span>
       </button>
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--travel" + (showToolsMenu && navDomain === "travel" ? " active" : "")}
         aria-expanded={showToolsMenu && navDomain === "travel"}
         onClick={(event) => openNavDomain("travel", event.currentTarget)}>
         {lang === "fr" ? "Voyager & vivre" : "Travel & living"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
+        <span className="whv-nav-chevron" aria-hidden="true"><WorldIcon name="chevron" size={13}/></span>
       </button>
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--safety" + (showToolsMenu && navDomain === "safety" ? " active" : "")}
         aria-expanded={showToolsMenu && navDomain === "safety"}
         onClick={(event) => openNavDomain("safety", event.currentTarget)}>
         {lang === "fr" ? "Sécurité" : "Safety"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
+        <span className="whv-nav-chevron" aria-hidden="true"><WorldIcon name="chevron" size={13}/></span>
       </button>
       <button type="button" ref={toolsButtonRef}
         className={"whv-nav-btn whv-nav-btn--tools" + (showToolsMenu && navDomain === "all" ? " active" : "") + (anyToolOpen ? " has-active-tool" : "")}
@@ -571,7 +571,7 @@ function AppContent() {
       {/* Bandeau hors-ligne */}
       {isOffline && (
         <div className="whv-offline-banner">
-          <span className="whv-offline-banner-icon">⚠</span>
+          <span className="whv-offline-banner-icon"><WorldIcon name="alert" size={18}/></span>
           <div>
             <strong>{lang === "fr" ? "Données temporairement indisponibles" : "Data temporarily unavailable"}</strong>
             <span>{lang === "fr"
