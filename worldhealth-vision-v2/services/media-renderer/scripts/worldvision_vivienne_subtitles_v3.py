@@ -63,7 +63,7 @@ def attach_punctuation(source,events):
   while k<len(source) and source[k] in " \u00a0\u202f" and k-end<3:
    k+=1
   if k> end and k<len(source) and source[k] in ":;!?":
-   suffix+=source[k]
+   suffix+=source[end:k]+source[k]  # preserve actual French typographic spacing
    pos=k+1
   result.append({**item,"display":token+suffix})
  # The user-approved script contains whitespace before the final '?'
