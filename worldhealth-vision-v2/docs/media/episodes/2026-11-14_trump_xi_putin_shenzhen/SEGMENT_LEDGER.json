@@ -91,24 +91,31 @@
       "start_sec": 12.5,
       "duration_sec": 7.9,
       "visual": "Coded premium typography, New START information, no fictional nuclear explosions",
-      "status": "S04_QA_PASSED_WAITING_ART_REVIEW",
-      "master_file": "segment04-new-start-7p9s.mp4",
-      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.mp4",
-      "sha256": "1e25443e40b4b9a867bcbd53f5f7ad4f977cb7577cf6277b348f3bf2e05ec6c9",
-      "bytes": 1150810,
+      "status": "S04_V2_QA_PASSED_WAITING_ART_REVIEW",
+      "master_file": "segment04-new-start-v2-7p9s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.mp4",
+      "sha256": "5ae78d45850aa9eeb51c30f3f83e99a93cac244f327233fd04257c01906e97a1",
+      "bytes": 1109346,
       "fps": 30,
       "frames": 237,
       "resolution": "1080x1920",
-      "preview_manifest": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.json",
-      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04/contact-sheet.jpg",
-      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43585854686",
+      "preview_manifest": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.json",
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04-v2/contact-sheet.jpg",
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43586235979",
       "archive_photo": "Chuck Kennedy / White House, official signing of New START, Prague April 8, 2010, public domain",
       "archive_photo_sha256": "36789c11b8a4777dc432213fcd206b05a09feda7d1f1809f592b4904ccec43a1",
       "source": "services/media-renderer/scripts/worldvision_segment04_new_start.py",
       "publication_approved": false,
       "human_art_approved": false,
       "audio_present": false,
-      "notes": "Authentic 2010 White House photo; official logo G0 verified by Git blob; fact-check New START expired February 5, 2026. Technical QA successful: 1080x1920/30fps/237 frames/H264/silent + 6 distinct frames; next human artistic review before mastering."
+      "notes": "V2: subtle alpha-composited grid, superior documentary visual hierarchy, genuine 2010 signing photo, official G0, date verified. QA passed 237 frames/7.9 seconds/1080x1920/30fps H264/silent, six distinct QA captures visually inspected, human approval still pending.",
+      "v1_archived": {
+        "file": "segment04-new-start-7p9s.mp4",
+        "sha256": "1e25443e40b4b9a867bcbd53f5f7ad4f977cb7577cf6277b348f3bf2e05ec6c9",
+        "bytes": 1150810,
+        "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04/contact-sheet.jpg",
+        "reason_replaced": "Grid drawing alpha compositing bug: overly prominent grid distracted from archival photo; version preserved in Git history and preview branch."
+      }
     },
     {
       "id": "S05",
@@ -151,7 +158,7 @@
     "S01": "Human artistic review required",
     "S02": "Human artistic review required",
     "master": "Blocked until voice, proper audio sync, all eight licensed scenes and video QA",
-    "S04": "Technical rendering/QA passed on GitHub Actions #43585854686; user art review pending, no audio"
+    "S04": "V2 technical success on Actions #43586235979, 3 beat frames visually inspected; USER ART APPROVAL PENDING, no audio"
   },
   "qa_for_S02": {
     "codec": "h264",
@@ -165,5 +172,5 @@
     "audio_present": false
   },
   "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded.",
-  "active_edition": "S03 July V2 and S04 New START are technical candidates only; S03B city shot missing, S05-S08 not produced, final voice not approved"
+  "active_edition": "S03 July V2 and S04 improved V2 are technical candidates, not user-approved; S03B city shot and S05-S08 not produced; final voice not approved"
 }
