@@ -1,0 +1,338 @@
+{
+  "status": "VIVIENNE_CAPTIONS_VISUAL_AUDITION_ONLY",
+  "source_voice": "fr-FR-VivienneMultilingualNeural",
+  "voice_sha256": "96b8ebf4a2692ad67170b98e66144784508a0ca29e6884a65c1b2882db858b7b",
+  "voice_preferred_by_user": true,
+  "this_take_approved_by_user": false,
+  "publishing_rights_cleared": false,
+  "audio_timing": "86 genuine Edge TTS WordBoundary events, not guessed captions",
+  "cues": [
+    {
+      "i": 1,
+      "start": 0.0,
+      "end": 1.408,
+      "lines": [
+        "Trois puissances",
+        "nucléaires."
+      ],
+      "max_glyph_width_px": 603.1,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 2,
+      "start": 1.529,
+      "end": 2.576,
+      "lines": [
+        "Une même table."
+      ],
+      "max_glyph_width_px": 608.8,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 3,
+      "start": 2.703,
+      "end": 4.11,
+      "lines": [
+        "Et une rencontre",
+        "inédite."
+      ],
+      "max_glyph_width_px": 611.8,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 4,
+      "start": 4.263,
+      "end": 6.447,
+      "lines": [
+        "Jeudi 19 novembre,",
+        "Donald Trump,"
+      ],
+      "max_glyph_width_px": 692.8,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 5,
+      "start": 6.493,
+      "end": 8.089,
+      "lines": [
+        "Vladimir Poutine et",
+        "Xi Jinping doivent se"
+      ],
+      "max_glyph_width_px": 748.5,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 6,
+      "start": 8.069,
+      "end": 9.758,
+      "lines": [
+        "réunir à Shenzhen,",
+        "en Chine."
+      ],
+      "max_glyph_width_px": 664.6,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 7,
+      "start": 9.882,
+      "end": 11.031,
+      "lines": [
+        "Au cœur des",
+        "discussions :"
+      ],
+      "max_glyph_width_px": 467.1,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 8,
+      "start": 11.245,
+      "end": 12.777,
+      "lines": [
+        "réduire les",
+        "arsenaux nucléaires."
+      ],
+      "max_glyph_width_px": 737.2,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 9,
+      "start": 12.945,
+      "end": 13.979,
+      "lines": [
+        "Le dernier grand",
+        "traité entre"
+      ],
+      "max_glyph_width_px": 599.1,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 10,
+      "start": 13.959,
+      "end": 15.454,
+      "lines": [
+        "Washington et",
+        "Moscou a expiré en"
+      ],
+      "max_glyph_width_px": 703.4,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 11,
+      "start": 15.434,
+      "end": 16.155,
+      "lines": [
+        "février."
+      ],
+      "max_glyph_width_px": 248.5,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 12,
+      "start": 16.29,
+      "end": 17.357,
+      "lines": [
+        "Trump veut",
+        "maintenant associer"
+      ],
+      "max_glyph_width_px": 743.2,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 13,
+      "start": 17.337,
+      "end": 19.151,
+      "lines": [
+        "Pékin, qui",
+        "reste réticent."
+      ],
+      "max_glyph_width_px": 511.1,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 14,
+      "start": 19.289,
+      "end": 20.717,
+      "lines": [
+        "La guerre en Iran",
+        "devrait aussi être"
+      ],
+      "max_glyph_width_px": 633.0,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 15,
+      "start": 20.697,
+      "end": 21.327,
+      "lines": [
+        "abordée."
+      ],
+      "max_glyph_width_px": 319.9,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 16,
+      "start": 21.459,
+      "end": 22.83,
+      "lines": [
+        "Mais selon",
+        "Washington, pas"
+      ],
+      "max_glyph_width_px": 598.2,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 17,
+      "start": 22.81,
+      "end": 23.745,
+      "lines": [
+        "celle en Ukraine."
+      ],
+      "max_glyph_width_px": 587.8,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 18,
+      "start": 23.903,
+      "end": 24.703,
+      "lines": [
+        "Et attention :"
+      ],
+      "max_glyph_width_px": 469.9,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 19,
+      "start": 24.86,
+      "end": 26.017,
+      "lines": [
+        "aucun accord n’est",
+        "attendu pour le"
+      ],
+      "max_glyph_width_px": 697.2,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 20,
+      "start": 25.997,
+      "end": 26.504,
+      "lines": [
+        "moment."
+      ],
+      "max_glyph_width_px": 320.8,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 21,
+      "start": 26.628,
+      "end": 28.056,
+      "lines": [
+        "Alors, véritable",
+        "tournant"
+      ],
+      "max_glyph_width_px": 541.1,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 22,
+      "start": 28.036,
+      "end": 29.384,
+      "lines": [
+        "diplomatique,",
+        "ou simple"
+      ],
+      "max_glyph_width_px": 493.6,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 23,
+      "start": 29.364,
+      "end": 30.7,
+      "lines": [
+        "démonstration",
+        "de puissance ?"
+      ],
+      "max_glyph_width_px": 546.1,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    }
+  ],
+  "cue_count": 23,
+  "font": "DM Sans",
+  "size_px": 78,
+  "font_file_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+  "max_glyph_width_px": 760,
+  "max_lines": 2,
+  "outro_no_captions_from": 30.7,
+  "semantic_sentence_boundaries_respected": true,
+  "safe_for_mobile_technical_check": true,
+  "requires_visual_and_voice_approval": true,
+  "do_not_publish": true
+}
