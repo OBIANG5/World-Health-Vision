@@ -1,0 +1,99 @@
+name: World-Vision — South Sudan French voice A/B/C auditions (not for publication)
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/worldvision-south-sudan-v2-editorial-2026-11-14
+    paths:
+      - '.github/workflows/whv-south-sudan-voice-casting-v2.yml'
+permissions:
+  contents: write
+concurrency:
+  group: wv-voice-auditions-ssudan-v2
+  cancel-in-progress: true
+jobs:
+  audition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install FFmpeg and neural candidate synthesis
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python -m pip install --quiet 'edge-tts>=7.0,<8.0'
+      - name: Render identical words with three test voices and normalized volumes
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ssudan-voices
+          python - <<'PY'
+          import asyncio,json
+          from pathlib import Path
+          import edge_tts
+          OUT=Path('/tmp/ssudan-voices')
+          sample=("Quinze ans d'indépendance. Zéro élection nationale. "
+                  "Au Soudan du Sud, le vote prévu en décembre vient d'être "
+                  "reporté au onze février deux mille vingt-sept.")
+          test=[
+            ('remy','fr-FR-RemyMultilingualNeural','+13%'),
+            ('vivienne','fr-FR-VivienneMultilingualNeural','+11%'),
+            ('henri','fr-FR-HenriNeural','+14%'),
+          ]
+          async def go():
+            metadata=[]
+            names={v['ShortName'] for v in await edge_tts.list_voices()}
+            for short,voice,rate in test:
+              if voice not in names:raise RuntimeError(f"Voice not available: {voice}")
+              out=OUT/(short+'-raw.mp3')
+              await edge_tts.Communicate(sample,voice,rate=rate,pitch='+0Hz').save(str(out))
+              if out.stat().st_size<5000:raise RuntimeError(f"No real audio generated for {voice}")
+              metadata.append({'id':short,'voice':voice,'rate':rate,'sample':sample})
+            (OUT/'manifest.json').write_text(json.dumps({
+              'status':'AUDIO_REVIEW_ONLY_NOT_LICENSED_FOR_PUBLICATION',
+              'no_publishing_permission':True,
+              'test_voices':metadata
+            },ensure_ascii=False,indent=2))
+          asyncio.run(go())
+          PY
+          for sample in remy vivienne henri; do
+            ffmpeg -y -v error -i "/tmp/ssudan-voices/$sample-raw.mp3" \
+              -af 'loudnorm=I=-16:TP=-2:LRA=7' -ar 44100 \
+              -c:a libmp3lame -b:a 160k "/tmp/ssudan-voices/$sample.mp3"
+            test -s "/tmp/ssudan-voices/$sample.mp3"
+            ffprobe -v error -show_entries format=duration -of default=nw=1 "/tmp/ssudan-voices/$sample.mp3"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-south-sudan-auditions-francaises
+          retention-days: 30
+          path: |
+            /tmp/ssudan-voices/remy.mp3
+            /tmp/ssudan-voices/vivienne.mp3
+            /tmp/ssudan-voices/henri.mp3
+            /tmp/ssudan-voices/manifest.json
+      - name: Publish a phone-friendly independent audio review room
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-voice-room
+          DEST=/tmp/wv-voice-room/media-lab/south-sudan-editorial-v2/voice-auditions
+          mkdir -p "$DEST"
+          cp /tmp/ssudan-voices/{remy,vivienne,henri}.mp3 "$DEST/"
+          cp /tmp/ssudan-voices/manifest.json "$DEST/"
+          cp worldhealth-vision-v2/docs/media/episodes/2026-11-14_south_sudan_elections/VOICE_AUDITIONS_V2.html "$DEST/index.html"
+          cd /tmp/wv-voice-room
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/south-sudan-editorial-v2/voice-auditions
+          if ! git diff --cached --quiet; then
+            git commit -m 'preview(media): South Sudan three French voice auditions normalized for human review'
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
