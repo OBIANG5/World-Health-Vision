@@ -34,10 +34,25 @@
       "start_sec": 0,
       "duration_sec": 4.5,
       "visual": "Real archival portraits, kinetic headline, official logo",
-      "status": "TECHNICAL_PREVIEW_CREATED_REVIEW_REQUIRED",
-      "master_file": "S01_HOOK_4p5s.mp4",
-      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4",
-      "note": "Existing preview; editorial style not yet approved."
+      "status": "S01_V2_CLEAN_MANROPE_QA_PASSED_WAITING_ART_REVIEW",
+      "master_file": "hook-v2-clean-manrope-4p5s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-v2-clean-manrope-4p5s.mp4",
+      "note": "Existing preview; editorial style not yet approved.",
+      "v1_archived": {
+        "file": "hook-4p5s-preview.mp4",
+        "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4",
+        "description": "Earlier S01 preview with provisional unsynced captions rendered in a default serif font; not approved for final assembly."
+      },
+      "sha256": "3a73172cd565f1b8d075166a6ae8f50572af77dceb97e91999c7d53a63456979",
+      "bytes": 1774610,
+      "font_family": "Manrope Variable, SHA256 pinned",
+      "font_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+      "clean_plate": true,
+      "audio_present": false,
+      "technical_labels_in_video": false,
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s01-v2/contact-sheet.jpg",
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587829876",
+      "notes": "S01 V2 actual 4.5s MP4 with genuine archival portraits, original G0, Manrope variable font. Provisional caption overlay removed entirely from standalone hook; subtitles only after approved final voice. 3 review frames inspected. Still subject to artistic approval."
     },
     {
       "id": "S02",
@@ -181,7 +196,7 @@
     }
   ],
   "editorial_gates": {
-    "S01": "Human artistic review required",
+    "S01": "V2 Manrope clean preview QA success GitHub Actions #43587829876, user art approval pending. No voice.",
     "S02": "Human artistic review required",
     "master": "Blocked until voice, proper audio sync, all eight licensed scenes and video QA",
     "S04": "V3 clean plate produced, source & metadata guard and CI successful on Actions #43587064217; user review pending.",
@@ -199,5 +214,5 @@
     "audio_present": false
   },
   "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded.",
-  "active_edition": "S03 V3 clean and S04 V3 clean QA passes; archives V1/V2 exist but banned from master. S03B absent, S05–S08 nonrendered, no voice and no 43s master."
+  "active_edition": "S01 V2, S03 V3 and S04 V3 are clean technical candidates. S02 original approved image/clip source retained; S03B genuine city shot and S05–S08 not produced. No master or voice."
 }
