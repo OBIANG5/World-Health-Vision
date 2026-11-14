@@ -67,12 +67,15 @@
       "source": "a_crisp_ultra_detailed_high_contrast_digital_ill.png",
       "source_sha256": "8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2",
       "generator": "services/media-renderer/scripts/worldvision_segment02_globe.py",
-      "note": "Actual original image, NOT an actual geographical rotation; no narration in this clip yet. MP4 stored in connected Canva as reusable media."
+      "note": "Actual original image, NOT an actual geographical rotation; no narration in this clip yet. MP4 stored in connected Canva as reusable media.",
+      "master_start_sec": 4.5,
+      "master_excerpt_sec": 0.9,
+      "master_end_sec": 5.4
     },
     {
       "id": "S03",
       "name": "Shenzhen : localisation",
-      "start_sec": 7.6,
+      "start_sec": 5.4,
       "duration_sec": 4.9,
       "visual": "Verified location on a precise map plus licensed Shenzhen imagery and date",
       "status": "S03_V3_CLEAN_PLATE_QA_PASSED_WAITING_ART_REVIEW",
@@ -112,7 +115,45 @@
       "font_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
       "clean_plate": true,
       "technical_labels_in_video": false,
-      "preview_manifest": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.json"
+      "preview_manifest": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.json",
+      "master_end_sec": 10.3,
+      "overlap_next_sec": 0.5,
+      "master_note": "Source S03 full 4.9s 5.4–10.3, overlaps true Shenzhen S03B 9.8–12.5, without speed-up. See EDL V3."
+    },
+    {
+      "id": "S03B",
+      "name": "Vraies images de Shenzhen (CC0)",
+      "start_sec": 9.8,
+      "duration_sec": 2.7,
+      "master_end_sec": 12.5,
+      "overlap_previous_sec": 0.5,
+      "visual": "Real 2025 photo from Lianhuashan, Shenzhen; cinematic dolly and 0.5s circle-opening map-to-city bridge",
+      "status": "S03B_V1_TECHNICAL_QA_PASSED_WAITING_ART_REVIEW",
+      "master_file": "segment03b-shenzhen-city-v1-2p7s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03b-shenzhen-city-v1-2p7s.mp4",
+      "sha256": "cd0dfa113ec71d95b615fba341f0aec5db8953ad1ca520dc292db6c11540f016",
+      "bytes": 729265,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "frames": 81,
+      "source_photo_url": "https://commons.wikimedia.org/wiki/File:02_View_from_Lianhuashan,_Shenzhen_in_2025.jpg",
+      "source_photo_sha256": "213604b3c78690367db2be0f8152e687923c1a4fb56474a095019cc8ae22bfa6",
+      "photographer": "Renek78",
+      "photo_date": "2025-09-13",
+      "license": "CC0 1.0",
+      "has_real_city_photo": true,
+      "has_actual_summit_footage": false,
+      "not_meeting_venue_photo": true,
+      "uses_exact_g0_logo": true,
+      "typeface": "Manrope Variable / pinned hash",
+      "clean_plate": true,
+      "audio_present": false,
+      "human_art_approved": false,
+      "render_source": "services/media-renderer/scripts/worldvision_segment03b_shenzhen_city.py",
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43589613072",
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03b-v1/contact-sheet.jpg",
+      "note": "Technical QA passed on actual MP4. 2025 city photo is CC0 and not a picture of the announced 2026 meeting; artistic user approval pending."
     },
     {
       "id": "S04",
@@ -200,7 +241,8 @@
     "S02": "Human artistic review required",
     "master": "Blocked until voice, proper audio sync, all eight licensed scenes and video QA",
     "S04": "V3 clean plate produced, source & metadata guard and CI successful on Actions #43587064217; user review pending.",
-    "S03": "V3 clean plate technical success Actions #43587396877; artist approval pending."
+    "S03": "V3 clean plate technical success Actions #43587396877; artist approval pending.",
+    "S03B": "S03B authentic CC0 city V1 and circular 7.1s V2 assembled, technical QA success, human art review pending"
   },
   "qa_for_S02": {
     "codec": "h264",
@@ -213,6 +255,31 @@
     "contact_sheet": "WorldVision_S02_contact_sheet.jpg",
     "audio_present": false
   },
-  "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded.",
-  "active_edition": "S01 V2, S03 V3 and S04 V3 are clean technical candidates. S02 original approved image/clip source retained; S03B genuine city shot and S05–S08 not produced. No master or voice."
+  "assembly_plan": "EDL_V3_REAL_CITY_MATCHCUT.md: S01 0–4.5, S02 4.5–5.4 (0.9s 1x excerpt), S03 5.4–10.3 (full 4.9s 1x), S03B 9.8–12.5 (full 2.7s 1x, circleopen 0.5s overlap), S04 12.5–20.4. Full final 43s requires user approved voice and source assets.",
+  "active_edition": "S01 V2 / S02 original D00 film / S03 V3 / S03B CC0 V1 with circleopen bridge V2 / S04 V3; waiting artistic reviews and genuine French voice. S05-S08 not rendered, full 43s master not generated.",
+  "transitions": {
+    "S03_to_S03B": {
+      "status": "V2_CIRCLEOPEN_QA_PASSED_WAITING_ART_REVIEW",
+      "duration_sec": 7.1,
+      "frames": 213,
+      "fps": 30,
+      "overlap_sec": 0.5,
+      "playback_rate": 1,
+      "master_range": "00:05.40–00:12.50",
+      "effect": "circleopen; replaces V1 full-frame ghosting dissolve",
+      "master_file": "s03-to-s03b-shenzhen-matchcut-v2-circleopen-7p1s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/s03-to-s03b-shenzhen-matchcut-v2-circleopen-7p1s.mp4",
+      "sha256": "8ab698002dfd82375423e6866b5bf0a7e602af5a7bba3a0ebafdce3b9191ef37",
+      "bytes": 4010873,
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43590163241",
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-transition-v2/contact-sheet.jpg",
+      "v1_rejected": {
+        "file": "s03-to-s03b-shenzhen-matchcut-7p1s.mp4",
+        "sha256": "0f1bfc69086f3f5a1df7508e144b7002892c398be28e11a0d0d71f5676b105c8",
+        "reason": "Full opacity fade ghosted two logos and titles during 0.5s crossfade"
+      },
+      "art_approved": false,
+      "publication_approved": false
+    }
+  }
 }
