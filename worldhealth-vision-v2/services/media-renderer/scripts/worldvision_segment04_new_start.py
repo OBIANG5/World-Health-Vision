@@ -154,7 +154,7 @@ def main():
  assert a.logo.is_file() and a.photo.is_file() and a.font.is_file(),"Original assets and Manrope font required; no placeholder allowed"
  global FONT_PATH
  FONT_PATH=a.font
- assert sha(a.font)=='d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40','Font digest mismatch; refusing unapproved typography'
+ assert sha(a.font)=='3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6','Font digest mismatch; refusing unapproved typography'
  a.output.parent.mkdir(parents=True,exist_ok=True)
  lg=official_logo(a.logo);ph=source_photo(a.photo)
  cmd=['ffmpeg','-y','-hide_banner','-loglevel','error','-f','rawvideo','-pixel_format','rgb24','-video_size',
