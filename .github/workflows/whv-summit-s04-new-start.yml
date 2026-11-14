@@ -1,4 +1,4 @@
-name: World-Vision S04 — nuclear arms and authentic New START archive
+name: World-Vision S04 V2 — nuclear arms and authentic New START archive
 on:
   workflow_dispatch:
   push:
@@ -9,7 +9,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: wv-summit-s04-preview
+  group: wv-summit-s04-v2-preview
   cancel-in-progress: true
 jobs:
   render:
@@ -66,14 +66,14 @@ jobs:
           python scripts/worldvision_segment04_new_start.py \
             --photo assets/summit-2026/new-start-prague-2010.jpg \
             --logo public/brand/world-vision-official.png \
-            --output output/summit-2026/segment04-new-start-7p9s.mp4
+            --output output/summit-2026/segment04-new-start-v2-7p9s.mp4
       - name: Verify codec, fps, frames, absence of sound, moving frame proof
         working-directory: worldhealth-vision-v2/services/media-renderer
         shell: bash
         run: |
           set -euo pipefail
-          F=output/summit-2026/segment04-new-start-7p9s.mp4
-          R=output/summit-2026/review-s04
+          F=output/summit-2026/segment04-new-start-v2-7p9s.mp4
+          R=output/summit-2026/review-s04-v2
           mkdir -p "$R"
           for item in '0.85:arms' '2.30:arms-end' '3.72:treaty' '5.42:treaty-end' '6.79:expiry' '7.51:expiry-end'; do
             time="${item%%:*}"
@@ -86,7 +86,7 @@ jobs:
           python - <<'PY'
           import json,hashlib,subprocess
           from pathlib import Path
-          f=Path('output/summit-2026/segment04-new-start-7p9s.mp4')
+          f=Path('output/summit-2026/segment04-new-start-v2-7p9s.mp4')
           meta=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(f)]))
           v=next(s for s in meta['streams'] if s['codec_type']=='video')
           assert (v['width'],v['height'])==(1080,1920)
@@ -94,7 +94,7 @@ jobs:
           assert v['nb_frames']=='237'
           assert abs(float(meta['format']['duration'])-7.9)<.06
           assert not [s for s in meta['streams'] if s['codec_type']=='audio']
-          r=Path('output/summit-2026/review-s04')
+          r=Path('output/summit-2026/review-s04-v2')
           sha=[hashlib.sha256((r/(n+'.jpg')).read_bytes()).hexdigest() for n in ('arms','arms-end','treaty','treaty-end','expiry','expiry-end')]
           assert len(set(sha))==6,'Animation frames are not changing'
           print('QA PASSED: 1080x1920, 30 fps, 237 frames, silent H.264; 6 distinct photos')
@@ -110,9 +110,9 @@ jobs:
             "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/wv-s04-release
           F=worldhealth-vision-v2/services/media-renderer/output/summit-2026
           OUT=/tmp/wv-s04-release/media-lab/summit-2026
-          mkdir -p "$OUT/review-s04"
-          cp "$F/segment04-new-start-7p9s.mp4" "$F/segment04-new-start-7p9s.json" "$OUT/"
-          cp "$F/review-s04/"*.jpg "$OUT/review-s04/"
+          mkdir -p "$OUT/review-s04-v2"
+          cp "$F/segment04-new-start-v2-7p9s.mp4" "$F/segment04-new-start-v2-7p9s.json" "$OUT/"
+          cp "$F/review-s04-v2/"*.jpg "$OUT/review-s04-v2/"
           cd /tmp/wv-s04-release
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -121,4 +121,4 @@ jobs:
             git commit -m "preview(summit): S04 7.9s New START verified archives and QA"
             git push origin HEAD:whv-media-studio-browser-preview
           fi
-          echo "Watch: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.mp4"
+          echo "Watch: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.mp4"
