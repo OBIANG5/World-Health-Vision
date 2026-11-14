@@ -1,0 +1,35 @@
+{
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "selected": "A",
+  "selected_rate": "-12%",
+  "selected_wpm": 148.11,
+  "selected_duration": 44.155,
+  "technique": "Single full script utterance, no sentence cuts or splices, normalized volume only",
+  "tempo_warping": false,
+  "script_sha256": "0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac",
+  "auditions": [
+    {
+      "name": "A",
+      "rate": "-12%",
+      "wpm": 148.11,
+      "duration": 44.155,
+      "file": "vivienne-audition-A.wav"
+    },
+    {
+      "name": "B",
+      "rate": "-5%",
+      "wpm": 159.96,
+      "duration": 40.885,
+      "file": "vivienne-audition-B.wav"
+    },
+    {
+      "name": "C",
+      "rate": "+0%",
+      "wpm": 168.36,
+      "duration": 38.845,
+      "file": "vivienne-audition-C.wav"
+    }
+  ],
+  "commercial_license_confirmed": false,
+  "human_artistic_approval": false
+}
