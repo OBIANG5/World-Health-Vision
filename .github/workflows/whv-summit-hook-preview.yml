@@ -76,6 +76,7 @@ jobs:
           set -euo pipefail
           node --check render-summit-preview.mjs
           npm run typecheck
+          node --test summit-2026-contract.test.mjs
           node render-summit-preview.mjs hook
       - name: FFprobe and frame-to-frame motion proof
         working-directory: worldhealth-vision-v2/services/media-renderer
