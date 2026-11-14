@@ -1,0 +1,30 @@
+{
+  "id": "S04",
+  "event": "Summit announced for Shenzhen (2026-11-19)",
+  "mode": "EDITORIAL_TECHNICAL_PREVIEW",
+  "published": false,
+  "approved": false,
+  "seconds": 7.9,
+  "frames": 237,
+  "fps": 30,
+  "pixels": [
+    1080,
+    1920
+  ],
+  "sha256": "4fa8aebec451f4edb0d8bd495655b619feaab0d9fb0d517c12e4bd9f88b33e69",
+  "bytes": 1097118,
+  "photo_sha256": "36789c11b8a4777dc432213fcd206b05a09feda7d1f1809f592b4904ccec43a1",
+  "logo_sha256": "b5e76e19260a6c405c17d54695278c12adb5e8b90f241deddf351620d7e7d9fb",
+  "font_family": "Manrope Variable (OFL-1.1)",
+  "font_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+  "clean_plate": true,
+  "embedded_preview_labels": false,
+  "technical_metadata_on_screen": false,
+  "photo": "Chuck Kennedy/White House 2010 signing, public domain, historic archive NOT 2026",
+  "photo_source": "https://commons.wikimedia.org/wiki/File:Obama_and_Medvedev_sign_New_START.jpg",
+  "fact": "New START expired 2026-02-05",
+  "fact_source": "https://www.diplomatie.gouv.fr/en/presse-et-ressources/decouvrir-et-informer/actualites/expiration-du-traite-new-start",
+  "audio": "NONE — final voice and subtitles NOT aligned",
+  "archive_credit_for_caption": "Photo : Chuck Kennedy / The White House (2010). Original archive, not footage of the 2026 summit.",
+  "release_notice": "Use this clean plate as the only source for assembly; never reuse V1/V2 in the final edit."
+}
