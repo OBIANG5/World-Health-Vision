@@ -75,6 +75,11 @@ jobs:
           curl -fLsS --retry 5 --retry-all-errors --max-time 120 \
             'https://images.pexels.com/photos/17165570/pexels-photo-17165570.jpeg?auto=compress&cs=tinysrgb&w=2600' \
             -o "$D/river_illustration.jpg"
+          # Genuine live-action stock video for livelihood beat, NOT footage
+          # from the Balato 2026 clashes; source and author recorded in manifest.
+          curl -fLsS --retry 5 --retry-all-errors --max-time 300             'https://videos.pexels.com/video-files/28657918/12445295_3840_2160_24fps.mp4'             -o "$D/real_worker_illustration.mp4"
+          test "$(stat -c%s "$D/real_worker_illustration.mp4")" -gt 1000000
+          ffprobe -v error -show_entries stream=codec_type,width,height -show_entries format=duration -of json "$D/real_worker_illustration.mp4"
           python - <<'PY'
           from PIL import Image
           from pathlib import Path
@@ -141,12 +146,15 @@ jobs:
           assert 15<=m['duration_seconds']<=60
           assert m['voice_no_time_stretch']
           assert not m['voice_commercial_license_verified'] and not m['publication_authorized']
-          assert len(m['visual_timeline'])==14
+          assert len(m['visual_timeline'])==15
           assert (d/'review/contact-sheet.jpg').is_file()
           assert len(list((d/'review').glob('frame-*.jpg')))==9
           assert 'Guinea' in m['geography']['globe']
           print('QA PASS | Script immutable | Slower Vivienne | Actual video | User artistic approval outstanding')
           PY
+          # Reusable cross-episode QA: block too-fast narration, long static cards,
+          # missing author/source, script drift, or non-existent final video.
+          python worldhealth-vision-v2/services/media-renderer/scripts/validate_worldvision_short.py             --manifest "$D/manifest.json"             --video "$F"             --review "$D/review"             --expected-script-sha 0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac             --max-seconds 60 --min-wpm 105 --max-wpm 150 --max-card-seconds 6.5
       - uses: actions/upload-artifact@v4
         with:
           name: worldvision-guinee-siguiri-v1-editorial-review
