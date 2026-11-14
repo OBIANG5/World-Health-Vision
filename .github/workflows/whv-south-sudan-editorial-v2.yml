@@ -1,0 +1,122 @@
+name: World-Vision — South Sudan Editorial V2 / geographic globe / licensed factual imagery
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/worldvision-south-sudan-v2-editorial-2026-11-14
+    paths:
+      - '.github/workflows/whv-south-sudan-editorial-v2.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_south_sudan_editorial_v2.py'
+permissions:
+  contents: write
+concurrency:
+  group: wv-south-sudan-v2-editorial
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install FFmpeg/OpenCV and neural voice tooling
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python -m pip install --quiet 'numpy==2.3.4' 'pillow==12.0.0' 'opencv-python-headless==4.12.0.88' 'edge-tts>=7.0,<8.0'
+          python -c 'import cv2,numpy,PIL,edge_tts; print(cv2.__version__,numpy.__version__)'
+      - name: Acquire verified NASA globe, Natural Earth countries, original archive photos
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14
+          mkdir -p "$D"
+          UA='World-Vision Editorial 1.0 (https://github.com/OBIANG5/World-Health-Vision)'
+          curl -fL --retry 5 --retry-all-errors --max-time 200 'https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography/july/world.topo.200407.3x5400x2700.jpg' -o "$D/nasa-july-5400.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 180 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson' -o "$D/countries.geojson"
+          curl -fL --retry 5 --retry-all-errors --max-time 120 -A "$UA" 'https://upload.wikimedia.org/wikipedia/commons/a/a2/South_Sudanese_crowd_gathers_on_independence_day_%285925619257%29.jpg' -o "$D/crowd_vertical.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 120 -A "$UA" 'https://upload.wikimedia.org/wikipedia/commons/b/b6/Salva_Kiir_Mayardit_The_South_Sudan_president.jpg' -o "$D/president.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 120 -A "$UA" 'https://upload.wikimedia.org/wikipedia/commons/9/96/A_South_Sudanese_man_carries_the_flag_%285925642623%29.jpg' -o "$D/flag_man.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 120 -A "$UA" 'https://upload.wikimedia.org/wikipedia/commons/b/bb/South_Sudan_independence_celebration_in_Juba.jpg' -o "$D/independence.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 120 \
+            'https://raw.githubusercontent.com/google/fonts/main/ofl/archivoblack/ArchivoBlack-Regular.ttf' -o "$D/ArchivoBlack-Regular.ttf"
+          curl -fL --retry 5 --retry-all-errors --max-time 120 \
+            'https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf' -o "$D/Inter-variable.ttf"
+          python - <<'PY'
+          from PIL import Image,ImageFont
+          import json
+          from pathlib import Path
+          p=Path('worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14')
+          assert Image.open(p/'nasa-july-5400.jpg').size==(5400,2700)
+          assert len(json.loads((p/'countries.geojson').read_text())['features'])>=200
+          for f in ['crowd_vertical.jpg','president.jpg','flag_man.jpg','independence.jpg']:
+              img=Image.open(p/f); img.verify()
+          for f in ['ArchivoBlack-Regular.ttf','Inter-variable.ttf']:
+              assert ImageFont.truetype(str(p/f),26)
+          print('NASA, real borders, four photos, two NEW font families: PASS')
+          PY
+          G0=worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png
+          test "$(git hash-object "$G0")" = 'bc80fa70cebd566768bfb1703a0f1f636a78c196'
+      - name: Render 30s cinematic editorial report / proper neural voice candidate
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_south_sudan_editorial_v2.py
+          python scripts/guard_on_screen_copy.py scripts/worldvision_south_sudan_editorial_v2.py
+          python scripts/worldvision_south_sudan_editorial_v2.py \
+            --texture assets/south-sudan-2026-11-14/nasa-july-5400.jpg \
+            --geojson assets/south-sudan-2026-11-14/countries.geojson \
+            --logo public/brand/world-vision-official.png \
+            --headfont assets/south-sudan-2026-11-14/ArchivoBlack-Regular.ttf \
+            --bodyfont assets/south-sudan-2026-11-14/Inter-variable.ttf \
+            --voice fr-FR-RemyMultilingualNeural
+      - name: Validate 1080x1920 H264 AAC 30fps under 30 seconds, 9 visual QA frames
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v2
+          test -s "$D/world-vision-soudan-du-sud-editorial-v2.mp4"
+          ffprobe -v error -show_entries stream=codec_name,codec_type,width,height,r_frame_rate -show_entries format=duration -of json "$D/world-vision-soudan-du-sud-editorial-v2.mp4"
+          python - <<'PY'
+          import json,pathlib,hashlib
+          p=pathlib.Path('worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v2')
+          d=json.loads((p/'manifest.json').read_text())
+          assert 0<d['duration_seconds']<=30
+          assert d['has_french_audio'] and not d['publication_authorized']
+          assert d['no_archive_footer'] and d['no_debug_captions']
+          assert (p/'review/contact-sheet.jpg').exists()
+          assert len(list((p/'review').glob('frame-*.jpg')))==9
+          print('PASS technical — NOT an artistic or vocal approval')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-south-sudan-v2-editorial-review
+          retention-days: 30
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v2/world-vision-soudan-du-sud-editorial-v2.mp4
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v2/manifest.json
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v2/review/*.jpg
+      - name: Publish new version alongside V1 on existing iPhone preview branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-editorial2
+          SRC=worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v2
+          DEST=/tmp/wv-editorial2/media-lab/south-sudan-editorial-v2
+          mkdir -p "$DEST/review"
+          cp "$SRC/world-vision-soudan-du-sud-editorial-v2.mp4" "$SRC/manifest.json" "$DEST/"
+          cp "$SRC/review/"*.jpg "$DEST/review/"
+          cp worldhealth-vision-v2/docs/media/episodes/2026-11-14_south_sudan_elections/VIEWER_V2.html "$DEST/index.html"
+          cd /tmp/wv-editorial2
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/south-sudan-editorial-v2
+          if ! git diff --cached --quiet; then
+            git commit -m 'preview(media): South Sudan complete editorial V2 with geographic opening'
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
