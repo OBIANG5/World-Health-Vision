@@ -50,12 +50,12 @@ jobs:
               assert len(blob)>25000
               (out/("Vivienne_Brooklyn_"+label+".mp3")).write_bytes(blob)
               return words
-          boundaries=asyncio.run(make("+6%","C52_refined"))
+          boundaries=asyncio.run(make("-4%","C52_refined"))
           subprocess.run(["ffmpeg","-y","-v","error","-i",str(out/"Vivienne_Brooklyn_C52_refined.mp3"),"-af","highpass=f=75,acompressor=threshold=0.28:ratio=1.45:attack=15:release=160,loudnorm=I=-14:TP=-1.5:LRA=7","-ar","48000","-ac","1",str(out/"Vivienne_Brooklyn_C52_refined_master.wav")],check=True)
           probe=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_format","-of","json",str(out/"Vivienne_Brooklyn_C52_refined_master.wav")]))
           duration=float(probe["format"]["duration"])
           count=len(re.findall(r"[\wÀ-ÿ]+",spoken))
-          manifest={"voice":"fr-FR-VivienneMultilingualNeural","rate":"+6%","style":"C5.2 natural newsroom direction","one_utterance":True,"duration":duration,"word_count":count,"wpm":round(count*60/duration,1),"script":script,"sha256":hashlib.sha256(spoken.encode()).hexdigest(),"word_boundaries":boundaries,"commercial_license_verified":False,"note":"Review-only voice. Do not claim commercial Edge TTS rights."}
+          manifest={"voice":"fr-FR-VivienneMultilingualNeural","rate":"-4%","style":"Vivienne one take, dynamic pace calibrated to ~170 wpm","one_utterance":True,"duration":duration,"word_count":count,"wpm":round(count*60/duration,1),"script":script,"sha256":hashlib.sha256(spoken.encode()).hexdigest(),"word_boundaries":boundaries,"commercial_license_verified":False,"note":"Review-only voice. Do not claim commercial Edge TTS rights."}
           (out/"narration.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2))
           assert duration<=56 and duration>20,("Narration too long or missing",duration)
           print("BROOKLYN VIVIENNE ONE-TAKE",duration,manifest["wpm"],len(boundaries))
