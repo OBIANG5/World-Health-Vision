@@ -1,6 +1,6 @@
 # World-Vision — Trump, Poutine et Xi Jinping, Shenzhen — SCRIPT V1
 
-**État : SCRIPT PROPOSÉ, NON APPROUVÉ. Aucune voix ni vidéo créée, aucune publication.**
+**État : SCRIPT ACCEPTÉ POUR LE MONTAGE PAR L’UTILISATEUR LE 14 NOVEMBRE 2026 ; pas encore de voix définitive, de master final ni d’autorisation de publication.**
 **Version factuelle vérifiée : 14 novembre 2026, matin (Europe/Paris).**  
 **Objectif :** reportage vertical francophone 35–45 secondes, ~105 mots selon lecture, à mesurer sur la **vraie** voix.  
 **Sujet :** projet de rencontre trilatérale du jeudi **19 novembre 2026**, pendant l'APEC à **Shenzhen, Chine** ; il ne s'agit **PAS** d'un sommet déjà tenu.
