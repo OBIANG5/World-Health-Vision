@@ -58,3 +58,18 @@ Les captures transmises montrent un logo carré immobile entre les trois portrai
 - Les MP4 V1 refusés sont **conservés**, mais leur statut reste `REJECTED` ; ils ne doivent pas être repris comme référence artistique.
 
 **État à cette date :** le pilote V2 de 11,6 s est une étape de test, pas un nouveau master complet. Le premier rendu pilote a révélé un titre qui chevauchait sa deuxième ligne et un cadrage Shenzhen mal centré ; le code a été corrigé puis re-rendu. Ne déclarer aucune réussite artistique avant inspection de cette correction. Le son V2 n'existe pas encore et n'est pas improvisé.
+
+
+## Correction supplémentaire après les neuf vraies images de contrôle
+
+L'écran initial du dossier « Iran / Ukraine » était encore une diapositive typographique. Il a été écarté avant tout nouvel assemblage final.
+
+- **Iran :** photographie réelle de la tour Azadi à Téhéran, Safa Daneshvar, 31 juillet 2025, CC0 1.0. Source : https://commons.wikimedia.org/wiki/File:040509-AzadiTower-IMG_8560-2.jpg
+- **Ukraine :** photographie documentaire d'une rue de Kyiv, Angelina Bulatchyk, 21 septembre 2023, CC BY 4.0. Source : https://commons.wikimedia.org/wiki/File:Kyiv_photo.jpg — **crédit et lien obligatoires dans la légende de publication**, car l'image est sous CC BY et non CC0.
+- Deux plans photographiques réels, sans simulation de conflit ou de diplomates, raccordés par un déplacement non transparent pour empêcher les doubles mots.
+- Ces images sont des **archives contextuelles**, pas des images de la réunion annoncée ni de l'agenda de novembre 2026.
+- Nouveau contrat de source dans `quality_gate_v2.py` : la scène doit contenir les deux photographies autorisées, pas un tableau à deux cartes.
+
+**Observation importante :** une photographie indexée sur Wikimedia Commons comme « Kyiv Ukraine.jpg » présentait, à l'ouverture du binaire, un portrait qui ne correspondait pas à Kyiv. Le fichier a été **écarté**. On a choisi `Kyiv photo.jpg` après inspection effective du binaire, avec attribution de sa licence CC BY 4.0. Ceci illustre pourquoi une légende de moteur de recherche ne remplace pas l'inspection d'un média original.
+
+La chaîne est désormais conçue pour ne **pas** produire automatiquement une vidéo complète sur la base de simples checks codec. On construit les scènes, on examine neuf vrais photogrammes, puis on décide des corrections — l'approbation visuelle et vocale du propriétaire reste indispensable.
