@@ -93,12 +93,12 @@
     {
       "i": 7,
       "start": 9.882,
-      "end": 11.569,
+      "end": 11.031,
       "lines": [
         "Au cœur des",
-        "discussions réduire"
+        "discussions:"
       ],
-      "max_glyph_width_px": 705.9,
+      "max_glyph_width_px": 467.1,
       "font_px": 78,
       "font": "DM Sans",
       "center_x_px": 540,
@@ -106,13 +106,13 @@
     },
     {
       "i": 8,
-      "start": 11.549,
+      "start": 11.245,
       "end": 12.777,
       "lines": [
-        "les arsenaux",
-        "nucléaires."
+        "réduire les",
+        "arsenaux nucléaires."
       ],
-      "max_glyph_width_px": 451.1,
+      "max_glyph_width_px": 737.2,
       "font_px": 78,
       "font": "DM Sans",
       "center_x_px": 540,
@@ -244,12 +244,11 @@
     {
       "i": 18,
       "start": 23.903,
-      "end": 25.432,
+      "end": 24.703,
       "lines": [
-        "Et attention aucun",
-        "accord n’est"
+        "Et attention:"
       ],
-      "max_glyph_width_px": 676.5,
+      "max_glyph_width_px": 448.9,
       "font_px": 78,
       "font": "DM Sans",
       "center_x_px": 540,
@@ -257,13 +256,13 @@
     },
     {
       "i": 19,
-      "start": 25.412,
-      "end": 26.504,
+      "start": 24.86,
+      "end": 26.017,
       "lines": [
-        "attendu pour",
-        "le moment."
+        "aucun accord n’est",
+        "attendu pour le"
       ],
-      "max_glyph_width_px": 478.3,
+      "max_glyph_width_px": 697.2,
       "font_px": 78,
       "font": "DM Sans",
       "center_x_px": 540,
@@ -271,6 +270,19 @@
     },
     {
       "i": 20,
+      "start": 25.997,
+      "end": 26.504,
+      "lines": [
+        "moment."
+      ],
+      "max_glyph_width_px": 320.8,
+      "font_px": 78,
+      "font": "DM Sans",
+      "center_x_px": 540,
+      "bottom_y_px": 1543
+    },
+    {
+      "i": 21,
       "start": 26.628,
       "end": 28.056,
       "lines": [
@@ -284,7 +296,7 @@
       "bottom_y_px": 1543
     },
     {
-      "i": 21,
+      "i": 22,
       "start": 28.036,
       "end": 29.384,
       "lines": [
@@ -298,21 +310,21 @@
       "bottom_y_px": 1543
     },
     {
-      "i": 22,
+      "i": 23,
       "start": 29.364,
       "end": 30.7,
       "lines": [
         "démonstration",
-        "de puissance ?"
+        "de puissance?"
       ],
-      "max_glyph_width_px": 546.1,
+      "max_glyph_width_px": 536.9,
       "font_px": 78,
       "font": "DM Sans",
       "center_x_px": 540,
       "bottom_y_px": 1543
     }
   ],
-  "cue_count": 22,
+  "cue_count": 23,
   "font": "DM Sans",
   "size_px": 78,
   "font_file_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",

@@ -28,14 +28,14 @@ réunir à Shenzhen,
 en Chine.
 
 7
-00:00:09,882 --> 00:00:11,569
+00:00:09,882 --> 00:00:11,031
 Au cœur des
-discussions réduire
+discussions:
 
 8
-00:00:11,549 --> 00:00:12,777
-les arsenaux
-nucléaires.
+00:00:11,245 --> 00:00:12,777
+réduire les
+arsenaux nucléaires.
 
 9
 00:00:12,945 --> 00:00:13,979
@@ -80,26 +80,29 @@ Washington, pas
 celle en Ukraine.
 
 18
-00:00:23,903 --> 00:00:25,432
-Et attention aucun
-accord n’est
+00:00:23,903 --> 00:00:24,703
+Et attention:
 
 19
-00:00:25,412 --> 00:00:26,504
-attendu pour
-le moment.
+00:00:24,860 --> 00:00:26,017
+aucun accord n’est
+attendu pour le
 
 20
+00:00:25,997 --> 00:00:26,504
+moment.
+
+21
 00:00:26,628 --> 00:00:28,056
 Alors, véritable
 tournant
 
-21
+22
 00:00:28,036 --> 00:00:29,384
 diplomatique,
 ou simple
 
-22
+23
 00:00:29,364 --> 00:00:30,700
 démonstration
-de puissance ?
+de puissance?
