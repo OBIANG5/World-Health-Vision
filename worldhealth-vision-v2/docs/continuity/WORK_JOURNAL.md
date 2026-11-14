@@ -484,3 +484,27 @@ Nouvelle instruction utilisateur : « une vidéo par une vidéo » ; ChatGPT doi
 
 ---
 
+
+## 14 NOV. 2026 — S04 NEW START PRODUITE ET ARCHIVÉE (QA TECHNIQUE VÉRIFIÉE)
+
+**Suite immédiate du raccord Shenzhen** : production autonome **S04 (12,5–20,4 s, 7,9 s)** sur le traité New START, sans modifier S01/S02/S03 et sans assembler de master fictif.
+
+**Rendu réel vérifié :** vidéo S04 `segment04-new-start-7p9s.mp4`, H.264, 1080×1920, 30 fps, 237 images, 7,9 s, **aucun audio**, SHA-256 `1e25443e40b4b9a867bcbd53f5f7ad4f977cb7577cf6277b348f3bf2e05ec6c9`, 1 150 810 octets. Workflow GitHub Actions [#43585854686](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43585854686) terminé avec job `render` success (vérification des six captures distinctes et de FFprobe).
+
+**Image réelle et vérifiée :** signature de New START à Prague le 8 avril 2010, photographie officielle Chuck Kennedy / Maison-Blanche, domaine public US ; source https://commons.wikimedia.org/wiki/File:Obama_and_Medvedev_sign_New_START.jpg ; SHA-256 du fichier photo `36789c11b8a4777dc432213fcd206b05a09feda7d1f1809f592b4904ccec43a1`. **Pas une image de novembre 2026.** G0 officiel contrôlé avant rendu (Git blob `bc80fa70cebd566768bfb1703a0f1f636a78c196`).
+
+**Fait sourcé :** New START a expiré le 5 février 2026 selon le ministère français des Affaires étrangères https://www.diplomatie.gouv.fr/en/presse-et-ressources/decouvrir-et-informer/actualites/expiration-du-traite-new-start .
+
+**Liens de reprise et d'affichage iPhone :**
+- MP4 : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.mp4
+- Images de contrôle : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04/contact-sheet.jpg
+- Script : `services/media-renderer/scripts/worldvision_segment04_new_start.py`
+- Workflow : `.github/workflows/whv-summit-s04-new-start.yml`
+- Conducteur : `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/S04_DIRECTION_ARTISTIQUE_QA.md`
+- Registre `SEGMENT_LEDGER.json` mis à jour.
+
+**État fidèle :** S04 est TECHNIQUEMENT produite, pas encore approuvée visuellement par l'utilisateur, pas de voix ni musique. S03B **authentiques images Shenzhen** manquante. S05–S08 restent à produire. Contradiction existante : `WorldVisionSummit2026.tsx` doit encore intégrer la nouvelle EDL S02 (0,9s) → S03 (4,4s) → S03B (2,7s), sinon le master sera incohérent. Pas de master 43s et pas d'autorisation de publication.
+
+**Suite recommandée :** vérifier la qualité réelle du clip S04 sur téléphone, puis fournir S03B avec des images authentiques de Shenzhen licenciées, avant de produire S05. En parallèle rechercher une voix française naturelle approuvable puis aligner les 13 sous-titres, sans changer le script validé.
+
+---
