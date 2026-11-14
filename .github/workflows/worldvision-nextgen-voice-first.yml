@@ -1,0 +1,139 @@
+name: World-Vision NEXT — voice-first quality laboratory
+
+on:
+  push:
+    branches: [improve/worldvision-voice-first-pipeline-2026-11-14]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/**'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_voice_lab.py'
+      - 'worldhealth-vision-v2/services/media-renderer/quality/worldvision_nextgen_gate.py'
+      - 'worldhealth-vision-v2/services/media-renderer/src/nextgen/**'
+      - 'worldhealth-vision-v2/services/media-renderer/render-nextgen-brand.mjs'
+      - '.github/workflows/worldvision-nextgen-voice-first.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-nextgen-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    name: Fast offline quality gates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Basic dependencies
+        run: |
+          python -m pip install --disable-pip-version-check pillow
+          ffmpeg -version | head -1
+      - name: Enforce all regression gates (no remote synthesis)
+        run: |
+          set -euo pipefail
+          cd worldhealth-vision-v2/services/media-renderer
+          python -m unittest discover -v -s nextgen -p 'test_nextgen_media.py'
+          python quality/worldvision_nextgen_gate.py \
+            --storyboard nextgen/storyboard_demo.json \
+            --report output/nextgen/layout-preflight.json
+          python -m py_compile scripts/worldvision_voice_lab.py quality/worldvision_nextgen_gate.py
+      - name: Store visual gate report
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-nextgen-preflight
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/layout-preflight.json
+
+  auditions:
+    name: Vivienne experimental audition — ${{ matrix.variant }}
+    needs: preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [conversational, focused]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install limited audition dependencies
+        run: python -m pip install --disable-pip-version-check edge-tts
+      - name: Render two independent voice styles in CI matrix
+        run: |
+          set -euo pipefail
+          cd worldhealth-vision-v2/services/media-renderer
+          python scripts/worldvision_voice_lab.py audition \
+            --brief nextgen/audition_demo.json \
+            --variant "${{ matrix.variant }}" \
+            --out-dir "output/nextgen/voice/${{ matrix.variant }}"
+      - name: Preserve voice audition without granting publishing rights
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivienne-${{ matrix.variant }}-audition-only
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice/${{ matrix.variant }}/*.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice/${{ matrix.variant }}/*-report.json
+          retention-days: 14
+
+  brand-proposal:
+    name: Preview Remotion eye-only OUTRO candidate
+    needs: preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Remotion and compile all TypeScript
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          npm install --no-audit --no-fund
+          npm run typecheck
+      - name: Render candidate only, never touching existing published film
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        env:
+          REMOTION_DISABLE_UPDATE_CHECK: '1'
+        run: node render-nextgen-brand.mjs
+      - name: Preserve render as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-eye-only-outro-candidate
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/worldvision-eye-only-outro-candidate.mp4
+          retention-days: 14
+      - name: Publish strictly to pre-existing mobile preview branch (NOT TikTok)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SRC="$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/output/nextgen/worldvision-eye-only-outro-candidate.mp4"
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/whv-nextgen-preview
+          cd /tmp/whv-nextgen-preview
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for attempt in 1 2 3 4; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            mkdir -p media-lab/nextgen/brand
+            cp "$SRC" media-lab/nextgen/brand/worldvision-eye-only-outro-candidate.mp4
+            git add media-lab/nextgen/brand/worldvision-eye-only-outro-candidate.mp4
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "review(worldvision): independent eye-only Remotion outro candidate; no user footage overwritten"
+            if git push origin HEAD:whv-media-studio-browser-preview; then success=1; break; fi
+            sleep "$attempt"
+          done
+          test "$success" -eq 1
+          echo "Preview: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-eye-only-outro-candidate.mp4"
