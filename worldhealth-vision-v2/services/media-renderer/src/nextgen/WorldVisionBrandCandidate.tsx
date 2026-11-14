@@ -8,6 +8,7 @@ import {
  * World-Vision original G0 eye — same blue eye, same actual continents.
  * Pixel-extracted from official public/brand/world-vision-official.png.
  * Never redraw it using SVG or any generated representation.
+ * The user has SELECTED the graphite/steel-light version for future endings.
  * This composition is a future, silent outro CANDIDATE, not a replacement
  * for the already published Shenzhen film.
  */
@@ -50,7 +51,7 @@ export const OriginalG0Eye: React.FC<{width?: number}> = ({width = 590}) => {
  * logo). The eye is source-exact, including its earth and contour colors.
  * The wordmark is typeset separately. No logo source text has been altered.
  */
-export const WorldVisionBrandOutroCandidate: React.FC<{tone?: "midnight" | "graphite"}> = ({tone="midnight"}) => {
+export const WorldVisionBrandOutroCandidate: React.FC<{tone?: "midnight" | "graphite"}> = ({tone="graphite"}) => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
   const arrival = spring({
