@@ -104,10 +104,10 @@ const EditorialLeaders:React.FC=()=>{
   </div>
   <AbsoluteFill style={{background:"linear-gradient(to bottom,rgba(4,17,31,.7),transparent 24%,transparent 46%,rgba(3,14,26,.85) 74%,#061528 88%)"}}/>
   <ShortBrand/>
-  <Overline top={1151}>UNE RENCONTRE ANNONCÉE</Overline>
+  <Overline top={990}>UNE RENCONTRE ANNONCÉE</Overline>
   <div style={{opacity:smooth(f,13,29)}}>
-   <Title top={1225} size={111}>TROIS DIRIGEANTS.</Title>
-   <Title top={1375} size={111} color={C.cyan}>UN MÊME ENJEU.</Title>
+   <Title top={1070} size={111}>TROIS DIRIGEANTS.</Title>
+   <Title top={1200} size={111} color={C.cyan}>UN MÊME ENJEU.</Title>
   </div>
  </Main>;
 };
@@ -127,14 +127,14 @@ const City:React.FC=()=>{
   <AbsoluteFill style={{clipPath:`circle(${radius}px at 50% 43%)`,
     background:"linear-gradient(145deg,#09263B,#061528 72%)"}}>
     <Overline top={292}>SHENZHEN · CHINE</Overline>
-    <div style={{position:"absolute",left:56,right:56,top:475,height:790,
+    <div style={{position:"absolute",left:56,right:56,top:410,height:680,
       overflow:"hidden",borderRadius:5}}>
       <Img src={staticFile(root+"shenzhen-city-2025.jpg")} style={{width:"100%",height:"100%",
         objectFit:"cover",objectPosition:"50% 59%",transform:`scale(${interpolate(f,[0,81],[1.03,1.085],clamp)})`}}/>
       <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(5,20,37,.02),transparent 55%,rgba(5,20,37,.46))"}}/>
     </div>
-    <Title top={1307} size={169}>SHENZHEN</Title>
-    <div style={{position:"absolute",left:89,top:1515,fontFamily:"WV-Text",fontWeight:700,
+    <Title top={1130} size={149}>SHENZHEN</Title>
+    <div style={{position:"absolute",left:89,top:1292,fontFamily:"WV-Text",fontWeight:700,
       fontSize:35,color:C.cyan}}>19 NOVEMBRE 2026</div>
   </AbsoluteFill>
  </Main>;
@@ -152,9 +152,9 @@ const Treaty:React.FC=()=>{
     fontSize:27,color:C.white,fontWeight:600,padding:"14px 20px",
     borderRadius:4,background:"rgba(3,15,28,.78)"}}>ARCHIVES · PRAGUE · AVRIL 2010</div>
   <div style={{opacity:smooth(f,43,67)}}>
-   <Title top={1160} size={124}>LE TRAITÉ</Title>
-   <Title top={1274} size={124} color={C.cyan}>A EXPIRÉ.</Title>
-   <div style={{position:"absolute",left:92,top:1432,
+   <Title top={1020} size={124}>LE TRAITÉ</Title>
+   <Title top={1156} size={124} color={C.cyan}>A EXPIRÉ.</Title>
+   <div style={{position:"absolute",left:92,top:1291,
     fontSize:34,color:C.white,fontFamily:"WV-Text",fontWeight:700}}>5 FÉVRIER 2026</div>
   </div>
  </Main>;
