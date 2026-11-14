@@ -1,0 +1,20 @@
+{
+  "status": "TECHNICAL_PASS_REVIEW_ONLY",
+  "duration_sec": 7.1,
+  "source_s03_sha256": "59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe",
+  "source_s03b_sha256": "cd0dfa113ec71d95b615fba341f0aec5db8953ad1ca520dc292db6c11540f016",
+  "overlap_sec": 0.5,
+  "playback_rate": 1.0,
+  "frames": 213,
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "audio_present": false,
+  "venue_or_meeting_fabricated": false,
+  "original_photo_license": "CC0",
+  "technical_labels_burnt_in": false,
+  "approval_pending": true,
+  "sha256": "0f1bfc69086f3f5a1df7508e144b7002892c398be28e11a0d0d71f5676b105c8",
+  "bytes": 4319176,
+  "editing_note": "Match between 4.9s real geographic globe and 2.7s genuine Shenzhen photo."
+}
