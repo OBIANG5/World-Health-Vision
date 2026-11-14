@@ -1,6 +1,6 @@
 # World-Vision 001 — EDL V3 : Terre géographique → vraie vue de Shenzhen
 
-Date : **14 novembre 2026**. Statut : conducteur de montage **SOURCE-CONTROLLED**, S03B rendue, raccord croisé en contrôle, voix encore absente, master 43 s non exporté.
+Date : **14 novembre 2026**. Statut : conducteur de montage **SOURCE-CONTROLLED**, S03B rendue, raccord circulaire V2 rendu et contrôlé, non encore validé artistiquement, voix encore absente, master 43 s non exporté.
 
 ## Direction de réalisation validée comme objectif
 
@@ -18,14 +18,14 @@ Avant le traité New START, le spectateur doit identifier **qui** (Trump/Poutine
 | 00:00.00–00:04.50 | 0–134 | **S01 V2** vrais portraits, Manrope, pas de sous-titres avant voix | 4,5 s |
 | 00:04.50–00:05.40 | 135–161 | **S02** 0,9 s du MP4 original D00-v6 (commence à 0 s source) | 0,9 s |
 | 00:05.40–00:10.30 | 162–308 | **S03 V3** réel globe NASA/Natural Earth, **4,9 s intégrales** | 4,9 s |
-| 00:09.80–00:12.50 | 294–374 | **S03B V1** vrai centre de Shenzhen (CC0 2025), 2,7 s intégrales, ouverture par opacité 0→1 durant les 15 premières images | 2,7 s |
+| 00:09.80–00:12.50 | 294–374 | **S03B V1** vrai centre de Shenzhen (CC0 2025), 2,7 s intégrales, ouverture circulaire 0→1250px pendant les 15 premières images (Remotion, sans superposition translucide des logos) | 2,7 s |
 | 00:12.50–00:20.40 | 375–611 | **S04 V3** New START, photo de Prague 2010 | 7,9 s |
 | 00:20.40–00:26.60 | 612–797 | S05 Chine, à produire | 6,2 s |
 | 00:26.60–00:33.80 | 798–1013 | S06 Iran/Ukraine, à produire | 7,2 s |
 | 00:33.80–00:40.00 | 1014–1199 | S07 perspective diplomatique, à produire | 6,2 s |
 | 00:40.00–00:43.00 | 1200–1289 | S08 signature World-Vision, à produire | 3,0 s |
 
-**Chevauchement volontaire de 15 images (0,5 seconde) entre S03 et S03B** : 4,9 + 2,7 − 0,5 = **7,1 secondes**, entre 05,4 s et 12,5 s. Le montage reste à 43 s sans coupe agressive, sans retiming, sans accélérer les images.
+**Chevauchement volontaire de 15 images (0,5 seconde) entre S03 et S03B, révélé par une ouverture circulaire et NON un fondu général, lequel avait causé des logos et titres fantômes** : 4,9 + 2,7 − 0,5 = **7,1 secondes**, entre 05,4 s et 12,5 s. Le montage reste à 43 s sans coupe agressive, sans retiming, sans accélérer les images.
 
 ## Images et licences réelles
 
@@ -38,7 +38,12 @@ Avant le traité New START, le spectateur doit identifier **qui** (Trump/Poutine
 
 - Générateur photo/vidéo : `services/media-renderer/scripts/worldvision_segment03b_shenzhen_city.py`.
 - Workflow autonome S03B : `.github/workflows/whv-summit-s03b-shenzhen-city.yml`, exécution GitHub #43589613072 succès.
-- Workflow raccord 7,1s : `.github/workflows/whv-summit-s03-s03b-transition.yml`, rend un seul aperçu du passage globe→ville par `xfade` à 0,5s.
+- Workflow raccord 7,1s **V2 retenue comme candidate** : `.github/workflows/whv-summit-s03-s03b-transition-v2.yml`, effet FFmpeg `xfade=circleopen` à 0,5 s, exécution GitHub #43590163241, succès.
+- La première version `s03-to-s03b-shenzhen-matchcut-7p1s.mp4` a été **rejetée artistiquement** après inspection (double logo et textes fantômes au centre du fondu), conservée dans l'historique.
+- **Raccord V2 prêt pour revue utilisateur** : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/s03-to-s03b-shenzhen-matchcut-v2-circleopen-7p1s.mp4
+- **Planche V2 (vrais photogrammes)** : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-transition-v2/contact-sheet.jpg
+- SHA-256 V2 `8ab698002dfd82375423e6866b5bf0a7e602af5a7bba3a0ebafdce3b9191ef37`, MP4 H.264 1080x1920, 213 frames, 7,1 s, 1x, pas d'audio.
+
 - Moteur final Remotion : `services/media-renderer/src/WorldVisionSummit2026.tsx` définit 9 plans à l'écran dont les scènes S03/S03B en chevauchement ; `render-summit-preview.mjs` refuse tout fichier dont le SHA n'est pas l'original.
 - Chaque vidéo a six images QA ; les fichiers de rapport JSON servent aux audits. Aucune mention QA dans les pixels.
 
