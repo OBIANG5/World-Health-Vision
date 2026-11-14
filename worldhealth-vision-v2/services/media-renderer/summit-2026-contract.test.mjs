@@ -74,7 +74,9 @@ test("Correct 43s EDL for fast authentic city transition: 0.9 + 4.9 + 2.7 - 0.5"
  assert.match(component,/\{id:"location",start:5\.4,end:10\.3,/);
  assert.match(component,/\{id:"city",start:9\.8,end:12\.5,/);
  assert.match(component,/segment03b-shenzhen-city-v1-2p7s\.mp4/);
- assert.match(component,/const opacity=interpolate\(f,\[0,15\],\[0,1\],clamp\)/);
+ assert.match(component,/const radius=Math\.ceil\(1250\*progress\)/);
+ assert.match(component,/clipPath:/);
+ assert.doesNotMatch(component,/style=\{\{background:S\.ink,opacity\}\}/);
  // Neither source clip is accelerated; dissolve is accomplished by overlap.
  assert.doesNotMatch(component,/playbackRate=/);
  const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
