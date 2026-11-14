@@ -180,13 +180,14 @@ const Shenzhen:React.FC=()=>{
  </AbsoluteFill>;
 };
 
-// S03B is a real city photograph, Renek78 CC0 (2025), NOT a meeting venue.
-// 0.5s dissolve on top of the final 0.5s of S03 (4.9 + 2.7 - 0.5 = 7.1).
-// Both video sources play at 1.0x, neither is shortened or accelerated.
+// S03B: genuine CC0 city photograph, not the summit venue.
+// 15-frame circle-open reveal replaces the full-frame dissolve: no duplicate
+// logos or ghosted words, native 1x video speeds remain unchanged.
 const ShenzhenCity:React.FC=()=>{
   const f=useCurrentFrame();
-  const opacity=interpolate(f,[0,15],[0,1],clamp);
-  return <AbsoluteFill style={{background:S.ink,opacity}}>
+  const progress=interpolate(f,[0,15],[0,1],clamp);
+  const radius=Math.ceil(1250*progress);
+  return <AbsoluteFill style={{background:S.ink,clipPath:`circle(${radius}px at 50% 50%)`}}>
     <Video src={staticFile(rootAssets+"segment03b-shenzhen-city-v1-2p7s.mp4")} muted/>
   </AbsoluteFill>;
 };
