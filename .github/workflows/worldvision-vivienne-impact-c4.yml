@@ -1,0 +1,151 @@
+name: World-Vision — Vivienne Impact C4 linguistic-flow auditions
+
+on:
+  push:
+    branches: [improve/worldvision-vivienne-impact-c4-natural-flow-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-vivienne-impact-c4.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_c4_impact.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/vivienne_c4_impact_brief.json'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_vivienne_c4_impact.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/vivienne-c4-listen.html'
+  workflow_dispatch:
+
+concurrency:
+  group: vivienne-impact-c4-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Run same-speaker C Impact continuity and phrase-boundary regression tests
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 -m unittest discover -v -s nextgen -p test_vivienne_c4_impact.py
+          python3 -m py_compile scripts/worldvision_vivienne_c4_impact.py
+
+  synthesize:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    timeout-minutes: 22
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [c4_reference, c4_flow, c4_newsroom, c4_empathy]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install isolated consumer TTS and FFmpeg
+        run: |
+          set -euo pipefail
+          python3 -m pip install 'edge-tts>=7.2,<8' --disable-pip-version-check
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Record ONE uninterrupted Vivienne Impact take and diagnose target word gaps
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 scripts/worldvision_vivienne_c4_impact.py \
+            --variant '${{ matrix.variant }}' \
+            --brief nextgen/vivienne_c4_impact_brief.json \
+            --out output/nextgen/vivienne-c4/${{ matrix.variant }}
+      - name: Verify actual speaker, no splices, and diagnostic word boundaries
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          key='${{ matrix.variant }}'
+          p=Path('output/nextgen/vivienne-c4')/key
+          report=json.loads((p/(key+'-report.json')).read_text(encoding='utf8'))
+          assert report['voice']=='fr-FR-VivienneMultilingualNeural'
+          assert report['same_model_as_C_impact'] is True
+          assert report['voice_changed'] is False
+          assert report['audio_spliced'] is False
+          assert report['sound_removed'] is False
+          assert report['filler_pauses_added'] is False
+          assert report['publishing_authorized'] is False
+          assert len(report['relevant_word_measurements']) >= 2
+          assert (p/(key+'-raw-service.mp3')).stat().st_size>40000
+          assert (p/(key+'-review-only.mp3')).stat().st_size>40000
+          print(key,'duration',report['review_sec'],'words',report['word_count'],
+                'gaps over 450ms',report['long_raw_pauses_over_450ms'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-vivienne-impact-c4-${{ matrix.variant }}
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/vivienne-c4/${{ matrix.variant }}/*-raw-service.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/vivienne-c4/${{ matrix.variant }}/*-review-only.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/vivienne-c4/${{ matrix.variant }}/*-report.json
+          retention-days: 21
+
+  publish-reviews:
+    needs: synthesize
+    runs-on: ubuntu-latest
+    permissions: {contents: write}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: worldvision-vivienne-impact-c4-*
+          merge-multiple: true
+          path: /tmp/wv-c4-audio
+      - name: Prove all four files are real and the voice is unchanged
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/wv-c4-audio')
+          ids=('c4_reference','c4_flow','c4_newsroom','c4_empathy')
+          hashes=[]
+          for key in ids:
+              report=json.loads((root/(key+'-report.json')).read_text(encoding='utf8'))
+              assert report['voice']=='fr-FR-VivienneMultilingualNeural'
+              assert not report['voice_changed']
+              assert report['audio_spliced'] is False
+              assert report['rights_verified'] is False
+              assert report['publishing_authorized'] is False
+              assert (root/(key+'-raw-service.mp3')).stat().st_size>40000
+              assert (root/(key+'-review-only.mp3')).stat().st_size>40000
+              hashes.append(report['source_text_sha256'])
+          assert len(set(hashes))==4
+          print('4 authentic full-take Vivienne C4 results')
+          PY
+      - name: Publish versioned four-way player and raw MP3s to static GitHub preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-c4static
+          cd /tmp/wv-c4static
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          completed=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            mkdir -p media-lab/nextgen/vivienne-c4-impact
+            cp /tmp/wv-c4-audio/*.mp3 /tmp/wv-c4-audio/*.json \
+              media-lab/nextgen/vivienne-c4-impact/
+            cp "$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/nextgen/vivienne-c4-listen.html" \
+              media-lab/nextgen/vivienne-c4-impact/index.html
+            git add media-lab/nextgen/vivienne-c4-impact
+            if git diff --cached --quiet; then completed=1; break; fi
+            git commit -m "review(worldvision): same Vivienne C impact, 4 verified contextual pronounciation takes"
+            if git push origin HEAD:whv-media-studio-browser-preview; then completed=1; break; fi
+            sleep "$attempt"
+          done
+          test "$completed" = 1
+          echo "Permanent player: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/vivienne-c4-impact/index.html"
