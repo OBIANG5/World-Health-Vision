@@ -93,6 +93,8 @@ jobs:
           pdfinfo "$D/government_original.pdf" | head -14
           pdftoppm -f 1 -l 1 -scale-to 2200 -jpeg -singlefile \
             "$D/government_original.pdf" "$D/official_statement"
+          pdftoppm -f 2 -l 2 -scale-to 2200 -jpeg -singlefile "$D/government_original.pdf" "$D/official_statement_page2"
+          test -s "$D/official_statement_page2.jpg"
           test -s "$D/official_statement.jpg"
           curl -fLsS --retry 5 --retry-all-errors --max-time 90 \
             'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson' \
