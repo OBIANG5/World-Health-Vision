@@ -1,0 +1,86 @@
+{
+  "episode": "south-sudan-first-national-elections-delay-v2",
+  "duration_seconds": 26.414388,
+  "output_video_sha256": "211deba0208eb39b8ed485c7f0c9678c8c9b9b6458c24eab9673ba7f5bcb3669",
+  "voice_provider": "Microsoft Edge Neural via edge-tts; UNLICENSED for commercial use until enterprise licensing or equivalent cleared",
+  "voice": "fr-FR-RemyMultilingualNeural",
+  "voice_takes": [
+    "Quinze ans d'indépendance. Zéro élection nationale.",
+    "Au Soudan du Sud, indépendant depuis deux mille onze, le premier scrutin se fait toujours attendre.",
+    "Les citoyens devaient élire leur président et leurs députés le vingt-deux décembre.",
+    "Mais nouveau report : le vote est désormais fixé au onze février deux mille vingt-sept.",
+    "La commission électorale ne donne aucune raison officielle. L'ONU alerte sur les violences et les tensions politiques.",
+    "Quinze ans après sa naissance, le pays attend toujours ses premières élections nationales."
+  ],
+  "spoken_track_lengths": [
+    3.528,
+    4.896,
+    3.816,
+    4.224,
+    6.144,
+    4.296
+  ],
+  "comment": "Non-publicable, user artistic and vocal approval pending. No cloned voices.",
+  "storyboard_text": [
+    [
+      "15 ANS.",
+      "ZÉRO ÉLECTION.",
+      "SOUDAN DU SUD"
+    ],
+    [
+      "2011.",
+      "L'INDÉPENDANCE.",
+      "JUBA • 2011"
+    ],
+    [
+      "LE PREMIER",
+      "SCRUTIN ATTENDU.",
+      "PRÉSIDENTIELLE + LÉGISLATIVES"
+    ],
+    [
+      "11 FÉVRIER",
+      "2027.",
+      "AU LIEU DU 22 DÉCEMBRE 2026"
+    ],
+    [
+      "AUCUNE RAISON",
+      "OFFICIELLE.",
+      "DES TENSIONS SIGNALÉES PAR L'ONU"
+    ],
+    [
+      "15 ANS.",
+      "TOUJOURS EN ATTENTE.",
+      "LE PREMIER VOTE NATIONAL"
+    ]
+  ],
+  "font_heading": "Archivo Black",
+  "font_secondary": "Inter",
+  "font_sha256": {
+    "head": "dd9a89a019b4849f66ab75455fe7bdf931311042cbb0f0f97acc061539703180",
+    "body": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031"
+  },
+  "image_method": "real public-domain/CC0 historical photographs. Photos are NOT images of 2026 election announcement.",
+  "geography": {
+    "target_city": "Juba",
+    "lat": 4.8594,
+    "lon": 31.5713,
+    "texture": "NASA Blue Marble July",
+    "country_outline": "Natural Earth SSD"
+  },
+  "photo_sources": [
+    "https://commons.wikimedia.org/wiki/File:South_Sudanese_crowd_gathers_on_independence_day_(5925619257).jpg",
+    "https://commons.wikimedia.org/wiki/File:Salva_Kiir_Mayardit_The_South_Sudan_president.jpg",
+    "https://commons.wikimedia.org/wiki/File:A_South_Sudanese_man_carries_the_flag_(5925642623).jpg",
+    "https://commons.wikimedia.org/wiki/File:South_Sudan_independence_celebration_in_Juba.jpg"
+  ],
+  "news_sources": [
+    "https://www.reuters.com/world/africa/south-sudan-delays-election-february-11-2027-2026-11-14/",
+    "https://apnews.com/article/c62033bb79a606ef8ce7e335cfc8478b"
+  ],
+  "original_logo_sha256": "b5e76e19260a6c405c17d54695278c12adb5e8b90f241deddf351620d7e7d9fb",
+  "logo_position": "only final closing signature, NEVER top white badge",
+  "no_debug_captions": true,
+  "no_archive_footer": true,
+  "has_french_audio": true,
+  "publication_authorized": false
+}
