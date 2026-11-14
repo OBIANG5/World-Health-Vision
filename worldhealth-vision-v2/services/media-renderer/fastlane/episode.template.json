@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "stage": "TEMPLATE_NOT_LOCKED",
+  "episode_id": "WV003-replace-with-real-story",
+  "locked_script": "SCRIPT À CHOISIR ENSEMBLE ET À APPROUVER AVANT MONTAGE",
+  "script_sha256": null,
+  "script_approved_by_user": false,
+  "factcheck_sources": [],
+  "narration": {
+    "path": "voice/THIS_NEWS_vivienne_full_take.wav",
+    "sha256": null,
+    "speaker": "fr-FR-VivienneMultilingualNeural",
+    "style_reference": "worldvision-vivienne-c52-impact-media",
+    "voice_reference_note": "C5.2 New Orleans is only a STYLE REFERENCE; never use its spoken MP3 for another story",
+    "same_story": false,
+    "one_continuous_take": true,
+    "approved_by_user": false,
+    "commercial_rights_verified": false
+  },
+  "scenes": [
+    {
+      "role": "globe",
+      "path": "clips/01-globe.mp4",
+      "sha256": null,
+      "duration_seconds": 3,
+      "approved_by_user": false,
+      "visual_matches_spoken_fact": false,
+      "provenance_url": "",
+      "rights_status": "unverified",
+      "is_synthetic_event_footage": false
+    },
+    {
+      "role": "documentary",
+      "path": "clips/02-reportage.mp4",
+      "sha256": null,
+      "duration_seconds": 8,
+      "approved_by_user": false,
+      "visual_matches_spoken_fact": false,
+      "provenance_url": "",
+      "rights_status": "unverified",
+      "is_synthetic_event_footage": false
+    },
+    {
+      "role": "outro",
+      "path": "clips/99-worldvision-original-logo-video.mp4",
+      "sha256": null,
+      "duration_seconds": 3,
+      "approved_by_user": false,
+      "visual_matches_spoken_fact": true,
+      "provenance_url": "",
+      "rights_status": "owned",
+      "is_synthetic_event_footage": false
+    }
+  ],
+  "final_mobile_review_approved": false,
+  "source_note": "Intentionally non-renderable template. Fill and approve exact files, narration, source links, SHA hashes and timings before running fastlane."
+}
