@@ -60,14 +60,14 @@
       "start_sec": 7.6,
       "duration_sec": 4.9,
       "visual": "Verified location on a precise map plus licensed Shenzhen imagery and date",
-      "status": "S03_JULY_V2_QA_PASSED_CANVA_ARCHIVED_WAITING_ART_REVIEW",
-      "master_file": "segment03-shenzhen-july-v2-4p9s.mp4",
-      "asset_url": "https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v2-4p9s.mp4",
-      "sha256": "1e49e5b6dc36c9dde2494253a8ee5c2b426863bed7fd33cd0cd24b4012be4558",
-      "bytes": 3630370,
-      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03-july-v2/contact-sheet.jpg",
+      "status": "S03_V3_CLEAN_PLATE_QA_PASSED_WAITING_ART_REVIEW",
+      "master_file": "segment03-shenzhen-july-v3-clean-4p9s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4",
+      "sha256": "59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe",
+      "bytes": 3633979,
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03-july-v3/contact-sheet.jpg",
       "render_source": "services/media-renderer/scripts/worldvision_segment03_shenzhen.py",
-      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43582938864",
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587396877",
       "nasa_sha256": "85a24885616097b5e06532b7d8e30fa5d749a782e70ea55971dd8539a0899206",
       "natural_earth_sha256": "392a03db8aa3ba82c105852655620129b11182b95dfc34ef046827ea7d0e5b8c",
       "target_city": {
@@ -76,7 +76,7 @@
         "lon": 114.0579,
         "precision": "city centre; no building-level venue publicly verified"
       },
-      "notes": "Real geographic rotation: 14°E,12°N to Shenzhen 114.0579°E,22.5431°N, approximately 2.1 s quintic easing, within 4.9 s stand-alone shot. NOT the original D00 static globe: must match-cut from S02. No voice/audio yet, human art review required.",
+      "notes": "S03 V3 retains July NASA + Natural Earth true geographic Earth rotation to city centre of Shenzhen, official G0 exact, 4.9 sec/147 frames/30fps H264/1080x1920. Replaced DejaVu with hash-locked Manrope and removed lower NASA/Natural Earth production footer; provenance in metadata. User art review pending, no voice.",
       "v1_archived": {
         "file": "segment03-shenzhen-4p9s.mp4",
         "sha256": "6bfb45a57794c7dbfc7dc9af9ddb818c67eae327f60216b46bf32f0afb7ba10e",
@@ -85,7 +85,19 @@
       },
       "nasa_texture_month": "July",
       "canva_asset_id": "VAHa4gCj5SQ",
-      "note": "V2 has greener Asia/Eurasia, closer to original D00-v6 palette while preserving true NASA geography, exact marker, official G0 logo; 4.9s with 2.1s quintic rotation. S02 original must precede as distinct shot. No audio. QA visual reviewed, user artistic approval still pending."
+      "note": "V2 has greener Asia/Eurasia, closer to original D00-v6 palette while preserving true NASA geography, exact marker, official G0 logo; 4.9s with 2.1s quintic rotation. S02 original must precede as distinct shot. No audio. QA visual reviewed, user artistic approval still pending.",
+      "v2_archived": {
+        "file": "segment03-shenzhen-july-v2-4p9s.mp4",
+        "sha256": "1e49e5b6dc36c9dde2494253a8ee5c2b426863bed7fd33cd0cd24b4012be4558",
+        "bytes": 3630370,
+        "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03-july-v2/contact-sheet.jpg",
+        "reason_replaced": "Internal NASA/Natural Earth attribution burnt into video and DejaVu fallback. Source archived but forbidden for master."
+      },
+      "font_family": "Manrope Variable (OFL-1.1)",
+      "font_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+      "clean_plate": true,
+      "technical_labels_in_video": false,
+      "preview_manifest": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.json"
     },
     {
       "id": "S04",
@@ -172,7 +184,8 @@
     "S01": "Human artistic review required",
     "S02": "Human artistic review required",
     "master": "Blocked until voice, proper audio sync, all eight licensed scenes and video QA",
-    "S04": "V3 clean plate produced, source & metadata guard and CI successful on Actions #43587064217; user review pending."
+    "S04": "V3 clean plate produced, source & metadata guard and CI successful on Actions #43587064217; user review pending.",
+    "S03": "V3 clean plate technical success Actions #43587396877; artist approval pending."
   },
   "qa_for_S02": {
     "codec": "h264",
@@ -186,5 +199,5 @@
     "audio_present": false
   },
   "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded.",
-  "active_edition": "S04 V3 clean Manrope and S03 July V2 technical candidates, neither artistically approved; S03B missing, S05-S08 not rendered, no 43s master/voice"
+  "active_edition": "S03 V3 clean and S04 V3 clean QA passes; archives V1/V2 exist but banned from master. S03B absent, S05–S08 nonrendered, no voice and no 43s master."
 }
