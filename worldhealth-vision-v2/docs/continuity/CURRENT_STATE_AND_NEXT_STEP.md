@@ -1,5 +1,37 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## 14 NOV 2026 — REPORTAGE WORLD-VISION #001 / MONTAGE 43 S AVEC VOIX, MUSIQUE ET SOUS-TITRES
+
+**Reprise du travail sur l'épisode Trump–Poutine–Xi, sommet ANNONCÉ à Shenzhen pour le 19 novembre 2026.** Ne pas parler d'une réunion déjà tenue et vérifier à nouveau les déclarations officielles avant toute diffusion. Le script accepté par l'utilisateur reste inchangé (voir `SCRIPT_V1.md`). La police actuelle est **provisoirement conservée pour ce reportage conformément au choix de l'utilisateur**, la nouvelle charte typographique sera étudiée pour un autre reportage.
+
+### Livrable watchable de 43 secondes (non publiable pour le moment)
+- **MP4 complet avec voix FR de synthèse, fond sonore original discret et 13 sous-titres synchronisés au vrai timing des 92 mots/groupes**. 1080×1920, 30 fps, 1290 images, H.264/AAC, 43,000 secondes. **Version corrigée avec sous-titres sans collision.**
+- **Lien iPhone immuable (commit de prévisualisation)** : https://raw.githack.com/OBIANG5/World-Health-Vision/076848fc393393dd90f5adc326e2cf9e9b3783d8/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.mp4
+- **Lien GitHack branch-based** : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.mp4
+- SHA-256 MP4 **`51af719fb66df3cbc5619b3181952c811dab1af88e476bd52b598203427ab87d`**, taille 10 842 639 octets, publié sur branche de prévisualisation au commit `076848fc393393dd90f5adc326e2cf9e9b3783d8`.
+- **Workflow QC réussi** : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43593381913
+- **Fichiers de QC et légendes** : https://github.com/OBIANG5/World-Health-Vision/tree/076848fc393393dd90f5adc326e2cf9e9b3783d8/media-lab/summit-2026/full-review (mp4, JSON, 13 phrases SRT, ASS, neuf photos de contrôle).
+- Voix autonome à écouter : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/voice/worldvision-voice-fr-43s-candidate.mp3 ; moteur fr-FR-HenriNeural, utilisateur n'a pas encore approuvé le timbre, le rythme ni la diction.
+- Quatre dernières séquences S05–S08 déjà rendues en MP4 et vérifiées. Les sources de chaque plan sont archivées, version exacte contrôlée SHA. S03+S03B raccord circculaire 7,1 s (v2).
+- Correctif sous-titres après contrôle des vrais photogrammes : 352px sous le bandeau de localisation, 1690px dans S04 pour éviter la légende d'archives, 1548px sur les autres scènes pour éviter le pied-de-page ; ces légendes SRT/ASS ne sont incrustées que dans le montage complet, pas dans les clips sources. Source `scripts/worldvision_captions_from_voice.py`.
+- **Contrôle de l'ordre réel des plans** : neuf instants vidéo comparés automatiquement à leurs sources d'origine, outre la durée/fps/codecs; première tentative concat FFmpeg démuxeur erronée rejetée ; version actuelle corrige par concat filtre avec remise à zéro PTS.
+- Correctif CI pour publication concurrencée sur la branche d'aperçu : workflow `.github/workflows/whv-summit-43s-review.yml` effectue maintenant fetch/rebase avant nouvelle tentative de push ; aucune perte de fichiers.
+
+### Seul blocage de média source pour le vrai master
+
+**S02 D00-v6 original exact** : asset vidéo Canva **`VAHa4ZT_ySo`**, durée d'environ 3,1 secondes, produit à partir de l'image d'origine SHA `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. Le MP4 original a SHA-256 `95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a`. **Le connecteur Canva permet de vérifier l'asset mais pas d'en exporter le contenu binaire**. Ce fichier n'a pas été trouvé dans GitHub/OneDrive/les uploads accessibles. **Ne pas le remplacer définitivement par une planète recréée !**
+
+Actuellement la portion **4,5–5,4 s** du montage complet (27 frames) contient uniquement une carte d'attente avec le vrai **logo G0**. Elle est signalée comme PROVISOIRE dans JSON et documentation, pas à l'écran. Elle devra être remplacée par les **0,9 premières secondes du MP4 D00-v6 original** avant publication. Le moteur final `render-summit-preview.mjs` exige strictement le SHA original et un fichier `public/episodes/summit-2026/segment02-original-d00.mp4`; il empêche toute substitution silencieuse.
+
+### État de validation et suites
+- Montage 43 secondes : **TECHNIQUE = OUI**, huit étapes avec neuf plans, vraie voix FR, bande originale discrète, texte exact, 13 sous-titres.
+- Publication : **NON AUTORISÉE**, car clip S02 binaire original manquant, voix et image nécessitent validation artistique utilisateur.
+- Récupération S02 : export MP4 de l'asset Canva original vers chat/GitHub/OneDrive, contrôler SHA-256 contre `95c47d...`, insertion à 4.5–5.4 au naturel (1×) sans refaire les autres plans.
+- Pour le prochain reportage seulement : repenser entièrement la typographie, expressément demandée par l'utilisateur. NE PAS recommencer encore la police du premier reportage.
+- Historique complet des versions et décisions dans `SEGMENT_LEDGER.json`, `EDL_V3_REAL_CITY_MATCHCUT.md` et ce journal.
+
+---
+
 ## 14 NOVEMBRE 2026 — REPORTAGE 001 VOIX + SOUS-TITRES, 43 SECONDES : RENDU COMPLET REVUE
 
 **Directive utilisateur explicite :** ne pas reprendre la refonte esthétique de la police pour cette vidéo. Terminer le documentaire actuel d'abord ; les nouvelles explorations typographiques seront pour la vidéo suivante. Aucun texte technique de production (QA, preview, sans voix, noms de fichiers) dans les pixels.
