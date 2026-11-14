@@ -1,0 +1,18 @@
+{
+  "status": "TECHNICAL_HOOK_REVIEW_ONLY",
+  "published": false,
+  "approved": false,
+  "mode": "hook",
+  "script": "2026-11-14_trump_xi_putin/SCRIPT_V1.md",
+  "label": "Sommet ANNONCÉ Trump–Xi–Poutine (19 nov. 2026) — archives, pas images de la réunion",
+  "output": "hook-4p5s-preview.mp4",
+  "bytes": 1812186,
+  "sha256": "96ac80d0e871aeb3751c98c54d38d8d83e2ae797e315b4e6b6fed641477be9b6",
+  "duration": 4.5,
+  "width": 1080,
+  "height": 1920,
+  "logo_git_blob": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+  "reference_d00_sha256": "8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2",
+  "audio_present": false,
+  "note": "Le hook seul ne remplace pas une vidéo complète. La voix n'est pas générée automatiquement."
+}
