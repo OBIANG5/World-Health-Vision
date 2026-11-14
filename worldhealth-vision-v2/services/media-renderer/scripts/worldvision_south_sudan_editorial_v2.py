@@ -26,7 +26,7 @@ DARKBLUE=(9,37,51); DIM=(188,202,203); WHITE=(255,255,255)
 TARGET=(4.8594,31.5713)  # Geographical locator for capital Juba, South Sudan.
 START=(5.,-37.)          # Atlantic-facing Earth, genuine 69-degree turn.
 SCRIPT=[
- "Quinze ans d'indépendance. Et toujours aucune élection nationale.",
+ "Quinze ans d'indépendance. Zéro élection nationale.",
  "Au Soudan du Sud, indépendant depuis deux mille onze, le premier scrutin se fait toujours attendre.",
  "Les citoyens devaient élire leur président et leurs députés le vingt-deux décembre.",
  "Mais nouveau report : le vote est désormais fixé au onze février deux mille vingt-sept.",
