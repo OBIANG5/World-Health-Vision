@@ -1,0 +1,107 @@
+name: World-Vision summit — real 4.5s hook and brand QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/world-vision-media-studio]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/src/WorldVisionSummit2026.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/Root.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/render-summit-preview.mjs'
+      - '.github/workflows/whv-summit-hook-preview.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wv-summit-hook-preview
+  cancel-in-progress: true
+
+jobs:
+  render-hook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact source branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install renderer dependencies from lockfile
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: npm ci
+      - name: Acquire authentic archival portraits — NO synthetic political images
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIR=worldhealth-vision-v2/services/media-renderer/public/episodes/summit-2026
+          mkdir -p "$DIR"
+          download() {
+            local filename="$1"
+            local url="$2"
+            curl --fail --location --retry 4 --retry-all-errors \
+              --connect-timeout 20 --max-time 140 --silent --show-error \
+              --user-agent 'World-Vision-Editorial-Prototype/1.0 (+https://github.com/OBIANG5/World-Health-Vision)' \
+              "$url" -o "$DIR/$filename"
+            test -s "$DIR/$filename"
+            test "$(stat -c %s "$DIR/$filename")" -gt 25000
+          }
+          download trump.jpg 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Official_Presidential_Portrait_of_President_Donald_J._Trump_%282025%29.jpg'
+          download putin.jpg 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Vladimir_Putin_official_portrait.jpg'
+          download xi.jpg 'https://upload.wikimedia.org/wikipedia/commons/5/5a/Xi_Jinping_%28November_2024%29_01.jpg'
+          file "$DIR"/*
+          for path in "$DIR"/*.jpg; do
+            test "$(file --brief --mime-type "$path")" = "image/jpeg"
+          done
+          sha256sum "$DIR"/*.jpg > "$DIR/portrait-sha256.txt"
+      - name: Render real Remotion video; same logo as in GitHub
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        env:
+          REMOTION_DISABLE_UPDATE_CHECK: '1'
+        run: |
+          set -euo pipefail
+          node --check render-summit-preview.mjs
+          npm run typecheck
+          node render-summit-preview.mjs hook
+      - name: FFprobe and frame-to-frame motion proof
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          F=output/summit-2026/hook-4p5s-preview.mp4
+          mkdir -p output/summit-2026/review
+          ffmpeg -y -v error -ss 0.7 -i "$F" -frames:v 1 -vf scale=540:960 output/summit-2026/review/hook-01.jpg
+          ffmpeg -y -v error -ss 2.3 -i "$F" -frames:v 1 -vf scale=540:960 output/summit-2026/review/hook-02.jpg
+          ffmpeg -y -v error -ss 4.1 -i "$F" -frames:v 1 -vf scale=540:960 output/summit-2026/review/hook-03.jpg
+          test "$(sha256sum output/summit-2026/review/hook-01.jpg | cut -d' ' -f1)" != "$(sha256sum output/summit-2026/review/hook-03.jpg | cut -d' ' -f1)"
+          ffmpeg -y -v error -i output/summit-2026/review/hook-01.jpg \
+            -i output/summit-2026/review/hook-02.jpg -i output/summit-2026/review/hook-03.jpg \
+            -filter_complex hstack=inputs=3 -q:v 3 output/summit-2026/review/contact-sheet.jpg
+          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate -show_entries format=duration -of json "$F"
+      - name: Publish hook only to existing static review branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/wv-published
+          OUT=/tmp/wv-published/media-lab/summit-2026
+          mkdir -p "$OUT"
+          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/hook-4p5s-preview.mp4 "$OUT/"
+          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/hook-report.json "$OUT/"
+          mkdir -p "$OUT/review"
+          cp worldhealth-vision-v2/services/media-renderer/output/summit-2026/review/* "$OUT/review/"
+          cd /tmp/wv-published
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/summit-2026
+          if ! git diff --cached --quiet; then
+            git commit -m "preview(summit): 4.5s branded archival hook with QA frames"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
+          echo "Public review: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4"
