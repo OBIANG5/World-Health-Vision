@@ -1,0 +1,175 @@
+name: World-Vision WV002 director cut V4 — Remotion full premium 39 second film
+
+on:
+  push:
+    branches: [production/worldvision-002-director-cut-v4-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-002-director-v4-render.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/src/director-v4/**'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-director-v4-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  remotion-film:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Check approved font and narrator policy before expensive render
+        shell: bash
+        run: |
+          set -euo pipefail
+          R=worldhealth-vision-v2/services/media-renderer
+          test -f "$R/src/director-v4/index.tsx"
+          grep -q "WorldDM" "$R/src/director-v4/index.tsx"
+          grep -q "durationInFrames={DURATION}" "$R/src/director-v4/index.tsx"
+          if grep -qE "topbar[(]|footer[(]|Archives USCG · 201[346]|ILLUSTRATION GRAPHIQUE —" "$R/src/director-v4/index.tsx"; then
+            echo "FAIL: rejected old decorations found"
+            exit 1
+          fi
+      - name: Retrieve verified official US Coast Guard video clips without redownloading
+        uses: actions/download-artifact@v4
+        with:
+          name: worldvision-002-authentic-uscg-archives-with-provenance
+          run-id: 43619670006
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: worldhealth-vision-v2/services/media-renderer/public/director-v4
+      - name: Retrieve continuous same-Vivienne 35.9s voice and official DM Sans font
+        uses: actions/download-artifact@v4
+        with:
+          name: worldvision-director-cut-v4-internal-voice-and-font-build-assets
+          run-id: 43624011806
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: /tmp/worldvision-internal-director-assets
+      - name: Verify every input before rendering
+        run: |
+          set -euo pipefail
+          R=worldhealth-vision-v2/services/media-renderer
+          A="$R/public/director-v4"
+          test -s "$A/port_ship_source.mp4"
+          test -s "$A/river_aerial_source.mp4"
+          test -s "$A/tanker_context_source.mp4"
+          cp /tmp/worldvision-internal-director-assets/DMSans-official-variable.ttf "$A/DMSans.ttf"
+          cp /tmp/worldvision-internal-director-assets/vivienne_extended_plus5pct.mp3 "$A/vivienne-extended.mp3"
+          cp /tmp/worldvision-internal-director-assets/vivienne_extended_plus5pct-report.json "$A/narration-report.json"
+          echo "Font is for internal render only and will not be included in user downloads."
+          sha256sum "$A/vivienne-extended.mp3" | grep '^98294ad1b5f4b3a7dfca88e77a71241293a8ad5856a067da3b8ac5844c4f3606 '
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          f=Path("worldhealth-vision-v2/services/media-renderer/public/director-v4/narration-report.json")
+          j=json.loads(f.read_text())
+          assert j["voice"]=="fr-FR-VivienneMultilingualNeural"
+          assert j["rate"]=="+5%"
+          assert j["full_single_tts_take"] is True
+          assert j["audio_spliced"] is False
+          assert "Mississippi" in j["text"]
+          print("Same original Vivienne voice verified, slower and longer narration.")
+          PY
+          git fetch --no-tags --depth=1 origin \
+            refs/heads/whv-media-studio-browser-preview:refs/remotes/origin/whv-media-studio-browser-preview
+          git show "origin/whv-media-studio-browser-preview:media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4" \
+            > "$A/worldvision-original-g0-graphite.mp4"
+          test "$(git hash-object "$A/worldvision-original-g0-graphite.mp4")" = \
+            "7ba4e883c68704ba457c484f2d1bbf7d3e3f956d"
+      - name: Install node dependencies for true Remotion kinetic type and animated numbers
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          npm install --no-audit --no-fund --prefer-offline
+          npx remotion browser ensure
+      - name: Render REAL frames at key moments first
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          mkdir -p output/director-v4
+          npx remotion still src/director-v4/index.tsx WV002-Director-V4 \
+            output/director-v4/01-intro.png --frame=35
+          npx remotion still src/director-v4/index.tsx WV002-Director-V4 \
+            output/director-v4/02-rescue.png --frame=550
+          npx remotion still src/director-v4/index.tsx WV002-Director-V4 \
+            output/director-v4/03-numbers.png --frame=680
+          npx remotion still src/director-v4/index.tsx WV002-Director-V4 \
+            output/director-v4/04-outro.png --frame=1150
+      - name: Compose native 1080x1920 motion-graphics documentary
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          npx remotion render src/director-v4/index.tsx WV002-Director-V4 \
+            output/director-v4/WORLD_VISION_002_DIRECTOR_CUT_V4.mp4 \
+            --codec=h264 --crf=19 --concurrency=2 \
+            --log=error
+      - name: Enforce true final VIDEO duration and full decode with iPhone H264/AAC
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          F=output/director-v4/WORLD_VISION_002_DIRECTOR_CUT_V4.mp4
+          ffmpeg -v error -i "$F" -f null -
+          ffprobe -v error -show_streams -show_format -of json "$F" > output/director-v4/probe.json
+          python - <<'PY'
+          import json
+          j=json.load(open('output/director-v4/probe.json'))
+          v=next(x for x in j['streams'] if x['codec_type']=='video')
+          a=next(x for x in j['streams'] if x['codec_type']=='audio')
+          print(v['width'],v['height'],v['codec_name'],v['nb_frames'],v.get('duration'),a['codec_name'])
+          assert (v['width'],v['height'])==(1080,1920)
+          assert int(v['nb_frames'])==1170
+          assert abs(float(v['duration'])-39)<.05
+          assert v['codec_name']=='h264' and a['codec_name']=='aac'
+          PY
+          ffmpeg -y -v error -ss 1.3 -i "$F" -frames:v 1 \
+            -vf scale=540:960 output/director-v4/poster-director-v4.jpg
+          python quality/worldvision_real_frame_audit.py \
+            --video "$F" --out output/director-v4/final-frames --count 16
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-002-v4-director-cut-39s-mp4-and-actual-review-frames
+          path: worldhealth-vision-v2/services/media-renderer/output/director-v4/
+          retention-days: 30
+      - name: Publish MP4 to permanent iPhone preview without font files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FROM="$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/output/director-v4"
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-v4-review
+          cd /tmp/wv-v4-review
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for attempt in 1 2 3 4 5; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            mkdir -p media-lab/reportages/worldvision-002-director-v4
+            cp "$FROM/WORLD_VISION_002_DIRECTOR_CUT_V4.mp4" \
+              "$FROM/poster-director-v4.jpg" "$FROM/probe.json" \
+              media-lab/reportages/worldvision-002-director-v4/
+            cat > media-lab/reportages/worldvision-002-director-v4/index.html <<'HTML'
+          <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>World-Vision — Director Cut V4</title>
+          <style>body{margin:0;background:#071627;color:#f1f9fc;font:16px system-ui}main{max-width:470px;margin:auto;padding:22px}h1{font-size:25px}video{display:block;width:100%;max-height:75vh;border-radius:13px}a{display:block;margin:20px 0;color:#a9dfeb}p{font-size:13px;line-height:1.6;color:#bdced7}</style></head><body><main><h1>World-Vision · Mississippi</h1>
+          <video controls playsinline preload="metadata" poster="poster-director-v4.jpg"><source src="WORLD_VISION_002_DIRECTOR_CUT_V4.mp4" type="video/mp4"></video>
+          <a href="WORLD_VISION_002_DIRECTOR_CUT_V4.mp4">Ouvrir / enregistrer le MP4</a>
+          <p>Vidéo de prévisualisation, pas un reportage diffusé. Images réelles d'archives de l'US Coast Guard (2014, 2016, 2022) : elles ne montrent pas la collision du 13 novembre 2026. Vivienne, même narratrice, nouvelle prise continue à +5 %. Sources : Associated Press, CBS News. Droits commerciaux du moteur vocal en cours de vérification.</p>
+          </main></body></html>
+          HTML
+            git add media-lab/reportages/worldvision-002-director-v4
+            if git diff --cached --quiet; then success=1;break;fi
+            git commit -m "review(worldvision): 39s DM Sans director cut, original Vivienne and G0, genuine archival b-roll"
+            if git push origin HEAD:whv-media-studio-browser-preview; then success=1;break;fi
+            sleep "$attempt"
+          done
+          test "$success" = 1
+          echo "Permanent player: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/reportages/worldvision-002-director-v4/index.html"
