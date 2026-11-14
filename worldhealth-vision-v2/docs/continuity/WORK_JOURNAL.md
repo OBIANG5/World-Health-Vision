@@ -544,3 +544,16 @@ Règle inscrite : `docs/media/EDITORIAL_ON_SCREEN_RULES.md`.
 **État d'approbation** : S04 V3 QA techniquement passée, **validation artistique humaine non encore obtenue**. S03B Shenzhen absent ; voix définitive absente ; master 43 s non disponible, publication non autorisée.
 
 ---
+
+
+### 14 NOV. 2026 — S03 V3 GÉOGRAPHIQUE PROPRE AUSSI VÉRIFIÉE
+
+État précédent S03 V2 : vrai globe NASA juillet, mais police système DejaVu et footer « NASA BLUE MARBLE / NATURAL EARTH » **incrusté** malgré caractère technique. La source a été modifiée **sans modifier les coordonnées, la texture NASA ni les frontières Natural Earth** ; les informations techniques ont été déplacées dans le manifeste JSON.
+- S03 V3 Manrope, 147 frames / 4,9 s / 1080×1920 H264 / 30fps, **sans son**, SHA-256 `59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe`, 3 633 979 octets.
+- [V3 regarder sur iPhone](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4) ; [quatre images de contrôle](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03-july-v3/contact-sheet.jpg).
+- [GitHub Actions #43587396877 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587396877). Texture/geojson SHA de V2 inchangés ; logo G0 exact et centre géographique Shenzhen 22.5431N 114.0579E.
+- Le code de montage master `WorldVisionSummit2026.tsx` et `render-summit-preview.mjs` exige désormais **S03 V3 sha 59028e59... et S04 V3 sha 4fa8aebe...**, avec impossibilité de substituer les anciennes V2. Les sources originales restent archivée. Garder S02 D00 original.
+- Contrôle contractuel ajouté au test `summit-2026-contract.test.mjs`; profil et le graphisme documentaire du reportage restent provisoires jusqu'à validation artistique.
+- Aucun master 43s, aucune voix française ni vraie vue de Shenzhen S03B. Ne pas prétendre le contraire.
+
+---
