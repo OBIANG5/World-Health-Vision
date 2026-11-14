@@ -1,0 +1,16 @@
+{
+  "status": "NONPUBLISHABLE_EDITORIAL_CAPTION_AUDIT",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "voice_not_publishing_licensed": true,
+  "cues": 25,
+  "word_boundaries": 86,
+  "no_overlap": true,
+  "source_video_sha256": "208f897eb84528025a0e9aee5104bebdb01e82de52735a6485ef631eedeb4b66",
+  "mp4_sha256": "2da048ad9970e3e6aadf721dcdc32669fe99aa5a7ef5a2870699cad466a86ddd",
+  "bytes": 13706800,
+  "frames": 1011,
+  "duration_sec": 33.7,
+  "human_review_required": true,
+  "publication_authorized": false,
+  "what_changed": "Semantic subtitle phrase splits and zero-overlap timing; picture and sound unchanged"
+}

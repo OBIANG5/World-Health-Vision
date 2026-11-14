@@ -1,0 +1,389 @@
+{
+  "status": "VIVIENNE_V4_SEMANTIC_CAPTIONS_AUDITION_ONLY",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "voice_sha256": "96b8ebf4a2692ad67170b98e66144784508a0ca29e6884a65c1b2882db858b7b",
+  "original_script_verbatim": true,
+  "word_boundary_count": 86,
+  "font_family": "DM Sans",
+  "font_size_px": 78,
+  "font_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+  "cue_count": 25,
+  "no_overlaps": true,
+  "last_cue_end_sec": 30.7,
+  "outro_silent_from_sec": 30.7,
+  "max_width_px": 760,
+  "max_lines": 2,
+  "all_punctuation_from_original_spoken_script": true,
+  "cues": [
+    {
+      "phrase": "Trois puissances nucléaires.",
+      "word_start": 0,
+      "word_end": 2,
+      "speech_start": 0.05,
+      "speech_end": 1.278,
+      "i": 1,
+      "lines": [
+        "Trois puissances",
+        "nucléaires."
+      ],
+      "start": 0.01,
+      "end": 1.398,
+      "max_glyph_width_px": 603.14
+    },
+    {
+      "phrase": "Une même table.",
+      "word_start": 3,
+      "word_end": 5,
+      "speech_start": 1.579,
+      "speech_end": 2.446,
+      "i": 2,
+      "lines": [
+        "Une même table."
+      ],
+      "start": 1.539,
+      "end": 2.566,
+      "max_glyph_width_px": 608.77
+    },
+    {
+      "phrase": "Et une rencontre inédite.",
+      "word_start": 6,
+      "word_end": 9,
+      "speech_start": 2.753,
+      "speech_end": 3.98,
+      "i": 3,
+      "lines": [
+        "Et une",
+        "rencontre inédite."
+      ],
+      "start": 2.713,
+      "end": 4.1,
+      "max_glyph_width_px": 646.72
+    },
+    {
+      "phrase": "Jeudi 19 novembre,",
+      "word_start": 10,
+      "word_end": 10,
+      "speech_start": 4.313,
+      "speech_end": 5.372,
+      "i": 4,
+      "lines": [
+        "Jeudi 19 novembre,"
+      ],
+      "start": 4.273,
+      "end": 5.492,
+      "max_glyph_width_px": 692.83
+    },
+    {
+      "phrase": "Donald Trump, Vladimir Poutine",
+      "word_start": 11,
+      "word_end": 14,
+      "speech_start": 5.687,
+      "speech_end": 7.207,
+      "i": 5,
+      "lines": [
+        "Donald Trump,",
+        "Vladimir Poutine"
+      ],
+      "start": 5.647,
+      "end": 7.142,
+      "max_glyph_width_px": 593.41
+    },
+    {
+      "phrase": "et Xi Jinping doivent se réunir",
+      "word_start": 15,
+      "word_end": 20,
+      "speech_start": 7.207,
+      "speech_end": 8.423,
+      "i": 6,
+      "lines": [
+        "et Xi Jinping",
+        "doivent se réunir"
+      ],
+      "start": 7.167,
+      "end": 8.358,
+      "max_glyph_width_px": 613.36
+    },
+    {
+      "phrase": "à Shenzhen, en Chine.",
+      "word_start": 21,
+      "word_end": 24,
+      "speech_start": 8.423,
+      "speech_end": 9.628,
+      "i": 7,
+      "lines": [
+        "à Shenzhen,",
+        "en Chine."
+      ],
+      "start": 8.383,
+      "end": 9.748,
+      "max_glyph_width_px": 431.22
+    },
+    {
+      "phrase": "Au cœur des discussions :",
+      "word_start": 25,
+      "word_end": 28,
+      "speech_start": 9.932,
+      "speech_end": 10.901,
+      "i": 8,
+      "lines": [
+        "Au cœur des",
+        "discussions :"
+      ],
+      "start": 9.892,
+      "end": 11.021,
+      "max_glyph_width_px": 467.12
+    },
+    {
+      "phrase": "réduire les arsenaux nucléaires.",
+      "word_start": 29,
+      "word_end": 32,
+      "speech_start": 11.295,
+      "speech_end": 12.647,
+      "i": 9,
+      "lines": [
+        "réduire les",
+        "arsenaux nucléaires."
+      ],
+      "start": 11.255,
+      "end": 12.767,
+      "max_glyph_width_px": 737.22
+    },
+    {
+      "phrase": "Le dernier grand traité",
+      "word_start": 33,
+      "word_end": 36,
+      "speech_start": 12.995,
+      "speech_end": 13.806,
+      "i": 10,
+      "lines": [
+        "Le dernier",
+        "grand traité"
+      ],
+      "start": 12.955,
+      "end": 13.741,
+      "max_glyph_width_px": 431.34
+    },
+    {
+      "phrase": "entre Washington et Moscou",
+      "word_start": 37,
+      "word_end": 40,
+      "speech_start": 13.806,
+      "speech_end": 14.91,
+      "i": 11,
+      "lines": [
+        "entre Washington",
+        "et Moscou"
+      ],
+      "start": 13.766,
+      "end": 14.845,
+      "max_glyph_width_px": 645.8
+    },
+    {
+      "phrase": "a expiré en février.",
+      "word_start": 41,
+      "word_end": 44,
+      "speech_start": 14.91,
+      "speech_end": 16.025,
+      "i": 12,
+      "lines": [
+        "a expiré en février."
+      ],
+      "start": 14.87,
+      "end": 16.145,
+      "max_glyph_width_px": 664.67
+    },
+    {
+      "phrase": "Trump veut maintenant",
+      "word_start": 45,
+      "word_end": 47,
+      "speech_start": 16.34,
+      "speech_end": 17.06,
+      "i": 13,
+      "lines": [
+        "Trump veut",
+        "maintenant"
+      ],
+      "start": 16.3,
+      "end": 16.996,
+      "max_glyph_width_px": 414.95
+    },
+    {
+      "phrase": "associer Pékin, qui reste réticent.",
+      "word_start": 48,
+      "word_end": 52,
+      "speech_start": 17.061,
+      "speech_end": 19.021,
+      "i": 14,
+      "lines": [
+        "associer Pékin,",
+        "qui reste réticent."
+      ],
+      "start": 17.021,
+      "end": 19.141,
+      "max_glyph_width_px": 644.31
+    },
+    {
+      "phrase": "La guerre en Iran",
+      "word_start": 53,
+      "word_end": 56,
+      "speech_start": 19.339,
+      "speech_end": 20.105,
+      "i": 15,
+      "lines": [
+        "La guerre en Iran"
+      ],
+      "start": 19.299,
+      "end": 20.04,
+      "max_glyph_width_px": 611.11
+    },
+    {
+      "phrase": "devrait aussi être abordée.",
+      "word_start": 57,
+      "word_end": 60,
+      "speech_start": 20.105,
+      "speech_end": 21.197,
+      "i": 16,
+      "lines": [
+        "devrait aussi",
+        "être abordée."
+      ],
+      "start": 20.065,
+      "end": 21.317,
+      "max_glyph_width_px": 488.48
+    },
+    {
+      "phrase": "Mais selon Washington,",
+      "word_start": 61,
+      "word_end": 63,
+      "speech_start": 21.509,
+      "speech_end": 22.511,
+      "i": 17,
+      "lines": [
+        "Mais selon",
+        "Washington,"
+      ],
+      "start": 21.469,
+      "end": 22.631,
+      "max_glyph_width_px": 445.97
+    },
+    {
+      "phrase": "pas celle en Ukraine.",
+      "word_start": 64,
+      "word_end": 67,
+      "speech_start": 22.77,
+      "speech_end": 23.615,
+      "i": 18,
+      "lines": [
+        "pas celle en Ukraine."
+      ],
+      "start": 22.73,
+      "end": 23.735,
+      "max_glyph_width_px": 739.95
+    },
+    {
+      "phrase": "Et attention :",
+      "word_start": 68,
+      "word_end": 69,
+      "speech_start": 23.953,
+      "speech_end": 24.573,
+      "i": 19,
+      "lines": [
+        "Et attention :"
+      ],
+      "start": 23.913,
+      "end": 24.693,
+      "max_glyph_width_px": 469.86
+    },
+    {
+      "phrase": "aucun accord n’est attendu",
+      "word_start": 70,
+      "word_end": 73,
+      "speech_start": 24.91,
+      "speech_end": 25.845,
+      "i": 20,
+      "lines": [
+        "aucun accord",
+        "n’est attendu"
+      ],
+      "start": 24.87,
+      "end": 25.78,
+      "max_glyph_width_px": 500.97
+    },
+    {
+      "phrase": "pour le moment.",
+      "word_start": 74,
+      "word_end": 76,
+      "speech_start": 25.845,
+      "speech_end": 26.374,
+      "i": 21,
+      "lines": [
+        "pour le moment."
+      ],
+      "start": 25.805,
+      "end": 26.494,
+      "max_glyph_width_px": 595.03
+    },
+    {
+      "phrase": "Alors, véritable",
+      "word_start": 77,
+      "word_end": 78,
+      "speech_start": 26.678,
+      "speech_end": 27.816,
+      "i": 22,
+      "lines": [
+        "Alors, véritable"
+      ],
+      "start": 26.638,
+      "end": 27.75,
+      "max_glyph_width_px": 541.08
+    },
+    {
+      "phrase": "tournant diplomatique,",
+      "word_start": 79,
+      "word_end": 80,
+      "speech_start": 27.815,
+      "speech_end": 28.717,
+      "i": 23,
+      "lines": [
+        "tournant",
+        "diplomatique,"
+      ],
+      "start": 27.775,
+      "end": 28.837,
+      "max_glyph_width_px": 493.56
+    },
+    {
+      "phrase": "ou simple démonstration",
+      "word_start": 81,
+      "word_end": 83,
+      "speech_start": 29.043,
+      "speech_end": 29.921,
+      "i": 24,
+      "lines": [
+        "ou simple",
+        "démonstration"
+      ],
+      "start": 29.003,
+      "end": 29.856,
+      "max_glyph_width_px": 536.86
+    },
+    {
+      "phrase": "de puissance ?",
+      "word_start": 84,
+      "word_end": 85,
+      "speech_start": 29.921,
+      "speech_end": 30.597,
+      "i": 25,
+      "lines": [
+        "de puissance ?"
+      ],
+      "start": 29.881,
+      "end": 30.7,
+      "max_glyph_width_px": 546.06
+    }
+  ],
+  "approved_for_publication": false,
+  "user_approved_full_narration": false,
+  "commercial_voice_rights_cleared": false,
+  "note": "Actual words, editorial phrase breaks, no phantom overlap, no extra voice nor AI scene."
+}
