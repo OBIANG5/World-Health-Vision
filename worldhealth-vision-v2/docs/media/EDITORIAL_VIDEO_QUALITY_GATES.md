@@ -58,3 +58,21 @@ Défauts signalés après publication : **voix Vivienne encore trop rapide, sans
 
 ## Contrôles qualité bloquants
 **BLOCK** si phrase modifiée ; voix bannie ; image présentée comme source filmée alors qu'elle est générée ; lien éphémère présenté comme permanent ; texte technique incrusté ; master sans piste de voix ; musique non licenciée ; vidéo terminée déclarée avant existence du MP4 ; approbation commerciale présumée ; carte géographique inexacte ; publication sans consentement.
+
+
+## Nouveau refus explicite Siguiri V1 — 14 novembre 2026
+
+**Cette règle s'applique à toutes les vidéos du média, même hors épisode Guinée.** Après l'essai sur Balato/Siguiri, le propriétaire juge :
+- **Vivienne reste la voix**, mais le rendu V1 à -28 à -32 % est **trop lent, robotique, découpé en morceaux avec des blancs**. Ne plus synthétiser phrase par phrase puis recoller. **Créer une prise continue du script entier**, comparer A/B/C avec différents débits **de cette même voix**, viser une diction proche de la parole humaine et soumettre l'écoute complète.
+- **Plans validés à conserver** : vidéo réelle de l'homme qui frappe/travaille dans la mine ; police Space Grotesk/DM Sans utilisée à Siguiri. Ne pas détruire les éléments validés lors de la correction des autres défauts.
+- **Images rejetées** : trop de mines génériques sans lien narratif, cartes noires fixes, plans répétitifs, manque d'impact émotionnel. Obtenir d'abord des plans spécifiques et réellement sourcés, ou rendre les graphiques informatifs et animés; pas de faux événements.
+- **Interdiction ferme de toute étiquette technique à l'écran** : « ILLUSTRATION », « PHOTO USAID », « PREVIEW », « QA ». La provenance des stock-shots hors événement doit rester dans la description/publication et le manifest; l'absence de petit label ne doit jamais servir à tromper le spectateur sur l'origine des images.
+- **L'ancien logo World-Vision avec carré blanc est définitivement proscrit**. **Remplacement de référence** : vidéo de signature 3 s 512×910, fournie directement par le propriétaire, SHA original `b1a875dd2611e2fc1e10f9f233b8e42d7065faacaecdc520c52af72c90e7d855`; Canva user asset `VAHa58Do0Cc`. Le clip vidéo envoyé doit être prioritaire; ne jamais reprendre l'icône PNG blanc ancien. L'outro bleu 3 s se diffuse **après** la dernière phrase.
+- Sur GitHub, dossier de travail dédié `feature/worldvision-guinee-siguiri-v2-voice-endcard-2026-11-14`, PR #25. Ne jamais prétendre qu'une animation dérivée d'une capture est le fichier exact : mentionner distinctement si un re-rendu à partir d'une image est utilisé temporairement.
+- L'absence de validation vocale ou de licence commerciale vérifiée reste une contrainte de publication, même si le master est techniquement réussi.
+
+### Nouvelles portes qualité bloquantes
+1. **Sauf choix explicite contraire, chaque prise TTS est un seul appel pour tout le script**, audio sans soudure de phrases. Exceptions humaines/prises additionnelles documentées.
+2. **Fin de vidéo : source bleue fournie par l'utilisateur**, aucun rectangle blanc; contrôle de 3 photogrammes de fin dans la review contact sheet.
+3. Au moins un plan en mouvement documentaire approprié aux faits par passage humain important; ne pas réutiliser quatre fois le même camion ou la même image pour représenter des scènes différentes.
+4. Exiger une revue sur écran mobile à taille réelle (titres, safe zones, contrastes, images) ET l'écoute subjective avant publication; la CI verte ne constitue pas un « 9/10 ».
