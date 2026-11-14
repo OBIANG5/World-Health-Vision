@@ -23,7 +23,7 @@ LINES=[
  ("B04",20.4,26.6,"+0%","Trump veut maintenant associer Pékin, qui reste réticent."),
  ("B05",26.6,33.8,"+18%","La guerre en Iran devrait aussi être abordée. Mais selon Washington, pas celle en Ukraine."),
  ("B06",33.8,40.,"+35%","Et attention : aucun accord n’est attendu pour le moment. Alors, véritable tournant diplomatique, ou simple démonstration de puissance ?"),
- ("B07",40.,43.,"+13%","World-Vision. Voir le monde, le comprendre.")
+ ("B07",40.,43.,"+35%","World-Vision. Voir le monde, le comprendre.")
 ]
 def sh(*args):
  return subprocess.check_output(list(map(str,args)),stderr=subprocess.STDOUT).decode("utf8","replace")
@@ -43,12 +43,13 @@ async def main():
   id,start,end,rate,txt=row
   mp3=OUT/(id+".mp3")
   raw_events=[]
-  com=edge_tts.Communicate(txt,VOICE,rate=rate,volume="+0%")
+  com=edge_tts.Communicate(txt,VOICE,rate=rate,volume="+0%",boundary="WordBoundary")
   with mp3.open("wb") as f:
    async for msg in com.stream():
     if msg["type"]=="audio":f.write(msg["data"])
     elif msg["type"]=="WordBoundary":
      raw_events.append({"text":msg.get("text",""),"offset_100ns":msg["offset"],"duration_100ns":msg["duration"]})
+  if not raw_events: raise RuntimeError(f"WordBoundary metadata missing for {id}, cannot produce true subtitle timing")
   if mp3.stat().st_size<10000:
    raise RuntimeError(f"Voice {id} empty: {mp3.stat().st_size} bytes")
   return id,start,end,rate,txt,mp3,raw_events
