@@ -1,0 +1,48 @@
+name: World-Vision director cut v4 — same Vivienne + DM Sans assets
+
+on:
+  push:
+    branches: [production/worldvision-002-director-cut-v4-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-002-director-cut-assets.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_extended_vivienne_voice.py'
+  workflow_dispatch:
+
+permissions: {contents: read}
+
+jobs:
+  create-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Preflight before any remote requests
+        run: python -m py_compile worldhealth-vision-v2/services/media-renderer/scripts/worldvision_extended_vivienne_voice.py
+      - name: Fetch official OFL DM Sans and generate one continuous Vivienne take
+        run: |
+          set -euo pipefail
+          python -m pip install -q 'edge-tts>=7.2,<8' requests
+          OUT=worldhealth-vision-v2/services/media-renderer/output/director-cut-v4-assets
+          mkdir -p "$OUT"
+          python worldhealth-vision-v2/services/media-renderer/scripts/worldvision_extended_vivienne_voice.py \
+            --out "$OUT" --rate +5%
+          python - <<'PY'
+          from pathlib import Path
+          import requests
+          r=requests.get('https://raw.githubusercontent.com/google/fonts/main/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf',timeout=25)
+          r.raise_for_status()
+          data=r.content
+          assert data[:4] in (b'\\x00\\x01\\x00\\x00',b'OTTO') and len(data)>100000
+          Path('worldhealth-vision-v2/services/media-renderer/output/director-cut-v4-assets/DMSans-official-variable.ttf').write_bytes(data)
+          lic=requests.get('https://raw.githubusercontent.com/google/fonts/main/ofl/dmsans/OFL.txt',timeout=20)
+          lic.raise_for_status()
+          Path('worldhealth-vision-v2/services/media-renderer/output/director-cut-v4-assets/DMSans-OFL.txt').write_bytes(lic.content)
+          print('Exact font DM Sans received, licensed under OFL. For build only.')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-director-cut-v4-internal-voice-and-font-build-assets
+          path: worldhealth-vision-v2/services/media-renderer/output/director-cut-v4-assets/
+          retention-days: 15
