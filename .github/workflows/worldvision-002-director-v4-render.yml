@@ -94,6 +94,18 @@ jobs:
             > "$A/worldvision-original-g0-graphite.mp4"
           test "$(git hash-object "$A/worldvision-original-g0-graphite.mp4")" = \
             "7ba4e883c68704ba457c484f2d1bbf7d3e3f956d"
+      - name: Reframe original 2014 port footage to exclude baked documentary credits
+        run: |
+          set -euo pipefail
+          A=worldhealth-vision-v2/services/media-renderer/public/director-v4
+          ffmpeg -y -hide_banner -loglevel error \
+            -i "$A/port_ship_source.mp4" -an \
+            -vf 'crop=iw:floor(ih*0.68/2)*2:0:0,fps=30' \
+            -c:v libx264 -preset veryfast -crf 20 -pix_fmt yuv420p \
+            "$A/port_ship_clean.mp4"
+          test -s "$A/port_ship_clean.mp4"
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height \
+            -of default=noprint_wrappers=1 "$A/port_ship_clean.mp4"
       - name: Install node dependencies for true Remotion kinetic type and animated numbers
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: |
