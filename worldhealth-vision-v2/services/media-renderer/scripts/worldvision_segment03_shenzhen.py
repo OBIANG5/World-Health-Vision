@@ -5,7 +5,7 @@ Use original D00-v6 eye image in the PREVIOUS S02 brand shot, then the
 photographic, properly georeferenced globe in this locator shot. A single fixed
 D00 image cannot be rotated into Asia without inventing geography.
 
-Inputs: NASA Blue Marble January topography (global 5400x2700), Natural Earth
+Inputs: NASA Blue Marble July topography (global 5400x2700), Natural Earth
 country-border GeoJSON, and THE EXACT official World-Vision G0 PNG.
 Output: 4.9 s, H264 1080x1920 30fps, accurate city marker; no narration.
 """
@@ -275,7 +275,7 @@ def generate(args):
         "segment_id":"S03_SHENZHEN",
         "purpose":"real rotating globe positioning Shenzhen city after D00-v6 brand shot",
         "portrait":{"W":W,"H":H,"fps":FPS,"duration_sec":DURATION,"frames":FRAMES},
-        "source_texture":"NASA Blue Marble topography, January",
+        "source_texture":"NASA Blue Marble topography, July",
         "source_texture_sha256":sha(args.texture),
         "source_geojson":"Natural Earth country polygons public-domain",
         "source_geojson_sha256":sha(args.geojson),
