@@ -1,5 +1,35 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## PRIORITÉ ACTUELLE — S03 SHENZHEN V2 VÉRIFIÉ, ENCHAÎNEMENT À 43 S (14/11/2026)
+
+**Commande utilisateur actuelle :** montage d'actualité premium **une vidéo courte à la fois**, et **chaque séquence autonome contrôlée avant assemblage**. Séquence dramatique obligatoire : **S01 vrais portraits Trump/Poutine/Xi → S02 image World-Vision D00-v6 ORIGINALE → S03 le globe tourne réellement depuis l'Afrique vers Shenzhen → S03b vrai visuel de la ville → reste du reportage sur le nucléaire/Iran/Ukraine → signature World-Vision**. Débit normal, 30 images/s, environ **43 secondes** AU TOTAL (surtout pas 3–4 minutes) ; pas de fausse conférence ou faux bâtiments.
+
+**Faits revérifiés le 14 novembre 2026 :** la Maison-Blanche annonce la rencontre trilatérale le **jeudi 19 novembre 2026** en marge de l'APEC, et la diplomatie chinoise confirme l'APEC à **Shenzhen** les 18–19 novembre. **La salle/l'adresse précise de la rencontre ne sont PAS confirmées**. L'animation vise donc **le centre géographique de la ville (22.5431°N, 114.0579°E)**, pas un bâtiment inventé. Sources : https://www.fmprc.gov.cn/eng/xw/wsrc/202611/t20261113_12058556.html ; https://www.afp.com/en/trump-xi-putin-hold-historic-meeting-china-white-house-0.
+
+**VRAIS LIVRABLES vérifiés, pas des promesses :**
+1. **S01 HOOK** 4,5 s H264 1080×1920 : vrais portraits photographiques, logo G0 officiel, MP4 sur branche \`whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4\`. Sans narration, non approuvé définitivement.
+2. **S02 D00-v6** 3,1 s H264 1080×1920, SHA-256 \`95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a\` ; VRAIE image originale D00-v6 non reconstruite (SHA-256 \`8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2\`), mouvement de caméra sans rotation fictive, archivé Canva ID \`VAHa4ZT_ySo\`.
+3. **S03 NASA véritable rotation vers Shenzhen V1** janvier 4,9 s, SHA-256 \`6bfb45a57794c7dbfc7dc9af9ddb818c67eae327f60216b46bf32f0afb7ba10e\`, QA passée, mais trop enneigé visuellement.
+4. **S03 améliorée JULY V2** 4,9 s, **147 frames/30fps 1080×1920**, SHA-256 **\`1e49e5b6dc36c9dde2494253a8ee5c2b426863bed7fd33cd0cd24b4012be4558\`**, NASA July topo 5400×2700 SHA \`85a24885616097b5e06532b7d8e30fa5d749a782e70ea55971dd8539a0899206\`, Natural Earth GeoJSON SHA \`392a03db8aa3ba82c105852655620129b11182b95dfc34ef046827ea7d0e5b8c\`. **Run GitHub Actions #43582938864 = SUCCESS**. Quatre images de contrôle vraiment inspectées ; V2 donne une Eurasie plus verte et cohérente avec D00. **Canva archive média S03 V2 ID \`VAHa4gCj5SQ\`**, import vérifié. **ATTENTE validation artistique utilisateur**, aucun son encore, non publié.
+5. Le **fichier exact du logo officiel G0** dans renderer Git blob \`bc80fa70cebd566768bfb1703a0f1f636a78c196\` est contrôlé et utilisé (jamais redessiné).
+
+**LIENS :**
+- Vidéo S03 V2 : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v2-4p9s.mp4
+- Contact sheet 4 photogrammes S03 V2 : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03-july-v2/contact-sheet.jpg
+- Ancienne vidéo S03 V1 gardée sur branche preview pour comparaison ; ne pas effacer.
+- Code source S03 : \`worldhealth-vision-v2/services/media-renderer/scripts/worldvision_segment03_shenzhen.py\`.
+- Workflow de build/QA mobile : \`.github/workflows/whv-summit-shenzhen-s03.yml\`.
+- Journal d'état 8 clips : \`docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/SEGMENT_LEDGER.json\` (v2 retenue comme candidate).
+- **NOUVELLE EDL** \`docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/EDL_V2_FAST_GLOBE.md\` : S01 4,5s, **extrait S02 0,9s à 1×**, **extrait S03 4,4s à 1×**, futur vrai plan de Shenzhen 2,7s ; suite 12,5s–43s inchangée. **La source n'est pas accélérée, seulement recadrée temporellement.**
+- Remotion master existant \`services/media-renderer/src/WorldVisionSummit2026.tsx\` et script \`render-summit-preview.mjs\` ont été raccordés aux **vraies vidéos S02 + S03 V2** avec empreintes SHA exigées ; pas de substitution de globe. La composition finale à ~43 s reste NON RENDUE, car fichiers source n'ont pas encore été installés en binaire dans le repo/renderer et **voix FR approuvée absente**.
+
+**Prochain travail utile :** recueillir avis artistique sur S03 V2 et sur cohérence S02→S03 ; sélectionner vrai plan de Shenzhen 2,7s aux droits confirmés ; **produire le prochain clip autonome S04** (enjeux nucléaires) en motion design soigné ; préparer audition de voix française (2–3 voix) puis calage syllabique des 13 sous-titres ; exporter 43s seulement APRÈS ces validations. Ne pas coder un nouvel éditeur, ne pas réinventer une Terre, ne pas produire un clip sur une autre actualité sans accord.
+
+**Ce qui manque honnêtement :** V2 non encore approuvée artistiquement par l'utilisateur, pas de voix/audio à écouter, pas de vidéo finale 43 s. L'original D00 existe en fichier chat et Canva ; son binaire original n'est pas committé dans GitHub. Les deux clips S02/S03 sont stockés dans Canva mais leur insertion en tant que fichiers locaux dans le renderer final devra être réalisée avant le master.
+
+---
+
+
 ## 14 NOV 2026 — NOUVELLE MÉTHODE VALIDÉE : UN CLIP À LA FOIS, PUIS ASSEMBLAGE
 
 **Instruction utilisateur prioritaire :** arrêter de vouloir tout rendre d'un seul bloc. Construire **huit petites vidéos indépendantes**, chacune très bien montée/contrôlée/revue, avec code ponctuel lorsque plus beau (sans réinventer le globe). **Assembler seulement les séquences validées.** La ligne éditoriale reste la vidéo approuvée dans le chat sur le sommet annoncé Trump–Poutine–Xi du 19 novembre 2026.
