@@ -89,3 +89,67 @@ réussite technique; la difficulté doit rester explicitement mentionnée.
 
 Les anciens MP3 demeurent en archives; les nouveaux essais sont versionnés
 dans media-lab/nextgen/voice-v2 sans remplacer les fichiers précédents.
+
+
+## Exécution du deuxième véritable cycle — résultats et liens
+
+GitHub Actions Voice 2 : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43606584139
+
+**5 tâches réussies** après correction d'un défaut réel : CoralieNeural
+n'émettait pas d'audio sur le service Edge. Le secours ayant réellement
+fonctionné est la voix canadienne française **fr-CA-SylvieNeural** ;
+ne PAS présenter le troisième son comme Coralie. Les scripts et rapports
+exposent l'identité réelle choisie.
+
+Les sorties A/B/C ont été synthétisées en **une seule prise chacune**,
+sans coller artificiellement plusieurs textes parlés, puis avec suppression
+partielle des silences détectés (voix non accélérée syllabe par syllabe) :
+
+- Vivienne d'origine : 15,408 s brut → 13,400 s traité ; 9 réductions
+  de pause, 2,008 secondes de silences retirées.
+- Denise (nouvelle voix fr-FR) : 19,608 s brut → 15,944 s traité ; 10
+  réductions de pause, 3,664 secondes de silences retirées.
+- Sylvie (nouvelle voix fr-CA) : 19,128 s brut → 15,960 s traité ; 9
+  réductions de pause, 3,168 secondes de silences retirées.
+
+Les durées MP3 finales incluent quelques échantillons de codec supplémentaires.
+Les trois voix ont le **même script** ; contrôle automatisé par empreinte du
+fichier de texte; 3 empreintes MP3 distinctes. Cela ne constitue **PAS**
+une preuve d'intonation humaine : audition et validation subjective obligatoires.
+
+Lien permanent d'écoute iPhone (tous les lecteurs audio HTML5 au même endroit) :
+https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/voice-v2/listen.html
+
+A — Vivienne :
+https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/voice-v2/vivienne_continuous-audition-only.mp3
+
+B — Denise :
+https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/voice-v2/denise_news-audition-only.mp3
+
+C — Sylvie :
+https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/voice-v2/coralie_warm-audition-only.mp3
+
+AUCUN fichier MP3 n'est autorisé pour diffusion commerciale automatique.
+La prochaine étape **conditionnelle** est une audition Dragon HD avec accès
+Azure réellement autorisé, non disponible dans le présent pipeline.
+
+## Fond de signature corrigé après VRAI contrôle de photogrammes
+
+Un premier essai bleu nuit et graphite a été rejeté par AUTO-AUDIT :
+le logo bleu foncé restait trop peu contrasté sur les fonds très sombres.
+Le code a été corrigé en gardant la même source G0, la même animation
+Remotion et la même typographie.
+
+- "Bleu nuit" : léger halo bleu acier éclairant l'œil, bordure très sombre.
+- "Acier clair" : bleu-gris très désaturé, texte bleu marine à fort contraste.
+
+Les vrais photogrammes finaux ont été comparés côté serveur.
+CI de cette correction :
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/43606786112
+
+Prévisualisations indépendantes de 3 s :
+https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-original-g0-midnight.mp4
+
+https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4
+
+L'ancien MP4 du reportage Shenzhen n'a jamais été écrasé.
