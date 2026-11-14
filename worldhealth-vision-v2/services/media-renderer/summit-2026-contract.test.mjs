@@ -46,3 +46,10 @@ test("No production watermark or internal credit is drawn into any master frame"
  const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
  assert.doesNotMatch(render,/previewWatermark\s*:/);
 });
+
+test("Final assembly requires the precise S04 clean plate — V1/V2 cannot leak",()=>{
+ assert.match(component,/segment04-new-start-v3-clean-7p9s\\.mp4/);
+ const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
+ assert.match(render,/4fa8aebec451f4edb0d8bd495655b619feaab0d9fb0d517c12e4bd9f88b33e69/);
+ assert.match(render,/S04 must be exact Manrope clean-plate V3/);
+});
