@@ -1,6 +1,6 @@
 /**
  * Rebuild V2 : immutable source render, no voice, no caption, no provisional D00.
- * Render 11.6s pilot first to approve type, camera and transition before full 42.1s.
+ * Render 11.6s pilot first to approve type, camera and transition before full 33.7s.
  * Usage: node render-editorial-v2.mjs pilot|full
  */
 import path from "node:path";
@@ -43,13 +43,13 @@ if(sha(globe)!=="59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423f
  throw Error("Never replace the preserved NASA globe with another video.");
 const outDir=path.join(BASE,"output","editorial-v2");
 mkdirSync(outDir,{recursive:true});
-const name=mode==="pilot"?"opening-pilot-11p6s-v2.mp4":"full-silent-picture-42p1s-v2.mp4";
-const frames=mode==="pilot"?348:1263;
+const name=mode==="pilot"?"opening-pilot-10p4s-v3.mp4":"full-silent-picture-33p7s-v3.mp4";
+const frames=mode==="pilot"?312:1011;
 const out=path.join(outDir,name);
 console.log("BUNDLING V2 editorial source, mode",mode);
 const bundled=await bundle({entryPoint:path.join(BASE,"src/editorial-v2-index.ts"),onProgress:()=>{}});
 const c=await selectComposition({serveUrl:bundled,id:"WVEditorialV2"});
-if(c.width!==1080||c.height!==1920||c.fps!==30||c.durationInFrames!==1263)
+if(c.width!==1080||c.height!==1920||c.fps!==30||c.durationInFrames!==1011)
  throw Error("Wrong scene geometry/driver: "+JSON.stringify(c));
 console.log("RENDER",out,frames+" frames");
 await renderMedia({
@@ -64,7 +64,7 @@ if(!v||v.codec_name!=="h264"||v.width!==1080||v.height!==1920||
  throw Error("FFprobe visual quality gate failed");
 const report={
  project:"World-Vision 001",branch:"rebuild/editorial-v2-quality-gates",
- iteration:"Visual rebuild V2",mode,status:"TECHNICAL_RENDER_ONLY_WAITING_ART_REVIEW",
+ iteration:"Vivienne-timed visual V3",mode,status:"TECHNICAL_RENDER_ONLY_WAITING_ART_REVIEW",
  absolute_publishable:false,user_approval:false,voice_approved:false,
  frames,fps:30,duration_sec:frames/30,resolution:[1080,1920],
  input_globe_sha256:sha(globe),
@@ -73,6 +73,11 @@ const report={
  original_source_photo_assets:true,
  removes_09s_logo_hold:true,progress_bars:false,voice_present:false,
  captions_baked:false,read_outro:false,
+ voice_reference:"fr-FR-VivienneMultilingualNeural",
+ first_spoken_frame:0, last_spoken_boundary_sec:30.597,
+ silent_logo_from_sec:30.7,
+ natural_utterance_seconds:30.912,
+ observed_synced_video_seconds:33.7,
  note:"Source design proof: never declare a final film from codec checks alone.",
  sha256:sha(out),bytes:statSync(out).size
 };
