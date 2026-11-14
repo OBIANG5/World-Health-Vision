@@ -1,3 +1,35 @@
+# Décision vocale actuelle — PRIORITÉ ABSOLUE (14 novembre 2026)
+
+> **Référence de production désormais sélectionnée par l'utilisateur : Vivienne C5.2 — Impact média.**
+> Lire ce bloc AVANT l'historique ci-dessous, qui décrit d'anciens essais désormais dépassés.
+
+- Modèle vocal **unique** : `fr-FR-VivienneMultilingualNeural`.
+- Essai retenu par l'utilisateur : **C5.2 Impact média**, `+8%`, ~14,088 s,
+  enregistré sur l'accident de La Nouvelle-Orléans seulement.
+- L'utilisateur trouve ce +8% **un tout petit peu trop rapide** : essayer
+  `+6%` sur le script du PROCHAIN reportage, sans considérer cette
+  nouvelle vitesse comme approuvée avant écoute.
+- **Ne jamais réutiliser le contenu parlé de C5.2 pour narrer un autre événement.**
+  L'audio existant est une RÉFÉRENCE DE STYLE, pas une voix générique.
+- Les deux fichiers MP3 exacts sont conservés dans une branche de production :
+  `production/worldvision-vivienne-c52-voice-lock-2026-11-14`.
+- Référence sonore (copie bit à bit identique, blob Git `cd2254c...`) :
+  `worldhealth-vision-v2/services/media-renderer/public/voice/vivienne-c52-impact-media-reference.mp3`.
+- Source brute (blob Git `b36aca0...`) :
+  `worldhealth-vision-v2/services/media-renderer/public/voice/vivienne-c52-impact-media-raw.mp3`.
+- Politique machine vérifiée :
+  `worldhealth-vision-v2/services/media-renderer/nextgen/approved_voice_profile.json`
+  et `quality/approved_vivienne_reference.py`.
+- Signature vidéo **APPROUVÉE** : G0 ORIGINAL, fond acier clair,
+  `worldvision-original-g0-graphite.mp4`. Ne jamais inventer de nouveau logo.
+- Cette validation artistique personnelle du style vocal n'établit PAS
+  la disponibilité d'une licence commerciale de synthèse via Edge TTS.
+- Aucune fusion automatique, aucun auto-posting, aucune vidéo antérieure écrasée.
+
+Pour toute nouvelle branche ou nouveau chat, lire :
+`worldhealth-vision-v2/docs/media/WORLDVISION_C52_HANDOFF_2026-11-14.md`.
+
+---
 # World-Vision — référence vocale canonique
 
 **Décision utilisateur confirmée le 14 novembre 2026 : choisir Vivienne pour le Media Studio, y compris le reportage World-Vision n°001 consacré à la rencontre annoncée à Shenzhen.**
