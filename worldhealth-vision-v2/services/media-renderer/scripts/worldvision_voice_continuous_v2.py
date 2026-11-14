@@ -35,6 +35,7 @@ VOICES = {
     },
     "coralie_warm": {
         "voice": "fr-FR-CoralieNeural",
+        "fallback_voices": ["fr-FR-BrigitteNeural", "fr-FR-CelesteNeural", "fr-CA-SylvieNeural"],
         "rate": "+3%",
         "pitch": "+0Hz",
         "note": "Different French female voice, audition only.",
@@ -79,32 +80,38 @@ async def real_edge_audio(variant, utterance, dest):
     entry = VOICES[variant]
     boundaries = []
     raw_mp3 = dest / f"{variant}-service-raw.mp3"
-    for attempt in range(3):
-        try:
-            boundaries.clear()
-            source = edge_tts.Communicate(
-                text=utterance, voice=entry["voice"], rate=entry["rate"],
-                pitch=entry["pitch"], boundary="WordBoundary",
-            )
-            with raw_mp3.open("wb") as stream:
-                async for item in source.stream():
-                    if item["type"] == "audio":
-                        stream.write(item["data"])
-                    elif item["type"] == "WordBoundary":
-                        boundaries.append({
-                            "text": item.get("text", ""),
-                            "offset_seconds": round(item["offset"]/1e7, 3),
-                            "duration_seconds": round(item["duration"]/1e7, 3),
-                        })
-            if len(boundaries) < 20 or raw_mp3.stat().st_size < 30000:
-                raise RuntimeError("TTS returned incomplete audio or word boundaries.")
-            return raw_mp3, boundaries
-        except Exception:
-            raw_mp3.unlink(missing_ok=True)
-            if attempt == 2:
-                raise
-            await asyncio.sleep(1.5 + 2*attempt)
-    raise RuntimeError("Unexpected TTS termination.")
+    # Edge's consumer endpoint can omit voices which exist in the Azure catalog.
+    # Never silently pretend the requested model succeeded: record actual voice.
+    candidate_voices=[entry["voice"]]+entry.get("fallback_voices",[])
+    last_error=None
+    for chosen_voice in candidate_voices:
+        for attempt in range(2):
+            try:
+                boundaries.clear()
+                source = edge_tts.Communicate(
+                    text=utterance, voice=chosen_voice, rate=entry["rate"],
+                    pitch=entry["pitch"], boundary="WordBoundary",
+                )
+                with raw_mp3.open("wb") as stream:
+                    async for item in source.stream():
+                        if item["type"] == "audio":
+                            stream.write(item["data"])
+                        elif item["type"] == "WordBoundary":
+                            boundaries.append({
+                                "text": item.get("text", ""),
+                                "offset_seconds": round(item["offset"]/1e7, 3),
+                                "duration_seconds": round(item["duration"]/1e7, 3),
+                            })
+                if len(boundaries) < 20 or raw_mp3.stat().st_size < 30000:
+                    raise RuntimeError("TTS returned incomplete audio or word boundaries.")
+                return raw_mp3, boundaries, chosen_voice
+            except Exception as exc:
+                last_error=type(exc).__name__
+                raw_mp3.unlink(missing_ok=True)
+                if attempt == 0:
+                    await asyncio.sleep(1.2)
+        # Next approved alternative to avoid inventing a nonexistent voice.
+    raise RuntimeError("No listed alternative voice available: "+str(last_error))
 
 
 def detect_silences(wav, threshold="-37dB", min_duration=0.20):
@@ -187,7 +194,7 @@ async def render(variant, brief, destination):
     text=validate_script(meta)
     destination=Path(destination)
     destination.mkdir(parents=True,exist_ok=True)
-    raw_mp3, word_boundaries=await real_edge_audio(variant, text, destination)
+    raw_mp3, word_boundaries, actual_voice=await real_edge_audio(variant, text, destination)
     raw_wav=destination/f"{variant}-raw.wav"
     tight_wav=destination/f"{variant}-polished.wav"
     final_mp3=destination/f"{variant}-audition-only.mp3"
@@ -201,7 +208,9 @@ async def render(variant, brief, destination):
            "-c:a","libmp3lame","-b:a","192k",str(final_mp3)])
     report = {
         "status": "AUDITION_ONLY_NO_PUBLICATION_RIGHTS",
-        "variant":variant, "voice":VOICES[variant]["voice"],
+        "variant":variant, "voice":actual_voice,
+        "requested_voice":VOICES[variant]["voice"],
+        "used_fallback_voice":actual_voice!=VOICES[variant]["voice"],
         "rate":VOICES[variant]["rate"],
         "comparison_script_sha256":sha256(brief),
         "same_script_as_other_candidates":True,
