@@ -67,7 +67,7 @@ jobs:
           cp /tmp/worldvision-internal-director-assets/vivienne_extended_plus5pct.mp3 "$A/vivienne-extended.mp3"
           cp /tmp/worldvision-internal-director-assets/vivienne_extended_plus5pct-report.json "$A/narration-report.json"
           echo "Font is for internal render only and will not be included in user downloads."
-          sha256sum "$A/vivienne-extended.mp3" | grep '^98294ad1b5f4b3a7dfca88e77a71241293a8ad5856a067da3b8ac5844c4f3606 '
+          sha256sum "$A/vivienne-extended.mp3" | grep '^172fb4adda0438bb6f1bef1e148e6ee5d843dfa7956b525288148b2c7f612b2e '
           python - <<'PY'
           import json
           from pathlib import Path
