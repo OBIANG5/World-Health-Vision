@@ -90,6 +90,7 @@ jobs:
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: |
           npm install --no-audit --no-fund --prefer-offline
+          npm install --no-save --no-audit --no-fund '@remotion/cli@4.0.542'
           npx remotion browser ensure
       - name: Render REAL frames at key moments first
         working-directory: worldhealth-vision-v2/services/media-renderer
