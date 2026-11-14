@@ -107,7 +107,7 @@ const EditorialLeaders:React.FC=()=>{
   <Overline top={990}>UNE RENCONTRE ANNONCÉE</Overline>
   <div style={{opacity:smooth(f,13,29)}}>
    <Title top={1070} size={111}>TROIS DIRIGEANTS.</Title>
-   <Title top={1200} size={111} color={C.cyan}>UN MÊME ENJEU.</Title>
+   <Title top={1212} size={111} color={C.cyan}>UN MÊME ENJEU.</Title>
   </div>
  </Main>;
 };
