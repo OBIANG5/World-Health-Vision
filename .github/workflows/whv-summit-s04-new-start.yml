@@ -40,9 +40,9 @@ jobs:
           OUT=worldhealth-vision-v2/services/media-renderer/assets/summit-2026
           mkdir -p "$OUT"
           curl --fail --location --retry 5 --retry-all-errors --max-time 120 \
-            'https://raw.githubusercontent.com/google/fonts/main/ofl/manrope/Manrope%5Bwght%5D.ttf' \
+            'https://raw.githubusercontent.com/google/fonts/29b4ec6df2522a8aee279414b78a07910b065874/ofl/manrope/Manrope%5Bwght%5D.ttf' \
             -o "$OUT/Manrope-variable.ttf"
-          echo 'd0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40  '"$OUT/Manrope-variable.ttf" | sha256sum --check --
+          echo '3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6  '"$OUT/Manrope-variable.ttf" | sha256sum --check --
           python - <<'PY'
           from PIL import ImageFont
           p='worldhealth-vision-v2/services/media-renderer/assets/summit-2026/Manrope-variable.ttf'
