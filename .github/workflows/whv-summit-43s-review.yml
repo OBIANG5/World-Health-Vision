@@ -77,6 +77,19 @@ jobs:
           git add media-lab/summit-2026/full-review
           if ! git diff --cached --quiet; then
             git commit -m "review(worldvision): source-hashed 43s narrated subtitled film, D00 original not yet accessible"
-            git push origin HEAD:whv-media-studio-browser-preview
+            # This branch is shared by multiple legitimate preview producers.
+            # Avoid a non-fast-forward lost update when another scene finishes.
+            for attempt in 1 2 3 4; do
+              if git push origin HEAD:whv-media-studio-browser-preview; then
+                echo "Preview branch updated on attempt $attempt"
+                break
+              fi
+              if test "$attempt" -eq 4; then
+                echo "Safe push unsuccessful: refusing force-push and losing any preview assets."
+                exit 1
+              fi
+              git fetch origin whv-media-studio-browser-preview
+              git rebase origin/whv-media-studio-browser-preview
+            done
           fi
           echo "Watch 43s: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.mp4"
