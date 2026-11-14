@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "episode": "worldvision-summit-trump-putin-xi-2026-11-14",
+  "editorial_script": "SCRIPT_V1.md",
+  "script_user_accepted": true,
+  "publication_authorized": false,
+  "media_profile": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "video_codec": "h264",
+    "pixel_format": "yuv420p",
+    "format": "9:16"
+  },
+  "brand": {
+    "official_logo_git_blob": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+    "d00_original_sha256": "8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2"
+  },
+  "constraints": {
+    "no_synthetic_event_footage": true,
+    "do_not_redraw_logo": true,
+    "do_not_redraw_d00_image": true,
+    "all_real_media_licensed": true,
+    "voice_fr_approved_required_before_master": true,
+    "note": "The exact approved narration is in SCRIPT_V1.md; timing must be recut to the actual French voice before final assembly."
+  },
+  "master_target_seconds_provisional": 43,
+  "segments": [
+    {
+      "id": "S01",
+      "name": "Trois dirigeants : hook",
+      "start_sec": 0,
+      "duration_sec": 4.5,
+      "visual": "Real archival portraits, kinetic headline, official logo",
+      "status": "TECHNICAL_PREVIEW_CREATED_REVIEW_REQUIRED",
+      "master_file": "S01_HOOK_4p5s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4",
+      "note": "Existing preview; editorial style not yet approved."
+    },
+    {
+      "id": "S02",
+      "name": "Globe original D00-v6",
+      "start_sec": 4.5,
+      "duration_sec": 3.1,
+      "visual": "Original reference image with 2.3% optical dolly-in and cyan rim breathing, exact centred eye",
+      "status": "LOCAL_MP4_CREATED_AND_QA_PROBED_REVIEW_REQUIRED",
+      "master_file": "WorldVision_S02_Globe_D00_3s.mp4",
+      "sha256": "95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a",
+      "canva_asset_id": "VAHa4ZT_ySo",
+      "source": "a_crisp_ultra_detailed_high_contrast_digital_ill.png",
+      "source_sha256": "8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2",
+      "generator": "services/media-renderer/scripts/worldvision_segment02_globe.py",
+      "note": "Actual original image, NOT an actual geographical rotation; no narration in this clip yet. MP4 stored in connected Canva as reusable media."
+    },
+    {
+      "id": "S03",
+      "name": "Shenzhen : localisation",
+      "start_sec": 7.6,
+      "duration_sec": 4.9,
+      "visual": "Verified location on a precise map plus licensed Shenzhen imagery and date",
+      "status": "NOT_STARTED",
+      "master_file": "S03_SHENZHEN.mp4"
+    },
+    {
+      "id": "S04",
+      "name": "Désarmement et traité",
+      "start_sec": 12.5,
+      "duration_sec": 7.9,
+      "visual": "Coded premium typography, New START information, no fictional nuclear explosions",
+      "status": "NOT_STARTED",
+      "master_file": "S04_NUCLEAR.mp4"
+    },
+    {
+      "id": "S05",
+      "name": "Xi et la réticence chinoise",
+      "start_sec": 20.4,
+      "duration_sec": 6.2,
+      "visual": "Licensed portrait Xi, headlines and diplomatic context",
+      "status": "NOT_STARTED",
+      "master_file": "S05_BEIJING.mp4"
+    },
+    {
+      "id": "S06",
+      "name": "Iran / Ukraine à l'agenda",
+      "start_sec": 26.6,
+      "duration_sec": 7.2,
+      "visual": "Dual editorial cards, explicit 'selon Washington', restrained motion",
+      "status": "NOT_STARTED",
+      "master_file": "S06_AGENDA.mp4"
+    },
+    {
+      "id": "S07",
+      "name": "Aucun accord attendu",
+      "start_sec": 33.8,
+      "duration_sec": 6.2,
+      "visual": "Archival imagery, nuanced final question, editorial typography",
+      "status": "NOT_STARTED",
+      "master_file": "S07_UNCERTAINTY.mp4"
+    },
+    {
+      "id": "S08",
+      "name": "Clôture World-Vision",
+      "start_sec": 40,
+      "duration_sec": 3,
+      "visual": "Official G0 logo, slogan and original D00-v6, no re-creation",
+      "status": "NOT_STARTED",
+      "master_file": "S08_OUTRO.mp4"
+    }
+  ],
+  "editorial_gates": {
+    "S01": "Human artistic review required",
+    "S02": "Human artistic review required",
+    "master": "Blocked until voice, proper audio sync, all eight licensed scenes and video QA"
+  },
+  "qa_for_S02": {
+    "codec": "h264",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "frames": 93,
+    "duration_sec": 3.1,
+    "sha256": "95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a",
+    "contact_sheet": "WorldVision_S02_contact_sheet.jpg",
+    "audio_present": false
+  }
+}
