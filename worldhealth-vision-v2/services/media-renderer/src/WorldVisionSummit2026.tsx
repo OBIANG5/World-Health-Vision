@@ -181,7 +181,7 @@ const Shenzhen:React.FC=()=>{
       The source is an independently reviewed MP4, never a drawn fake map.
       Its GUI already contains the original G0 logo (pixel-identical asset).
    */}
-   <Video src={staticFile(rootAssets+"segment03-shenzhen-4p9s.mp4")} muted/>
+   <Video src={staticFile(rootAssets+"segment03-shenzhen-july-v2-4p9s.mp4")} muted/>
  </AbsoluteFill>;
 };
 
