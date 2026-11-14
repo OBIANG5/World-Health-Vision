@@ -67,3 +67,17 @@ test("S01 stand-alone clean plate has no subtitles until the approved master voi
  const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
  assert.match(render,/3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6/);
 });
+
+
+test("Correct 43s EDL for fast authentic city transition: 0.9 + 4.9 + 2.7 - 0.5",()=>{
+ assert.match(component,/\{id:"globe",start:4\.5,end:5\.4,/);
+ assert.match(component,/\{id:"location",start:5\.4,end:10\.3,/);
+ assert.match(component,/\{id:"city",start:9\.8,end:12\.5,/);
+ assert.match(component,/segment03b-shenzhen-city-v1-2p7s\.mp4/);
+ assert.match(component,/const opacity=interpolate\(f,\[0,15\],\[0,1\],clamp\)/);
+ // Neither source clip is accelerated; dissolve is accomplished by overlap.
+ assert.doesNotMatch(component,/playbackRate=/);
+ const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
+ assert.match(render,/cd0dfa113ec71d95b615fba341f0aec5db8953ad1ca520dc292db6c11540f016/);
+ assert.match(render,/59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe/);
+});
