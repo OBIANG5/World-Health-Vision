@@ -58,3 +58,32 @@ https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-pre
 La vidéo déjà publiée de 33,7 secondes reste immuable ; pas de mise à jour
 rétroactive. La vraie source d'évolution est la nouvelle branche
 `improve/worldvision-vivienne-only-v3-editorial-2026-11-14`.
+
+## Décision utilisateur — Vivienne C Impact retenue (14/11/2026)
+
+La version C Impact des quatre voix A/B/C/D est retenue comme référence.
+La seule voix autorisée est fr-FR-VivienneMultilingualNeural.
+La signature visuelle officielle G0 sur fond acier clair reste validée.
+
+Défauts à corriger sans changer de timbre ni coller de fragments :
+- fin de Mississippi suivie de la phrase suivante trop robotique ;
+- fin de à l'hôpital dans la phrase des trente-deux personnes trop artificielle ;
+- intonation encore trop mécanique malgré une meilleure énergie.
+
+Le script C V3 utilisait les segments « sur le Mississippi. Trente-deux
+personnes » et « à l'hôpital. Aucun blessé » : le point provoque
+une fin de phrase puis une reprise prosodique par la synthèse.
+
+Travaux réalisés sur la branche improve/worldvision-vivienne-impact-c4-natural-flow-2026-11-14 :
+- C4 : quatre prises complètes où les mots sensibles sont suivis d'une
+  virgule et d'une proposition liée. Pauses mesurées après les mots
+  approximativement entre 0,25 et 0,38 seconde.
+- C5 : deux prises complètes sans aucune ponctuation immédiatement après
+  Mississippi ou hôpital, au même débit +8% que la C de référence.
+- Enregistrements d'origine et versions égalisées sauvegardés ; aucune
+  coupe de silence, aucun collage de phrases et pas de nouvelle narratrice.
+
+Ces métriques ne prouvent pas que l'effet robotique a disparu. La validation
+doit venir de l'écoute sur téléphone, en contexte de reportage.
+Ne jamais revendiquer une voix 100% humaine ni des droits de diffusion
+commerciale par défaut. Ne pas toucher au reportage déjà publié.
