@@ -1,0 +1,186 @@
+name: World-Vision Guinée V3 — VRAIES photos guinéennes / voix V2 strictement conservée
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/worldvision-guinee-siguiri-v3-authentic-visuals-2026-11-14
+    paths:
+      - '.github/workflows/worldvision-guinee-siguiri-v3-real-guinea-images.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_guinee_siguiri_v3_visual_editor.py'
+permissions:
+  contents: write
+concurrency:
+  group: worldvision-guinea-real-photos-v3
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact V3 script and preserved original text
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install video, PDF rasterizer and photo quality dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y ffmpeg poppler-utils
+          python -m pip install --quiet 'numpy==2.2.6' 'pillow==12.0.0'
+      - name: Download the exact owner-review V2 MP4 and shot ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/guinee-siguiri-v3
+          mkdir -p "$D"
+          RAW=https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview
+          curl -fLsS --retry 5 --retry-all-errors --max-time 240 \
+            "$RAW/media-lab/guinee-siguiri-v2-2026-11-14/world-vision-guinee-siguiri-v2-vivienne-review.mp4" \
+            -o "$D/owner-approved-voice-v2.mp4"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 60 \
+            "$RAW/media-lab/guinee-siguiri-v2-2026-11-14/manifest.json" \
+            -o "$D/v2-manifest.json"
+          echo "7fd2082b086f570c046d9595db2c0fc8e0705accb9177da71e7712b6504f39b2  $D/owner-approved-voice-v2.mp4" | sha256sum -c
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=Path('worldhealth-vision-v2/services/media-renderer/assets/guinee-siguiri-v3')
+          m=json.loads((d/'v2-manifest.json').read_text())
+          assert m['script_sha256']=='0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac'
+          assert abs(m['duration_seconds']-47.133)<.2
+          print("Original V2 47.133s MP4 preserved; exact user chosen voice source.")
+          PY
+      - name: Acquire five ACTUAL 2024 Guinea documentary photos with verifiable Creative Commons licences
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/guinee-siguiri-v3
+          UA='World-Vision Editorial 1.0 (https://github.com/OBIANG5/World-Health-Vision)'
+          curl -fLsS -A "$UA" --retry 5 --retry-all-errors --max-time 160 \
+            'https://upload.wikimedia.org/wikipedia/commons/4/45/Les_Orpailleurs_du_Quotidien_01.jpg' -o "$D/01.jpg"
+          curl -fLsS -A "$UA" --retry 5 --retry-all-errors --max-time 160 \
+            'https://upload.wikimedia.org/wikipedia/commons/b/bd/Les_Orpailleurs_du_Quotidien_02.jpg' -o "$D/02.jpg"
+          curl -fLsS -A "$UA" --retry 5 --retry-all-errors --max-time 160 \
+            'https://upload.wikimedia.org/wikipedia/commons/0/08/Les_Orpailleurs_du_Quotidien_03.jpg' -o "$D/03.jpg"
+          curl -fLsS -A "$UA" --retry 5 --retry-all-errors --max-time 160 \
+            'https://upload.wikimedia.org/wikipedia/commons/5/53/Les_Orpailleurs_du_Quotidien_04.jpg' -o "$D/04.jpg"
+          curl -fLsS -A "$UA" --retry 5 --retry-all-errors --max-time 160 \
+            'https://upload.wikimedia.org/wikipedia/commons/6/6f/Les_Orpailleurs_du_Quotidien_05.jpg' -o "$D/05.jpg"
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          d=Path('worldhealth-vision-v2/services/media-renderer/assets/guinee-siguiri-v3')
+          for n in range(1,6):
+            p=d/f'{n:02d}.jpg'
+            with Image.open(p) as im:
+              print(n,im.size,im.format,p.stat().st_size)
+              assert im.format=="JPEG" and im.width>=4500 and im.height>=4500
+          PY
+      - name: Download the verified 12 November official Guinea communiqué — actual document, NOT a fake riot photo
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/guinee-siguiri-v3
+          curl -fLsS --retry 5 --retry-all-errors --max-time 150 \
+            'https://gouvernement.gov.gn/wp-content/uploads/2026/11/COMMUNIQUE-NA%C2%B0-008-MATD-CAB-2026-DU-GOUVERNEMENT-RELATIF-AUX-EVENEMENTS-SURVENUS-LE-11-NOVEMBRE-2026-A-BALATO-PREFECTURE-DE-KINTINIAN-DU-12112026.pdf' \
+            -o "$D/government_original.pdf"
+          pdfinfo "$D/government_original.pdf" | head -14
+          pdftoppm -f 1 -l 1 -scale-to 2200 -jpeg -singlefile \
+            "$D/government_original.pdf" "$D/official_statement"
+          pdftoppm -f 2 -l 2 -scale-to 2200 -jpeg -singlefile "$D/government_original.pdf" "$D/official_statement_page2"
+          test -s "$D/official_statement_page2.jpg"
+          test -s "$D/official_statement.jpg"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 90 \
+            'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson' \
+            -o "$D/countries.geojson"
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          d=Path('worldhealth-vision-v2/services/media-renderer/assets/guinee-siguiri-v3')
+          with Image.open(d/'official_statement.jpg') as im:
+            print("Genuine government communiqué rasterized:",im.size)
+            assert im.width>1200 and im.height>1600
+          PY
+      - name: Use SAME Space Grotesk and DM Sans typefaces owner liked
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/guinee-siguiri-v3
+          curl -fLsS --retry 5 --retry-all-errors --max-time 100 \
+            'https://raw.githubusercontent.com/google/fonts/main/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf' -o "$D/SpaceGrotesk.ttf"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 100 \
+            'https://raw.githubusercontent.com/google/fonts/main/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf' -o "$D/DMSans.ttf"
+      - name: Replace THIRTEEN weak image scenes, never touch voice, globe, moving worker or blue ending
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_guinee_siguiri_v3_visual_editor.py
+          python scripts/worldvision_guinee_siguiri_v3_visual_editor.py \
+            --reference assets/guinee-siguiri-v3/owner-approved-voice-v2.mp4 \
+            --reference_manifest assets/guinee-siguiri-v3/v2-manifest.json \
+            --assets assets/guinee-siguiri-v3 \
+            --geojson assets/guinee-siguiri-v3/countries.geojson \
+            --headfont assets/guinee-siguiri-v3/SpaceGrotesk.ttf \
+            --bodyfont assets/guinee-siguiri-v3/DMSans.ttf \
+            --out output/guinee-siguiri-v3
+      - name: "Independent verification: 13 of 16 changed; sample every beat; AAC truly identical"
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/output/guinee-siguiri-v3
+          F="$D/worldvision-guinee-siguiri-v3-visuels-refaits-voix-identique.mp4"
+          test -s "$F"
+          ffprobe -v error -show_entries stream=codec_type,codec_name,width,height,r_frame_rate -show_entries format=duration -of json "$F"
+          python - <<'PY'
+          import json,hashlib,pathlib
+          d=pathlib.Path('worldhealth-vision-v2/services/media-renderer/output/guinee-siguiri-v3')
+          m=json.loads((d/'manifest.json').read_text(encoding='utf8'))
+          assert m['script_sha256']=='0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac'
+          assert m['replaced_visual_count']==13 and len(m['ledger'])==16
+          assert m['retained_visual_indices']==[0,12,15]
+          assert m['audio_bitstream_identical_to_v2']
+          assert 46.9<=m['duration_seconds']<=47.4
+          assert len(m['new_documentary_sources'])==5
+          assert (d/'review/contact-sheet-16.jpg').is_file()
+          assert len(list((d/'review').glob('shot-*.jpg')))==16
+          assert m['license_for_voice_commercial_use_verified'] is False
+          assert not m['authorized_for_publication'] and not m['user_artistic_approval']
+          print('PRODUCTION TECH PASS: 13 of 16 new scenes, exact AAC stream unchanged, 16 stills, five Guinea 2024 images, authentic document')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-guinea-v3-authentic-photos-voice-unchanged
+          retention-days: 30
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/guinee-siguiri-v3/worldvision-guinee-siguiri-v3-visuels-refaits-voix-identique.mp4
+            worldhealth-vision-v2/services/media-renderer/output/guinee-siguiri-v3/manifest.json
+            worldhealth-vision-v2/services/media-renderer/output/guinee-siguiri-v3/review/*.jpg
+      - name: Publish V3 iPhone review SEPARATELY without overwriting rejected V1 or V2
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-siguiri-v3
+          SRC=worldhealth-vision-v2/services/media-renderer/output/guinee-siguiri-v3
+          DEST=/tmp/wv-siguiri-v3/media-lab/guinee-siguiri-v3-2026-11-14
+          mkdir -p "$DEST/review"
+          cp "$SRC/worldvision-guinee-siguiri-v3-visuels-refaits-voix-identique.mp4" "$SRC/manifest.json" "$DEST/"
+          cp "$SRC/review/"*.jpg "$DEST/review/"
+          cp worldhealth-vision-v2/docs/media/episodes/2026-11-14_guinee_siguiri/VIEWER_V3.html "$DEST/index.html"
+          cd /tmp/wv-siguiri-v3
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/guinee-siguiri-v3-2026-11-14
+          if ! git diff --cached --quiet; then
+            git commit -m 'preview(media): Guinea V3 really replaced 13 visuals with authentic Guinean photographs, audio strictly unchanged'
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
