@@ -1,0 +1,101 @@
+name: World-Vision FASTLANE - montage preapproved only
+on:
+  push:
+    branches: [feature/worldvision-fastlane-assembly-only-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-fastlane.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/fastlane/**'
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'tests or assemble approved episode'
+        type: choice
+        options: [tests, assemble]
+        default: tests
+      manifest:
+        description: 'Path to locked episode.json already committed'
+        type: string
+        required: false
+        default: 'worldhealth-vision-v2/services/media-renderer/fastlane/episode.template.json'
+      assets:
+        description: 'Directory with all preapproved video/audio sources'
+        type: string
+        required: false
+        default: 'worldhealth-vision-v2/services/media-renderer/fastlane/episodes'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install lightweight contact sheet dependency
+        run: python -m pip install --quiet 'pillow>=11,<13'
+      - name: Confirm ffmpeg and ffprobe
+        run: |
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
+      - name: Test real synthetic assembly, no news content generated
+        working-directory: worldhealth-vision-v2/services/media-renderer/fastlane
+        run: |
+          python -m py_compile assemble.py test_assemble.py
+          python -m unittest -v test_assemble.py
+
+  assemble_locked_episode:
+    needs: regression
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'assemble'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate full asset package is ready before beginning assembly
+        env:
+          PACKAGE: ${{ inputs.manifest }}
+          ASSETS: ${{ inputs.assets }}
+        run: |
+          set -euo pipefail
+          test -f "$PACKAGE"
+          test -d "$ASSETS"
+          python - <<'PY'
+          import os,json
+          e=json.load(open(os.environ['PACKAGE'],encoding='utf8'))
+          assert e['stage']=='EDITORIALLY_LOCKED'
+          assert e['script_approved_by_user'] is True
+          print('LOCKED package ready:',e['episode_id'])
+          PY
+      - name: Install contact sheet dependency
+        run: python -m pip install --quiet 'pillow>=11,<13'
+      - name: Run timed assembly only (target 300s)
+        env:
+          PACKAGE: ${{ inputs.manifest }}
+          ASSETS: ${{ inputs.assets }}
+        run: |
+          set -euo pipefail
+          python worldhealth-vision-v2/services/media-renderer/fastlane/assemble.py \
+            --manifest "$PACKAGE" --assets "$ASSETS" \
+            --output output/fastlane-review --mode preview
+          python - <<'PY'
+          import json
+          x=json.load(open('output/fastlane-review/rapport.json'))
+          assert x['nombre_de_plans_verifies']>=3
+          assert x['nouvelle_synthese_voix'] is False
+          assert x['video_reencode'] is False
+          print('Elapsed montage only:',x['montage_seconds'])
+          print('Under five minutes:',x['objectif_300_secondes_atteint'])
+          PY
+      - name: Archive for explicit review; never auto-publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-fastlane-review
+          retention-days: 30
+          path: |
+            output/fastlane-review/worldvision-apercu.mp4
+            output/fastlane-review/rapport.json
+            output/fastlane-review/controle/*.jpg
