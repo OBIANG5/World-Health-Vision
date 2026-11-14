@@ -80,7 +80,7 @@ jobs:
           for name in ['flag_juba_hires.jpg','crowd_vertical.jpg','president.jpg','flag_man.jpg','independence.jpg']:
             with Image.open(d/name) as image:
               print(name,image.size,image.format)
-              assert image.format=='JPEG' and image.width>=1000 and image.height>=700
+              assert image.format in ('JPEG','MPO') and image.width>=1000 and image.height>=700
           assert Image.open(d/'flag_juba_hires.jpg').size==(2160,1440)
           PY
           test "$(git hash-object worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png)" = 'bc80fa70cebd566768bfb1703a0f1f636a78c196'
