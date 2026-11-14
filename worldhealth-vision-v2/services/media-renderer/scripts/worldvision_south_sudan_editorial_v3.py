@@ -162,7 +162,7 @@ async def voices(lines):
         # No rewrite. The editorial text itself is spoken. Vivienne is a
         # selected creative reference, not an authorized commercial voice.
         mp3=OUT/f"raw-narration-{i+1:02d}.mp3"
-        await edge_tts.Communicate(line,voice=VOICE,rate="+14%",pitch="+0Hz").save(str(mp3))
+        await edge_tts.Communicate(line,voice=VOICE,rate="+4%",pitch="+0Hz").save(str(mp3))
         if mp3.stat().st_size<5000:raise RuntimeError("Missing voice, segment "+str(i))
 def make_audio(lines):
     asyncio.run(voices(lines))
@@ -273,7 +273,7 @@ def main():
     assert aa["codec_name"]=="aac"
     check_audio(audio,dur)
     pic=OUT/"review";pic.mkdir(exist_ok=True)
-    stamps=[.65,1.62,2.75,3.8,7.0,11.6,16.1,21.4,max(0,dur-.75)]
+    stamps=[.65,1.62,2.75]+[round(dur*f,3) for f in (.18,.30,.42,.56,.72,.95)]
     ims=[]
     for i,t in enumerate(stamps):
         out=pic/f"shot-{i+1:02d}.jpg"
