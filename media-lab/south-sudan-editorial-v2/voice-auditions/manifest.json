@@ -1,0 +1,24 @@
+{
+  "status": "AUDIO_REVIEW_ONLY_NOT_LICENSED_FOR_PUBLICATION",
+  "no_publishing_permission": true,
+  "test_voices": [
+    {
+      "id": "remy",
+      "voice": "fr-FR-RemyMultilingualNeural",
+      "rate": "+13%",
+      "sample": "Quinze ans d'indépendance. Zéro élection nationale. Au Soudan du Sud, le vote prévu en décembre vient d'être reporté au onze février deux mille vingt-sept."
+    },
+    {
+      "id": "vivienne",
+      "voice": "fr-FR-VivienneMultilingualNeural",
+      "rate": "+11%",
+      "sample": "Quinze ans d'indépendance. Zéro élection nationale. Au Soudan du Sud, le vote prévu en décembre vient d'être reporté au onze février deux mille vingt-sept."
+    },
+    {
+      "id": "henri",
+      "voice": "fr-FR-HenriNeural",
+      "rate": "+14%",
+      "sample": "Quinze ans d'indépendance. Zéro élection nationale. Au Soudan du Sud, le vote prévu en décembre vient d'être reporté au onze février deux mille vingt-sept."
+    }
+  ]
+}
