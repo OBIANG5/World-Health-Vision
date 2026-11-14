@@ -91,8 +91,24 @@
       "start_sec": 12.5,
       "duration_sec": 7.9,
       "visual": "Coded premium typography, New START information, no fictional nuclear explosions",
-      "status": "NOT_STARTED",
-      "master_file": "S04_NUCLEAR.mp4"
+      "status": "S04_QA_PASSED_WAITING_ART_REVIEW",
+      "master_file": "segment04-new-start-7p9s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.mp4",
+      "sha256": "1e25443e40b4b9a867bcbd53f5f7ad4f977cb7577cf6277b348f3bf2e05ec6c9",
+      "bytes": 1150810,
+      "fps": 30,
+      "frames": 237,
+      "resolution": "1080x1920",
+      "preview_manifest": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.json",
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04/contact-sheet.jpg",
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43585854686",
+      "archive_photo": "Chuck Kennedy / White House, official signing of New START, Prague April 8, 2010, public domain",
+      "archive_photo_sha256": "36789c11b8a4777dc432213fcd206b05a09feda7d1f1809f592b4904ccec43a1",
+      "source": "services/media-renderer/scripts/worldvision_segment04_new_start.py",
+      "publication_approved": false,
+      "human_art_approved": false,
+      "audio_present": false,
+      "notes": "Authentic 2010 White House photo; official logo G0 verified by Git blob; fact-check New START expired February 5, 2026. Technical QA successful: 1080x1920/30fps/237 frames/H264/silent + 6 distinct frames; next human artistic review before mastering."
     },
     {
       "id": "S05",
@@ -134,7 +150,8 @@
   "editorial_gates": {
     "S01": "Human artistic review required",
     "S02": "Human artistic review required",
-    "master": "Blocked until voice, proper audio sync, all eight licensed scenes and video QA"
+    "master": "Blocked until voice, proper audio sync, all eight licensed scenes and video QA",
+    "S04": "Technical rendering/QA passed on GitHub Actions #43585854686; user art review pending, no audio"
   },
   "qa_for_S02": {
     "codec": "h264",
@@ -148,5 +165,5 @@
     "audio_present": false
   },
   "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded.",
-  "active_edition": "S03 NASA JULY V2 is recommended for master, not yet user-approved"
+  "active_edition": "S03 July V2 and S04 New START are technical candidates only; S03B city shot missing, S05-S08 not produced, final voice not approved"
 }
