@@ -1,0 +1,139 @@
+{
+  "episode": "Guinea-Siguiri-Balato-11-Nov-2026",
+  "state": "REVIEW_ONLY_NOT_LICENSED_FOR_COMMERCIAL_TTS",
+  "script_sha256": "0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac",
+  "script_verbatim": [
+    "Dix morts. Treize blessés. En Guinée, une opération contre l’orpaillage illégal a tourné au drame.",
+    "Tout se joue à Balato, près de Siguiri.",
+    "Neuf jours après l’interdiction de l’exploitation illégale, une patrouille vient contrôler son application.",
+    "Des barricades bloquent la route. Puis, des tirs éclatent.",
+    "Mais le bilan révèle un autre choc : cinq des personnes tuées sont étrangères. Leurs identités restent inconnues.",
+    "Pourquoi une telle tension ?",
+    "L’État accuse l’exploitation illégale de détruire les terres et de polluer les rivières.",
+    "Pourtant, pour des milliers de familles, l’orpaillage est un moyen de vivre.",
+    "Et une question reste entière : qui a tiré le premier ?",
+    "Une enquête est ouverte pour établir les responsabilités."
+  ],
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "voice_rate": "slow split-prosody -35% to -40%",
+  "voice_words_per_minute": 113.64,
+  "voice_no_time_stretch": true,
+  "voice_commercial_license_verified": false,
+  "publication_authorized": false,
+  "duration_seconds": 57.533,
+  "audio_duration_seconds": 57.55,
+  "video_sha256": "3e15250b8666b51965c9405006fd766b8a7f1aa507f4426580f824d35ae3fd97",
+  "resolution": "1080x1920",
+  "fps": 30,
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "image_status": "Archival Siguiri USAID photographs and geographically disclosed non-Guinea illustration only; no Balato battle footage",
+  "geography": {
+    "Balato": {
+      "lat": 11.57162,
+      "lon": -9.32061
+    },
+    "Siguiri": {
+      "lat": 11.42282,
+      "lon": -9.16852
+    },
+    "globe": "NASA Blue Marble July + Natural Earth exact Guinea polygon"
+  },
+  "visual_timeline": [
+    {
+      "visual": "globe_guinea_verified_geography",
+      "seconds": 3.0
+    },
+    {
+      "visual": "gold",
+      "seconds": 5.533333333333333
+    },
+    {
+      "visual": "location",
+      "seconds": 3.933333333333333
+    },
+    {
+      "visual": "ban",
+      "seconds": 7.766666666666667
+    },
+    {
+      "visual": "confront",
+      "seconds": 5.166666666666667
+    },
+    {
+      "visual": "foreign",
+      "seconds": 8.966666666666667
+    },
+    {
+      "visual": "why",
+      "seconds": 2.033333333333333
+    },
+    {
+      "visual": "river",
+      "seconds": 6.2
+    },
+    {
+      "visual": "families",
+      "seconds": 5.9
+    },
+    {
+      "visual": "question",
+      "seconds": 4.666666666666667
+    },
+    {
+      "visual": "justice",
+      "seconds": 4.366666666666666
+    }
+  ],
+  "sources": [
+    {
+      "kind": "news",
+      "url": "https://www.reuters.com/world/africa/10-killed-clashes-guinea-after-artisanal-mining-ban-2026-11-13/"
+    },
+    {
+      "kind": "official",
+      "url": "https://gouvernement.gov.gn/wp-content/uploads/2026/11/COMMUNIQUE-NA%C2%B0-008-MATD-CAB-2026-DU-GOUVERNEMENT-RELATIF-AUX-EVENEMENTS-SURVENUS-LE-11-NOVEMBRE-2026-A-BALATO-PREFECTURE-DE-KINTINIAN-DU-12112026.pdf"
+    },
+    {
+      "kind": "news",
+      "url": "https://apnews.com/article/3bf55251d4da7159b04e031c8783d7a4"
+    },
+    {
+      "kind": "authentic_archival_photo",
+      "name": "Guinea Siguiri miner woman, 2000",
+      "license": "US Federal Government PD (USAID)",
+      "url": "https://commons.wikimedia.org/wiki/File:Guinea_Siguiri_miner_woman.jpg"
+    },
+    {
+      "kind": "authentic_archival_photo",
+      "name": "Guinea Siguiri village, published 2006",
+      "license": "US Federal Government PD (USAID)",
+      "url": "https://commons.wikimedia.org/wiki/File:Guinea_Siguiri_village.jpg"
+    },
+    {
+      "kind": "illustration_not_guinea",
+      "name": "Aerial view of red soil extraction",
+      "creator": "Umar Yakubu, via Pexels",
+      "license": "Pexels License",
+      "url": "https://www.pexels.com/photo/aerial-view-of-red-soil-extraction-scene-31570538/"
+    },
+    {
+      "kind": "illustration_not_guinea",
+      "name": "Aerial river excavation (Paraguay)",
+      "creator": "Perrito doggy Fotos y videos variados, via Pexels",
+      "license": "Pexels License",
+      "url": "https://www.pexels.com/photo/aerial-view-of-a-river-with-excavators-digging-sand-and-clay-deposits-on-its-banks-17165570/"
+    }
+  ],
+  "photo_sha256": {
+    "woman_siguiri_usaid.jpg": "a30c18c29ab8562f250faa22c35622613efaa2b31369322d621d5da71fbaea2f",
+    "siguiri_village_usaid.jpg": "977402e1b0f975283771f4def565a454457fa7869802b4e1d7d864aceca1e5c5",
+    "red_soil_illustration.jpg": "48d0d80708fec3af1b08a3940cd87c8338c194d4f6a0576614a2cc4c918cacfa",
+    "river_illustration.jpg": "464d928f3fab0639e9fb87dbe512a6cd1e00c22c59a2290d96ad0002c088b76e"
+  },
+  "headfont_sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72",
+  "bodyfont_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+  "official_logo_sha256": "b5e76e19260a6c405c17d54695278c12adb5e8b90f241deddf351620d7e7d9fb",
+  "narration_audition_required": true,
+  "artistic_approval": false
+}
