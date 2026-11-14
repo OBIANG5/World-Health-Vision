@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "episode_id": "wv-002-new-orleans-2026-11-13",
+  "status": "PREPRODUCTION_NOT_READY_FOR_PUBLISHING",
+  "event_date": "2026-11-13",
+  "verified_at": "2026-11-14",
+  "title": "Collision d'un pétrolier et d'un bateau de croisière sur le Mississippi",
+  "story_facts": {
+    "confirmed": [
+      "Le 13 novembre 2026, le navire-citerne Atlantic Asphalt a heurté le bateau de croisière American Heritage, amarré à La Nouvelle-Orléans.",
+      "Le bateau de croisière s'est retrouvé sur le côté et une opération de sauvetage s'est organisée sur le Mississippi.",
+      "Les autorités ont annoncé 32 personnes hospitalisées, sans blessure critique signalée.",
+      "Les passagers et membres d'équipage ont été retrouvés et comptabilisés."
+    ],
+    "unconfirmed": [
+      "La cause exacte du choc.",
+      "Toute responsabilité précise d'un équipage ou d'un système de navigation."
+    ],
+    "sources": [
+      {
+        "name": "Associated Press",
+        "url": "https://apnews.com/article/757bed7a70ceb72f0d7140143fe2a764",
+        "published": "2026-11-14"
+      },
+      {
+        "name": "WWNO New Orleans Public Radio",
+        "url": "https://www.wwno.org/local-regional-news/2026-11-13/tanker-strikes-paddlewheel-cruise-ship-in-new-orleans-32-injured-no-passengers-missing",
+        "published": "2026-11-13"
+      },
+      {
+        "name": "WDSU New Orleans",
+        "url": "https://www.wdsu.com/article/new-orleans-cruise-ship-struck-tanker-river-video/74426522",
+        "published": "2026-11-13"
+      }
+    ]
+  },
+  "editorial": {
+    "hook": "Un pétrolier percute un bateau de croisière à quai. Le choc le renverse dans le Mississippi !",
+    "narration_draft": "Un navire-citerne frappe un bateau de croisière à quai à La Nouvelle-Orléans ! C'est sur le Mississippi que le bateau chavire et que des passagers finissent dans l'eau. Trente-deux personnes sont transportées à l'hôpital pour être soignées, sans qu'aucune soit dans un état critique. Comment un tel accident a-t-il pu se produire ?",
+    "tone": "Urgence contrôlée, information vérifiée et émotion réelle. Ne pas exagérer les blessures.",
+    "facts_checked_not_final_voice": true,
+    "proposed_audio_profile": "worldvision-vivienne-c52-impact-media",
+    "voice_model": "fr-FR-VivienneMultilingualNeural",
+    "voice_reference_sample_only": true,
+    "proposed_new_story_speed_percent": 8,
+    "proposed_speed_approved": true,
+    "produced_new_narration": true,
+    "no_reuse_of_C52_audio_on_new_news": true,
+    "source_narration_requires_human_approval": true,
+    "existing_selected_C52_recording_available": true,
+    "selected_audio_source": "worldhealth-vision-v2/services/media-renderer/public/voice/vivienne-c52-impact-media-reference.mp3",
+    "selected_audio_seconds": 14.088,
+    "new_tts_generation_needed_for_this_event": false,
+    "audio_approved_for_story_working_cut": true,
+    "future_speed_if_new_take_needed_percent": 6,
+    "future_speed_change_approved": false
+  },
+  "render": {
+    "size": [
+      1080,
+      1920
+    ],
+    "fps": 30,
+    "target_duration_seconds": [
+      16,
+      19
+    ],
+    "source_video_required": true,
+    "brand_mark": "official_original_eye_transparent",
+    "brand_outro": "worldvision-original-g0-graphite.mp4",
+    "brand_outro_silent": true,
+    "voice_one_continuous_take": true,
+    "banned_text": [
+      "LE MONDE LOCALISATION",
+      "LE MONDE • LOCALISATION",
+      "ILLUSTRATION IA",
+      "PRÉVISUALISATION"
+    ],
+    "forbidden": [
+      "generic_building_for_war",
+      "beige_logo_tile",
+      "emoji_watermark",
+      "invented_event_footage",
+      "fake_location",
+      "unlicensed_shot"
+    ],
+    "timeline_calculation": "C5.2 14.088s voice + 3.0s silent approved G0 outro = 17.088s; video timeline quantized to 30fps = 17.10s (513 frames)",
+    "narration_audio_file": "worldhealth-vision-v2/services/media-renderer/public/voice/vivienne-c52-impact-media-reference.mp3",
+    "narration_audio_seconds": 14.088,
+    "outro_start_seconds": 14.1,
+    "total_frames": 513
+  },
+  "typography": {
+    "font_family": "DM Sans",
+    "uppercase_only_for_short_headlines": true,
+    "text_lines_per_scene_max": 2,
+    "subtitle_mode": "DISABLED_PENDING_PROPER_SAFE_AREA_COMPOSITION",
+    "captions_can_overlap_titles": false,
+    "caption_safe_area_px": [
+      90,
+      225,
+      850,
+      1475
+    ],
+    "must_review_phone_safe_areas": true
+  },
+  "shots": [
+    {
+      "id": "s01",
+      "sec": [
+        0,
+        3.7
+      ],
+      "kind": "documentary_video",
+      "screen_title": "UN NAVIRE PERCUTE UN BATEAU",
+      "spoken_excerpt": "Un navire-citerne frappe un bateau de croisière à quai à La Nouvelle-Orléans !",
+      "visual_subject_required": "Le tanker Atlantic Asphalt touchant le navire American Heritage pendant la collision du 13 novembre 2026",
+      "visual_match_reason": "L'ouverture doit montrer le choc réellement raconté, jamais un navire générique.",
+      "source_url": "https://www.wdsu.com/article/new-orleans-cruise-ship-struck-tanker-river-video/74426522",
+      "source_credit": "WDSU / vidéo Barry Kern, droits à obtenir",
+      "asset_date": "2026-11-13",
+      "rights_status": "NOT_CLEARED",
+      "motion_intent": "Ouverture immédiate sur le vrai choc filmé, zoom d'information vers la zone de contact, rien de reconstitué.",
+      "planned_visual_asset": null,
+      "visual_verified_against_audio": false,
+      "title_box": {
+        "x": 80,
+        "y": 980,
+        "width": 780,
+        "height": 160
+      },
+      "caption_box": null
+    },
+    {
+      "id": "s02",
+      "sec": [
+        3.7,
+        7.3
+      ],
+      "kind": "documentary_video",
+      "screen_title": "LE BATEAU SE RENVERSE",
+      "spoken_excerpt": "C'est sur le Mississippi que le bateau chavire et que des passagers finissent dans l'eau.",
+      "visual_subject_required": "American Heritage renversé sur le côté, vraies images du jour",
+      "visual_match_reason": "Le visuel prouve et explique que le bateau se retrouve sur le flanc.",
+      "source_url": "https://www.wdsu.com/article/new-video-chaotic-aftermath-cruise-ship-tanker-collision/74428633",
+      "source_credit": "WDSU, source vidéo à licencier",
+      "asset_date": "2026-11-13",
+      "rights_status": "NOT_CLEARED",
+      "motion_intent": "Plan authentique du navire sur le flanc puis des personnes dans l'eau, raccord narratif doux et lisible.",
+      "planned_visual_asset": null,
+      "visual_verified_against_audio": false,
+      "title_box": {
+        "x": 80,
+        "y": 960,
+        "width": 780,
+        "height": 155
+      },
+      "caption_box": null
+    },
+    {
+      "id": "s03",
+      "sec": [
+        7.3,
+        11.75
+      ],
+      "kind": "documentary_video",
+      "screen_title": "32 PERSONNES HOSPITALISÉES",
+      "spoken_excerpt": "Trente-deux personnes sont transportées à l'hôpital pour être soignées, sans qu'aucune soit dans un état critique.",
+      "visual_subject_required": "Interventions des secours auprès des personnes dans le Mississippi",
+      "visual_match_reason": "Montrer le sauvetage vérifiable, pas un bâtiment ou une image décorative.",
+      "source_url": "https://www.wdsu.com/article/new-orleans-cruise-ship-tanker-collision-rescue-video/74426610",
+      "source_credit": "WDSU, permissions de reproduction non obtenues",
+      "asset_date": "2026-11-13",
+      "rights_status": "NOT_CLEARED",
+      "motion_intent": "Plan réel des secours, accent typographique sobre sur 32 puis sans état critique, sans inventer de victimes.",
+      "planned_visual_asset": null,
+      "visual_verified_against_audio": false,
+      "title_box": {
+        "x": 75,
+        "y": 980,
+        "width": 800,
+        "height": 160
+      },
+      "caption_box": null
+    },
+    {
+      "id": "s04",
+      "sec": [
+        11.75,
+        14.1
+      ],
+      "kind": "editorial_motion",
+      "screen_title": "UNE ENQUÊTE EST OUVERTE",
+      "spoken_excerpt": "Comment un tel accident a-t-il pu se produire ?",
+      "visual_subject_required": "Carton graphique d'enquête en cours, pas de scène de collision inventée.",
+      "visual_match_reason": "La question finale est factuelle et ne prétend pas connaître une cause non établie.",
+      "source_url": "https://apnews.com/article/757bed7a70ceb72f0d7140143fe2a764",
+      "source_credit": "AP, enquête toujours en cours",
+      "asset_date": "2026-11-14",
+      "rights_status": "NOT_APPLICABLE_TEXT_FACT",
+      "motion_intent": "Transition vers une question éditoriale concise puis fondu bref vers la signature claire approuvée.",
+      "planned_visual_asset": "Remotion factual type motion, NOT fake collision image",
+      "visual_verified_against_audio": true,
+      "title_box": {
+        "x": 75,
+        "y": 950,
+        "width": 805,
+        "height": 140
+      },
+      "caption_box": null
+    },
+    {
+      "id": "s05",
+      "sec": [
+        14.1,
+        17.1
+      ],
+      "kind": "outro",
+      "screen_title": "WORLD-VISION",
+      "spoken_excerpt": "",
+      "visual_subject_required": "Véritable logo G0 en transparence sur fond acier clair déjà approuvé",
+      "visual_match_reason": "Signature finale de marque, ni narration ni faux logo.",
+      "source_url": null,
+      "source_credit": "Marque World-Vision officielle",
+      "asset_date": null,
+      "rights_status": "OWNER_BRAND",
+      "motion_intent": "Signature G0 graphite officielle silencieuse durant 90 frames, aucun slogan lu ni voix prolongée.",
+      "planned_visual_asset": "worldvision-original-g0-graphite.mp4",
+      "visual_verified_against_audio": true,
+      "title_box": null,
+      "caption_box": null
+    }
+  ],
+  "qa": {
+    "rights_cleared": false,
+    "footage_review_complete": false,
+    "voice_for_this_new_story_approved": true,
+    "final_1080p_preview_checked": false,
+    "full_audio_listened_on_mobile": false,
+    "captions_and_text_overlap_checked": false,
+    "actual_render_screenshots_reviewed": false,
+    "factual_release_check": false,
+    "ready_to_export": false,
+    "ready_to_publish": false
+  }
+}

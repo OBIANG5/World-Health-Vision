@@ -1,0 +1,85 @@
+name: World-Vision — secure reusable C5.2 Vivienne reference in GitHub
+
+on:
+  push:
+    branches:
+      - production/worldvision-vivienne-c52-voice-lock-2026-11-14
+    paths:
+      - '.github/workflows/worldvision-approved-c52-master.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/approved_voice_profile.json'
+      - 'worldhealth-vision-v2/services/media-renderer/quality/approved_vivienne_reference.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_approved_vivienne_reference.py'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-c52-reference-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reference:
+    name: Safely import precisely selected MP3 to durable code branch
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Preflight canonical voice decisions (no MP3 required yet)
+        run: |
+          set -euo pipefail
+          R=worldhealth-vision-v2/services/media-renderer
+          python "$R/quality/approved_vivienne_reference.py" \
+            --only-metadata \
+            --report "$R/output/nextgen/c52-metadata-preflight.json"
+          python -m unittest discover -v -s "$R/nextgen" -p 'test_approved_vivienne_reference.py'
+      - name: Retrieve exact accepted binary blobs, not regenerated audio
+        run: |
+          set -euo pipefail
+          ROOT=worldhealth-vision-v2/services/media-renderer
+          DEST="$ROOT/public/voice"
+          mkdir -p "$DEST"
+          git fetch --no-tags --depth=1 origin \
+            refs/heads/whv-media-studio-browser-preview:refs/remotes/origin/whv-media-studio-browser-preview
+          SRC=media-lab/nextgen/vivienne-c5-linked
+          git show "origin/whv-media-studio-browser-preview:$SRC/c5_broadcast-review-only.mp3" > "$DEST/vivienne-c52-impact-media-reference.mp3"
+          git show "origin/whv-media-studio-browser-preview:$SRC/c5_broadcast-raw-service.mp3" > "$DEST/vivienne-c52-impact-media-raw.mp3"
+          git show "origin/whv-media-studio-browser-preview:$SRC/c5_broadcast-report.json" > "$DEST/vivienne-c52-reference-report.json"
+          REVIEW_SHA="$(git hash-object "$DEST/vivienne-c52-impact-media-reference.mp3")"
+          RAW_SHA="$(git hash-object "$DEST/vivienne-c52-impact-media-raw.mp3")"
+          test "$REVIEW_SHA" = "cd2254c1557b815fd63a4861af9086d26d960da6"
+          test "$RAW_SHA" = "b36aca061d634e68be464e805284d3aa1735a5f6"
+          test -s "$DEST/vivienne-c52-impact-media-reference.mp3"
+          test -s "$DEST/vivienne-c52-impact-media-raw.mp3"
+          echo "Selected MP3s match the exact Git blob SHA of the approved C5.2 files."
+      - name: Recheck imported C5.2 and block false commercial approval
+        run: |
+          set -euo pipefail
+          R=worldhealth-vision-v2/services/media-renderer
+          python "$R/quality/approved_vivienne_reference.py" \
+            --report "$R/output/nextgen/c52-authenticity-report.json"
+          python -m unittest discover -v -s "$R/nextgen" -p 'test_approved_vivienne_reference.py'
+      - name: Commit immutable reference to dedicated production branch
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add worldhealth-vision-v2/services/media-renderer/public/voice/ \
+                  worldhealth-vision-v2/services/media-renderer/output/nextgen/c52-authenticity-report.json
+          if git diff --cached --quiet; then
+            echo "Reference already committed unchanged; no duplicate commit."
+          else
+            git commit -m "assets(worldvision): preserve exact user-approved Vivienne C5.2 MP3 master and raw audio"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
+      - name: Preserve independent QA report
+        uses: actions/upload-artifact@v4
+        with:
+          name: c52-approved-reference-integrity-proof-not-a-publishing-clearance
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/c52-authenticity-report.json
+          retention-days: 30

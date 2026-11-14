@@ -1,0 +1,91 @@
+name: World-Vision — visual truth and post-render contact-sheet QA
+
+on:
+  push:
+    branches:
+      - production/worldvision-vivienne-c52-voice-lock-2026-11-14
+    paths:
+      - '.github/workflows/worldvision-visual-truth-qa.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/quality/worldvision_episode_acceptance.py'
+      - 'worldhealth-vision-v2/services/media-renderer/quality/worldvision_real_frame_audit.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/new_orleans_episode_review.json'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_worldvision_episode_acceptance.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_real_frame_audit.py'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-visual-truth-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  editorial:
+    name: Reject unlicensed images and premature video publishing
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run factual-image and typography regression gates
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python -m unittest discover -v -s nextgen -p 'test_worldvision_episode_acceptance.py'
+      - name: Ensure NEXT video remains blocked without media licenses and human reviews
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python quality/worldvision_episode_acceptance.py \
+            --episode nextgen/new_orleans_episode_review.json \
+            --profile nextgen/approved_voice_profile.json \
+            --report output/nextgen/new-orleans-release-blockers.json \
+            --expect-blocked
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-next-episode-reality-check
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/new-orleans-release-blockers.json
+          retention-days: 30
+
+  brand:
+    name: Inspect ACTUAL encoded official G0 light outro frames
+    runs-on: ubuntu-latest
+    permissions: {contents: read}
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare image and video inspection dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check pillow
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Test brightness and frame-sampling logic
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python -m unittest discover -v -s nextgen -p 'test_real_frame_audit.py'
+      - name: Fetch only selected authentic G0 graphite export, never invented replacement
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin \
+            refs/heads/whv-media-studio-browser-preview:refs/remotes/origin/whv-media-studio-browser-preview
+          mkdir -p /tmp/wv-qa
+          git show "origin/whv-media-studio-browser-preview:media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4" \
+            > /tmp/wv-qa/user-approved-graphite.mp4
+          test "$(git hash-object /tmp/wv-qa/user-approved-graphite.mp4)" = "7ba4e883c68704ba457c484f2d1bbf7d3e3f956d"
+      - name: Sample real video, compile contact sheet and verify silent 1080x1920 signature
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python quality/worldvision_real_frame_audit.py \
+            --video /tmp/wv-qa/user-approved-graphite.mp4 \
+            --out output/nextgen/brand-actual-frames \
+            --count 10 \
+            --require-silent
+      - uses: actions/upload-artifact@v4
+        with:
+          name: approved-worldvision-g0-light-real-frame-inspection
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/brand-actual-frames/
+          retention-days: 30
