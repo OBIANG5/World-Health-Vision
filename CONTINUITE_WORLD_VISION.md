@@ -1,5 +1,14 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## RETOUR APRÈS VISIONNAGE V3 GUINÉE — NOTE 6/10 + CORRECTIF SON, 14/11/2026
+
+L'utilisateur a décidé de **publier la V3** mais la note **6/10**, jugeant la voix **trop basse** et le montage **pas assez émotionnel, vivant, animé** malgré les nouvelles photographies authentiques. Ne plus confondre 13 remplacements d'images ou un zoom sur photo avec un reportage poignant. Les critères des prochaines vidéos imposent de vrais gestes filmés pertinents, des variations fortes de plans, une mise en scène sémantique et des rythmes visuels au service des paroles. Pas de fausses violences ni de faux témoignages.
+
+**Diagnostic du fichier réel** `worldvision-guinee-siguiri-v3-visuels-refaits-voix-identique.mp4` : **-16,40 LUFS et -1,99 dBTP**, souffle non suffisant sur smartphone. **Correction audio exportée et contrôlée** : `worldvision-guinee-siguiri-v3-son-clarifie-et-renforce.mp4`, 47,133s, **-13,67 LUFS, -1,38 dBTP**, soit +2,73 LU, H.264 inchangé exactement (video elementary stream SHA-256 `5518c8ebb75b71700a162cd467579758b9a04d680fc0c2b36a4407757f2a0da0` avant et après) ; SHA-256 du fichier local `c1e4865813013c45e35408bace3c96a7cc5a6b0cfd944e4ef54e259d01f73273`. Script et interprétation Vivienne non regénérés : simplement remaster audio doux. **Version avec son corrigé fournie au propriétaire dans le chat** ; CI GitHub ajoutée sur branche `feature/worldvision-guinee-siguiri-v3-authentic-visuals-2026-11-14` : `.github/workflows/worldvision-guinee-siguiri-v3-louder-audio.yml`, publiant une version son renforcé sans écraser l'original. Vérifier le résultat avant de déclarer le nouveau lecteur publié.
+
+Conserver la note 6/10 dans le registre qualité du Media Studio. La nouvelle règle audio : contrôler le loudness ET l'écoute mobile avant livraison ; la nouvelle règle cinéma : une photo recadrée animée n'est pas une vidéo émotionnellement aboutie. La qualité artistique du propriétaire est distincte du succès du pipeline.
+
+
 ## MONTAGE GUINÉE V3 — REFONTE VISUELLE RÉELLE EN RÉPONSE AU REFUS DE LA V2
 
 Le propriétaire reproche aux V1/V2 Guinée de ne changer pratiquement **aucune image** et de conserver des photographies et plans fades/génériques, malgré ses demandes répétées. **Il demande de terminer l'épisode en conservant EXACTEMENT la dernière voix Vivienne** — ne plus rouvrir le chantier de la voix — tout en refaisant les visuels faibles.
