@@ -47,6 +47,17 @@ jobs:
           npm run typecheck
           node --check render-editorial-v2-stills.mjs
           node render-editorial-v2-stills.mjs
+      - name: Generate real compressed contact-sheet proofs for small mobile screens
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/output/editorial-v2/still-audit
+          for f in "$D"/*.png; do
+            stem="$(basename "$f" .png)"
+            ffmpeg -y -v error -i "$f" -frames:v 1 -vf scale=540:960 -q:v 3 "$D/$stem-review.jpg"
+          done
+          ffmpeg -y -v error             -i "$D/newstart-archive-review.jpg" -i "$D/china-review.jpg" -i "$D/iran-ukraine-review.jpg"             -filter_complex hstack=inputs=3 -q:v 3 "$D/inner-scenes-contact-sheet.jpg"
+          ffmpeg -y -v error             -i "$D/newstart-expiry-review.jpg" -i "$D/uncertainty-review.jpg" -i "$D/silent-signature-review.jpg"             -filter_complex hstack=inputs=3 -q:v 3 "$D/last-scenes-contact-sheet.jpg"
       - name: Preserve QA frames for user visual review
         shell: bash
         env:
@@ -58,12 +69,19 @@ jobs:
           SRC=worldhealth-vision-v2/services/media-renderer/output/editorial-v2/still-audit
           OUT=/tmp/wv-v2-stills/media-lab/summit-2026/editorial-v2/still-audit
           mkdir -p "$OUT"
-          cp "$SRC/"*.png "$SRC/scene-audit.json" "$OUT/"
+          cp "$SRC/"*.png "$SRC/"*.jpg "$SRC/scene-audit.json" "$OUT/"
           cd /tmp/wv-v2-stills
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add media-lab/summit-2026/editorial-v2/still-audit
           if ! git diff --cached --quiet; then
             git commit -m "review(worldvision): authentic editorial V2 source styleframes S01-S08 before whole film"
-            git push origin HEAD:whv-media-studio-browser-preview
+            pushed=0
+            for attempt in 1 2 3 4 5; do
+              git fetch origin whv-media-studio-browser-preview
+              git rebase origin/whv-media-studio-browser-preview
+              if git push origin HEAD:whv-media-studio-browser-preview; then pushed=1; break; fi
+              sleep 2
+            done
+            test "$pushed" = 1
           fi
