@@ -65,12 +65,40 @@ sh("ffmpeg","-y","-v","error","-f","lavfi","-i",
    "-crf","18","-pix_fmt","yuv420p",card)
 assert next(x for x in probe(card)["streams"] if x["codec_type"]=="video")["nb_frames"]=="27"
 parts=["01.mp4",card.name,"03.mp4","04.mp4","05.mp4","06.mp4","07.mp4","08.mp4"]
-playlist=WORK/"segments.txt"
-playlist.write_text("".join("file '"+str(WORK/p)+"'\n" for p in parts),encoding="utf8")
 visual=WORK/"visual-unsubtitled.mp4"
-sh("ffmpeg","-y","-v","error","-f","concat","-safe","0","-i",playlist,
-   "-fps_mode","cfr","-r","30","-an","-c:v","libx264","-preset","medium",
-   "-crf","19","-pix_fmt","yuv420p","-movflags","+faststart",visual)
+# MP4 sources can have different timebases. The concat *demuxer* can silently
+# shuffle or freeze scenes while still producing exactly 1290 frames.
+# Decode each input separately, reset timebase and timestamps, and concatenate
+# streams with the concat *filter*. This guarantees natural 1x frame ordering.
+cmd=["ffmpeg","-y","-v","error"]
+for p in parts:cmd+=["-i",str(WORK/p)]
+filters=[f"[{i}:v]fps=30,settb=1/30,setpts=PTS-STARTPTS,format=yuv420p[v{i}]" for i in range(len(parts))]
+filters.append("".join(f"[v{i}]" for i in range(len(parts)))+f"concat=n={len(parts)}:v=1:a=0[out]")
+cmd+=["-filter_complex",";".join(filters),"-map","[out]","-an","-r","30",
+      "-c:v","libx264","-preset","medium","-crf","19","-pix_fmt","yuv420p",
+      "-movflags","+faststart",str(visual)]
+sh(*cmd)
+
+# Verify the temporal identity of nine actual moments against their corresponding
+# immutable source clips. Correct total duration alone cannot pass this QA.
+def rgb_frame(path,at):
+ return subprocess.check_output(["ffmpeg","-v","error","-ss",f"{at:.4f}","-i",str(path),
+  "-frames:v","1","-vf","scale=135:240","-f","rawvideo","-pix_fmt","rgb24","pipe:1"])
+probes=[
+ (.80,"01.mp4",.80),(5.00,card.name,.50),
+ (8.00,"03.mp4",2.60),(11.50,"03.mp4",6.10),
+ (16.40,"04.mp4",3.90),(24.00,"05.mp4",3.60),
+ (30.00,"06.mp4",3.40),(37.10,"07.mp4",3.30),
+ (41.80,"08.mp4",1.80)]
+errors={}
+for absolute,src,relative in probes:
+ master_rgb=rgb_frame(visual,absolute)
+ original_rgb=rgb_frame(WORK/src,relative)
+ assert len(master_rgb)==len(original_rgb)>0
+ delta=sum(abs(a-b) for a,b in zip(master_rgb,original_rgb))/len(master_rgb)
+ errors[f"{absolute:05.2f}s"]={"source":src,"mean_pixel_delta":round(delta,3)}
+ if delta>16.0:raise RuntimeError(f"SCENE ORDER MISMATCH at {absolute}s: expected {src}, mean delta {delta:.1f}")
+print("SCENE ORDER VERIFIED:",json.dumps(errors),flush=True)
 
 # Source-locked subtitle alignment: direct real neural word boundaries.
 stem=WORK/"captions"
@@ -121,6 +149,8 @@ report={
  "voice_sha256":VOICE_SHA,"subtitle_cues":13,
  "subtitles_matched_to_actual_word_boundaries":True,
  "clean_segment_mp4s":True,
+ "video_scene_order_checked_against_actual_sources":True,
+ "scene_frame_comparison":errors,
  "music":"original mathematically synthesized quiet atmospheric bed",
  "narrative_source":"2026-11-14 approved SCRIPT_V1.md",
  "publication_authorized":False,"art_approved":False,
