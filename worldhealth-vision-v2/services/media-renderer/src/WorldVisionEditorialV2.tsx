@@ -141,21 +141,33 @@ const City:React.FC=()=>{
 };
 const Treaty:React.FC=()=>{
  const f=useCurrentFrame();
- return <Main>
-  <ArchivePhoto name="new-start-prague-2010.jpg" zoom={1.065} focus="center 30%"/>
-  <AbsoluteFill style={{background:"linear-gradient(to bottom,rgba(3,15,28,.76),rgba(3,15,28,.08) 24%,rgba(3,15,28,.16) 45%,#061528 83%)"}}/>
-  <Overline top={267}>DÉSARMEMENT NUCLÉAIRE</Overline>
-  <div style={{opacity:smooth(f,4,20)}}>
-   <Title top={390} size={197}>NEW START</Title>
+ // Full unaltered historic photograph: both signatories must be visible.
+ // Original landscape archive is preserved inside a documentary window,
+ // NOT enlarged with objectFit:cover (which previously cropped the presidents).
+ const pulse=smooth(f,6,25);
+ const article=smooth(f,48,70);
+ return <Main bg={C.navy}>
+  <AbsoluteFill style={{background:"radial-gradient(circle at 47% 46%,rgba(69,151,180,.12),transparent 56%)"}}/>
+  <Overline top={219}>DÉSARMEMENT NUCLÉAIRE</Overline>
+  <div style={{opacity:pulse}}>
+   <Title top={305} size={161}>NEW START</Title>
   </div>
-  <div style={{position:"absolute",left:87,top:660,fontFamily:"WV-Text",
-    fontSize:27,color:C.white,fontWeight:600,padding:"14px 20px",
-    borderRadius:4,background:"rgba(3,15,28,.78)"}}>ARCHIVES · PRAGUE · AVRIL 2010</div>
-  <div style={{opacity:smooth(f,43,67)}}>
-   <Title top={1020} size={124}>LE TRAITÉ</Title>
-   <Title top={1156} size={124} color={C.cyan}>A EXPIRÉ.</Title>
-   <div style={{position:"absolute",left:92,top:1291,
-    fontSize:34,color:C.white,fontFamily:"WV-Text",fontWeight:700}}>5 FÉVRIER 2026</div>
+  <div style={{position:"absolute",left:56,right:56,top:510,height:592,
+       background:"rgba(9,28,49,.82)",overflow:"hidden",
+       borderRadius:6,boxShadow:"0 16px 45px rgba(0,0,0,.3)"}}>
+   <Img src={staticFile(root+"new-start-prague-2010.jpg")} style={{width:"100%",
+     height:"100%",objectFit:"contain",objectPosition:"center center"}}/>
+  </div>
+  <div style={{position:"absolute",left:82,top:1120,fontFamily:"WV-Text",
+    color:C.muted,fontSize:26,fontWeight:600}}>
+    ARCHIVES · PRAGUE · 8 AVRIL 2010
+  </div>
+  <div style={{opacity:article}}>
+   <Title top={1197} size={115} color={C.cyan}>TRAITÉ EXPIRÉ.</Title>
+   <div style={{position:"absolute",left:84,top:1323,fontFamily:"WV-Text",
+     color:C.white,fontSize:31,fontWeight:700}}>
+     5 FÉVRIER 2026
+   </div>
   </div>
  </Main>;
 };
