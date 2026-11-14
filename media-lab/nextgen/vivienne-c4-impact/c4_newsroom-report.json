@@ -1,0 +1,92 @@
+{
+  "id": "c4_newsroom",
+  "label": "C4.3 — Journal télévisé",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "requested_speaker_is_preserved": true,
+  "voice_changed": false,
+  "same_model_as_C_impact": true,
+  "rate": "+8%",
+  "pitch": "+0Hz",
+  "script": "Un navire-citerne frappe un bateau de croisière à quai, à La Nouvelle-Orléans ! Le choc renverse le bateau sur le fleuve Mississippi, et des passagers se retrouvent à l'eau. Trente-deux personnes ont été conduites à l'hôpital, sans blessures critiques signalées. Les autorités enquêtent maintenant sur les circonstances de cet accident.",
+  "source_text_sha256": "3c37dfed1ddc987e9b76fdcf01c230213f8acf811fa755848af8dd42da72247f",
+  "method": "ONE CONTINUOUS SYNTHESIS; NO SENTENCE STITCHING; NO SILENCE CUTS",
+  "raw_sec": 14.856,
+  "review_sec": 14.88,
+  "audio_spliced": false,
+  "sound_removed": false,
+  "filler_pauses_added": false,
+  "word_count": 49,
+  "relevant_word_measurements": [
+    {
+      "target": "Mississippi",
+      "word_start": 5.312,
+      "word_end": 5.96,
+      "previous_word": "fleuve",
+      "next_word": "et",
+      "word_boundary_gap_before_sec": -0.001,
+      "word_boundary_gap_after_sec": 0.336,
+      "target_phoneme_naturalness_verified": false,
+      "acoustic_pauses_near_end": [
+        {
+          "start": 5.984,
+          "end": 6.361,
+          "duration": 0.377
+        }
+      ]
+    },
+    {
+      "target": "l'hôpital",
+      "word_start": 9.201,
+      "word_end": 9.745,
+      "previous_word": "à",
+      "next_word": "sans",
+      "word_boundary_gap_before_sec": -0.001,
+      "word_boundary_gap_after_sec": 0.255,
+      "target_phoneme_naturalness_verified": false,
+      "acoustic_pauses_near_end": [
+        {
+          "start": 9.789,
+          "end": 10.031,
+          "duration": 0.242
+        }
+      ]
+    }
+  ],
+  "raw_pauses_over_120ms": [
+    {
+      "start": 2.274,
+      "end": 2.606,
+      "duration": 0.331
+    },
+    {
+      "start": 3.367,
+      "end": 3.794,
+      "duration": 0.427
+    },
+    {
+      "start": 5.984,
+      "end": 6.361,
+      "duration": 0.377
+    },
+    {
+      "start": 7.526,
+      "end": 7.98,
+      "duration": 0.454
+    },
+    {
+      "start": 9.789,
+      "end": 10.031,
+      "duration": 0.242
+    },
+    {
+      "start": 11.287,
+      "end": 11.779,
+      "duration": 0.492
+    }
+  ],
+  "long_raw_pauses_over_450ms": 2,
+  "rights_verified": false,
+  "publishing_authorized": false,
+  "listener_review_required": true,
+  "notes": "WordBoundary gaps do not prove natural intonation. Compare target words in context by ear, raw vs leveled."
+}

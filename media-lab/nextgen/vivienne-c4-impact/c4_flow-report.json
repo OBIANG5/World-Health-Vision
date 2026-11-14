@@ -1,0 +1,102 @@
+{
+  "id": "c4_flow",
+  "label": "C4.2 — Enchaînement fluide",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "requested_speaker_is_preserved": true,
+  "voice_changed": false,
+  "same_model_as_C_impact": true,
+  "rate": "+7%",
+  "pitch": "+0Hz",
+  "script": "Sur le Mississippi, à La Nouvelle-Orléans, un navire-citerne vient de percuter un bateau de croisière qui était à quai ! Sous le choc, le bateau chavire, des passagers tombent à l'eau. Les secours conduisent trente-deux personnes à l'hôpital, sans qu'aucune soit dans un état critique. Comment une telle collision a-t-elle pu se produire ?",
+  "source_text_sha256": "755e407538b32b80cd00b400581ec6c1314d966a924fd63cd1186148deb6f0d1",
+  "method": "ONE CONTINUOUS SYNTHESIS; NO SENTENCE STITCHING; NO SILENCE CUTS",
+  "raw_sec": 15.6,
+  "review_sec": 15.624,
+  "audio_spliced": false,
+  "sound_removed": false,
+  "filler_pauses_added": false,
+  "word_count": 52,
+  "relevant_word_measurements": [
+    {
+      "target": "Mississippi",
+      "word_start": 0.341,
+      "word_end": 1.042,
+      "previous_word": "le",
+      "next_word": "à",
+      "word_boundary_gap_before_sec": 0.0,
+      "word_boundary_gap_after_sec": 0.281,
+      "target_phoneme_naturalness_verified": false,
+      "acoustic_pauses_near_end": [
+        {
+          "start": 1.066,
+          "end": 1.388,
+          "duration": 0.321
+        }
+      ]
+    },
+    {
+      "target": "l'hôpital",
+      "word_start": 10.527,
+      "word_end": 11.064,
+      "previous_word": "à",
+      "next_word": "sans",
+      "word_boundary_gap_before_sec": 0.0,
+      "word_boundary_gap_after_sec": 0.258,
+      "target_phoneme_naturalness_verified": false,
+      "acoustic_pauses_near_end": [
+        {
+          "start": 11.101,
+          "end": 11.349,
+          "duration": 0.248
+        }
+      ]
+    }
+  ],
+  "raw_pauses_over_120ms": [
+    {
+      "start": 1.066,
+      "end": 1.388,
+      "duration": 0.321
+    },
+    {
+      "start": 2.212,
+      "end": 2.543,
+      "duration": 0.331
+    },
+    {
+      "start": 5.299,
+      "end": 5.754,
+      "duration": 0.454
+    },
+    {
+      "start": 6.44,
+      "end": 6.61,
+      "duration": 0.17
+    },
+    {
+      "start": 7.44,
+      "end": 7.722,
+      "duration": 0.281
+    },
+    {
+      "start": 8.66,
+      "end": 9.132,
+      "duration": 0.473
+    },
+    {
+      "start": 11.101,
+      "end": 11.349,
+      "duration": 0.248
+    },
+    {
+      "start": 12.925,
+      "end": 13.363,
+      "duration": 0.439
+    }
+  ],
+  "long_raw_pauses_over_450ms": 2,
+  "rights_verified": false,
+  "publishing_authorized": false,
+  "listener_review_required": true,
+  "notes": "WordBoundary gaps do not prove natural intonation. Compare target words in context by ear, raw vs leveled."
+}
