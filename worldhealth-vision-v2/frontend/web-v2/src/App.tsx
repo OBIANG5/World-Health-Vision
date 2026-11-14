@@ -5,7 +5,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { createPortal } from "react-dom";
 import type { CountrySummary } from "./api/types";
 import EyeLayout from "./components/layout/EyeLayout";
-import EyeMapFrame from "./components/layout/EyeMapFrame";
+import IntelligenceHome from "./components/home/IntelligenceHome";
 import {WorldIcon} from "./components/ui/WorldIcon";
 import { LanguageProvider, useLang, useToggleLang } from "./context/LanguageContext";
 import { UserProfileProvider, useUserProfile } from "./context/UserProfileContext";
@@ -33,6 +33,7 @@ const CurrencyPanel = lazy(() => import("./components/layout/CurrencyPanel"));
 import "./styles/mobile.css";
 import "./styles/world-editorial.css";
 import "./styles/world-electric.css";
+import "./styles/intelligence-home.css";
 
 // ---------- Sélecteur de pays (popover) ----------
 
@@ -347,21 +348,21 @@ function AppContent() {
         aria-expanded={showToolsMenu && navDomain === "markets"}
         onClick={(event) => openNavDomain("markets", event.currentTarget)}>
         {lang === "fr" ? "Économie & marchés" : "Economy & markets"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
+        <span className="whv-nav-chevron" aria-hidden="true"><WorldIcon name="chevron" size={13}/></span>
       </button>
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--travel" + (showToolsMenu && navDomain === "travel" ? " active" : "")}
         aria-expanded={showToolsMenu && navDomain === "travel"}
         onClick={(event) => openNavDomain("travel", event.currentTarget)}>
         {lang === "fr" ? "Voyager & vivre" : "Travel & living"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
+        <span className="whv-nav-chevron" aria-hidden="true"><WorldIcon name="chevron" size={13}/></span>
       </button>
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--safety" + (showToolsMenu && navDomain === "safety" ? " active" : "")}
         aria-expanded={showToolsMenu && navDomain === "safety"}
         onClick={(event) => openNavDomain("safety", event.currentTarget)}>
         {lang === "fr" ? "Sécurité" : "Safety"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
+        <span className="whv-nav-chevron" aria-hidden="true"><WorldIcon name="chevron" size={13}/></span>
       </button>
       <button type="button" ref={toolsButtonRef}
         className={"whv-nav-btn whv-nav-btn--tools" + (showToolsMenu && navDomain === "all" ? " active" : "") + (anyToolOpen ? " has-active-tool" : "")}
@@ -519,99 +520,27 @@ function AppContent() {
 
   return (
     <EyeLayout headerActions={headerActions}>
-      <EyeMapFrame
-        drawerOpen={drawerOpen || regionDrawerOpen}
+      <IntelligenceHome
+        lang={lang}
         countries={countries}
+        selectedCountry={selectedCountry}
         selectedCountryIso3={selectedCountryIso3}
+        drawerOpen={drawerOpen || regionDrawerOpen}
+        isPreview={isPreview}
+        isOffline={isOffline}
         onCountryClick={handleCountryClick}
+        onExploreCountries={openCountrySearch}
+        onExploreRegions={handleOpenRegions}
+        onExploreMarkets={() => openNavDomain("markets")}
+        onExploreTravel={() => openNavDomain("travel")}
+        onExploreSafety={() => openNavDomain("safety")}
+        onExploreAll={() => openNavDomain("all")}
+        onExploreSources={() => { setShowSourcesModal(true); setShowToolsMenu(false); }}
+        onOpenSelected={() => handleCountryClick(selectedCountryIso3)}
+        onExploreCurrencies={handleToggleCurrencyPanel}
+        onExploreAdvisor={handleToggleAdvisor}
+        onExploreFavorites={openFavorites}
       />
-
-      <section className="whv-desktop-story" aria-label={lang === "fr" ? "Présentation de la plateforme" : "Platform overview"}>
-        <span className="whv-story-eyebrow"><span className="whv-story-dot" /> {lang === "fr" ? "VOTRE ATLAS DU MONDE" : "YOUR WORLD ATLAS"}</span>
-        <h2>{lang === "fr" ? <>Voir le monde.<br/><em>Le comprendre.</em></> : <>See the world.<br/><em>Understand it.</em></>}</h2>
-        <p>{lang === "fr"
-          ? "Un même endroit pour explorer les pays, les économies, les destinations et les grands enjeux du monde."
-          : "One place to explore countries, economies, destinations and the world's key challenges."}</p>
-        <div className="whv-story-actions">
-          <button type="button" className="whv-story-primary" onClick={() => openNavDomain("explore")}>
-            {lang === "fr" ? "Explorer les pays" : "Explore countries"} <span aria-hidden="true"><WorldIcon name="arrow" size={17}/></span>
-          </button>
-          <button type="button" className="whv-story-secondary" onClick={() => openNavDomain("all")}>
-            {lang === "fr" ? "Découvrir les outils" : "Discover the tools"}
-          </button>
-        </div>
-        <div className="whv-story-metrics" aria-label={lang === "fr" ? "Aperçu du catalogue" : "Catalog overview"}>
-          <div><strong>{countries.length || "—"}</strong><span>{lang === "fr" ? "pays & territoires" : "countries & territories"}</span></div>
-          <div><strong>04</strong><span>{lang === "fr" ? "univers à explorer" : "areas to explore"}</span></div>
-        </div>
-        <div className="whv-story-topics">
-          <span>{lang === "fr" ? "Géographie" : "Geography"}</span>
-          <span>{lang === "fr" ? "Économie" : "Economy"}</span>
-          <span>{lang === "fr" ? "Voyage" : "Travel"}</span>
-          <span>{lang === "fr" ? "Sécurité" : "Safety"}</span>
-        </div>
-      </section>
-
-
-<aside className="whv-mobile-overview" aria-label={lang === "fr" ? "Explorer les pays" : "Explore countries"}>
-        <div>
-          <span className="whv-mobile-eyebrow">{lang === "fr" ? "L'EXPLORATEUR MONDIAL" : "WORLD EXPLORER"}</span>
-          <h2>{lang === "fr" ? "Voir le monde, le comprendre." : "See the world, understand it."}</h2>
-          <p className="whv-mobile-overview-description">
-            {lang === "fr"
-              ? "Pays, économie, voyages et sécurité : explorez les multiples facettes du monde."
-              : "Countries, markets, travel and safety: discover the world from every angle."}
-          </p>
-        </div>
-        <button className="whv-mobile-featured" type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
-          <span className="whv-mobile-featured-text">
-            <span className="whv-mobile-featured-label">{lang === "fr" ? "PAYS SÉLECTIONNÉ" : "SELECTED COUNTRY"}</span>
-            <span className="whv-mobile-featured-name">{selectedCountry?.displayName ?? (lang === "fr" ? "Choisir un pays" : "Choose a country")}</span>
-            <span className="whv-mobile-featured-subtitle">
-              {[selectedCountry?.capitalCity, selectedCountry?.regionName].filter(Boolean).join(" · ")
-                || (lang === "fr" ? "Explorer la fiche du pays" : "Explore the country profile")}
-            </span>
-          </span>
-          <span className="whv-mobile-featured-arrow" aria-hidden="true"><WorldIcon name="arrow" size={19}/></span>
-        </button>
-        <div className="whv-mobile-shortcuts">
-          <button type="button" className="whv-mobile-shortcut" onClick={openCountrySearch}>
-            <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="map" size={23}/></span>
-            <span>{lang === "fr" ? "Pays" : "Countries"}</span>
-          </button>
-          <button type="button" className="whv-mobile-shortcut" onClick={handleOpenRegions}>
-            <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="regions" size={23}/></span>
-            <span>{lang === "fr" ? "Régions" : "Regions"}</span>
-          </button>
-          <button type="button" className="whv-mobile-shortcut" onClick={() => openNavDomain("markets")}>
-            <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="markets" size={23}/></span>
-            <span>{lang === "fr" ? "Marchés" : "Markets"}</span>
-          </button>
-          <button type="button" className="whv-mobile-shortcut" onClick={() => openNavDomain("travel")}>
-            <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="travel" size={23}/></span>
-            <span>{lang === "fr" ? "Voyage" : "Travel"}</span>
-          </button>
-          <button type="button" className="whv-mobile-shortcut" onClick={() => openNavDomain("safety")}>
-            <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="shield" size={23}/></span>
-            <span>{lang === "fr" ? "Sécurité" : "Safety"}</span>
-          </button>
-          <button type="button" className="whv-mobile-shortcut" onClick={() => openNavDomain("all")}>
-            <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="layers" size={23}/></span>
-            <span>{lang === "fr" ? "Tous les outils" : "All tools"}</span>
-          </button>
-        </div>
-        <p className="whv-mobile-note">
-          <strong>{countries.length} {lang === "fr" ? "pays dans le catalogue" : "countries in the catalog"}</strong>
-          {" · "}
-          {isPreview
-            ? (lang === "fr"
-              ? "Aperçu sans backend permanent : les données directes de la Banque mondiale peuvent être consultées, les comparaisons multi-sources nécessitent le backend V2."
-              : "Preview without a permanent backend: direct World Bank data may be available, but multi-source comparisons require the V2 backend.")
-            : (lang === "fr"
-              ? "Explorez les indicateurs provenant des services V2, avec leurs sources et années de référence."
-              : "Explore indicators from the V2 services, including provenance and reference years.")}
-        </p>
-      </aside>
 
       <Suspense fallback={null}>
       {drawerOpen && <CountryDrawer
@@ -642,7 +571,7 @@ function AppContent() {
       {/* Bandeau hors-ligne */}
       {isOffline && (
         <div className="whv-offline-banner">
-          <span className="whv-offline-banner-icon">⚠</span>
+          <span className="whv-offline-banner-icon"><WorldIcon name="alert" size={18}/></span>
           <div>
             <strong>{lang === "fr" ? "Données temporairement indisponibles" : "Data temporarily unavailable"}</strong>
             <span>{lang === "fr"

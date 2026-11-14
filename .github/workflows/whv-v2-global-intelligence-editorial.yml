@@ -1,0 +1,145 @@
+name: World-Vision V2 - Global Intelligence editorial preview
+
+on:
+  push:
+    branches:
+      - design/v2-global-intelligence-editorial-2026-11-14
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: whv-v2-intelligence-preview
+  cancel-in-progress: true
+
+jobs:
+  review-and-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout canonical V2 redesign branch
+        uses: actions/checkout@v4
+        with:
+          ref: design/v2-global-intelligence-editorial-2026-11-14
+          path: source
+          persist-credentials: false
+
+      - name: Checkout isolated preview (never mutate V2 production)
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-intelligence-browser-preview
+          path: preview
+          persist-credentials: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/worldhealth-vision-v2/frontend/web-v2/package-lock.json
+
+      - name: Install lockfile and check TypeScript
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npx tsc -b --pretty false
+
+      - name: Compile real V2 with static preview truth label
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        env:
+          VITE_WHV_PREVIEW_MODE: 'true'
+        run: npx vite build --base=./
+
+      - name: Assemble preview without losing historical country/source evidence
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil,json,os
+          from datetime import datetime,timezone
+          dist=Path("source/worldhealth-vision-v2/frontend/web-v2/dist")
+          target=Path("preview")
+          essential=["preview-countries.js","preview-sources.js","preview-local-catalog.js","preview-bootstrap.js"]
+          for fn in essential:
+              if not (target/fn).is_file():
+                  raise SystemExit("Refusing preview: historical snapshot missing "+fn)
+          if not (dist/"index.html").is_file() or not (dist/"assets").is_dir():
+              raise SystemExit("V2 build did not produce usable website")
+          if (target/"assets").is_dir():
+              shutil.rmtree(target/"assets")
+          for entry in dist.iterdir():
+              destination=target/entry.name
+              if entry.is_dir():
+                  if destination.exists():shutil.rmtree(destination)
+                  shutil.copytree(entry,destination)
+              else: shutil.copy2(entry,destination)
+          html=(target/"index.html").read_text(encoding="utf-8")
+          scripts='''<meta name="robots" content="noindex,nofollow">
+          <script src="./preview-countries.js"></script>
+          <script src="./preview-sources.js"></script>
+          <script src="./preview-local-catalog.js"></script>
+          <script src="./preview-bootstrap.js"></script>
+          '''
+          if "<head>" not in html:raise SystemExit("Unexpected index.html")
+          html=html.replace("<head>","<head>\n"+scripts,1)
+          (target/"index.html").write_text(html,encoding="utf-8")
+          (target/"preview-build.json").write_text(json.dumps({
+              "sourceBranch":"design/v2-global-intelligence-editorial-2026-11-14",
+              "sourceCommit":os.getenv("GITHUB_SHA"),
+              "previewMode":"STATIC_NO_PERSISTENT_BACKEND",
+              "validated":False,
+              "generatedAtUtc":datetime.now(timezone.utc).isoformat()
+          },indent=2)+"\n",encoding="utf-8")
+          # Test the exact HTML + scripts + source assets that will be published.
+          for fn in essential+["index.html"]:
+              shutil.copy2(target/fn,dist/fn)
+          PY
+
+      - name: Install Playwright Chromium
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Acceptance - iPhone, tablet and desktop
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: node global-intelligence-smoke.mjs
+
+      - name: Publish QA screenshots regardless of result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-vision-global-intelligence-qa
+          path: source/worldhealth-vision-v2/frontend/web-v2/global-intelligence-artifacts/
+          if-no-files-found: ignore
+
+      - name: Publish preview only after real browser acceptance
+        run: |
+          cp source/worldhealth-vision-v2/frontend/web-v2/global-intelligence-artifacts/iphone-home.png preview/preview-mobile-intelligence.png
+          cp source/worldhealth-vision-v2/frontend/web-v2/global-intelligence-artifacts/desktop-home.png preview/preview-desktop-intelligence.png
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path("preview/preview-build.json")
+          d=json.loads(p.read_text(encoding="utf-8"))
+          d["validated"]=True
+          p.write_text(json.dumps(d,indent=2)+"\n",encoding="utf-8")
+          PY
+
+      - name: Commit tested assets to isolated preview branch
+        working-directory: preview
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No preview changes"
+          else
+            git commit -m "preview(v2): validated Global Intelligence editorial front"
+            git push origin HEAD:whv-v2-intelligence-browser-preview
+          fi
+
+      - name: Phone-friendly isolated preview URL
+        run: |
+          echo 'https://raw.githack.com/OBIANG5/World-Health-Vision/whv-v2-intelligence-browser-preview/index.html'
+          echo 'This is a STATIC preview, NOT a live production backend.'

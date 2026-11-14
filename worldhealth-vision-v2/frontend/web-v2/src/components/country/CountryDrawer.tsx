@@ -1395,7 +1395,7 @@ export default function CountryDrawer({
             <button type="button" className={`drawer-btn${watched ? " active" : ""}`}
               title={watched ? "Retirer des favoris" : "Ajouter aux favoris"}
               onClick={onToggleWatch} style={{ fontSize: 16, padding: "5px 10px" }}>
-              {watched ? "★" : "☆"}
+              <WorldIcon name="star" size={17} fill={watched ? "currentColor" : "none"} />
             </button>
           )}
           <button type="button" className="drawer-btn" title="CSV" disabled={!economicSnapshot} onClick={downloadCsv}>{t(lang, "csv")}</button>
