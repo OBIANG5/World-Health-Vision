@@ -1,11 +1,11 @@
 {
-  "version": "WORLD_VISION_EDITORIAL_V2_2026_11_14",
+  "version": "WORLD_VISION_EDITORIAL_V3_VIVIENNE_TIMED_2026_11_14",
   "state": "REBUILD_NOT_APPROVED",
   "reason": "User explicitly rejected previous 43-second documentary, including voice, type, timing, visuals, temporary G0 intertitle and captions.",
   "timeline": {
     "fps": 30,
-    "frames": 1263,
-    "duration_seconds": 42.1,
+    "frames": 1011,
+    "duration_seconds": 33.7,
     "allow_shorter_than_previous_target": true,
     "scenes": [
       {
@@ -21,32 +21,32 @@
       {
         "id": "city",
         "start": 267,
-        "end": 348
+        "end": 312
       },
       {
         "id": "new-start",
-        "start": 348,
-        "end": 585
+        "start": 312,
+        "end": 489
       },
       {
         "id": "china",
-        "start": 585,
-        "end": 771
+        "start": 489,
+        "end": 579
       },
       {
         "id": "agenda",
-        "start": 771,
-        "end": 987
+        "start": 579,
+        "end": 717
       },
       {
         "id": "uncertainty",
-        "start": 987,
-        "end": 1173
+        "start": 717,
+        "end": 921
       },
       {
         "id": "signature",
-        "start": 1173,
-        "end": 1263
+        "start": 921,
+        "end": 1011
       }
     ]
   },
@@ -104,7 +104,7 @@
     "do_not_reuse_rejected_voice": true,
     "do_not_pad_scenes_to_fixed_length": true,
     "do_not_read_logo_or_slogan_in_outro": true,
-    "last_spoken_timestamp_max_sec": 39.1,
+    "last_spoken_timestamp_max_sec": 30.7,
     "max_noneditorial_interior_silence_sec": 0.65,
     "require_audition_and_user_approval": true,
     "narration_should_follow_story_not_synthetic_padded_blocks": true,
@@ -123,7 +123,12 @@
     "speech_must_be_continuous": true,
     "speak_outro": false,
     "new_voice_candidate_path": "services/media-renderer/scripts/worldvision_vivienne_shenzhen_v2.py",
-    "reference_sample_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/voice-auditions/vivienne.mp3"
+    "reference_sample_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/voice-auditions/vivienne.mp3",
+    "spoken_last_word_timing_sec": 30.597,
+    "spoken_audio_duration_sec": 30.912,
+    "timing_reconciliation": "Visible scenes recut to user-chosen Vivienne WordBoundary events; 4.9s globe remains at 1x; final G0 silent 30.7–33.7s; never pad voice to 42.1s.",
+    "vivienne_candidate_mp3_sha256": "b30dd0b21d33c3d563a579c9cd02c1d727c2ff97771ed5bcca7459eae403a473",
+    "vivienne_full_candidate_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/voice-vivienne/vivienne-shenzhen-v2-continuous-review.mp3"
   },
   "rejected_assets": {
     "rejected_master": [
