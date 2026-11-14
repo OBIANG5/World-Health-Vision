@@ -1,0 +1,128 @@
+{
+  "id": "WorldVision001",
+  "script_verbatim": true,
+  "speech_time_aligned": true,
+  "voice_sha256": "97eb96df880aaf8443f3e484951d1f0ce9e024e544e153f77bf1d3f20a0dd739",
+  "cues": [
+    {
+      "provisional_start": 0.0,
+      "provisional_end": 2.25,
+      "text": "Trois puissances nucléaires. Une même table.",
+      "at": 0,
+      "end_at": 37,
+      "start": 0.035,
+      "end": 2.335
+    },
+    {
+      "provisional_start": 2.25,
+      "provisional_end": 4.5,
+      "text": "Et une rencontre inédite.",
+      "at": 37,
+      "end_at": 58,
+      "start": 2.781,
+      "end": 3.842
+    },
+    {
+      "provisional_start": 4.5,
+      "provisional_end": 8.65,
+      "text": "Jeudi 19 novembre, Donald Trump, Vladimir Poutine et Xi Jinping",
+      "at": 58,
+      "end_at": 110,
+      "start": 4.548,
+      "end": 7.947
+    },
+    {
+      "provisional_start": 8.65,
+      "provisional_end": 12.5,
+      "text": "doivent se réunir à Shenzhen, en Chine.",
+      "at": 110,
+      "end_at": 141,
+      "start": 7.977,
+      "end": 9.959999999999999
+    },
+    {
+      "provisional_start": 12.5,
+      "provisional_end": 15.65,
+      "text": "Au cœur des discussions : réduire les arsenaux nucléaires.",
+      "at": 141,
+      "end_at": 189,
+      "start": 12.543,
+      "end": 14.958
+    },
+    {
+      "provisional_start": 15.65,
+      "provisional_end": 20.4,
+      "text": "Le dernier grand traité entre Washington et Moscou a expiré en février.",
+      "at": 189,
+      "end_at": 248,
+      "start": 15.474,
+      "end": 18.263
+    },
+    {
+      "provisional_start": 20.4,
+      "provisional_end": 23.0,
+      "text": "Trump veut maintenant associer Pékin,",
+      "at": 248,
+      "end_at": 280,
+      "start": 20.455,
+      "end": 22.3
+    },
+    {
+      "provisional_start": 23.0,
+      "provisional_end": 26.6,
+      "text": "qui reste réticent.",
+      "at": 280,
+      "end_at": 296,
+      "start": 22.441999999999997,
+      "end": 23.537000000000003
+    },
+    {
+      "provisional_start": 26.6,
+      "provisional_end": 30.4,
+      "text": "La guerre en Iran devrait aussi être abordée.",
+      "at": 296,
+      "end_at": 333,
+      "start": 26.647,
+      "end": 28.540000000000003
+    },
+    {
+      "provisional_start": 30.4,
+      "provisional_end": 33.8,
+      "text": "Mais selon Washington, pas celle en Ukraine.",
+      "at": 333,
+      "end_at": 369,
+      "start": 29.119,
+      "end": 31.403000000000002
+    },
+    {
+      "provisional_start": 33.8,
+      "provisional_end": 37.2,
+      "text": "Et attention : aucun accord n’est attendu pour le moment.",
+      "at": 369,
+      "end_at": 414,
+      "start": 33.833999999999996,
+      "end": 35.752
+    },
+    {
+      "provisional_start": 37.2,
+      "provisional_end": 40.0,
+      "text": "Alors, véritable tournant diplomatique, ou simple démonstration de puissance ?",
+      "at": 414,
+      "end_at": 480,
+      "start": 36.173,
+      "end": 39.338
+    },
+    {
+      "provisional_start": 40.0,
+      "provisional_end": 43.0,
+      "text": "World-Vision. Voir le monde, le comprendre.",
+      "at": 480,
+      "end_at": 514,
+      "start": 40.031,
+      "end": 42.364000000000004
+    }
+  ],
+  "cue_count": 13,
+  "captions_clean_plate": false,
+  "usage": "Burn ONLY on assembled 43s master preview, never individual segment MP4s."
+}

@@ -1,0 +1,61 @@
+{
+  "status": "43S_COMPLETE_REVIEW_NOT_PUBLICATION_MASTER",
+  "duration_seconds": 43,
+  "frames": 1290,
+  "fps": 30,
+  "resolution": "1080x1920",
+  "source_script_approved_user_copy": true,
+  "voice_fr": true,
+  "voice_engine": "fr-FR-HenriNeural",
+  "voice_approved_by_user": false,
+  "voice_sha256": "97eb96df880aaf8443f3e484951d1f0ce9e024e544e153f77bf1d3f20a0dd739",
+  "subtitle_cues": 13,
+  "subtitles_matched_to_actual_word_boundaries": true,
+  "clean_segment_mp4s": true,
+  "music": "original mathematically synthesized quiet atmospheric bed",
+  "narrative_source": "2026-11-14 approved SCRIPT_V1.md",
+  "publication_authorized": false,
+  "art_approved": false,
+  "s02_original_d00_used": false,
+  "s02_actual_status": "original exists as Canva asset VAHa4ZT_ySo, not downloadable via current connector; no fabricated substitute",
+  "s02_temporary": "0.9s exact original G0 brand logo card. Replace with exact D00 source film before publication.",
+  "component_sources": [
+    {
+      "file": "hook-v2-clean-manrope-4p5s.mp4",
+      "sha256": "985d5f77f6de53a68fa49e6efc84ad2e37dd7c5c3ed48b6f4e6a492058cb37d2",
+      "frames": 135
+    },
+    {
+      "file": "s03-to-s03b-shenzhen-matchcut-v2-circleopen-7p1s.mp4",
+      "sha256": "8ab698002dfd82375423e6866b5bf0a7e602af5a7bba3a0ebafdce3b9191ef37",
+      "frames": 213
+    },
+    {
+      "file": "segment04-new-start-v3-clean-7p9s.mp4",
+      "sha256": "4fa8aebec451f4edb0d8bd495655b619feaab0d9fb0d517c12e4bd9f88b33e69",
+      "frames": 237
+    },
+    {
+      "file": "segment05-china-xi-6p2s.mp4",
+      "sha256": "2bcbaf543367633c9277e4fb394347ef3fe3dd16630c97652294ad900b90e331",
+      "frames": 186
+    },
+    {
+      "file": "segment06-iran-ukraine-7p2s.mp4",
+      "sha256": "0afb3dffb611415a9651efc9bf5a9f85341d765439d592c8904a71dc7732f572",
+      "frames": 216
+    },
+    {
+      "file": "segment07-no-agreement-6p2s.mp4",
+      "sha256": "4035ab539caf53c85ac36ba43320acdd17b08e8a46eb64c54641c358e050c9b9",
+      "frames": 186
+    },
+    {
+      "file": "segment08-worldvision-outro-3p0s.mp4",
+      "sha256": "646957b11e52b8cb9cf6342762ffed79f272fbc31d965488a8644f25ba22cf58",
+      "frames": 90
+    }
+  ],
+  "sha256": "84bc1bb1d8cb4ac1f67fe9185514a1ce100c6bf4542c117a050759b5d85c1e9b",
+  "bytes": 6705592
+}
