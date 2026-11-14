@@ -1,0 +1,101 @@
+{
+  "id": "d_pedagogique",
+  "display_label": "Vivienne — émotion retenue",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "same_voice_as_previous_user_approval": true,
+  "new_voice_substituted": false,
+  "one_uninterrupted_tts_request": true,
+  "single_continuous_audio_output": true,
+  "audio_spliced": false,
+  "filler_pauses_inserted": false,
+  "silences_cut_automatically": false,
+  "audio_timestretched": false,
+  "punctuation_editorial_rewrite": true,
+  "rate": "-7%",
+  "pitch": "+0Hz",
+  "editorial_intent": "le récit part des passagers, pauses de ponctuation naturelles, ton empathique",
+  "source_brief_sha256": "23bf4101a9e7d27d60159c7dd43555c3757a72dab11b4b5ab6923feef8727408",
+  "source_words": 43,
+  "raw_mp3_sha256": "f580604ad7e44cfc67ccecdfc87bf0f8b8172805a08e6271375ef6e87e51f627",
+  "review_mp3_sha256": "b1ef6d3d4fc86f5141855769eaf4277c5faec7c72a863cb4b14fa1baa76309e3",
+  "raw_duration_sec": 17.688,
+  "review_duration_sec": 17.712,
+  "gaps": {
+    "pauses_over_200ms": [
+      {
+        "start_s": 2.023,
+        "end_s": 2.226,
+        "duration_s": 0.203
+      },
+      {
+        "start_s": 2.722,
+        "end_s": 2.988,
+        "duration_s": 0.265
+      },
+      {
+        "start_s": 3.974,
+        "end_s": 4.494,
+        "duration_s": 0.52
+      },
+      {
+        "start_s": 5.513,
+        "end_s": 5.868,
+        "duration_s": 0.354
+      },
+      {
+        "start_s": 7.667,
+        "end_s": 8.221,
+        "duration_s": 0.553
+      },
+      {
+        "start_s": 9.24,
+        "end_s": 9.779,
+        "duration_s": 0.54
+      },
+      {
+        "start_s": 11.611,
+        "end_s": 11.961,
+        "duration_s": 0.35
+      },
+      {
+        "start_s": 13.855,
+        "end_s": 14.399,
+        "duration_s": 0.544
+      },
+      {
+        "start_s": 15.6,
+        "end_s": 15.925,
+        "duration_s": 0.324
+      }
+    ],
+    "pauses_over_450ms": [
+      {
+        "start_s": 3.974,
+        "end_s": 4.494,
+        "duration_s": 0.52
+      },
+      {
+        "start_s": 7.667,
+        "end_s": 8.221,
+        "duration_s": 0.553
+      },
+      {
+        "start_s": 9.24,
+        "end_s": 9.779,
+        "duration_s": 0.54
+      },
+      {
+        "start_s": 13.855,
+        "end_s": 14.399,
+        "duration_s": 0.544
+      }
+    ],
+    "automatic_pause_cuts": 0,
+    "silences_preserved_without_editing": true
+  },
+  "rights_verified": false,
+  "publishing_authorized": false,
+  "human_listening_required": true,
+  "automatic_emotion_verification": false,
+  "note": "Naturalness cannot be certified by waveform statistics. Listening required."
+}

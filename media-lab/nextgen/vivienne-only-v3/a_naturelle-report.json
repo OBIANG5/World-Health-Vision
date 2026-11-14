@@ -1,0 +1,81 @@
+{
+  "id": "a_naturelle",
+  "display_label": "Vivienne — naturelle",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "same_voice_as_previous_user_approval": true,
+  "new_voice_substituted": false,
+  "one_uninterrupted_tts_request": true,
+  "single_continuous_audio_output": true,
+  "audio_spliced": false,
+  "filler_pauses_inserted": false,
+  "silences_cut_automatically": false,
+  "audio_timestretched": false,
+  "punctuation_editorial_rewrite": true,
+  "rate": "-3%",
+  "pitch": "+0Hz",
+  "editorial_intent": "cadence journaliste conversationnelle, sobre; une prise continue",
+  "source_brief_sha256": "23bf4101a9e7d27d60159c7dd43555c3757a72dab11b4b5ab6923feef8727408",
+  "source_words": 42,
+  "raw_mp3_sha256": "24e6637e1f799ee672760649ad672e80392d0d86672d1672803fafc8cccf8c65",
+  "review_mp3_sha256": "dd9fe3fd78623ec2dc8692c463616104b37199fc440fa56ef14c77778fc888e3",
+  "raw_duration_sec": 14.592,
+  "review_duration_sec": 14.616,
+  "gaps": {
+    "pauses_over_200ms": [
+      {
+        "start_s": 2.419,
+        "end_s": 2.625,
+        "duration_s": 0.205
+      },
+      {
+        "start_s": 3.032,
+        "end_s": 3.385,
+        "duration_s": 0.353
+      },
+      {
+        "start_s": 4.233,
+        "end_s": 4.726,
+        "duration_s": 0.493
+      },
+      {
+        "start_s": 7.073,
+        "end_s": 7.583,
+        "duration_s": 0.509
+      },
+      {
+        "start_s": 9.425,
+        "end_s": 9.716,
+        "duration_s": 0.291
+      },
+      {
+        "start_s": 11.637,
+        "end_s": 12.149,
+        "duration_s": 0.511
+      }
+    ],
+    "pauses_over_450ms": [
+      {
+        "start_s": 4.233,
+        "end_s": 4.726,
+        "duration_s": 0.493
+      },
+      {
+        "start_s": 7.073,
+        "end_s": 7.583,
+        "duration_s": 0.509
+      },
+      {
+        "start_s": 11.637,
+        "end_s": 12.149,
+        "duration_s": 0.511
+      }
+    ],
+    "automatic_pause_cuts": 0,
+    "silences_preserved_without_editing": true
+  },
+  "rights_verified": false,
+  "publishing_authorized": false,
+  "human_listening_required": true,
+  "automatic_emotion_verification": false,
+  "note": "Naturalness cannot be certified by waveform statistics. Listening required."
+}

@@ -1,0 +1,71 @@
+{
+  "id": "c_impact",
+  "display_label": "Vivienne — accroche plus énergique",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "same_voice_as_previous_user_approval": true,
+  "new_voice_substituted": false,
+  "one_uninterrupted_tts_request": true,
+  "single_continuous_audio_output": true,
+  "audio_spliced": false,
+  "filler_pauses_inserted": false,
+  "silences_cut_automatically": false,
+  "audio_timestretched": false,
+  "punctuation_editorial_rewrite": true,
+  "rate": "+8%",
+  "pitch": "+0Hz",
+  "editorial_intent": "première phrase à impact, question finale claire, continuité sans collage",
+  "source_brief_sha256": "23bf4101a9e7d27d60159c7dd43555c3757a72dab11b4b5ab6923feef8727408",
+  "source_words": 44,
+  "raw_mp3_sha256": "443baf509969c0a57d69d8d668fe2121968c1e8e6625195e3770702d588f90c2",
+  "review_mp3_sha256": "cf18e1ac908cc527d39eae2c564fb5ec432799dd2dfabb00d01c7cd0b8fdb0eb",
+  "raw_duration_sec": 12.72,
+  "review_duration_sec": 12.744,
+  "gaps": {
+    "pauses_over_200ms": [
+      {
+        "start_s": 2.123,
+        "end_s": 2.547,
+        "duration_s": 0.424
+      },
+      {
+        "start_s": 5.524,
+        "end_s": 5.997,
+        "duration_s": 0.472
+      },
+      {
+        "start_s": 7.875,
+        "end_s": 8.379,
+        "duration_s": 0.504
+      },
+      {
+        "start_s": 9.924,
+        "end_s": 10.387,
+        "duration_s": 0.463
+      }
+    ],
+    "pauses_over_450ms": [
+      {
+        "start_s": 5.524,
+        "end_s": 5.997,
+        "duration_s": 0.472
+      },
+      {
+        "start_s": 7.875,
+        "end_s": 8.379,
+        "duration_s": 0.504
+      },
+      {
+        "start_s": 9.924,
+        "end_s": 10.387,
+        "duration_s": 0.463
+      }
+    ],
+    "automatic_pause_cuts": 0,
+    "silences_preserved_without_editing": true
+  },
+  "rights_verified": false,
+  "publishing_authorized": false,
+  "human_listening_required": true,
+  "automatic_emotion_verification": false,
+  "note": "Naturalness cannot be certified by waveform statistics. Listening required."
+}

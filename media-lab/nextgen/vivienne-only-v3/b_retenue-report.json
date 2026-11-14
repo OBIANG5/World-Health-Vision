@@ -1,0 +1,86 @@
+{
+  "id": "b_retenue",
+  "display_label": "Vivienne — tension maîtrisée",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "same_voice_as_previous_user_approval": true,
+  "new_voice_substituted": false,
+  "one_uninterrupted_tts_request": true,
+  "single_continuous_audio_output": true,
+  "audio_spliced": false,
+  "filler_pauses_inserted": false,
+  "silences_cut_automatically": false,
+  "audio_timestretched": false,
+  "punctuation_editorial_rewrite": true,
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "editorial_intent": "plus directe, contrastes dans ponctuation, pas d'exclamations sensationnalistes",
+  "source_brief_sha256": "23bf4101a9e7d27d60159c7dd43555c3757a72dab11b4b5ab6923feef8727408",
+  "source_words": 41,
+  "raw_mp3_sha256": "7469cad642fbcafad99d25613af76213a820bde72e8085c8f6ad1ca02019d900",
+  "review_mp3_sha256": "2f03d7f2ed9f22d7325c9a21919a51159e78b721f5d4da7b368a1e9fcad6b6d1",
+  "raw_duration_sec": 14.904,
+  "review_duration_sec": 14.928,
+  "gaps": {
+    "pauses_over_200ms": [
+      {
+        "start_s": 2.607,
+        "end_s": 3.105,
+        "duration_s": 0.498
+      },
+      {
+        "start_s": 3.951,
+        "end_s": 4.266,
+        "duration_s": 0.315
+      },
+      {
+        "start_s": 6.346,
+        "end_s": 6.812,
+        "duration_s": 0.466
+      },
+      {
+        "start_s": 8.502,
+        "end_s": 9.026,
+        "duration_s": 0.524
+      },
+      {
+        "start_s": 10.679,
+        "end_s": 11.164,
+        "duration_s": 0.485
+      },
+      {
+        "start_s": 12.519,
+        "end_s": 12.84,
+        "duration_s": 0.321
+      }
+    ],
+    "pauses_over_450ms": [
+      {
+        "start_s": 2.607,
+        "end_s": 3.105,
+        "duration_s": 0.498
+      },
+      {
+        "start_s": 6.346,
+        "end_s": 6.812,
+        "duration_s": 0.466
+      },
+      {
+        "start_s": 8.502,
+        "end_s": 9.026,
+        "duration_s": 0.524
+      },
+      {
+        "start_s": 10.679,
+        "end_s": 11.164,
+        "duration_s": 0.485
+      }
+    ],
+    "automatic_pause_cuts": 0,
+    "silences_preserved_without_editing": true
+  },
+  "rights_verified": false,
+  "publishing_authorized": false,
+  "human_listening_required": true,
+  "automatic_emotion_verification": false,
+  "note": "Naturalness cannot be certified by waveform statistics. Listening required."
+}
