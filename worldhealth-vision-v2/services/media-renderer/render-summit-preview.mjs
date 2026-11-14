@@ -9,7 +9,8 @@ import {fileURLToPath} from "node:url";
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from "node:fs";
 import {createHash} from "node:crypto";
 import {bundle} from "@remotion/bundler";
-import {renderMedia,selectComposition,getVideoMetadata} from "@remotion/renderer";
+import {renderMedia,selectComposition} from "@remotion/renderer";
+import {execFileSync} from "node:child_process";
 
 const base=path.dirname(fileURLToPath(import.meta.url));
 const mode=process.argv[2]||"hook";
@@ -50,14 +51,17 @@ if(comp.width!==1080||comp.height!==1920||comp.fps!==30)throw new Error("Unexpec
 await renderMedia({composition:comp,serveUrl:bundled,outputLocation:output,
  codec:"h264",pixelFormat:"yuv420p",inputProps,logLevel:"error",
  ...(mode==="hook"?{frameRange:[0,134]}:{})});
-const metadata=await getVideoMetadata(output);
+const probe=JSON.parse(execFileSync("ffprobe",["-v","error","-show_format","-show_streams","-of","json",output],{encoding:"utf8"}));
+const video=probe.streams.find(x=>x.codec_type==="video");
+if(!video)throw new Error("No video stream found");
+const duration=Number(probe.format.duration);
+if(!Number.isFinite(duration)||duration<4||duration>44)throw new Error("MP4 duration invalid");
 const report={
  status:mode==="full"?"REVIEW_REQUIRED_NO_PUBLICATION":"TECHNICAL_HOOK_REVIEW_ONLY",
  published:false,approved:false,mode,script:"2026-11-14_trump_xi_putin/SCRIPT_V1.md",
  label:"Sommet ANNONCÉ Trump–Xi–Poutine (19 nov. 2026) — archives, pas images de la réunion",
  output:path.basename(output),bytes:readFileSync(output).length,
- sha256:sha256(output),duration:metadata.durationInSeconds,
- width:metadata.width,height:metadata.height,
+ sha256:sha256(output),duration,width:video.width,height:video.height,
  logo_git_blob:logoGit,reference_d00_sha256:d00Hash,
  audio_present:mode==="full",
  note:"Le hook seul ne remplace pas une vidéo complète. La voix n'est pas générée automatiquement."
