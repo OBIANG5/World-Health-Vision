@@ -1,0 +1,20 @@
+{
+  "episode": "south-sudan-elections-first-national-v3",
+  "version": 3,
+  "source": "User-approved first full script from 2026-11-14; replaces changed V2 script",
+  "status": "LOCKED_WORD_FOR_WORD",
+  "language": "fr-FR",
+  "script_lines": [
+    "Imagine un pays indépendant depuis quinze ans… mais qui n'a encore jamais organisé d'élections nationales !",
+    "C'est le Soudan du Sud.",
+    "Le pays devait enfin voter le 22 décembre. Mais nouveau coup de théâtre : les élections sont repoussées au 11 février 2027 !",
+    "Aucune raison officielle n'a été donnée.",
+    "Pendant ce temps, l'ONU alerte sur les violences et les tensions politiques.",
+    "Quinze ans après l'indépendance, les Sud-Soudanais attendent toujours leur premier scrutin national."
+  ],
+  "joined_sha256_utf8_lf": "a5104cedab538771d1c649da242c7b32b4f438514a4230d3e5bb31628139afb9",
+  "allow_silent_rewrite": false,
+  "tts_normalization": "Punctuation, years and numbers may be normalized only to aid pronunciation in a separate audio mapping that must preserve spoken meaning and wording. Never alter the editorial master text.",
+  "allowed_edit_policy": "Explicit user approval, change log, new version, and a separately reviewed script hash.",
+  "approved_for_publication": false
+}

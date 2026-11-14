@@ -1,0 +1,171 @@
+name: World-Vision — V3 locked-script / Vivienne / approved globe / cinematic editorial
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/worldvision-south-sudan-v3-locked-vivienne-2026-11-14
+    paths:
+      - '.github/workflows/whv-south-sudan-editorial-v3.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_south_sudan_editorial_v3.py'
+      - 'worldhealth-vision-v2/docs/media/episodes/2026-11-14_south_sudan_elections/SCRIPT_LOCK_V3.json'
+permissions:
+  contents: write
+concurrency:
+  group: worldvision-ssudan-v3-lock
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout exact GitHub source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install vector/photo and voice dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg libsndfile1
+          python -m pip install --quiet 'pillow==12.0.0' 'numpy==2.3.4' 'edge-tts>=7,<8' 'soundfile>=0.12'
+          python - <<'PY'
+          import PIL,numpy,edge_tts,soundfile
+          print('Dependencies OK',PIL.__version__,numpy.__version__)
+          PY
+      - name: Enforce original word-for-word script before touching media
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import pathlib,hashlib,json
+          p=pathlib.Path('worldhealth-vision-v2/docs/media/episodes/2026-11-14_south_sudan_elections/SCRIPT_LOCK_V3.json')
+          m=json.loads(p.read_text(encoding='utf-8'))
+          h=hashlib.sha256('\n'.join(m['script_lines']).encode()).hexdigest()
+          assert h=='a5104cedab538771d1c649da242c7b32b4f438514a4230d3e5bb31628139afb9'
+          assert m['status']=='LOCKED_WORD_FOR_WORD'
+          print('EXACT SCRIPT LOCK SHA 256 PASS:',h)
+          PY
+      - name: Download approved V2 geographic opening and authentic licensed photography
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14
+          mkdir -p "$D"
+          USER_AGENT='World-Vision Newsroom/1.0 (https://github.com/OBIANG5/World-Health-Vision)'
+          curl -fLsS --retry 5 --retry-all-errors --max-time 160 \
+            'https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/world-vision-soudan-du-sud-editorial-v2.mp4' \
+            -o "$D/approved-v2-reference.mp4"
+          echo "512a77a8de55fa05cf24904568577c653d9d1ef8586827b89150b077086d6295  $D/approved-v2-reference.mp4" | sha256sum --check
+          curl -fLsS --retry 5 --retry-all-errors --max-time 150 -A "$USER_AGENT" \
+            'https://commons.wikimedia.org/wiki/Special:Redirect/file/Flag_of_South_Sudan_in_to_the_Independence_Day.jpg' \
+            -o "$D/flag_juba_hires.jpg"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 180 -A "$USER_AGENT" \
+            'https://commons.wikimedia.org/wiki/Special:Redirect/file/Mother_and_child_on_South_Sudans_independence_day_(5926201660).jpg' \
+            -o "$D/mother_child_juba_2011.jpg"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 150 -A "$USER_AGENT" \
+            'https://upload.wikimedia.org/wikipedia/commons/a/a2/South_Sudanese_crowd_gathers_on_independence_day_%285925619257%29.jpg' -o "$D/crowd_vertical.jpg"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 150 -A "$USER_AGENT" \
+            'https://upload.wikimedia.org/wikipedia/commons/b/b6/Salva_Kiir_Mayardit_The_South_Sudan_president.jpg' -o "$D/president.jpg"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 150 -A "$USER_AGENT" \
+            'https://upload.wikimedia.org/wikipedia/commons/9/96/A_South_Sudanese_man_carries_the_flag_%285925642623%29.jpg' -o "$D/flag_man.jpg"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 150 -A "$USER_AGENT" \
+            'https://upload.wikimedia.org/wikipedia/commons/b/bb/South_Sudan_independence_celebration_in_Juba.jpg' -o "$D/independence.jpg"
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          d=Path('worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14')
+          for name in ['flag_juba_hires.jpg','mother_child_juba_2011.jpg','crowd_vertical.jpg','president.jpg','flag_man.jpg','independence.jpg']:
+            with Image.open(d/name) as image:
+              print(name,image.size,image.format)
+              assert image.format in ('JPEG','MPO') and image.width>=1000 and image.height>=700
+          assert Image.open(d/'flag_juba_hires.jpg').size==(2160,1440)
+          PY
+          test "$(git hash-object worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png)" = 'bc80fa70cebd566768bfb1703a0f1f636a78c196'
+      - name: Acquire two entirely new OFL editorial fonts
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14
+          curl -fLsS --retry 5 --retry-all-errors --max-time 120 \
+            'https://raw.githubusercontent.com/google/fonts/main/ofl/newsreader/Newsreader%5Bopsz%2Cwght%5D.ttf' \
+            -o "$D/Newsreader-variable.ttf"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 120 \
+            'https://raw.githubusercontent.com/google/fonts/main/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf' \
+            -o "$D/DMSans-variable.ttf"
+          python - <<'PY'
+          from PIL import ImageFont
+          from pathlib import Path
+          d=Path('worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14')
+          for n in ['Newsreader-variable.ttf','DMSans-variable.ttf']:
+            f=ImageFont.truetype(str(d/n),56)
+            print(n,f.get_variation_axes())
+          PY
+      - name: Render V3 — single uninterrupted French narration and purposeful motion
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_south_sudan_editorial_v3.py
+          python scripts/guard_on_screen_copy.py scripts/worldvision_south_sudan_editorial_v3.py
+          python scripts/worldvision_south_sudan_editorial_v3.py \
+            --v2-reference assets/south-sudan-2026-11-14/approved-v2-reference.mp4 \
+            --headfont assets/south-sudan-2026-11-14/Newsreader-variable.ttf \
+            --bodyfont assets/south-sudan-2026-11-14/DMSans-variable.ttf \
+            --logo public/brand/world-vision-official.png
+      - name: "HARD QA — duration, script lock, Vivienne, nine review frames and provenance"
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v3
+          test -s "$D/world-vision-soudan-du-sud-v3-vivienne-review.mp4"
+          ffprobe -v error -show_entries stream=codec_type,codec_name,width,height,r_frame_rate -show_entries format=duration -of json "$D/world-vision-soudan-du-sud-v3-vivienne-review.mp4"
+          python - <<'PY'
+          import json,hashlib,pathlib
+          d=pathlib.Path('worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v3')
+          m=json.loads((d/'manifest.json').read_text())
+          assert m['script_lock_sha256']=='a5104cedab538771d1c649da242c7b32b4f438514a4230d3e5bb31628139afb9'
+          assert m['voice']=='fr-FR-VivienneMultilingualNeural'
+          assert not m['voice_commercial_license_verified'] and not m['publication_authorized']
+          assert 19<m['duration_seconds']<=30
+          assert (d/'review/contact-sheet.jpg').is_file()
+          assert len(list((d/'review').glob('shot-*.jpg')))==9
+          assert m['geography']['video_reference_sha256']=='512a77a8de55fa05cf24904568577c653d9d1ef8586827b89150b077086d6295'
+          assert len(m['script_full_exact'])==6
+          print('TECH PASS | MASTER LOCKED SCRIPT + VIVIENNE + V2 GLOBE | FINAL ART REVIEW PENDING')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-south-sudan-v3-review-and-qa
+          retention-days: 30
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v3/world-vision-soudan-du-sud-v3-vivienne-review.mp4
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v3/manifest.json
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v3/review/*.jpg
+      - name: Publish permanent V3 iPhone review alongside historical V1/V2
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-south-sudan-v3
+          SRC=worldhealth-vision-v2/services/media-renderer/output/south-sudan-editorial-v3
+          DEST=/tmp/wv-south-sudan-v3/media-lab/south-sudan-editorial-v3
+          mkdir -p "$DEST/review"
+          cp "$SRC/world-vision-soudan-du-sud-v3-vivienne-review.mp4" "$SRC/manifest.json" "$DEST/"
+          cp "$SRC/review/"*.jpg "$DEST/review/"
+          cp worldhealth-vision-v2/docs/media/episodes/2026-11-14_south_sudan_elections/VIEWER_V3.html "$DEST/index.html"
+          cd /tmp/wv-south-sudan-v3
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/south-sudan-editorial-v3
+          if ! git diff --cached --quiet; then
+            git commit -m 'preview(media): V3 locked-word script, Vivienne chosen, validated globe, premium news review'
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
