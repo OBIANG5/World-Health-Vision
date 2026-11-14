@@ -1,5 +1,17 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## MISE À JOUR TRANSVERSALE — RETOURS AUDIOVISUELS DU 14 NOVEMBRE 2026 (TOUTES LES VIDÉOS)
+
+**Ce bloc s'applique aussi au reportage Shenzhen et à tous les futurs épisodes, indépendamment de la branche de montage.** L'utilisateur a critiqué les montages précédents : le système doit mémoriser ses choix et ne plus changer silencieusement les scripts.
+
+- **Voix préférée choisie par l'utilisateur : Vivienne** (identifiant de référence `fr-FR-VivienneMultilingualNeural`). La voix est une référence de direction vocale, **pas une licence de diffusion commerciale**. Kokoro `ff_siwis` et Remy ne sont plus des défauts acceptables. [Écouter l'échantillon Vivienne](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/voice-auditions/vivienne.mp3).
+- **Soudan du Sud : le script V1 original est VERROUILLÉ mot pour mot**, SHA `a5104cedab538771d1c649da242c7b32b4f438514a4230d3e5bb31628139afb9`. Ne jamais remplacer par la réécriture V2. Toute modification requiert l'accord explicite du propriétaire.
+- **Globe V2 réel validé** en ouverture 0–3 secondes : conserver ce clip géographique lors des prochains tests, sans refaire de CGI fictif. Pas de logo en cartouche blanc permanent, de grande date isolée sur beige, de polices arbitraires, ni de mentions techniques incrustées.
+- **Documents canoniques sur branche V3** : [VOICE_REFERENCE.md](https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-south-sudan-v3-locked-vivienne-2026-11-14/worldhealth-vision-v2/docs/media/VOICE_REFERENCE.md) ; [EDITORIAL_VIDEO_QUALITY_GATES.md](https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-south-sudan-v3-locked-vivienne-2026-11-14/worldhealth-vision-v2/docs/media/EDITORIAL_VIDEO_QUALITY_GATES.md) ; [script gelé](https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-south-sudan-v3-locked-vivienne-2026-11-14/worldhealth-vision-v2/docs/media/episodes/2026-11-14_south_sudan_elections/SCRIPT_LOCK_V3.json).
+- **Point d'entrée cross-branches permanent : [GitHub Issue #18](https://github.com/OBIANG5/World-Health-Vision/issues/18)**. V3 isolée en PR #19, pas de publication sans validation humaine ni licence voix.
+- Pour les nouvelles productions Afrique : Guinée/Siguiri, Kenya/Syokimau, Guinée équatoriale/Jesús Owono : lire Issue #18 et le registre voix **avant** de commencer.
+
+
 ## PRIORITÉ ACTUELLE — S03 SHENZHEN V2 VÉRIFIÉ, ENCHAÎNEMENT À 43 S (14/11/2026)
 
 **Commande utilisateur actuelle :** montage d'actualité premium **une vidéo courte à la fois**, et **chaque séquence autonome contrôlée avant assemblage**. Séquence dramatique obligatoire : **S01 vrais portraits Trump/Poutine/Xi → S02 image World-Vision D00-v6 ORIGINALE → S03 le globe tourne réellement depuis l'Afrique vers Shenzhen → S03b vrai visuel de la ville → reste du reportage sur le nucléaire/Iran/Ukraine → signature World-Vision**. Débit normal, 30 images/s, environ **43 secondes** AU TOTAL (surtout pas 3–4 minutes) ; pas de fausse conférence ou faux bâtiments.
