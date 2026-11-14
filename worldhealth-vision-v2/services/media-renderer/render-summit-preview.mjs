@@ -24,6 +24,7 @@ const required=["public/brand/world-vision-official.png",
 if(mode==="full")required.push(
  "public/episodes/summit-2026/segment02-original-d00.mp4",
  "public/episodes/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4",
+ "public/episodes/summit-2026/segment03b-shenzhen-city-v1-2p7s.mp4",
  "public/episodes/summit-2026/segment04-new-start-v3-clean-7p9s.mp4");
 for(const relative of required){
  const absolute=path.join(base,relative);
@@ -37,11 +38,14 @@ const d00Hash="8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2"
 if(mode==="full"){
  const d00Video=path.join(base,"public/episodes/summit-2026/segment02-original-d00.mp4");
  const s03Video=path.join(base,"public/episodes/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4");
+ const s03bVideo=path.join(base,"public/episodes/summit-2026/segment03b-shenzhen-city-v1-2p7s.mp4");
  const s04Video=path.join(base,"public/episodes/summit-2026/segment04-new-start-v3-clean-7p9s.mp4");
  if(sha256(d00Video)!=="95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a")
    throw new Error("Original D00 S02 video SHA mismatch: cannot substitute globe render.");
  if(sha256(s03Video)!=="59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe")
    throw new Error("Shenzhen georeferenced locator SHA mismatch.");
+ if(sha256(s03bVideo)!=="cd0dfa113ec71d95b615fba341f0aec5db8953ad1ca520dc292db6c11540f016")
+   throw new Error("Shenzhen city photograph must match authentic 2025 CC0 S03B; no replacement.");
  if(sha256(s04Video)!=="4fa8aebec451f4edb0d8bd495655b619feaab0d9fb0d517c12e4bd9f88b33e69")
    throw new Error("S04 must be exact Manrope clean-plate V3; older V1/V2 forbidden.");
  if(!existsSync(path.join(base,"public/episodes/summit-2026/voice-fr-approved.wav")))
