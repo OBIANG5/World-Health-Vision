@@ -48,3 +48,14 @@ Le montage ne doit pas être publié automatiquement.
 - Sujet 08 : effondrement à Syokimau au Kenya.
 - Sujet 06 : sanction de Jesús Owono, gardien équato-guinéen.
 Pour chacun : revérifier les faits, script accrocheur 30 secondes maximum, vrais médias réutilisables et voix de qualité avant publication.
+
+
+## Journal du premier rendu — 14 novembre 2026
+- Action vérifiée : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43591867079 — conclusion SUCCESS sur toutes les étapes.
+- Commit publication aperçu : b48fab28dec3741870709b53899cb39404a0a484, branche whv-media-studio-browser-preview.
+- Fichier MP4 réellement présent, 1 678 624 octets, empreinte SHA-256 bda65edf53c7589e1fc143aece452063653e3e80fc189aa365d7ba36180e91f1.
+- Durée probe 27,576 secondes, 1080×1920, 30 i/s, H.264 + AAC, six scènes vocalement minutées. Voice atempo = 1, donc aucune accélération forcée de la synthèse.
+- Visual QA : contact-sheet présent sur la branche publique, trois photogrammes début/milieu/fin consultés ; pas de labels techniques visibles sur ces trois images.
+- Limite : la piste Kokoro n'a pas subi d'audition humaine subjective ; demander validation vocale et artistique à l'utilisateur avant tout statut publié.
+- URL pérenne de visionnage : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-2026-11-14/index.html
+- Aucune publication TikTok/WhatsApp, aucune validation finale supposée.
