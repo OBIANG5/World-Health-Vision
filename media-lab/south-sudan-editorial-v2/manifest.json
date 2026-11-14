@@ -1,11 +1,11 @@
 {
   "episode": "south-sudan-first-national-elections-delay-v2",
   "duration_seconds": 26.414388,
-  "output_video_sha256": "211deba0208eb39b8ed485c7f0c9678c8c9b9b6458c24eab9673ba7f5bcb3669",
+  "output_video_sha256": "512a77a8de55fa05cf24904568577c653d9d1ef8586827b89150b077086d6295",
   "voice_provider": "Microsoft Edge Neural via edge-tts; UNLICENSED for commercial use until enterprise licensing or equivalent cleared",
   "voice": "fr-FR-RemyMultilingualNeural",
   "voice_takes": [
-    "Quinze ans d'indépendance. Zéro élection nationale.",
+    "Quinze ans d'indépendance. Aucune élection nationale.",
     "Au Soudan du Sud, indépendant depuis deux mille onze, le premier scrutin se fait toujours attendre.",
     "Les citoyens devaient élire leur président et leurs députés le vingt-deux décembre.",
     "Mais nouveau report : le vote est désormais fixé au onze février deux mille vingt-sept.",
@@ -13,7 +13,7 @@
     "Quinze ans après sa naissance, le pays attend toujours ses premières élections nationales."
   ],
   "spoken_track_lengths": [
-    3.528,
+    3.432,
     4.896,
     3.816,
     4.224,
