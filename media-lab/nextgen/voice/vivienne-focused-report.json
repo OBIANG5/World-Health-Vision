@@ -7,13 +7,13 @@
   "segmented_delivery": true,
   "seams_require_human_review": true,
   "original_brief_sha256": "c614d29b63a2d6d260dd8f82bcb2bb77506620cc21a26c06c54d73b632aa079c",
-  "clip_sha256": "78f0ae89ceb3e0c42e0c2a7929ac8fa49a04dc9d7e983b73702e6688f18a6a7e",
+  "clip_sha256": "ffdfb26ecd0b12cd41e5e77f08391c227a3a6fc405596df29e234c104c6188ed",
   "audio_assessment": {
     "status": "OBJECTIVE_DIAGNOSTICS_NOT_HUMAN_REVIEW",
     "source": "output/nextgen/voice/focused/vivienne-focused-review.wav",
     "seconds_total": 14.779,
     "seconds_narration_evaluated": 14.779,
-    "integrated_lufs": -16.65,
+    "integrated_lufs": -16.64,
     "true_peak_dbtp": -2.0,
     "loudness_range_lu": 1.3,
     "pauses_over_220ms": [
