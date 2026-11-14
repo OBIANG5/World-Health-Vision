@@ -1,0 +1,298 @@
+{
+  "status": "AUDITION_ONLY_NOT_APPROVED",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "variant": "conversational",
+  "same_speaker": true,
+  "pitch_shift_or_voice_cloning": false,
+  "segmented_delivery": true,
+  "seams_require_human_review": true,
+  "original_brief_sha256": "c614d29b63a2d6d260dd8f82bcb2bb77506620cc21a26c06c54d73b632aa079c",
+  "clip_sha256": "7af5bc07e2e9668f89bff8a69efbcd31c3078ad7c29bebe1b153494aa59800cd",
+  "audio_assessment": {
+    "status": "OBJECTIVE_DIAGNOSTICS_NOT_HUMAN_REVIEW",
+    "source": "output/nextgen/voice/conversational/vivienne-conversational-review.wav",
+    "seconds_total": 15.595,
+    "seconds_narration_evaluated": 15.595,
+    "integrated_lufs": -16.53,
+    "true_peak_dbtp": -2.0,
+    "loudness_range_lu": 1.9,
+    "pauses_over_220ms": [
+      {
+        "start": 1.942,
+        "end": 2.426,
+        "seconds": 0.484
+      },
+      {
+        "start": 3.354,
+        "end": 3.607,
+        "seconds": 0.253
+      },
+      {
+        "start": 5.112,
+        "end": 5.701,
+        "seconds": 0.589
+      },
+      {
+        "start": 7.037,
+        "end": 7.543,
+        "seconds": 0.506
+      },
+      {
+        "start": 10.464,
+        "end": 11.083,
+        "seconds": 0.62
+      },
+      {
+        "start": 12.389,
+        "end": 12.908,
+        "seconds": 0.519
+      },
+      {
+        "start": 13.503,
+        "end": 13.785,
+        "seconds": 0.282
+      }
+    ],
+    "pause_count": 7,
+    "long_pauses_over_650ms": 0,
+    "expression_review_flag": true,
+    "expression_flag_explanation": "Low loudness variation is a listening cue, NOT proof of robotic speech.",
+    "human_listening_required": true,
+    "publishing_authorized": false
+  },
+  "timeline": [
+    {
+      "beat": 1,
+      "text": "Une annonce vient de retenir l'attention. Et derrière ce titre, une question essentielle se pose.",
+      "editorial_intent": "Accroche intense, mais sans sensationnalisme.",
+      "start": 0.0,
+      "duration": 5.472,
+      "rate": "-2%",
+      "word_boundaries": [
+        {
+          "word": "Une",
+          "start": 0.05025,
+          "duration": 0.216833
+        },
+        {
+          "word": "annonce",
+          "start": 0.267083,
+          "duration": 0.446416
+        },
+        {
+          "word": "vient",
+          "start": 0.7135,
+          "duration": 0.140291
+        },
+        {
+          "word": "de",
+          "start": 0.853833,
+          "duration": 0.076541
+        },
+        {
+          "word": "retenir",
+          "start": 0.930375,
+          "duration": 0.382625
+        },
+        {
+          "word": "l'attention",
+          "start": 1.313,
+          "duration": 0.63775
+        },
+        {
+          "word": "Et",
+          "start": 2.295166,
+          "duration": 0.153041
+        },
+        {
+          "word": "derrière",
+          "start": 2.448208,
+          "duration": 0.318875
+        },
+        {
+          "word": "ce",
+          "start": 2.767083,
+          "duration": 0.114791
+        },
+        {
+          "word": "titre",
+          "start": 2.881875,
+          "duration": 0.395416
+        },
+        {
+          "word": "une",
+          "start": 3.583416,
+          "duration": 0.063791
+        },
+        {
+          "word": "question",
+          "start": 3.647208,
+          "duration": 0.331625
+        },
+        {
+          "word": "essentielle",
+          "start": 3.978833,
+          "duration": 0.522958
+        },
+        {
+          "word": "se",
+          "start": 4.501791,
+          "duration": 0.127541
+        },
+        {
+          "word": "pose",
+          "start": 4.629333,
+          "duration": 0.497458
+        }
+      ]
+    },
+    {
+      "beat": 2,
+      "text": "Que savons-nous vraiment aujourd'hui ? Les premières informations méritent d'être examinées avec prudence.",
+      "editorial_intent": "Factuel, serein, respiration nette après la question.",
+      "start": 5.572,
+      "duration": 5.208,
+      "rate": "+2%",
+      "word_boundaries": [
+        {
+          "word": "Que",
+          "start": 0.073541,
+          "duration": 0.098041
+        },
+        {
+          "word": "savons-nous",
+          "start": 0.171583,
+          "duration": 0.453416
+        },
+        {
+          "word": "vraiment",
+          "start": 0.625,
+          "duration": 0.343125
+        },
+        {
+          "word": "aujourd'hui",
+          "start": 0.968125,
+          "duration": 0.539208
+        },
+        {
+          "word": "Les",
+          "start": 1.851208,
+          "duration": 0.159333
+        },
+        {
+          "word": "premières",
+          "start": 2.010541,
+          "duration": 0.306375
+        },
+        {
+          "word": "informations",
+          "start": 2.316916,
+          "duration": 0.68625
+        },
+        {
+          "word": "méritent",
+          "start": 3.003166,
+          "duration": 0.379916
+        },
+        {
+          "word": "d'être",
+          "start": 3.383083,
+          "duration": 0.208333
+        },
+        {
+          "word": "examinées",
+          "start": 3.591416,
+          "duration": 0.441166
+        },
+        {
+          "word": "avec",
+          "start": 4.032583,
+          "duration": 0.208333
+        },
+        {
+          "word": "prudence",
+          "start": 4.240916,
+          "duration": 0.63725
+        }
+      ]
+    },
+    {
+      "beat": 3,
+      "text": "Voici ce qui est confirmé. Et surtout, ce qu'il reste encore à vérifier.",
+      "editorial_intent": "Conclure avec curiosité et nuance.",
+      "start": 10.915,
+      "duration": 4.68,
+      "rate": "-3%",
+      "word_boundaries": [
+        {
+          "word": "Voici",
+          "start": 0.050375,
+          "duration": 0.489708
+        },
+        {
+          "word": "ce",
+          "start": 0.540083,
+          "duration": 0.128875
+        },
+        {
+          "word": "qui",
+          "start": 0.668958,
+          "duration": 0.128833
+        },
+        {
+          "word": "est",
+          "start": 0.797791,
+          "duration": 0.025791
+        },
+        {
+          "word": "confirmé",
+          "start": 0.836458,
+          "duration": 0.683
+        },
+        {
+          "word": "Et",
+          "start": 1.867416,
+          "duration": 0.14175
+        },
+        {
+          "word": "surtout",
+          "start": 2.009166,
+          "duration": 0.502583
+        },
+        {
+          "word": "ce",
+          "start": 2.846791,
+          "duration": 0.103083
+        },
+        {
+          "word": "qu'il",
+          "start": 2.949875,
+          "duration": 0.167541
+        },
+        {
+          "word": "reste",
+          "start": 3.117416,
+          "duration": 0.244833
+        },
+        {
+          "word": "encore",
+          "start": 3.36225,
+          "duration": 0.2835
+        },
+        {
+          "word": "à",
+          "start": 3.64575,
+          "duration": 0.0386659
+        },
+        {
+          "word": "vérifier",
+          "start": 3.684416,
+          "duration": 0.631458
+        }
+      ]
+    }
+  ],
+  "publishing_authorized": false,
+  "rights_verified": false,
+  "requires_editorial_and_legal_approval": true
+}

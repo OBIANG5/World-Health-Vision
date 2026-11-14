@@ -1,0 +1,32 @@
+{
+  "status": "ORIGINAL_LOGO_PIXEL_EXTRACTION_FOR_REVIEW_ONLY",
+  "source_path": "/home/runner/work/World-Health-Vision/World-Health-Vision/worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png",
+  "source_sha256": "b5e76e19260a6c405c17d54695278c12adb5e8b90f241deddf351620d7e7d9fb",
+  "source_size": [
+    1024,
+    677
+  ],
+  "detected_blue_bbox": [
+    202,
+    145,
+    823,
+    508
+  ],
+  "output_bbox_source_coords": [
+    190,
+    133,
+    835,
+    520
+  ],
+  "pixel_coverage_ratio": 0.1619,
+  "output_path": "/home/runner/work/World-Health-Vision/World-Health-Vision/worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-eye-original-transparent.png",
+  "output_sha256": "971c8a6ab7f21d7d4b1e5c2a884239fd895d91ef6b0848f26d0a3daf42f776c7",
+  "output_size": [
+    645,
+    387
+  ],
+  "same_original_logo_art": true,
+  "new_logo_generated": false,
+  "background_removed_programmatically": true,
+  "needs_visual_review": true
+}
