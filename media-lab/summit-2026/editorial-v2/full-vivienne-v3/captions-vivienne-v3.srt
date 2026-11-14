@@ -1,83 +1,105 @@
 1
-00:00:00,000 --> 00:00:01,729
+00:00:00,000 --> 00:00:01,408
 Trois puissances
-nucléaires. Une
+nucléaires.
 
 2
-00:00:01,709 --> 00:00:04,110
-même table. Et une
-rencontre inédite.
+00:00:01,529 --> 00:00:02,576
+Une même table.
 
 3
+00:00:02,703 --> 00:00:04,110
+Et une rencontre
+inédite.
+
+4
 00:00:04,263 --> 00:00:06,447
 Jeudi 19 novembre,
 Donald Trump,
 
-4
+5
 00:00:06,493 --> 00:00:08,089
 Vladimir Poutine et
 Xi Jinping doivent se
 
-5
-00:00:08,069 --> 00:00:10,206
-réunir à Shenzhen,
-en Chine. Au cœur
-
 6
-00:00:10,186 --> 00:00:12,031
-des discussions
-réduire les arsenaux
+00:00:08,069 --> 00:00:09,758
+réunir à Shenzhen,
+en Chine.
 
 7
-00:00:12,011 --> 00:00:13,776
-nucléaires. Le
-dernier grand traité
+00:00:09,882 --> 00:00:11,569
+Au cœur des
+discussions réduire
 
 8
-00:00:13,756 --> 00:00:15,454
-entre Washington et
-Moscou a expiré en
+00:00:11,549 --> 00:00:12,777
+les arsenaux
+nucléaires.
 
 9
-00:00:15,434 --> 00:00:17,357
-février. Trump veut
-maintenant associer
+00:00:12,945 --> 00:00:13,979
+Le dernier grand
+traité entre
 
 10
-00:00:17,337 --> 00:00:19,715
-Pékin, qui reste
-réticent. La guerre
+00:00:13,959 --> 00:00:15,454
+Washington et
+Moscou a expiré en
 
 11
-00:00:19,695 --> 00:00:21,614
-en Iran devrait aussi
-être abordée. Mais
+00:00:15,434 --> 00:00:16,155
+février.
 
 12
-00:00:21,594 --> 00:00:23,745
-selon Washington,
-pas celle en Ukraine.
+00:00:16,290 --> 00:00:17,357
+Trump veut
+maintenant associer
 
 13
+00:00:17,337 --> 00:00:19,151
+Pékin, qui
+reste réticent.
+
+14
+00:00:19,289 --> 00:00:20,717
+La guerre en Iran
+devrait aussi être
+
+15
+00:00:20,697 --> 00:00:21,327
+abordée.
+
+16
+00:00:21,459 --> 00:00:22,830
+Mais selon
+Washington, pas
+
+17
+00:00:22,810 --> 00:00:23,745
+celle en Ukraine.
+
+18
 00:00:23,903 --> 00:00:25,432
 Et attention aucun
 accord n’est
 
-14
-00:00:25,412 --> 00:00:27,180
-attendu pour le
-moment. Alors,
+19
+00:00:25,412 --> 00:00:26,504
+attendu pour
+le moment.
 
-15
-00:00:27,304 --> 00:00:29,058
-véritable tournant
-diplomatique, ou
+20
+00:00:26,628 --> 00:00:28,056
+Alors, véritable
+tournant
 
-16
-00:00:29,038 --> 00:00:29,970
-simple
-démonstration de
+21
+00:00:28,036 --> 00:00:29,384
+diplomatique,
+ou simple
 
-17
-00:00:29,950 --> 00:00:30,700
-puissance ?
+22
+00:00:29,364 --> 00:00:30,700
+démonstration
+de puissance ?
