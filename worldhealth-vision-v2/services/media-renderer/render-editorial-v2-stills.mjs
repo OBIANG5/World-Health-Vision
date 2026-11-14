@@ -1,6 +1,6 @@
 /**
  * Professional editorial storyboard audit: render real frames from the actual
- * Remotion composition before spending compute on a 42.1s whole movie.
+ * Remotion composition before spending compute on a 33.7s whole movie.
  */
 import path from "node:path";
 import {fileURLToPath} from "node:url";
@@ -13,14 +13,14 @@ const base=path.dirname(fileURLToPath(import.meta.url));
 const out=path.join(base,"output/editorial-v2/still-audit");
 mkdirSync(out,{recursive:true});
 const cases=[
- ["leaders",57],["globe",207],["city",315],
- ["newstart-archive",402],["newstart-expiry",527],
- ["china",680],["iran-ukraine",885],
- ["uncertainty",1076],["silent-signature",1220]
+ ["leaders",57],["globe",207],["city",298],
+ ["newstart-archive",375],["newstart-expiry",460],
+ ["china",539],["iran-ukraine",667],
+ ["uncertainty",824],["silent-signature",972]
 ];
 const url=await bundle({entryPoint:path.join(base,"src/editorial-v2-index.ts"),onProgress:()=>{}});
 const c=await selectComposition({serveUrl:url,id:"WVEditorialV2"});
-if(c.width!==1080||c.height!==1920||c.fps!==30||c.durationInFrames!==1263)
+if(c.width!==1080||c.height!==1920||c.fps!==30||c.durationInFrames!==1011)
  throw Error("Wrong V2 composition format");
 const files=[];
 for(const [label,frame] of cases){
