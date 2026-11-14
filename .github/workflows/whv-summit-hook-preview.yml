@@ -8,6 +8,7 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/WorldVisionSummit2026.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/Root.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/render-summit-preview.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/summit-2026-contract.test.mjs'
       - '.github/workflows/whv-summit-hook-preview.yml'
 
 permissions:
