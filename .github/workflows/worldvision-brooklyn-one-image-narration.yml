@@ -1,0 +1,68 @@
+name: World-Vision Brooklyn - Vivienne continuous narration only
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/worldvision-brooklyn-editorial-pack-2026-11-14
+    paths:
+      - '.github/workflows/worldvision-brooklyn-one-image-narration.yml'
+permissions:
+  contents: read
+jobs:
+  voice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prepare voice runtime
+        run: |
+          python -m pip install --quiet 'edge-tts>=7,<8'
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+      - name: Create one uninterrupted Vivienne C5-style audition for BROOKLYN text
+        shell: bash
+        run: |
+          python - <<'PY'
+          import asyncio,hashlib,json,pathlib,subprocess,re
+          import edge_tts
+          script=[
+          "À New York, un immeuble s'effondre en quelques secondes. Huit morts. Parmi eux, deux enfants.",
+          "Nous sommes à Brooklyn, le 11 novembre. Un bâtiment de trois étages vient de s'écrouler dans une excavation voisine.",
+          "Mais au milieu des décombres, un espoir : une femme enceinte est retrouvée vivante.",
+          "Après plus de deux heures, les secours parviennent à l'évacuer. Son mari apprend qu'elle a survécu. Leur bébé aussi.",
+          "Au total, dix-huit personnes sont blessées.",
+          "Et une question demeure : les travaux voisins ont-ils joué un rôle dans cette catastrophe ?",
+          "Les autorités enquêtent. Pour l'instant, la cause exacte de l'effondrement reste inconnue."
+          ]
+          out=pathlib.Path("worldhealth-vision-v2/services/media-renderer/output/brooklyn-one-image-voice")
+          out.mkdir(parents=True,exist_ok=True)
+          spoken=" ".join(script)
+          async def make(rate,label):
+              blob=bytearray();words=[]
+              voice=edge_tts.Communicate(text=spoken,voice="fr-FR-VivienneMultilingualNeural",rate=rate,pitch="+0Hz")
+              async for part in voice.stream():
+                  typ=part.get("type")
+                  if typ=="audio":blob.extend(part["data"])
+                  elif typ=="WordBoundary":words.append({"offset":round(part["offset"]/1e7,3),"duration":round(part.get("duration",0)/1e7,3),"text":part.get("text")})
+              assert len(blob)>25000
+              (out/("Vivienne_Brooklyn_"+label+".mp3")).write_bytes(blob)
+              return words
+          boundaries=asyncio.run(make("-4%","C52_refined"))
+          subprocess.run(["ffmpeg","-y","-v","error","-i",str(out/"Vivienne_Brooklyn_C52_refined.mp3"),"-af","highpass=f=75,acompressor=threshold=0.28:ratio=1.45:attack=15:release=160,loudnorm=I=-14:TP=-1.5:LRA=7","-ar","48000","-ac","1",str(out/"Vivienne_Brooklyn_C52_refined_master.wav")],check=True)
+          probe=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_format","-of","json",str(out/"Vivienne_Brooklyn_C52_refined_master.wav")]))
+          duration=float(probe["format"]["duration"])
+          count=len(re.findall(r"[\wÀ-ÿ]+",spoken))
+          manifest={"voice":"fr-FR-VivienneMultilingualNeural","rate":"-4%","style":"Vivienne one take, dynamic pace calibrated to ~170 wpm","one_utterance":True,"duration":duration,"word_count":count,"wpm":round(count*60/duration,1),"script":script,"sha256":hashlib.sha256(spoken.encode()).hexdigest(),"word_boundaries":boundaries,"commercial_license_verified":False,"note":"Review-only voice. Do not claim commercial Edge TTS rights."}
+          (out/"narration.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2))
+          assert duration<=56 and duration>20,("Narration too long or missing",duration)
+          print("BROOKLYN VIVIENNE ONE-TAKE",duration,manifest["wpm"],len(boundaries))
+          PY
+      - name: Save standalone voice and word timing for picture-locked montage
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-brooklyn-vivienne-one-image-voice
+          retention-days: 30
+          path: worldhealth-vision-v2/services/media-renderer/output/brooklyn-one-image-voice/*
