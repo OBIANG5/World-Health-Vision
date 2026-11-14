@@ -27,6 +27,14 @@ jobs:
         with: {node-version: '22'}
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
+      - name: Prepare system QA codecs and image tools before lengthy render
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+          python -m pip install -q pillow
+          ffprobe -version | head -1
       - name: Check approved font and narrator policy before expensive render
         shell: bash
         run: |
