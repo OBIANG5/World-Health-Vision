@@ -58,6 +58,10 @@ def qa_static(source,contract):
                "Headline collision risk; leave at least one font-height plus 25px")
     ensure('height:680' in source and 'shenzhen-city-2025.jpg' in source,
            "Shenzhen true skyline must be reframed at a sensible documentary aspect ratio")
+    ensure('tehran-azadi-2025.jpg' in source and 'kyiv-street-2023.jpg' in source,
+           "The Iran/Ukraine chapter must use documented real archival images, not flat data-dashboard cards")
+    ensure('clipPath:`inset(0' in source,
+           "Iran to Ukraine imagery needs a nontransparent transition to avoid ghosted words")
     ensure("world-vision-official.png" in source,"G0 exact brand file missing")
     ensure('const Globe:' in source and 'const EditorialLeaders:' in source,
            "Required scenes missing")
