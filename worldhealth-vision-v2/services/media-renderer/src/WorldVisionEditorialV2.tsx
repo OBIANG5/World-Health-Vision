@@ -160,7 +160,7 @@ const Treaty:React.FC=()=>{
     </div>
   </div>
   <div style={{opacity:smooth(f,35,58)}}>
-    <Title top={1210} size={113}>LE TRAITÉ A EXPIRÉ.</Title>
+    <Title top={1210} size={113}>TRAITÉ EXPIRÉ.</Title>
   </div>
  </Main>;
 };
