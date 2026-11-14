@@ -50,3 +50,25 @@ Les deux phrases sont découpées provisoirement autour de 15,65 s absolues. Le 
 S03B (vrai plan de Shenzhen) absent, S04 encore soumis à contrôle, S05–S08 non produits, source originale D00-v6 et vidéo S02 non intégrées en binaire dans le moteur final, voix française définitive absente, calage sous-titres et mixage non effectués.
 
 **Instruction de reprise :** ne pas reconstruire un globe, ne pas changer la rédaction acceptée, ne pas faire de faux montage global. Continuer un clip à la fois et publier des aperçus mobiles réels.
+
+
+## 14 NOV. 2026 — CORRECTION ÉDITORIALE PRIORITAIRE : AUCUN TEXTE DE PRODUCTION À L'ÉCRAN
+
+**Retour utilisateur explicite :** rejet de la police DejaVu et des phrases incrustées « PRÉVISUALISATION · SANS VOIX », « ARCHIVES & MOTION DESIGN », des numéros internes et des dates de fabrication. NE JAMAIS répéter ce défaut. Chaque MP4 doit être **un clean plate** directement utilisable, aucune promesse d'effacement ultérieur au master.
+
+**Correction S04 V3 VÉRIFIÉE** : Manrope Variable OFL 1.1 depuis commit immuable google/fonts 29b4ec6df2522a8aee279414b78a07910b065874, SHA-256 `3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6`. Aucun repli sur DejaVu.
+- MP4 final de *séquence* (pas master 43s) : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v3-clean-7p9s.mp4
+- Contact sheet : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04-v3/contact-sheet.jpg
+- GitHub Actions **SUCCESS** https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587064217
+- SHA-256 vidéo `4fa8aebec451f4edb0d8bd495655b619feaab0d9fb0d517c12e4bd9f88b33e69`; 1 097 118 octets; 7,9 s, 237 images, 30 i/s, H264, 1080×1920, sans piste audio; QA de six photogrammes distincts. Vérifié visuellement sur les captures.
+- Les seuls textes visibles sont **éditoriaux** : réduction des arsenaux, NEW START, date d'expiration, logo original et « Archives · Prague · 8 avril 2010 » pour signaler la vraie image historique. AUCUN status de prévisualisation, crédit de pipeline ou chronomètre technique. Crédit Chuck Kennedy / Maison-Blanche déplacé vers manifeste/légende.
+- V1 et V2 archives conservées dans GitHub mais explicitement **interdites dans le master**. `SEGMENT_LEDGER.json` garde les trois états et l'empreinte V3.
+
+**Blocage technique contre oubli** : `WorldVisionSummit2026.tsx` lit désormais le fichier `segment04-new-start-v3-clean-7p9s.mp4`, plus son dessin ancien. `render-summit-preview.mjs` impose l'existence et le SHA-256 EXACT de cette V3 avant tout master. Le composant `Credit` ne dessine plus de texte technique ; l'option d'affichage de watermark a été supprimée. Tests de contrat renforcés ; la CI bloque les textes de production incrustés via `scripts/guard_on_screen_copy.py`.
+Règle inscrite : `docs/media/EDITORIAL_ON_SCREEN_RULES.md`.
+
+**Audit des autres séquences** : S03 avait également une police DejaVu et une mention technique « NASA BLUE MARBLE / NATURAL EARTH » incrustée. Le script S03 et son workflow ont été corrigés vers une **V3 Manrope propre** conservant la même géographie ; rendu de cette S03 V3 lancé, à vérifier puis à raccorder au master seulement après QC. S01/S02 ne doivent recevoir aucune phrase interne.
+
+**État d'approbation** : S04 V3 QA techniquement passée, **validation artistique humaine non encore obtenue**. S03B Shenzhen absent ; voix définitive absente ; master 43 s non disponible, publication non autorisée.
+
+---
