@@ -22,3 +22,13 @@
 6. Ne jamais créer ou réutiliser d'imitation de voix d'un journaliste connu.
 
 Cette référence doit être lue au début de tout nouveau chat qui poursuit World-Vision. Les nouvelles branches doivent la reprendre explicitement ; ne pas choisir de voix de secours par habitude.
+
+
+## NOUVEAU RETOUR APRÈS DIFFUSION — AUDIO 4–5/10 / GUI NÉE-SIGUIRI (14/11/2026)
+Le réglage historique `rate="+11%"` ci-dessus documente l'essai A/B/C ; **il n'est plus un réglage de production recommandé**. Le propriétaire a trouvé la voix Soudan du Sud trop rapide, plate, insuffisamment humaine, émotionnelle ou expressive malgré son timbre Vivienne préféré.
+
+**Nouveau rendu de recherche Guinée Siguiri** : `fr-FR-VivienneMultilingualNeural`, prises courtes sans compression a posteriori, pauses liées au sens, **126,52 mots/minute réels**, vidéo de 51,733 secondes pour les dix paragraphes du script. La nouvelle voix est une **candidate à écouter**, pas une preuve de naturel ou une licence commerciale. 
+
+Références : [GitHub run contrôlé](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43607767094) · [MP4 de relecture](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/guinee-siguiri-2026-11-14/index.html) · [conditions qualité transversales](EDITORIAL_VIDEO_QUALITY_GATES.md).
+
+**Méthode durable :** faire auditionner le master complet, comparer l'intonation réelle à une interprétation humaine, adapter la narration au sens sans la rechronométrer en force, puis obtenir une licence de synthèse vocale autorisant l'usage prévu ou une narratrice autorisée avant diffusion. Ne pas réutiliser l'ancien preset rapide pour les autres épisodes.
