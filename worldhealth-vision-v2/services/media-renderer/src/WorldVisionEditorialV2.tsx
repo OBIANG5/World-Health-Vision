@@ -66,8 +66,8 @@ const Overline:React.FC<{children:React.ReactNode;top:number;color?:string}>=({c
 const Title:React.FC<{children:React.ReactNode;top:number;size?:number;color?:string;maxWidth?:number}>=
  ({children,top,size=148,color=C.white,maxWidth=930})=>(
   <div style={{position:"absolute",left:80,top,maxWidth,
-    fontFamily:"WV-Editorial",fontSize:size,fontWeight:700,lineHeight:.86,letterSpacing:-1.2,
-    color,textShadow:"0 12px 35px rgba(0,0,0,.5)"}}>{children}</div>
+    fontFamily:"WV-Editorial",fontSize:size,fontWeight:700,lineHeight:1.0,letterSpacing:-1.2,
+    whiteSpace:"nowrap",color,textShadow:"0 12px 35px rgba(0,0,0,.5)"}}>{children}</div>
 );
 const ArchivePhoto:React.FC<{name:string,zoom?:number,focus?:string,shade?:number}>=
  ({name,zoom=1.10,focus="center center",shade=.24})=>{
@@ -106,8 +106,8 @@ const EditorialLeaders:React.FC=()=>{
   <ShortBrand/>
   <Overline top={1151}>UNE RENCONTRE ANNONCÉE</Overline>
   <div style={{opacity:smooth(f,13,29)}}>
-   <Title top={1245} size={141}>TROIS DIRIGEANTS.</Title>
-   <Title top={1375} size={141} color={C.cyan}>UN MÊME ENJEU.</Title>
+   <Title top={1225} size={111}>TROIS DIRIGEANTS.</Title>
+   <Title top={1375} size={111} color={C.cyan}>UN MÊME ENJEU.</Title>
   </div>
  </Main>;
 };
@@ -119,20 +119,24 @@ const Globe:React.FC=()=>(
 );
 const City:React.FC=()=>{
  const f=useCurrentFrame();
- // The direct hard-coded geographical scene moves to the real, licensable skyline.
  const reveal=smooth(f,0,15);
- const radius=interpolate(reveal,[0,1],[10,1410]);
+ const radius=interpolate(reveal,[0,1],[8,1440]);
+ // Keep authentic photography in a widescreen documentary window, instead
+ // of cropping 75% of Shenzhen out of a vertical fill. No invented buildings.
  return <Main>
-  <div style={{position:"absolute",inset:0,clipPath:`circle(${radius}px at 54% 41%)`}}>
-   <ArchivePhoto name="shenzhen-city-2025.jpg" zoom={1.095} focus="55% 35%"/>
-   <AbsoluteFill style={{background:"linear-gradient(to bottom,transparent 48%,rgba(2,16,31,.45) 66%,#061528 92%)"}}/>
-   <Overline top={265}>CHINE</Overline>
-   <Title top={1090} size={178}>SHENZHEN</Title>
-   <div style={{position:"absolute",left:90,top:1298,color:C.cyan,fontSize:36,
-    fontFamily:"WV-Text",fontWeight:700,letterSpacing:1.7}}>19 NOVEMBRE 2026</div>
-   <div style={{position:"absolute",left:90,top:1366,color:C.muted,fontSize:25,
-    fontFamily:"WV-Text",fontWeight:500}}>RENCONTRE ANNONCÉE</div>
-  </div>
+  <AbsoluteFill style={{clipPath:`circle(${radius}px at 50% 43%)`,
+    background:"linear-gradient(145deg,#09263B,#061528 72%)"}}>
+    <Overline top={292}>SHENZHEN · CHINE</Overline>
+    <div style={{position:"absolute",left:56,right:56,top:475,height:790,
+      overflow:"hidden",borderRadius:5}}>
+      <Img src={staticFile(root+"shenzhen-city-2025.jpg")} style={{width:"100%",height:"100%",
+        objectFit:"cover",objectPosition:"50% 59%",transform:`scale(${interpolate(f,[0,81],[1.03,1.085],clamp)})`}}/>
+      <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(5,20,37,.02),transparent 55%,rgba(5,20,37,.46))"}}/>
+    </div>
+    <Title top={1307} size={169}>SHENZHEN</Title>
+    <div style={{position:"absolute",left:89,top:1515,fontFamily:"WV-Text",fontWeight:700,
+      fontSize:35,color:C.cyan}}>19 NOVEMBRE 2026</div>
+  </AbsoluteFill>
  </Main>;
 };
 const Treaty:React.FC=()=>{
