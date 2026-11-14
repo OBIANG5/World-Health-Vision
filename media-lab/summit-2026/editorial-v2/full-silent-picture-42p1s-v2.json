@@ -1,0 +1,30 @@
+{
+  "project": "World-Vision 001",
+  "branch": "rebuild/editorial-v2-quality-gates",
+  "iteration": "Visual rebuild V2",
+  "mode": "full",
+  "status": "TECHNICAL_RENDER_ONLY_WAITING_ART_REVIEW",
+  "absolute_publishable": false,
+  "user_approval": false,
+  "voice_approved": false,
+  "frames": 1263,
+  "fps": 30,
+  "duration_sec": 42.1,
+  "resolution": [
+    1080,
+    1920
+  ],
+  "input_globe_sha256": "59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe",
+  "genuine_logo_blob": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+  "headline_font": "Barlow Condensed Bold",
+  "subtitle_font": "DM Sans",
+  "original_source_photo_assets": true,
+  "removes_09s_logo_hold": true,
+  "progress_bars": false,
+  "voice_present": false,
+  "captions_baked": false,
+  "read_outro": false,
+  "note": "Source design proof: never declare a final film from codec checks alone.",
+  "sha256": "60c47c86f8be01e1c533d8c668679fbc72e7e05ce8540a12ccb182dec45047b8",
+  "bytes": 15866185
+}
