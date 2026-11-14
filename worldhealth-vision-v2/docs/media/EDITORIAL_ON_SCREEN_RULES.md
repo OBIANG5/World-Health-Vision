@@ -13,7 +13,7 @@ Prévisualisation; Preview; Sans voix; QA; Test; V1/V2/V3; numéros de séquence
 Une erreur est définitive lorsqu'un texte est incrusté à la génération : ne jamais compter sur le montage final pour l'effacer. Chaque segment doit être une clean plate.
 
 ## Typographie
-Polices professionnelles librement utilisables uniquement, Manrope Variable pour S04 V3. Police OFL Google Fonts authentifiée par SHA-256 d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40. Titres en graisse 800 et texte d'accompagnement en 500. Couleurs World-Vision bleu nuit, cyan et blanc. Pas de DejaVu, d'emoji ni de police de substitution silencieuse.
+Polices professionnelles librement utilisables uniquement, Manrope Variable pour S04 V3. Police OFL Google Fonts authentifiée par SHA-256 3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6. Titres en graisse 800 et texte d'accompagnement en 500. Couleurs World-Vision bleu nuit, cyan et blanc. Pas de DejaVu, d'emoji ni de police de substitution silencieuse.
 
 ## Contrôles
 La CI appelle scripts/guard_on_screen_copy.py pour rejeter les mentions opérationnelles passées aux fonctions de dessin. Le test summit-2026-contract.test.mjs vérifie l'absence de watermark de preview sur le master Remotion. Six photogrammes distincts sont extraits pour contrôle réel. Toute V3 a besoin de validation artistique avant montage définitif.
