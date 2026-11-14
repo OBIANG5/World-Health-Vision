@@ -10,7 +10,7 @@ précédente est devenue trop longue. Ne pas fusionner de brouillon sans vérifi
    `fr-FR-VivienneMultilingualNeural`, aucun remplacement par Denise,
    Sylvie, Coralie, Remy, Henri ou d'autres timbres. Le test C5.2 dure
    14,088 secondes, débit +8 %, hauteur +0 Hz. Enregistrement de référence
-   retenu comme STYLE, pas comme voix d'une actualité différente.
+   retenu comme STYLE et comme voix de travail pour CETTE MÊME actualité de La Nouvelle-Orléans, jamais pour un événement sans rapport.
 2. Le propriétaire trouve C5.2 **légèrement trop rapide** mais souhaite
    avancer avec ce rendu. Proposition : essayer +6 % sur la prochaine prise
    complète, demander une écoute, ne pas retoucher C5.2 déjà approuvé.
@@ -71,10 +71,10 @@ d'un droit commercial. Ne pas déclarer la piste licenciée. Si nécessaire
 tester la même identité Vivienne via un moteur Azure Speech contractuel
 en s'assurant du modèle disponible, des conditions et du coût.
 
-Le MP3 C5.2 parle du Mississippi et de l'hôpital ; ne pas le réutiliser
-pour lire un autre article. Pour le prochain reportage, générer une
-nouvelle prise CONTINUE avec Vivienne à un débit initial proposé de +6 %
-et garder les syllabes intactes sans découpage excessif.
+Le MP3 C5.2 parle du Mississippi et de l'hôpital : il peut donc être utilisé
+comme narration de travail pour le reportage sur CETTE collision, sans
+resynthèse inutile. Pour un autre événement, générer une nouvelle
+prise complète avec Vivienne et proposer éventuellement +6 %, à valider.
 
 ## 4. Nouvelle actualité en préproduction, PAS encore un film
 
@@ -88,7 +88,10 @@ Sources d'actualité consultées et réconciliées le 14/11/2026 :
 - https://www.wwno.org/local-regional-news/2026-11-13/tanker-strikes-paddlewheel-cruise-ship-in-new-orleans-32-injured-no-passengers-missing
 - https://www.wdsu.com/article/new-orleans-cruise-ship-struck-tanker-river-video/74426522
 
-Un storyboard six scènes d'environ 28s est enregistré :
+Le storyboard est maintenant corrigé à CINQ SCÈNES et 17,10 secondes,
+soit 14,088 s de C5.2 plus 3 s de signature silencieuse (513 images à 30fps).
+Cette synchronisation évite de recréer le défaut historique des huit secondes
+de vidéo superflues après la fin de la voix. Il est enregistré ici :
 `services/media-renderer/nextgen/new_orleans_episode_review.json`.
 Vidéos de choc et sauvetage WDSU utilisées UNIQUEMENT COMME PISTES
 DE SOURCEMENT pour l'instant : les droits de republication n'ont pas
@@ -127,8 +130,9 @@ finale exige une revue humaine du montage intégral.
 
 1. Sécuriser des images filmées du vrai événement avec droit d'utilisation
    commerciale explicite (ou choisir une autre actualité à assets autorisés).
-2. Produire une nouvelle prise de Vivienne de cette actualité, débit +6 %
-   comme hypothèse, voix entièrement continue, puis demander validation.
+2. Pour cet événement déjà narré, monter le travail sur l'audio C5.2
+   exact validé, sans changer sa vitesse ; toute variante future à +6 %
+   reste seulement une proposition qui exige une nouvelle écoute.
 3. Fabriquer un pilote réel de 4–6 secondes et regarder les vrais frames
    de contrôle. Ne pas imposer un mélange de plans génériques.
 4. N'effectuer le rendu complet et les sous-titres qu'après cette vérification ;
