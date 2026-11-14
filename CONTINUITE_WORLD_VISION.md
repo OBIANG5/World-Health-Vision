@@ -1,5 +1,17 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## LIVRABLE VÉRIFIÉ — GUINÉE/SIGUIRI — VIDÉO 02 (14 NOVEMBRE 2026)
+
+- **Vrai MP4 de relecture produit et accessible sur téléphone**, 51,733 secondes, vertical 1080×1920/30fps, H.264/AAC : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/guinee-siguiri-2026-11-14/index.html?revision=028ca808
+- Hash du fichier effectivement rendu : `028ca808171133af83d37a9a66728c823e8173bf34d823dbc69e2b71b0a56d17`. [Exécution CI/QA réussie](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43607767094), y compris **validateur multi-épisodes**.
+- Script **exactement celui choisi par l'utilisateur**, 10 paragraphes, SHA `0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac`; source dans `feature/worldvision-guinee-siguiri-v1-2026-11-14`, [PR #22](https://github.com/OBIANG5/World-Health-Vision/pull/22) en brouillon.
+- Narration : **Vivienne** `fr-FR-VivienneMultilingualNeural`, débit **126,52 mots/minute**, sans accélération audio artificielle, pauses segmentées ; ce débit ne signifie pas que l'utilisateur a approuvé la naturalité vocale.
+- **Quinze plans**, dont globe NASA animé vers la Guinée, deux plans de **vraie vidéo** libre Pexels de gestes miniers (illustrations tournées hors des affrontements), des photos d'archive USAID de Siguiri et des graphiques factuels. Une planche de **douze** photogrammes a été examinée dans les outils, avec vérification des deux plans vidéo. Le vrai lieu des images et licences est consigné dans `manifest.json`.
+- Documentation transversale mise à jour : `worldhealth-vision-v2/docs/media/VOICE_REFERENCE.md` et `worldhealth-vision-v2/docs/media/EDITORIAL_VIDEO_QUALITY_GATES.md`. Le contrôle réutilisable `worldhealth-vision-v2/services/media-renderer/scripts/validate_worldvision_short.py` a été ajouté **à cette branche mère media-studio** pour toutes les futures vidéos. Bloque script modifié, master silencieux, vitesse hors plage, plans fixes trop longs, absence de sources et diffusion présumée sans licence.
+- **Statut** : validé **techniquement**, encore **non validé artistiquement ni pour publication commerciale** ; ne pas écrire « version définitive approuvée ». Extraits Reuters/AP/TV5MONDE non copiés dans le MP4 car droits non établis. Les plans miniers Pexels sont des illustrations et non des images des morts de Balato.
+- Future reprise ChatGPT : **ne pas refaire une production à zéro**, lire la PR #22 et les commentaires du propriétaire à venir ; reprendre ce moteur et ses 15 plans, améliorer ce qui ne convainc pas, sans jamais modifier le script à son insu.
+
+
 ## NOUVELLE VIDÉO EN COURS — GUINÉE / BALATO / SIGUIRI, 14 NOVEMBRE 2026
 
 Le propriétaire a **choisi définitivement comme narration** le dernier script retravaillé de la version 2 sur les affrontements de Balato. **Ne pas réécrire.** Script exact : [SCRIPT_LOCK_V1.json](https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-guinee-siguiri-v1-2026-11-14/worldhealth-vision-v2/docs/media/episodes/2026-11-14_guinee_siguiri/SCRIPT_LOCK_V1.json), SHA-256 : `0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac`, 109 mots, dix segments. Ouverture exacte : « Dix morts. Treize blessés. En Guinée, une opération contre l’orpaillage illégal a tourné au drame. »
