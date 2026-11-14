@@ -671,3 +671,27 @@ Actuellement la portion **4,5–5,4 s** du montage complet (27 frames) contient 
 - Historique complet des versions et décisions dans `SEGMENT_LEDGER.json`, `EDL_V3_REAL_CITY_MATCHCUT.md` et ce journal.
 
 ---
+
+## 14 NOV 2026 — RECONSTRUCTION EDITORIALE V2 APRÈS REFUS DU MASTER V1 (PRIORITÉ ACTUELLE)
+
+**La décision utilisateur la plus récente annule les anciennes tolérances du 43 s V1** : utilisateur a rejeté l'ancienne voix HenriNeural, les silences ajoutés par segments, les petits sous-titres, les barres de progression, la carte G0 inutile juste avant la Terre, le cliché New START coupé et la lecture vocale du slogan final. Le globe NASA de l'ancien S03 V3 est la **seule séquence explicitement appréciée**. Aucune version technique « SUCCESS » n'implique validation artistique.
+
+**BRANCHE DE TRAVAIL ACTIVE :** `rebuild/editorial-v2-quality-gates`, indépendante de `feature/world-vision-media-studio`. Tous les MP4 rejetés restent dans la branche d'aperçu pour mémoire mais interdits comme référence stylistique.
+
+**Sources et code effectivement produits :**
+- `services/media-renderer/src/WorldVisionEditorialV2.tsx` : composition 42,1 secondes (1263 images, 30 i/s), PORTRAITS → vrai globe NASA 4,9s → Shenzhen CC0, raccord circulaire 0,5s → archive New START complète → Xi → Iran/Ukraine → incertitude → G0 final **sans parole**. **Aucun intertitre G0 à 4,5s**, aucun progrès technique incrusté.
+- Nouvelle fonte Barlow Condensed Bold titres + DM Sans textes et futurs sous-titres (provenance GitHub Google Fonts pin).
+- `render-editorial-v2.mjs`, `render-editorial-v2-stills.mjs` : rendu vidéo indépendant et 9 vrais photogrammes Remotion.
+- `quality/production_contract_v2.json`, `quality/quality_gate_v2.py`, `quality/voice_continuity_audit.py`, `quality/subtitle_design_v2.py` : rejettent l'ancien TTS et SHA, tout padding artificiel, sous-titres petits, collisions prévisibles, pages logo de remplissage, barres de progression, sortie publiable sans approbations.
+- `scripts/setup_editorial_v2_assets.sh` : photos d'archives autentiques, photo CC0 Shenzhen, Manrope non réutilisée en V2, Barlow/DM Sans, G0 exact et globe S03 V3 contrôlé SHA.
+- `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/RECONSTRUCTION_EDITORIALE_V2_REFUS_V1.md` : audit détaillé et nouveau scénario.
+
+**Preuves rendues et accessibles :** pilote muet de 11,6 s `media-lab/summit-2026/editorial-v2/opening-pilot-11p6s-v2.mp4`, GitHub preview `whv-media-studio-browser-preview` ; vérification technique réussie (SHA dernier contrôle `84cc554f833a41ad1f41f2af1f6d4dd21ac4ee071d7be85989571cf8563c8f6a`). Les premières images prouvent l'absence de logo intermédiaire, des titres non chevauchés, l'amélioration du cadrage de Shenzhen. Ne pas appeler ceci un master final.
+- Workflows : `.github/workflows/whv-editorial-v2-pilot.yml` et `whv-editorial-v2-styleframes.yml`.
+- GitHub Actions #43595860870 succès pour le dernier pilote ; #43595969106 succès pour neuf photogrammes + planches JPG.
+- Un rendu plus récent #43595484809 avait passé la QA image MAIS échoué lors du push partagé ; le workflow utilise désormais un retry fetch/reset/reapply sans force push.
+- Une inspection des neuf photogrammes a révélé que `New START` croppait les présidents ; **code désormais corrigé** avec une photo entière `objectFit:contain` ; nouvelle revue en cours au workflow de styleframes à ce moment-ci. Vérifier les vrais pixels avant de déclarer la correction validée.
+
+**IMPORTANT :** voix V2 pas générée/validée, l'ancien HenriNeural est expressément rejeté ; pas de nouveau master final, pas de publication. Slogan final écrit uniquement, jamais lu. Aucun `apad` de remplissage audio. Les sous-titres devront être générés seulement après audition et approbation d'une voix française naturelle. Terminer d'abord l'inspection des photogrammes New START, puis envisager une vidéo V2 silencieuse complète et des essais de voix à choisir.
+
+---
