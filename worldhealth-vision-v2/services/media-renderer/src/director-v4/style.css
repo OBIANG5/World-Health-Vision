@@ -1,2 +1,3 @@
-@font-face {font-family:WorldDM;font-style:normal;font-weight:100 1000;font-display:block;src:url('/director-v4/DMSans.ttf') format('truetype');}
+/* Fonts are loaded using Remotion staticFile() and the FontFace API in index.tsx.
+   Do not use a CSS absolute url() here; webpack treats it as a source import. */
 * {box-sizing:border-box}
