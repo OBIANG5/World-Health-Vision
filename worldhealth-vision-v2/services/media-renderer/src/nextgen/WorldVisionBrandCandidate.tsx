@@ -50,7 +50,7 @@ export const OriginalG0Eye: React.FC<{width?: number}> = ({width = 590}) => {
  * logo). The eye is source-exact, including its earth and contour colors.
  * The wordmark is typeset separately. No logo source text has been altered.
  */
-export const WorldVisionBrandOutroCandidate: React.FC = () => {
+export const WorldVisionBrandOutroCandidate: React.FC<{tone?: "midnight" | "graphite"}> = ({tone="midnight"}) => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
   const arrival = spring({
@@ -58,16 +58,19 @@ export const WorldVisionBrandOutroCandidate: React.FC = () => {
   });
   const textOpacity = interpolate(f, [14, 35], [0, 1],
     {extrapolateLeft: "clamp", extrapolateRight: "clamp"});
+  const background = tone === "midnight"
+    ? "radial-gradient(ellipse 840px 760px at 50% 41%, #143C60 0%, #071A31 62%, #030C19 100%)"
+    : "radial-gradient(ellipse 850px 720px at 50% 38%, #2C3749 0%, #101827 64%, #080F1C 100%)";
   return (
     <AbsoluteFill style={{
-      background: "linear-gradient(165deg, #4BA2C8 0%, #238AAF 47%, #0C507E 100%)",
+      background,
       overflow: "hidden", color: C.white, alignItems: "center",
       justifyContent: "center",
     }}>
       <style>{fonts}</style>
       <AbsoluteFill style={{
         background:
-          "radial-gradient(ellipse 710px 560px at 50% 43%,rgba(230,249,255,.20),transparent 75%)",
+          "radial-gradient(ellipse 710px 560px at 50% 43%,rgba(150,217,248,.055),transparent 75%)",
       }}/>
       <div style={{
         width: "100%", display: "flex", flexDirection: "column",
@@ -82,7 +85,7 @@ export const WorldVisionBrandOutroCandidate: React.FC = () => {
         }}>WORLD-VISION</div>
         <div style={{
           marginTop: 31, fontFamily: "WV-DM", fontSize: 36,
-          fontWeight: 500, textAlign: "center", color: C.secondary,
+          fontWeight: 500, textAlign: "center", color: "#C5DCE7",
           letterSpacing: -.5, opacity: textOpacity,
         }}>Voir le monde, le comprendre.</div>
       </div>
