@@ -15,3 +15,10 @@
 
 ## Comment réutiliser ce choix dans un autre chat
 Lire ce fichier en premier, puis `EDITORIAL_VIDEO_QUALITY_GATES.md` et `episodes/2026-11-14_south_sudan_elections/SCRIPT_LOCK_V3.json`. Ne pas choisir une voix au hasard pour « aller vite ». Mentionner `fr-FR-VivienneMultilingualNeural` dans la configuration de test et demander un avis après audition du master.
+
+
+## Vérification des droits de publication — 14 novembre 2026
+- Les [conditions officielles Microsoft Azure](https://www.microsoft.com/licensing/terms/en-US/product/MicrosoftAzure/all) précisent : **seuls les clients du service TTS payant** sont autorisés à utiliser la sortie vocale des voix neuronales prédéfinies à des fins commerciales. Ce droit ne s'étend pas automatiquement au paquet non officiel `edge-tts` et à Edge Read Aloud.
+- [Microsoft Q&A, octobre 2026](https://learn.microsoft.com/en-us/answers/questions/6032190/commercial-use-rights-for-microsoft-edge-read-alou) ne donne pas de licence publique confirmée pour `edge-tts`. Il faut donc **remplacer le master de test** par une voix générée via Azure Speech payant si celle-ci est disponible et licenciée, ou une narratrice humaine autorisée / autre fournisseur autorisé.
+- Même voix préférée : `fr-FR-VivienneMultilingualNeural` ; confirmer sa disponibilité et ses droits dans la version payante utilisée. **Ne pas transférer aveuglément** l'audio du test `edge-tts` à une publication TikTok monétisée.
+- Conserver la version test V3 comme **révision artistique consultable**, pas publication.
