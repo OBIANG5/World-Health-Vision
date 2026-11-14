@@ -49,7 +49,7 @@ def target_diagnostics(words):
     result=[]
     for idx,item in enumerate(words):
         term=re.sub(r"[^a-zàâéèêëîïôûùüÿç-]","",item["text"].lower())
-        if term not in TARGETS:
+        if not any(t in term for t in TARGETS):
             continue
         start=item["start_s"]
         ending=start+item["duration_s"]
