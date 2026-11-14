@@ -374,6 +374,29 @@ def render_stock_worker_video(src,length,out):
              "-pix_fmt","yuv420p",str(out)])
     return n/FPS
 
+def render_stock_gold_video(src,length,out):
+    """Real gold-panning motion as disclosed generic illustration, not Balato."""
+    transparent=Image.new("RGBA",(W,H),(0,0,0,0))
+    d=ImageDraw.Draw(transparent)
+    for y in range(H):
+        q=max(0,min(1,(y-850)/880))
+        alpha=int(221*q**1.8)
+        if alpha:d.line((0,y,W,y),fill=(4,12,15,alpha))
+    label(d,"ILLUSTRATION · ORPAILLAGE",76,275,29,WHITE,False)
+    label(d,"UN DRAME",76,1325,113,PAPER,True)
+    label(d,"AUTOUR DE L'OR.",76,1477,85,GOLD,True)
+    overlay=OUT/"gold-video-overlay.png";transparent.save(overlay)
+    n=max(1,round(FPS*length))
+    filters=("[0:v]fps=30,scale=1080:1920:force_original_aspect_ratio=increase,"
+             "crop=1080:1920,setsar=1[real];[real][1:v]overlay=0:0:format=auto,"
+             "format=yuv420p[v]")
+    execute(["ffmpeg","-y","-v","error","-stream_loop","-1","-i",str(src),
+             "-loop","1","-i",str(overlay),"-filter_complex",filters,
+             "-map","[v]","-an","-frames:v",str(n),
+             "-c:v","libx264","-preset","veryfast","-crf","18",
+             "-pix_fmt","yuv420p",str(out)])
+    return n/FPS
+
 def clip_plan(events,voice_seconds,geo,logo):
     opening=globe(A/"nasa-earth-5400.jpg",geo)
     photos=[];plan=[]
@@ -387,11 +410,16 @@ def clip_plan(events,voice_seconds,geo,logo):
         actual=render_stock_worker_video(A/"real_worker_illustration.mp4",max(.2,s),dst)
         photos.append(dst);plan.append({"visual":kind,"seconds":actual,
                        "source_type":"actual_stock_footage_illustration_NOT_Balato"})
+    def make_gold(s):
+        dst=OUT/f"shot-{len(photos):02d}-gold_panning_video.mp4"
+        actual=render_stock_gold_video(A/"gold_panning_illustration.mp4",max(.2,s),dst)
+        photos.append(dst);plan.append({"visual":"gold_panning_video","seconds":actual,
+                        "source_type":"actual_stock_footage_illustration_NOT_Guinea"})
     photos.append(opening);plan.append({"visual":"globe_guinea_verified_geography","seconds":3.})
     # First 3s preserve every syllable; remainder of first narration on new real
     # photo board. No duplicated scene or text on top of title.
     if events[0]<=3.1: raise RuntimeError("Opening narration too short for a legible 3s geographical locator")
-    make("gold",events[0]-3)
+    make_gold(events[0]-3)
     steps=["location","ban","confront","foreign","why","river","families","question","justice"]
     for kind,duration in zip(steps,events[1:]):
         if kind=="ban":
@@ -428,7 +456,7 @@ def main():
     for p in [HEAD,BODY,a.texture,a.geojson,a.logo,
               A/"woman_siguiri_usaid.jpg",A/"siguiri_village_usaid.jpg",
               A/"red_soil_illustration.jpg",A/"river_illustration.jpg",
-              A/"real_worker_illustration.mp4"]:
+              A/"real_worker_illustration.mp4",A/"gold_panning_illustration.mp4"]:
         if not p.exists():raise FileNotFoundError(str(p))
     assert execute(["git","hash-object",str(a.logo)]).strip()==LOGO_BLOB,"Original World-Vision logo changed"
     lines=load_script()
@@ -456,14 +484,20 @@ def main():
     assert vv["width"]==W and vv["height"]==H and vv["codec_name"]=="h264"
     assert aa["codec_name"]=="aac"
     review=OUT/"review";review.mkdir(exist_ok=True)
-    stamps=[.48,1.55,2.62]+[round(elapsed*t,3) for t in (.16,.29,.41,.58,.75,.94)]
-    contact=Image.new("RGB",(320*3,569*3),INK)
+    # Four-by-three editorial contact sheet shows actual moving footage,
+    # not just sampled static cards. Three opening frames verify geography.
+    worker_start=sum(p["seconds"] for p in plans[:12])
+    stamps=[.48,1.55,2.62,4.5,9.1,17.2,27.,35.,
+            min(elapsed-.5,worker_start-.8),
+            worker_start+.7,worker_start+1.9,max(0,elapsed-.8)]
+    assert all(0<=t<elapsed for t in stamps)
+    contact=Image.new("RGB",(320*4,569*3),INK)
     for i,t in enumerate(stamps):
         frame=review/f"frame-{i+1:02d}.jpg"
         execute(["ffmpeg","-y","-v","error","-ss",f"{min(t,elapsed-.1):.3f}",
                  "-i",str(final),"-vf","scale=320:569","-frames:v","1",str(frame)])
         im=Image.open(frame).convert("RGB")
-        contact.paste(im,((i%3)*320,(i//3)*569))
+        contact.paste(im,((i%4)*320,(i//4)*569))
     contact.save(review/"contact-sheet.jpg",quality=91)
     manifest={
       "episode":"Guinea-Siguiri-Balato-11-Nov-2026","state":"REVIEW_ONLY_NOT_LICENSED_FOR_COMMERCIAL_TTS",
@@ -487,10 +521,11 @@ def main():
         {"kind":"authentic_archival_photo","name":"Guinea Siguiri village, published 2006","license":"US Federal Government PD (USAID)","url":"https://commons.wikimedia.org/wiki/File:Guinea_Siguiri_village.jpg"},
         {"kind":"illustration_not_guinea","name":"Aerial view of red soil extraction","creator":"Umar Yakubu, via Pexels","license":"Pexels License","url":"https://www.pexels.com/photo/aerial-view-of-red-soil-extraction-scene-31570538/"},
         {"kind":"illustration_not_guinea","name":"Aerial river excavation (Paraguay)","creator":"Perrito doggy Fotos y videos variados, via Pexels","license":"Pexels License","url":"https://www.pexels.com/photo/aerial-view-of-a-river-with-excavators-digging-sand-and-clay-deposits-on-its-banks-17165570/"},
-        {"kind":"illustration_video_not_guinea","name":"African worker digging outdoors / stock footage, filmed outside the Balato events","creator":"JMT 35, via Pexels","license":"Pexels License","url":"https://www.pexels.com/video/afican-worker-in-a-mine-28657918/","note":"Actual moving video, strictly documentary illustration of mining labour; NOT recorded in Guinea or the 2026 protests"}
+        {"kind":"illustration_video_not_guinea","name":"African worker digging outdoors / stock footage, filmed outside the Balato events","creator":"JMT 35, via Pexels","license":"Pexels License","url":"https://www.pexels.com/video/afican-worker-in-a-mine-28657918/","note":"Actual moving video, strictly documentary illustration of mining labour; NOT recorded in Guinea or the 2026 protests"},
+        {"kind":"illustration_video_not_guinea","name":"Real gold panning / sluice box close-up","creator":"Alex Moliski, via Pexels","license":"Pexels License","url":"https://www.pexels.com/video/gold-panning-activity-in-natural-creek-setting-40458553/","note":"Macro mining motion; no claim of Balato location or November 2026 footage"}
       ],
       "photo_sha256":{f:digest(A/f) for f in ["woman_siguiri_usaid.jpg","siguiri_village_usaid.jpg","red_soil_illustration.jpg","river_illustration.jpg"]},
-      "stock_footage_sha256":digest(A/"real_worker_illustration.mp4"),
+      "stock_footage_sha256":{"worker":digest(A/"real_worker_illustration.mp4"),"panning":digest(A/"gold_panning_illustration.mp4")},
       "headfont_sha256":digest(HEAD),"bodyfont_sha256":digest(BODY),
       "official_logo_sha256":digest(a.logo),"narration_audition_required":True,"artistic_approval":False
     }
