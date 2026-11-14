@@ -123,9 +123,12 @@ def globe(texture,geo):
     d=ImageDraw.Draw(plate)
     hf=ImageFont.truetype(str(HEAD),64)
     sf1=ImageFont.truetype(str(BODY),33)
-    d.text((57,1050),"GUINÉE.",font=hf,fill=PAPER)
-    d.text((57,1181),"10 MORTS",font=ImageFont.truetype(str(HEAD),70),fill=WHITE)
-    d.text((57,1262),"13 BLESSÉS",font=ImageFont.truetype(str(HEAD),61),fill=GOLD)
+    # Explicit editorial hierarchy: heavy variable font, no automatic skinny default.
+    for y,txt,sz,color in [(1050,"GUINÉE.",70,PAPER),(1172,"10 MORTS",91,WHITE),(1273,"13 BLESSÉS",72,GOLD)]:
+        headline_font=ImageFont.truetype(str(HEAD),sz)
+        try: headline_font.set_variation_by_axes([700])
+        except (AttributeError,OSError,ValueError): pass
+        d.text((57,y),txt,font=headline_font,fill=color)
     d.text((59,1368),"BALATO · PRÈS DE SIGUIRI",font=ImageFont.truetype(str(BODY),20),fill=MUTED)
     base=np.asarray(plate,dtype=np.uint8)
     cmd=["ffmpeg","-y","-v","error","-f","rawvideo","-pix_fmt","rgb24",
@@ -210,15 +213,36 @@ def board(kind,geo,logo):
         im=headline(background("river_illustration.jpg",(.52,.50),.92),
                     "INTERDICTION · 2 NOVEMBRE",["9 JOURS", "PLUS TARD."],accent=0)
     elif kind=="confront":
-        im=headline(background("red_soil_illustration.jpg",(.61,.55),.67),
-                    "BALATO · 11 NOVEMBRE",["DES", "BARRICADES.", "PUIS DES TIRS."],accent=2)
+        # Never depict invented gunfire, bodies or troops. Color-graded real
+        # extraction background is illustration, not a scene from Balato.
+        im=headline(background("red_soil_illustration.jpg",(.13,.77),.56),
+                    "FAITS SIGNALÉS PAR LES AUTORITÉS",["BARRICADES.", "PUIS DES TIRS."],accent=1)
     elif kind=="foreign":
-        im=Image.new("RGB",(W,H),INK);d=ImageDraw.Draw(im)
-        label(d,"BILAN PROVISOIRE",83,258,36,MUTED,False)
-        label(d,"5",72,490,410,GOLD,True)
-        label(d,"DES 10 MORTS",90,1120,93,PAPER,True)
-        label(d,"SONT ÉTRANGERS",89,1240,72,PAPER,True)
-        label(d,"IDENTITÉS NON ÉTABLIES",88,1420,29,MUTED,False)
+        im=shade(background("red_soil_illustration.jpg",(.56,.55),.67),True)
+        d=ImageDraw.Draw(im)
+        label(d,"BILAN PROVISOIRE",80,220,35,MUTED,False)
+        label(d,"5 DES 10",76,1080,124,GOLD,True)
+        label(d,"PERSONNES TUÉES",76,1230,91,PAPER,True)
+        label(d,"SONT ÉTRANGÈRES",76,1354,83,PAPER,True)
+    elif kind=="foreign_context":
+        # Exact location archival USAID village photo (450px original) as an
+        # inset, not a false portrait of a foreign victim.
+        im=Image.new("RGB",(W,H),INK)
+        picture=Image.open(A/"siguiri_village_usaid.jpg").convert("RGB")
+        thumb=ImageOps.contain(picture,(750,520),Image.Resampling.LANCZOS)
+        xx=(W-thumb.width)//2;yy=450
+        im.paste(thumb,(xx,yy))
+        d=ImageDraw.Draw(im)
+        d.rectangle((xx-3,yy-3,xx+thumb.width+3,yy+thumb.height+3),outline=GOLD,width=2)
+        label(d,"SIGUIRI · DOCUMENT USAID",80,285,31,MUTED,False)
+        label(d,"IDENTITÉS",77,1220,113,PAPER,True)
+        label(d,"INCONNUES.",77,1360,108,GOLD,True)
+    elif kind=="ban_context":
+        im=headline(background("red_soil_illustration.jpg",(.63,.42),.77),
+                    "PATROUILLE DE CONTRÔLE",["11 NOVEMBRE", "2026."],accent=0)
+    elif kind=="river_close":
+        im=headline(background("river_illustration.jpg",(.23,.55),.82),
+                    "L'ENVIRONNEMENT MIS EN CAUSE",["LES RIVIÈRES", "POLLUTION."],accent=1)
     elif kind=="why":
         im=headline(background("river_illustration.jpg",(.48,.47),.66),
                     "LES QUESTIONS DERRIÈRE LE DRAME",["POURQUOI", "UNE TELLE", "TENSION ?"],accent=2)
@@ -284,7 +308,7 @@ async def get_takes(lines):
         for j,piece in enumerate(pieces):
             # Human newsreader pace: hook articulate, emotionally difficult
             # details deliberately slow. No mechanical speedups.
-            r="-35%" if i in (0,3) else "-40%" if i in (4,8,9) else "-38%"
+            r="-28%" if i in (0,3) else "-32%" if i in (4,8,9) else "-30%"
             dst=OUT/f"vivienne-{i:02d}-{j:02d}.mp3"
             await edge_tts.Communicate(piece,VOICE,rate=r,pitch="+0Hz").save(str(dst))
             if dst.stat().st_size<3400:raise RuntimeError(f"Invalid voice: {i}/{j}")
@@ -335,7 +359,18 @@ def clip_plan(events,voice_seconds,geo,logo):
     if events[0]<=3.1: raise RuntimeError("Opening narration too short for a legible 3s geographical locator")
     make("gold",events[0]-3)
     steps=["location","ban","confront","foreign","why","river","families","question","justice"]
-    for kind,duration in zip(steps,events[1:]):make(kind,duration)
+    for kind,duration in zip(steps,events[1:]):
+        if kind=="ban":
+            make("ban",duration*.52)
+            make("ban_context",duration*.48)
+        elif kind=="foreign":
+            make("foreign",duration*.53)
+            make("foreign_context",duration*.47)
+        elif kind=="river":
+            make("river",duration*.55)
+            make("river_close",duration*.45)
+        else:
+            make(kind,duration)
     return photos,plan
 def audio_gate(wav):
     job=subprocess.run(["ffmpeg","-hide_banner","-i",str(wav),"-af",
@@ -395,7 +430,7 @@ def main():
     manifest={
       "episode":"Guinea-Siguiri-Balato-11-Nov-2026","state":"REVIEW_ONLY_NOT_LICENSED_FOR_COMMERCIAL_TTS",
       "script_sha256":SCRIPT_SHA,"script_verbatim":lines,
-      "voice":"fr-FR-VivienneMultilingualNeural","voice_rate":"slow split-prosody -35% to -40%",
+      "voice":"fr-FR-VivienneMultilingualNeural","voice_rate":"measured slow-to-natural split-prosody -28% to -32%",
       "voice_words_per_minute":round(wpm,2),"voice_no_time_stretch":True,
       "voice_commercial_license_verified":False,"publication_authorized":False,
       "duration_seconds":round(elapsed,3),"audio_duration_seconds":round(total,3),
