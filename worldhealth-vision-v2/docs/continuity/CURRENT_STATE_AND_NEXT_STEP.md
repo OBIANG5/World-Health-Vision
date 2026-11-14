@@ -1,5 +1,16 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## ÉPISODE ACTIF — TRUMP / XI / POUTINE, SHENZHEN (14 NOVEMBRE 2026)
+
+**Choix éditorial explicite du propriétaire :** préparation d'une vidéo de 30–45 s sur le sommet trilatéral Trump–Xi–Poutine **annoncé** pour le 19 novembre 2026 à Shenzhen ; ne pas traiter la réunion comme déjà tenue. Reuters/AP/AFP (13–14 nov.) consultés et recoupés : objectif de désarmement nucléaire, Iran à l'agenda attendu, Ukraine non prévue selon Washington ; aucune entente nucléaire anticipée. **Script proposé V1 de 97 mots, EN ATTENTE DE VALIDATION**, pas de voix ni de MP4.
+
+**Fichier unique à reprendre et à modifier sans effacer les versions antérieures** : [SCRIPT_V1.md](../media/episodes/2026-11-14_trump_xi_putin_shenzhen/SCRIPT_V1.md). Il contient narration exacte, liens de sources, qualifications et contraintes sur les visuels. **Après accord utilisateur seulement** : storyboard minuté, sourcing photos/vidéos sous droits, identité G0/D00 conservée, audition voix FR puis montage Remotion/FFmpeg existant et QA mobile.
+
+**Ne pas dériver vers** le pilote mangroves rejeté, la création d'un nouveau globe, n8n ou une autre actualité imposée. Le radar horaire ChatGPT existe indépendamment.
+
+---
+
+
 ## NOUVEAU POINT DE REPRISE — MONTAGE UNIQUEMENT APRÈS SCRIPT APPROUVÉ
 
 **Décision actuelle, prioritaire sur les anciens plans présents dans ce journal :** sélection de l'actualité et script discutés/validés dans ChatGPT ; **le développement World-Vision se concentre désormais sur le montage vidéo à partir de ce script**. Ne plus forcer n8n/Shotstack, ni un autre pilote, ni un globe artisanal, ni l'automatisation intégrale de la rédaction.
