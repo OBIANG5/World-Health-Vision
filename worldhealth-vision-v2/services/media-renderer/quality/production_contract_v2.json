@@ -108,7 +108,22 @@
     "max_noneditorial_interior_silence_sec": 0.65,
     "require_audition_and_user_approval": true,
     "narration_should_follow_story_not_synthetic_padded_blocks": true,
-    "voice_source_policy": "recorded human or an auditioned and explicitly approved high-quality voice; unknown/old TTS rejected"
+    "voice_source_policy": "recorded human or an auditioned and explicitly approved high-quality voice; unknown/old TTS rejected",
+    "preferred_voice": "fr-FR-VivienneMultilingualNeural",
+    "preferred_voice_selection_source": "feature/worldvision-south-sudan-v3-locked-vivienne-2026-11-14/worldhealth-vision-v2/docs/media/VOICE_REFERENCE.md",
+    "preview_voice_rate": "+11%",
+    "preview_voice_pitch": "+0Hz",
+    "preferred_user_voice_not_equivalent_to_approved_full_take": true,
+    "preview_tts_mode": "edge-tts for audition only; commercial license not established",
+    "never_use": [
+      "fr-FR-HenriNeural",
+      "fr-FR-RemyMultilingualNeural",
+      "Kokoro ff_siwis"
+    ],
+    "speech_must_be_continuous": true,
+    "speak_outro": false,
+    "new_voice_candidate_path": "services/media-renderer/scripts/worldvision_vivienne_shenzhen_v2.py",
+    "reference_sample_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/voice-auditions/vivienne.mp3"
   },
   "rejected_assets": {
     "rejected_master": [
