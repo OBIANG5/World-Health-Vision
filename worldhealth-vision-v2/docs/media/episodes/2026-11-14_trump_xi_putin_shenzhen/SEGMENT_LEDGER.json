@@ -58,15 +58,15 @@
       "start_sec": 7.6,
       "duration_sec": 4.9,
       "visual": "Verified location on a precise map plus licensed Shenzhen imagery and date",
-      "status": "TECHNICAL_MP4_RENDERED_QA_PASSED_WAITING_ART_REVIEW",
-      "master_file": "segment03-shenzhen-4p9s.mp4",
-      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-4p9s.mp4",
-      "sha256": "6bfb45a57794c7dbfc7dc9af9ddb818c67eae327f60216b46bf32f0afb7ba10e",
-      "bytes": 4066692,
-      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03/contact-sheet.jpg",
+      "status": "S03_JULY_V2_QA_PASSED_CANVA_ARCHIVED_WAITING_ART_REVIEW",
+      "master_file": "segment03-shenzhen-july-v2-4p9s.mp4",
+      "asset_url": "https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v2-4p9s.mp4",
+      "sha256": "1e49e5b6dc36c9dde2494253a8ee5c2b426863bed7fd33cd0cd24b4012be4558",
+      "bytes": 3630370,
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03-july-v2/contact-sheet.jpg",
       "render_source": "services/media-renderer/scripts/worldvision_segment03_shenzhen.py",
-      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43582303226",
-      "nasa_sha256": "9743175942473681d78838ca1042553dab4779cf957fb6d8f22a81fb796f7797",
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43582938864",
+      "nasa_sha256": "85a24885616097b5e06532b7d8e30fa5d749a782e70ea55971dd8539a0899206",
       "natural_earth_sha256": "392a03db8aa3ba82c105852655620129b11182b95dfc34ef046827ea7d0e5b8c",
       "target_city": {
         "name": "Shenzhen",
@@ -74,7 +74,16 @@
         "lon": 114.0579,
         "precision": "city centre; no building-level venue publicly verified"
       },
-      "notes": "Real geographic rotation: 14°E,12°N to Shenzhen 114.0579°E,22.5431°N, approximately 2.1 s quintic easing, within 4.9 s stand-alone shot. NOT the original D00 static globe: must match-cut from S02. No voice/audio yet, human art review required."
+      "notes": "Real geographic rotation: 14°E,12°N to Shenzhen 114.0579°E,22.5431°N, approximately 2.1 s quintic easing, within 4.9 s stand-alone shot. NOT the original D00 static globe: must match-cut from S02. No voice/audio yet, human art review required.",
+      "v1_archived": {
+        "file": "segment03-shenzhen-4p9s.mp4",
+        "sha256": "6bfb45a57794c7dbfc7dc9af9ddb818c67eae327f60216b46bf32f0afb7ba10e",
+        "source": "NASA Blue Marble January",
+        "reason_replaced": "Too much snowy northern hemisphere; visual mismatch to D00-v6"
+      },
+      "nasa_texture_month": "July",
+      "canva_asset_id": "VAHa4gCj5SQ",
+      "note": "V2 has greener Asia/Eurasia, closer to original D00-v6 palette while preserving true NASA geography, exact marker, official G0 logo; 4.9s with 2.1s quintic rotation. S02 original must precede as distinct shot. No audio. QA visual reviewed, user artistic approval still pending."
     },
     {
       "id": "S04",
@@ -138,5 +147,6 @@
     "contact_sheet": "WorldVision_S02_contact_sheet.jpg",
     "audio_present": false
   },
-  "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded."
+  "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded.",
+  "active_edition": "S03 NASA JULY V2 is recommended for master, not yet user-approved"
 }
