@@ -11,7 +11,8 @@
       "at": 0,
       "end_at": 37,
       "start": 0.035,
-      "end": 2.335
+      "end": 2.335,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 2.25,
@@ -20,7 +21,8 @@
       "at": 37,
       "end_at": 58,
       "start": 2.781,
-      "end": 3.842
+      "end": 3.842,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 4.5,
@@ -29,7 +31,8 @@
       "at": 58,
       "end_at": 110,
       "start": 4.548,
-      "end": 7.947
+      "end": 7.947,
+      "caption_position": "top_352"
     },
     {
       "provisional_start": 8.65,
@@ -38,7 +41,8 @@
       "at": 110,
       "end_at": 141,
       "start": 7.977,
-      "end": 9.959999999999999
+      "end": 9.959999999999999,
+      "caption_position": "top_352"
     },
     {
       "provisional_start": 12.5,
@@ -47,7 +51,8 @@
       "at": 141,
       "end_at": 189,
       "start": 12.543,
-      "end": 14.958
+      "end": 14.958,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 15.65,
@@ -56,7 +61,8 @@
       "at": 189,
       "end_at": 248,
       "start": 15.474,
-      "end": 18.263
+      "end": 18.263,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 20.4,
@@ -65,7 +71,8 @@
       "at": 248,
       "end_at": 280,
       "start": 20.455,
-      "end": 22.3
+      "end": 22.3,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 23.0,
@@ -74,7 +81,8 @@
       "at": 280,
       "end_at": 296,
       "start": 22.441999999999997,
-      "end": 23.537000000000003
+      "end": 23.537000000000003,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 26.6,
@@ -83,7 +91,8 @@
       "at": 296,
       "end_at": 333,
       "start": 26.647,
-      "end": 28.540000000000003
+      "end": 28.540000000000003,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 30.4,
@@ -92,7 +101,8 @@
       "at": 333,
       "end_at": 369,
       "start": 29.119,
-      "end": 31.403000000000002
+      "end": 31.403000000000002,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 33.8,
@@ -101,7 +111,8 @@
       "at": 369,
       "end_at": 414,
       "start": 33.833999999999996,
-      "end": 35.752
+      "end": 35.752,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 37.2,
@@ -110,7 +121,8 @@
       "at": 414,
       "end_at": 480,
       "start": 36.173,
-      "end": 39.338
+      "end": 39.338,
+      "caption_position": "bottom_1548"
     },
     {
       "provisional_start": 40.0,
@@ -119,7 +131,8 @@
       "at": 480,
       "end_at": 514,
       "start": 40.031,
-      "end": 42.364000000000004
+      "end": 42.364000000000004,
+      "caption_position": "bottom_1548"
     }
   ],
   "cue_count": 13,
