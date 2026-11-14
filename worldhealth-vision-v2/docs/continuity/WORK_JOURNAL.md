@@ -557,3 +557,20 @@ Règle inscrite : `docs/media/EDITORIAL_ON_SCREEN_RULES.md`.
 - Aucun master 43s, aucune voix française ni vraie vue de Shenzhen S03B. Ne pas prétendre le contraire.
 
 ---
+
+## 14 NOV. 2026 — S01 V2 MANROPE / CLEAN PLATE CONFIRMÉE
+
+Suite à la demande de supprimer définitivement les mentions de production et d'améliorer la typographie, un deuxième contrôle a identifié un mauvais sous-titrage **serif** dans le clip S01 d'origine (sous-titres provisoires dessinés par la composition et non alignés à une vraie voix). Décision : les segments autonomes sont **sans sous-titres brûlés dans les pixels** ; le calage des sous-titres n'a lieu que lors du montage avec la voix française approuvée.
+
+**Livrable réel :** S01 V2 MP4 4,5 secondes 1080×1920 30fps, portraits d'archives et G0 intacts, typographie Manrope Variable (Google Fonts commit immuable 29b4ec6df2522a8aee279414b78a07910b065874, SHA-256 3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6). MP4 SHA256 **3a73172cd565f1b8d075166a6ae8f50572af77dceb97e91999c7d53a63456979**, 1 774 610 octets.
+
+- **Regarder sur téléphone** : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-v2-clean-manrope-4p5s.mp4
+- **Trois photogrammes de contrôle** : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s01-v2/contact-sheet.jpg
+- **Exécution GitHub** : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587829876 (success).
+- Le hook initial V1 reste archivé, non retenu pour le master.
+- `WorldVisionSummit2026.tsx` charge la Manrope authentique ; `render-summit-preview.mjs` vérifie son empreinte ; `summit-2026-contract.test.mjs` interdit le sous-titrage sans voix approuvée et le watermark de production.
+- `SEGMENT_LEDGER.json` mis à jour avec empreinte, URL, statut et V1 historique.
+
+**État :** S01 V2, S03 V3 (rotation Shenzhen, clean plate) et S04 V3 (New START, clean plate) sont techniquement vérifiées. Les clips ne sont PAS approuvés artistiquement pour publication. S02 D00-v6 reste source originale distincte, S03B images authentiques de la ville manque, S05–S08 à produire ; narration, synchronisation et master 43s absents. Ne pas renommer un artefact dans le master sans hash ni QA.
+
+---
