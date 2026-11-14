@@ -58,6 +58,16 @@ jobs:
             test "$(file --brief --mime-type "$path")" = "image/jpeg"
           done
           sha256sum "$DIR"/*.jpg > "$DIR/portrait-sha256.txt"
+      - name: Install FFmpeg and ffprobe needed for video QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
       - name: Render real Remotion video; same logo as in GitHub
         working-directory: worldhealth-vision-v2/services/media-renderer
         env:
