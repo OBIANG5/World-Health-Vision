@@ -54,7 +54,7 @@ def font(sz,bold=True):
         axis=f.get_variation_axes()
         a=[]
         for x in axis:
-            n=x["name"].lower()
+            n=x["name"].decode("utf8",errors="replace").lower() if isinstance(x["name"],bytes) else str(x["name"]).lower()
             v=(690 if bold else 520) if "weight" in n else sz if "optical" in n else x["default"]
             a.append(max(x["minimum"],min(x["maximum"],v)))
         f.set_variation_by_axes(a)
