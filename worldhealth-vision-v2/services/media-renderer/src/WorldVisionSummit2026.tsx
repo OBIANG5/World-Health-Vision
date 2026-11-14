@@ -37,8 +37,9 @@ const rootAssets="episodes/summit-2026/";
 
 const SCENE_PLAN=[
   {id:"hook",start:0,end:4.5,label:"TROIS PUISSANCES NUCLÉAIRES"},
-  {id:"globe",start:4.5,end:7.6,label:"WORLD-VISION"},
-  {id:"location",start:7.6,end:12.5,label:"SHENZHEN · CHINE"},
+  {id:"globe",start:4.5,end:5.4,label:"WORLD-VISION D00-V6"},
+  {id:"location",start:5.4,end:10.3,label:"SHENZHEN · CARTE"},
+  {id:"city",start:9.8,end:12.5,label:"SHENZHEN · VUE AUTHENTIQUE"},
   {id:"nuclear",start:12.5,end:20.4,label:"DÉSARMEMENT NUCLÉAIRE"},
   {id:"beijing",start:20.4,end:26.6,label:"PÉKIN RESTE RÉTICENT"},
   {id:"agenda",start:26.6,end:33.8,label:"L'ORDRE DU JOUR"},
@@ -162,26 +163,11 @@ const Hook:React.FC=()=>{
  </Base>;
 };
 
-const Globe:React.FC=()=>{
- const f=useCurrentFrame();
- return <Base>
-   {/*
-     Exact 3.1s D00-v6 art film already rendered from original PNG, verified
-     SHA-256 95c47d... and archived as video in Canva. NOT a rebuilt Earth.
-   */}
-   <AbsoluteFill>
-     <Video src={staticFile(rootAssets+"segment02-original-d00.mp4")} muted/>
-   </AbsoluteFill>
-   <AbsoluteFill style={{background:"linear-gradient(180deg,rgba(1,8,22,.62),transparent 25%,transparent 71%,rgba(2,11,28,.76))"}}/>
-   <Logo/>
-   <div style={{position:"absolute",left:79,bottom:480,right:180,fontSize:62,
-     color:S.white,fontWeight:950,lineHeight:1.04,textShadow:"0 3px 16px #010f23"}}>
-     LE MONDE <span style={{color:S.cyan}}>RETIENT SON SOUFFLE.</span>
-   </div>
-   <Credit text="Identité D00-v6 originale · mouvement cinématographique préservé"/>
-   <Barcode topic="SIGNATURE WORLD-VISION" progress={(f+135)/SUMMIT_FRAMES}/>
- </Base>;
-};
+// The original 3.1s D00-v6 film remains immutable; excerpt the first 0.9s
+// at normal 1x speed, with NO replacement logo or text on top.
+const Globe:React.FC=()=><AbsoluteFill style={{background:S.ink}}>
+  <Video src={staticFile(rootAssets+"segment02-original-d00.mp4")} muted/>
+</AbsoluteFill>;
 
 const Shenzhen:React.FC=()=>{
  return <AbsoluteFill style={{background:S.ink}}>
@@ -192,6 +178,17 @@ const Shenzhen:React.FC=()=>{
    */}
    <Video src={staticFile(rootAssets+"segment03-shenzhen-july-v3-clean-4p9s.mp4")} muted/>
  </AbsoluteFill>;
+};
+
+// S03B is a real city photograph, Renek78 CC0 (2025), NOT a meeting venue.
+// 0.5s dissolve on top of the final 0.5s of S03 (4.9 + 2.7 - 0.5 = 7.1).
+// Both video sources play at 1.0x, neither is shortened or accelerated.
+const ShenzhenCity:React.FC=()=>{
+  const f=useCurrentFrame();
+  const opacity=interpolate(f,[0,15],[0,1],clamp);
+  return <AbsoluteFill style={{background:S.ink,opacity}}>
+    <Video src={staticFile(rootAssets+"segment03b-shenzhen-city-v1-2p7s.mp4")} muted/>
+  </AbsoluteFill>;
 };
 
 // S04 is an immutable clean-plate MP4: no draft texts, debug status or
@@ -302,6 +299,7 @@ export const WorldVisionSummit2026:React.FC<SummitProps>=({voiceFilename})=>{
      {scene.id==="hook"?<Hook/>:
       scene.id==="globe"?<Globe/>:
       scene.id==="location"?<Shenzhen/>:
+      scene.id==="city"?<ShenzhenCity/>:
       scene.id==="nuclear"?<Nuclear/>:
       scene.id==="beijing"?<Beijing/>:
       scene.id==="agenda"?<Agenda/>:
