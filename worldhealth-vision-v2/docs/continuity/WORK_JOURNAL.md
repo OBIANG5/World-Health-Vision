@@ -695,3 +695,22 @@ Actuellement la portion **4,5–5,4 s** du montage complet (27 frames) contient 
 **IMPORTANT :** voix V2 pas générée/validée, l'ancien HenriNeural est expressément rejeté ; pas de nouveau master final, pas de publication. Slogan final écrit uniquement, jamais lu. Aucun `apad` de remplissage audio. Les sous-titres devront être générés seulement après audition et approbation d'une voix française naturelle. Terminer d'abord l'inspection des photogrammes New START, puis envisager une vidéo V2 silencieuse complète et des essais de voix à choisir.
 
 ---
+
+## 14 NOV 2026 — V2 42,1 S VISUELLE RENDUE + 4 AUDITIONS VOIX FR (DERNIER ÉTAT CERTIFIÉ)
+
+**RÉSULTATS RÉELS, conservés dans la branche d'aperçu `whv-media-studio-browser-preview` :**
+- Film V2 **entièrement visuel, volontairement muet** : `media-lab/summit-2026/editorial-v2/full-silent-picture-42p1s-v2.mp4`. **42,1 secondes, 1263 images, 30 fps, 1080×1920 H264, pas de sous-titre ni voix**. SHA-256 `60c47c86f8be01e1c533d8c668679fbc72e7e05ce8540a12ccb182dec45047b8`, 15 866 185 octets. CI #43596578832 SUCCESS. [Regarder sur iPhone](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-silent-picture-42p1s-v2.mp4) ; [images début/New START/fin](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/review-full-42s/contact-sheet.jpg).
+- Les **9 scènes** ont été inspectées en véritables images Remotion, et le visage d'Obama et celui de Medvedev ont été rétablis dans l'archive New START (plus de crop des signataires). L'agenda Iran/Ukraine a reçu des photos documentaires authentiques ; la vignette de Kyiv est CC BY 4.0 et DOIT être créditée à Angelina Bulatchyk dans la légende ; la photo Azadi (Tehran) est CC0. Pas de fiction de sommet. L'ensemble reste une version de travail à évaluer artistiquement, pas une publication.
+- **G0 intercalaire de 0,9s supprimé**, vrai globe S03 V3 conservé SHA `59028e59...`, titre dans Barlow Condensed, DM Sans pour le reste, pas de barre de progression, pas de label QA, pas d'ancien HenriNeural, pas de slogan parlé à la fin. Le mot d'ordre est de ne pas confondre contrôle technique et beauté du rendu.
+- **4 voix françaises candidates** produites au rythme naturel, sans `apad`, sans `atrim`, à partir de l'accroche textuelle EXACTE du script approuvé, **aucune approuvée**. Comparatif `media-lab/summit-2026/editorial-v2/voice-auditions/voice-auditions.json`, Actions #43596799861 SUCCESS.
+   - A01 `fr-FR-RemyMultilingualNeural` 12,048s (MP3 `A01-dry-fr-voice-audition.mp3`).
+   - A02 `fr-FR-VivienneMultilingualNeural` 11,016s (MP3 `A02-dry-fr-voice-audition.mp3`).
+   - A03 `fr-FR-DeniseNeural` 14,256s (MP3 `A03-dry-fr-voice-audition.mp3`).
+   - A04 `fr-FR-EloiseNeural` 14,664s (MP3 `A04-dry-fr-voice-audition.mp3`).
+  Les voix A01–A04 ne sont **pas automatiquement réputées naturelles ni approuvées** : écouter sur téléphone, juger l'articulation et le ton, éventuellement rejeter toutes. Garder possibilité de voix humaine ou service premium. **Ne jamais réutiliser fr-FR-HenriNeural rejeté.**
+- Script approuvé original finit par `World-Vision. Voir le monde, le comprendre.` mais **règle V2 plus récente** : cette phrase est désormais **écrite uniquement** dans S08, **aucun son de narration** entre 39,1 et 42,1 s. Le moteur de sous-titres V2 refuse une narration et une empreinte audio non approuvées et réserve la zone mobile 1350–1555 px.
+- Workflow de film muet `.github/workflows/whv-editorial-v2-full-silent-review.yml`; workflow voix `.github/workflows/whv-editorial-v2-voice-auditions.yml`; génération `scripts/voice_auditions_editorial_v2.py`. Ancienne vidéo V1 (43 s + voix Henri) **reste archivée mais REJETÉE**, ne jamais la remettre comme proposition finale.
+
+**POINT D'ARRÊT POUR REPRISE EXACTE :** poursuivre sur cette branche V2 ; faire écouter voix A01–A04, contrôler leurs silences et ne retenir un narrateur qu'après audition ; préparer le montage des sous-titres grands et un véritable mixage seulement après validation artistique. Les images V2 muettes existent réellement ; la vidéo finale **avec une voix acceptée** n'existe pas encore. Avant publication confirmer les faits/dates officiels, l'incertitude sur la tenue/formule exacte de la trilatérale et les crédits des photographies.
+
+---
