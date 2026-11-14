@@ -1,0 +1,39 @@
+{
+  "status": "TECHNICAL_PREVIEW_REQUIRES_ART_DIRECTION_REVIEW",
+  "segment_id": "S03_SHENZHEN",
+  "purpose": "real rotating globe positioning Shenzhen city after D00-v6 brand shot",
+  "portrait": {
+    "W": 1080,
+    "H": 1920,
+    "fps": 30,
+    "duration_sec": 4.9,
+    "frames": 147
+  },
+  "source_texture": "NASA Blue Marble topography, January",
+  "source_texture_sha256": "9743175942473681d78838ca1042553dab4779cf957fb6d8f22a81fb796f7797",
+  "source_geojson": "Natural Earth country polygons public-domain",
+  "source_geojson_sha256": "392a03db8aa3ba82c105852655620129b11182b95dfc34ef046827ea7d0e5b8c",
+  "logo_official_git_blob": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+  "geography": {
+    "from_lat": 12.0,
+    "from_lon": 14.0,
+    "target_city": "Shenzhen",
+    "target_lat": 22.5431,
+    "target_lon": 114.0579,
+    "precision": "city centre only; meeting street address not announced"
+  },
+  "image_reference": "Original D00-v6 must remain as previous S02 brand shot; never claim the NASA texture is the same source image.",
+  "source_image_original_sha256": "8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2",
+  "sound": "NO AUDIO - narration added at final mastering",
+  "published": false,
+  "approved": false,
+  "output_name": "segment03-shenzhen-4p9s.mp4",
+  "sha256": "6bfb45a57794c7dbfc7dc9af9ddb818c67eae327f60216b46bf32f0afb7ba10e",
+  "bytes": 4066692,
+  "duration": 4.9,
+  "verification": {
+    "rendered": true,
+    "geo_marker_mathematical_target": true,
+    "legal_danger": "Do not mark the city centre as an exact venue"
+  }
+}
