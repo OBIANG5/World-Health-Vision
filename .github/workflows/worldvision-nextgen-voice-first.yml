@@ -130,7 +130,8 @@ jobs:
           set -euo pipefail
           ROOT=worldhealth-vision-v2/services/media-renderer
           mkdir -p "$ROOT/output/nextgen/brand-package"
-          cp "$ROOT/output/nextgen/worldvision-official-g0-outro-v2.mp4" "$ROOT/output/nextgen/brand-package/"
+          cp "$ROOT/output/nextgen/worldvision-original-g0-midnight.mp4" "$ROOT/output/nextgen/brand-package/"
+          cp "$ROOT/output/nextgen/worldvision-original-g0-graphite.mp4" "$ROOT/output/nextgen/brand-package/"
           cp "$ROOT/output/nextgen/logo-extraction.json" "$ROOT/output/nextgen/brand-package/"
           cp "$ROOT/public/brand/world-vision-eye-original-transparent.png" "$ROOT/output/nextgen/brand-package/"
       - name: Preserve render as artifact
@@ -167,7 +168,8 @@ jobs:
           test -s /tmp/wv-voices/vivienne-focused-review.mp3
           test -s /tmp/wv-voices/vivienne-conversational-report.json
           test -s /tmp/wv-voices/vivienne-focused-report.json
-          test -s /tmp/wv-brand/worldvision-official-g0-outro-v2.mp4
+          test -s /tmp/wv-brand/worldvision-original-g0-midnight.mp4
+          test -s /tmp/wv-brand/worldvision-original-g0-graphite.mp4
           test -s /tmp/wv-brand/world-vision-eye-original-transparent.png
           test -s /tmp/wv-brand/logo-extraction.json
           python - <<'PY'
@@ -199,7 +201,8 @@ jobs:
             mkdir -p media-lab/nextgen/voice media-lab/nextgen/brand
             cp /tmp/wv-voices/vivienne-{conversational,focused}-review.mp3 media-lab/nextgen/voice/
             cp /tmp/wv-voices/vivienne-{conversational,focused}-report.json media-lab/nextgen/voice/
-            cp /tmp/wv-brand/worldvision-official-g0-outro-v2.mp4 media-lab/nextgen/brand/
+            cp /tmp/wv-brand/worldvision-original-g0-midnight.mp4 media-lab/nextgen/brand/
+            cp /tmp/wv-brand/worldvision-original-g0-graphite.mp4 media-lab/nextgen/brand/
             cp /tmp/wv-brand/world-vision-eye-original-transparent.png media-lab/nextgen/brand/
             cp /tmp/wv-brand/logo-extraction.json media-lab/nextgen/brand/
             # Remove the PREVIOUS misleading pseudo-logo preview from the latest branch
@@ -218,4 +221,5 @@ jobs:
           test "$success" = 1
           echo "Vivienne conversational: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/voice/vivienne-conversational-review.mp3"
           echo "Vivienne focused: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/voice/vivienne-focused-review.mp3"
-          echo "TRUE logo preview: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-official-g0-outro-v2.mp4"
+          echo "True G0 midnight: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-original-g0-midnight.mp4"
+          echo "True G0 graphite: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4"
