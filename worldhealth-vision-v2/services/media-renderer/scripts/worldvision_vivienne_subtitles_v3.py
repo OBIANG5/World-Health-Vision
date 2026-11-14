@@ -67,7 +67,12 @@ def cues_from_words(words,face):
   if w["start"]>=CLOSING_SILENT_FROM:raise ValueError("Vivienne speech collides with silent brand card")
   if w["end"]>CLOSING_SILENT_FROM:raise ValueError("Voice word extends into silent signature")
   candidate=current+[w]
+  # Broadcast-style semantic cutting: don't display the end of one sentence
+  # together with the beginning of the next. The earlier preview did exactly
+  # that ("nucléaires. Une"), which looked unprofessional at 78px.
+  sentence_end=bool(current and current[-1]["display"].rstrip().endswith((".", "!", "?", "…", ":")))
   overflow=(
+   sentence_end or
    len(candidate)>MAX_EVENTS or
    candidate[-1]["end"]-candidate[0]["start"]>MAX_CUE_SECONDS or
    (current and w["start"]-current[-1]["end"]>.42) or
@@ -152,6 +157,7 @@ def main():
   "font_file_sha256":fingerprint(args.font_file),
   "max_glyph_width_px":MAX_WIDTH_PX,"max_lines":MAX_LINE_COUNT,
   "outro_no_captions_from":CLOSING_SILENT_FROM,
+  "semantic_sentence_boundaries_respected":True,
   "safe_for_mobile_technical_check":True,
   "requires_visual_and_voice_approval":True,
   "do_not_publish":True
