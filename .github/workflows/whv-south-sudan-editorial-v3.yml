@@ -115,7 +115,7 @@ jobs:
             --headfont assets/south-sudan-2026-11-14/Newsreader-variable.ttf \
             --bodyfont assets/south-sudan-2026-11-14/DMSans-variable.ttf \
             --logo public/brand/world-vision-official.png
-      - name: HARD QA: duration, full script, Vivienne, 9-frame contact sheet, provenance, no publication
+      - name: "HARD QA — duration, script lock, Vivienne, nine review frames and provenance"
         shell: bash
         run: |
           set -euo pipefail
