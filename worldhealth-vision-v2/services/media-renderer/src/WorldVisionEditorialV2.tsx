@@ -141,33 +141,26 @@ const City:React.FC=()=>{
 };
 const Treaty:React.FC=()=>{
  const f=useCurrentFrame();
- // Full unaltered historic photograph: both signatories must be visible.
- // Original landscape archive is preserved inside a documentary window,
- // NOT enlarged with objectFit:cover (which previously cropped the presidents).
- const pulse=smooth(f,6,25);
- const article=smooth(f,48,70);
+ const zoom=interpolate(f,[0,237],[1.0,1.028],clamp);
  return <Main bg={C.navy}>
-  <AbsoluteFill style={{background:"radial-gradient(circle at 47% 46%,rgba(69,151,180,.12),transparent 56%)"}}/>
-  <Overline top={219}>DÉSARMEMENT NUCLÉAIRE</Overline>
-  <div style={{opacity:pulse}}>
-   <Title top={305} size={161}>NEW START</Title>
+  <AbsoluteFill style={{background:"radial-gradient(ellipse at 48% 40%,#153b53 0%,#061528 62%)"}}/>
+  <Overline top={235}>DÉSARMEMENT NUCLÉAIRE</Overline>
+  <Title top={303} size={174}>NEW START</Title>
+  <div style={{position:"absolute",top:475,left:91,fontFamily:"WV-Text",
+    fontSize:30,fontWeight:700,color:C.cyan,letterSpacing:1.1}}>5 FÉVRIER 2026</div>
+  {/* Preserve both actual signatories from the genuine landscape 2010 archive. */}
+  <div style={{position:"absolute",top:560,left:50,width:980,height:635,
+    background:"#041321",overflow:"hidden",borderRadius:8}}>
+    <Img src={staticFile(root+"new-start-prague-2010.jpg")}
+      style={{width:"100%",height:"100%",objectFit:"contain",transform:"scale(" + zoom + ")"}}/>
+    <div style={{position:"absolute",left:15,bottom:17,color:C.white,
+      background:"rgba(3,15,28,.84)",padding:"9px 15px",
+      fontFamily:"WV-Text",fontSize:24,fontWeight:600}}>
+      ARCHIVES · PRAGUE, 2010
+    </div>
   </div>
-  <div style={{position:"absolute",left:56,right:56,top:510,height:592,
-       background:"rgba(9,28,49,.82)",overflow:"hidden",
-       borderRadius:6,boxShadow:"0 16px 45px rgba(0,0,0,.3)"}}>
-   <Img src={staticFile(root+"new-start-prague-2010.jpg")} style={{width:"100%",
-     height:"100%",objectFit:"contain",objectPosition:"center center"}}/>
-  </div>
-  <div style={{position:"absolute",left:82,top:1111,fontFamily:"WV-Text",
-    color:C.muted,fontSize:26,fontWeight:600}}>
-    ARCHIVES · PRAGUE · 8 AVRIL 2010
-  </div>
-  <div style={{opacity:article}}>
-   <Title top={1169} size={115} color={C.cyan}>TRAITÉ EXPIRÉ.</Title>
-   <div style={{position:"absolute",left:84,top:1301,fontFamily:"WV-Text",
-     color:C.white,fontSize:31,fontWeight:700}}>
-     5 FÉVRIER 2026
-   </div>
+  <div style={{opacity:smooth(f,35,58)}}>
+    <Title top={1210} size={113}>LE TRAITÉ A EXPIRÉ.</Title>
   </div>
  </Main>;
 };
@@ -177,8 +170,8 @@ const China:React.FC=()=>{
   <ArchivePhoto name="xi.jpg" zoom={1.10} focus="center 17%" shade={.18}/>
   <Overline top={288}>LE POINT DE BLOCAGE</Overline>
   <div style={{opacity:smooth(f,9,28)}}>
-   <Title top={870} size={169}>PÉKIN RESTE</Title>
-   <Title top={1027} size={169} color={C.cyan}>RÉTICENT.</Title>
+   <Title top={1055} size={128}>PÉKIN RESTE</Title>
+   <Title top={1191} size={128} color={C.cyan}>RÉTICENT.</Title>
   </div>
  </Main>;
 };
@@ -212,8 +205,8 @@ const Uncertainty:React.FC=()=>{
   <ArchivePhoto name="trump.jpg" zoom={1.085} focus="center 25%"/>
   <Overline top={283}>À CE STADE</Overline>
   <div style={{opacity:smooth(f,8,25)}}>
-   <Title top={880} size={159}>AUCUN ACCORD</Title>
-   <Title top={1031} size={159} color={C.cyan}>N'EST ATTENDU.</Title>
+   <Title top={1050} size={126}>AUCUN ACCORD</Title>
+   <Title top={1184} size={126} color={C.cyan}>N'EST ATTENDU.</Title>
   </div>
  </Main>;
 };
