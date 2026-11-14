@@ -1,0 +1,31 @@
+[Script Info]
+Title: World-Vision Vivienne V3 mobile caption audition
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+ScaledBorderAndShadow: yes
+WrapStyle: 2
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: WV,DM Sans,78,&H00FFFFFF,&H00FFFFFF,&HDD0C1920,&H400C1920,-1,0,0,0,100,100,0,0,1,4.0,1.6,2,110,110,375,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:01.73,WV,,0,0,0,,{\an2\pos(540,1543)}Trois puissances\Nnucléaires. Une
+Dialogue: 0,0:00:01.71,0:00:04.11,WV,,0,0,0,,{\an2\pos(540,1543)}même table. Et une\Nrencontre inédite.
+Dialogue: 0,0:00:04.26,0:00:06.45,WV,,0,0,0,,{\an2\pos(540,1543)}Jeudi 19 novembre,\NDonald Trump,
+Dialogue: 0,0:00:06.49,0:00:08.09,WV,,0,0,0,,{\an2\pos(540,1543)}Vladimir Poutine et\NXi Jinping doivent se
+Dialogue: 0,0:00:08.07,0:00:10.21,WV,,0,0,0,,{\an2\pos(540,1543)}réunir à Shenzhen,\Nen Chine. Au cœur
+Dialogue: 0,0:00:10.19,0:00:12.03,WV,,0,0,0,,{\an2\pos(540,1543)}des discussions\Nréduire les arsenaux
+Dialogue: 0,0:00:12.01,0:00:13.78,WV,,0,0,0,,{\an2\pos(540,1543)}nucléaires. Le\Ndernier grand traité
+Dialogue: 0,0:00:13.76,0:00:15.45,WV,,0,0,0,,{\an2\pos(540,1543)}entre Washington et\NMoscou a expiré en
+Dialogue: 0,0:00:15.43,0:00:17.36,WV,,0,0,0,,{\an2\pos(540,1543)}février. Trump veut\Nmaintenant associer
+Dialogue: 0,0:00:17.34,0:00:19.72,WV,,0,0,0,,{\an2\pos(540,1543)}Pékin, qui reste\Nréticent. La guerre
+Dialogue: 0,0:00:19.70,0:00:21.61,WV,,0,0,0,,{\an2\pos(540,1543)}en Iran devrait aussi\Nêtre abordée. Mais
+Dialogue: 0,0:00:21.59,0:00:23.74,WV,,0,0,0,,{\an2\pos(540,1543)}selon Washington,\Npas celle en Ukraine.
+Dialogue: 0,0:00:23.90,0:00:25.43,WV,,0,0,0,,{\an2\pos(540,1543)}Et attention aucun\Naccord n’est
+Dialogue: 0,0:00:25.41,0:00:27.18,WV,,0,0,0,,{\an2\pos(540,1543)}attendu pour le\Nmoment. Alors,
+Dialogue: 0,0:00:27.30,0:00:29.06,WV,,0,0,0,,{\an2\pos(540,1543)}véritable tournant\Ndiplomatique, ou
+Dialogue: 0,0:00:29.04,0:00:29.97,WV,,0,0,0,,{\an2\pos(540,1543)}simple\Ndémonstration de
+Dialogue: 0,0:00:29.95,0:00:30.70,WV,,0,0,0,,{\an2\pos(540,1543)}puissance ?
