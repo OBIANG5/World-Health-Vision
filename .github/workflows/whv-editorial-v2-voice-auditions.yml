@@ -1,0 +1,94 @@
+name: World-Vision Editorial V2 — compare natural French narration voices
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [rebuild/editorial-v2-quality-gates]
+    paths:
+      - '.github/workflows/whv-editorial-v2-voice-auditions.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wv-v2-french-voice-auditions
+  cancel-in-progress: true
+
+jobs:
+  audition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Use exact editorial script and V2 reject list
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.11 voice pipeline
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install neural voice client and FFmpeg
+        shell: bash
+        run: |
+          set -euo pipefail
+          pip install --quiet 'edge-tts>=7.1,<9'
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Generate at natural 1x pace, with no padding, from exact opening text
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile worldhealth-vision-v2/services/media-renderer/scripts/voice_auditions_editorial_v2.py
+          python3 worldhealth-vision-v2/services/media-renderer/scripts/voice_auditions_editorial_v2.py
+      - name: Technical checks, cannot award a voice approval
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,subprocess,hashlib
+          folder=Path('worldhealth-vision-v2/services/media-renderer/output/editorial-v2/voice-auditions')
+          j=json.loads((folder/'voice-auditions.json').read_text())
+          assert j['status']=='CANDIDATES_FOR_AUDITION_ONLY_NEVER_APPROVED_AUTOMATICALLY'
+          assert not j['approved_by_user']
+          assert len(j['candidates'])>=2
+          voices={x['voice'] for x in j['candidates']}
+          assert len(voices)==len(j['candidates'])
+          assert 'fr-FR-HenriNeural' not in voices
+          for c in j['candidates']:
+            src=folder/c['mp3_file']
+            assert src.stat().st_size>12000
+            assert hashlib.sha256(src.read_bytes()).hexdigest()==c['sha256_mp3']
+            probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-of','json',str(src)]))
+            assert abs(float(probe['format']['duration'])-c['duration_seconds'])<.08
+            assert c['no_padding'] and not c['voice_approved']
+          print('VOICE AUDITIONS QC:',len(voices),'independently named natural-pace French candidates; no approvals')
+          PY
+      - name: Save voice samples and manifest, not a synthetic voice as final narrator
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SRC="$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/output/editorial-v2/voice-auditions"
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-v2-auditions
+          cd /tmp/wv-v2-auditions
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            DST=media-lab/summit-2026/editorial-v2/voice-auditions
+            mkdir -p "$DST"
+            cp "$SRC/"*.mp3 "$SRC/voice-auditions.json" "$DST/"
+            git add "$DST"
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "review(media-v2): non-Henri real-speed French voice auditions, no padded silence, no approval"
+            if git push origin HEAD:whv-media-studio-browser-preview; then success=1; break; fi
+            echo "Shared preview branch advanced; retrying audition archive ($attempt)"
+            sleep "$attempt"
+          done
+          test "$success" = 1
