@@ -16,13 +16,13 @@
   ],
   "voice": "fr-FR-VivienneMultilingualNeural",
   "voice_rate": "measured slow-to-natural split-prosody -28% to -32%",
-  "voice_words_per_minute": 126.28,
+  "voice_words_per_minute": 126.52,
   "voice_no_time_stretch": true,
   "voice_commercial_license_verified": false,
   "publication_authorized": false,
-  "duration_seconds": 51.833,
-  "audio_duration_seconds": 51.79,
-  "video_sha256": "9c7bac11da8f2e7c3b09e67683890566262c60cd6c15e4533892634d9662b815",
+  "duration_seconds": 51.733,
+  "audio_duration_seconds": 51.69,
+  "video_sha256": "1e108a1ef29a94efd234b55b9fbcbe754db6675bc18b8d5bebd3e69799bf0782",
   "resolution": "1080x1920",
   "fps": 30,
   "video_codec": "h264",
@@ -46,7 +46,7 @@
     },
     {
       "visual": "gold",
-      "seconds": 4.8
+      "seconds": 4.7
     },
     {
       "visual": "location",
@@ -86,7 +86,12 @@
     },
     {
       "visual": "families",
-      "seconds": 5.333333333333333
+      "seconds": 2.4
+    },
+    {
+      "visual": "worker_illustration",
+      "seconds": 2.933333333333333,
+      "source_type": "actual_stock_footage_illustration_NOT_Balato"
     },
     {
       "visual": "question",
@@ -135,6 +140,14 @@
       "creator": "Perrito doggy Fotos y videos variados, via Pexels",
       "license": "Pexels License",
       "url": "https://www.pexels.com/photo/aerial-view-of-a-river-with-excavators-digging-sand-and-clay-deposits-on-its-banks-17165570/"
+    },
+    {
+      "kind": "illustration_video_not_guinea",
+      "name": "African worker digging outdoors / stock footage, filmed outside the Balato events",
+      "creator": "JMT 35, via Pexels",
+      "license": "Pexels License",
+      "url": "https://www.pexels.com/video/afican-worker-in-a-mine-28657918/",
+      "note": "Actual moving video, strictly documentary illustration of mining labour; NOT recorded in Guinea or the 2026 protests"
     }
   ],
   "photo_sha256": {
@@ -143,6 +156,7 @@
     "red_soil_illustration.jpg": "48d0d80708fec3af1b08a3940cd87c8338c194d4f6a0576614a2cc4c918cacfa",
     "river_illustration.jpg": "464d928f3fab0639e9fb87dbe512a6cd1e00c22c59a2290d96ad0002c088b76e"
   },
+  "stock_footage_sha256": "86946becb8b0ab9e0f748a0177721f1b193ba26b032bb8af0b73d5a126a0fa7a",
   "headfont_sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72",
   "bodyfont_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
   "official_logo_sha256": "b5e76e19260a6c405c17d54695278c12adb5e8b90f241deddf351620d7e7d9fb",
