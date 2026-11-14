@@ -1,0 +1,36 @@
+name: World-Vision — block rejected amateur render patterns
+
+on:
+  push:
+    branches: [fix/worldvision-002-rejected-authentic-footage-first-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-no-amateur-overlays.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/quality/worldvision_visual_rejection_gate.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/rejected_episode_002.json'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_visual_rejection_gate.py'
+  workflow_dispatch:
+
+permissions: {contents: read}
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reject repeated headers footers fake ships and 720p upscale
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python -m unittest discover -v -s nextgen -p 'test_visual_rejection_gate.py'
+          python quality/worldvision_visual_rejection_gate.py \
+            --rules nextgen/rejected_episode_002.json \
+            --report output/nextgen/rejection-002-report.json \
+            --expect-rejected
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wv002-rejected-amateur-visual-regression
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/rejection-002-report.json
+          retention-days: 30

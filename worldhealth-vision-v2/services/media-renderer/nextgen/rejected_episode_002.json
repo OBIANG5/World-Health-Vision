@@ -1,0 +1,34 @@
+{
+  "id": "worldvision-002-amateur-2026-11-14",
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "source_canvas": [
+    720,
+    1280
+  ],
+  "format_name": "schematic_vector_reenactment",
+  "topbar_enabled": true,
+  "footer_enabled": true,
+  "decorative_pills_enabled": true,
+  "typography": {
+    "max_headline_blocks_per_shot": 3
+  },
+  "brand": {
+    "outro": "worldvision-original-g0-graphite.mp4"
+  },
+  "voice": {
+    "profile": "worldvision-vivienne-c52-impact-media"
+  },
+  "rights": {
+    "all_footage_cleared": false
+  },
+  "review": {
+    "watched_entire_final_video_on_phone": false
+  },
+  "delivery": {
+    "permanent_video_url_verified": false
+  }
+}
