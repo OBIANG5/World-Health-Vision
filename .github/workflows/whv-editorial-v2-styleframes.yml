@@ -1,0 +1,69 @@
+name: World-Vision Editorial V2 — 9 genuine scene audit frames
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [rebuild/editorial-v2-quality-gates]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/render-editorial-v2-stills.mjs'
+      - '.github/workflows/whv-editorial-v2-styleframes.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worldvision-v2-full-scene-stills
+  cancel-in-progress: true
+
+jobs:
+  styleframes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact rebuild
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22 for Remotion
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing Remotion
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: npm install --no-audit --no-fund
+      - name: Verify approved sources, fonts and new quality gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 worldhealth-vision-v2/services/media-renderer/quality/quality_gate_v2.py --mode source
+          bash worldhealth-vision-v2/services/media-renderer/scripts/setup_editorial_v2_assets.sh
+      - name: Render actual 9 storyboard frames in full vertical resolution
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        env:
+          REMOTION_DISABLE_UPDATE_CHECK: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          node --check render-editorial-v2-stills.mjs
+          node render-editorial-v2-stills.mjs
+      - name: Preserve QA frames for user visual review
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-v2-stills
+          SRC=worldhealth-vision-v2/services/media-renderer/output/editorial-v2/still-audit
+          OUT=/tmp/wv-v2-stills/media-lab/summit-2026/editorial-v2/still-audit
+          mkdir -p "$OUT"
+          cp "$SRC/"*.png "$SRC/scene-audit.json" "$OUT/"
+          cd /tmp/wv-v2-stills
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/summit-2026/editorial-v2/still-audit
+          if ! git diff --cached --quiet; then
+            git commit -m "review(worldvision): authentic editorial V2 source styleframes S01-S08 before whole film"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
