@@ -1,0 +1,119 @@
+name: World-Vision Editorial V2 — full 42.1s silent picture review
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [rebuild/editorial-v2-quality-gates]
+    paths:
+      - '.github/workflows/whv-editorial-v2-full-silent-review.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worldvision-editorial-v2-full-picture
+  cancel-in-progress: false
+
+jobs:
+  visual-master-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - name: Checkout exact new editorial film
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22 for Remotion
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install renderer and FFmpeg
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd worldhealth-vision-v2/services/media-renderer
+          npm install --no-audit --no-fund
+          cd -
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Audit source gates; load real licensed photos, exact G0 and genuine spinning globe
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 worldhealth-vision-v2/services/media-renderer/quality/quality_gate_v2.py --mode source
+          bash worldhealth-vision-v2/services/media-renderer/scripts/setup_editorial_v2_assets.sh
+      - name: Render complete silent picture edit in native 30fps 9:16
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        env:
+          REMOTION_DISABLE_UPDATE_CHECK: '1'
+        run: |
+          set -euo pipefail
+          npm run typecheck
+          node render-editorial-v2.mjs full
+      - name: Gate 1263 frames, absolutely no TTS, and verify 9 scene checkpoints
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          D=output/editorial-v2
+          F="$D/full-silent-picture-42p1s-v2.mp4"
+          python3 quality/quality_gate_v2.py --mode visual --video "$F"
+          R="$D/review-full-42s"
+          mkdir -p "$R"
+          for pair in '1.5:leaders' '5.9:globe' '10.4:city' '16.4:treaty' \
+                      '22.7:china' '28.7:iran' '31.6:ukraine' \
+                      '36.4:uncertainty' '40.7:signature'; do
+            IFS=: read -r sec label <<< "$pair"
+            ffmpeg -y -loglevel error -ss "$sec" -i "$F" -frames:v 1 \
+              -vf scale=540:960 -q:v 3 "$R/$label.jpg"
+          done
+          ffmpeg -y -loglevel error \
+            -i "$R/leaders.jpg" -i "$R/treaty.jpg" -i "$R/signature.jpg" \
+            -filter_complex hstack=inputs=3 -q:v 3 "$R/contact-sheet.jpg"
+          python3 - <<'PY'
+          from pathlib import Path
+          from hashlib import sha256
+          import json
+          p=Path('output/editorial-v2/review-full-42s')
+          files=list(p.glob('*.jpg'))
+          h={f.name:sha256(f.read_bytes()).hexdigest() for f in files}
+          assert len(files)==10 and len(set(h.values()))==10,'Missing, frozen, or repeated scene.'
+          report=Path('output/editorial-v2/full-silent-picture-42p1s-v2.json')
+          d=json.loads(report.read_text())
+          assert d['frames']==1263 and d['duration_sec']==42.1
+          assert not d['voice_present'] and not d['captions_baked']
+          assert not d['absolute_publishable'] and not d['user_approval']
+          print('9-scene silent picture technical QA, not artistic approval: PASS')
+          PY
+      - name: Archive full draft and distinct visual proofs without losing concurrent renders
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SRC="$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/output/editorial-v2"
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-v2-full
+          cd /tmp/wv-v2-full
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            DST=media-lab/summit-2026/editorial-v2
+            mkdir -p "$DST/review-full-42s"
+            cp "$SRC/full-silent-picture-42p1s-v2.mp4" \
+               "$SRC/full-silent-picture-42p1s-v2.json" "$DST/"
+            cp "$SRC/review-full-42s/"*.jpg "$DST/review-full-42s/"
+            git add "$DST"
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "review(worldvision): 42.1s complete silent V2 picture; real sources, no rejected robotic audio"
+            if git push origin HEAD:whv-media-studio-browser-preview; then success=1; break; fi
+            echo "Concurrent archive push; safely reapply full film, attempt $attempt"
+            sleep "$attempt"
+          done
+          test "$success" = 1
+          echo "Preview video: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-silent-picture-42p1s-v2.mp4"
