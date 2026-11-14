@@ -1,0 +1,152 @@
+name: World-Vision — Vivienne phrase-exact subtitle audit (isolated)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [refine/worldvision-shenzhen-vivienne-v4-captions]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_subtitles_v4.py'
+      - '.github/workflows/whv-vivienne-semantic-phrase-audit.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worldvision-independent-semantic-caption-audit
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout independent editorial QA
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install font measurement and video QA
+        shell: bash
+        run: |
+          set -euo pipefail
+          pip install -q 'pillow==12.0.0'
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+          python3 -m py_compile worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_subtitles_v4.py
+      - name: Verify original Vivienne narration and unmodified V3 film bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=/tmp/worldvision-semantic-captions
+          mkdir -p "$D/fonts" "$D/frames"
+          curl -fL --retry 5 --retry-all-errors --max-time 130 \
+            'https://raw.githubusercontent.com/google/fonts/29b4ec6df2522a8aee279414b78a07910b065874/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf' \
+            -o "$D/fonts/DMSans-variable.ttf"
+          test "$(git hash-object "$D/fonts/DMSans-variable.ttf")" = 'c672f98060af9b2c85fca704ebd5ad9a8717c1df'
+          ROOT=https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2
+          curl -fL --retry 5 --retry-all-errors --max-time 180 \
+            "$ROOT/voice-vivienne/vivienne-shenzhen-v2-manifest.json" -o "$D/voice.json"
+          curl -fL --retry 5 --retry-all-errors --max-time 240 \
+            "$ROOT/full-vivienne-v3/full-vivienne-review-33p7s-v3.mp4" -o "$D/source.mp4"
+          echo '208f897eb84528025a0e9aee5104bebdb01e82de52735a6485ef631eedeb4b66  '"$D/source.mp4" | sha256sum --check --
+      - name: Generate 23 coherent subtitle cues, exact voice timing and zero overlap
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=/tmp/worldvision-semantic-captions
+          python3 worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_subtitles_v4.py \
+            --voice-manifest "$D/voice.json" \
+            --font-file "$D/fonts/DMSans-variable.ttf" \
+            --output-stem "$D/captions-semantic-phrase"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=Path('/tmp/worldvision-semantic-captions')
+          x=json.loads((d/'captions-semantic-phrase.json').read_text())
+          c=x['cues']
+          assert x['cue_count']==23 and x['word_boundary_count']==86
+          assert x['original_script_verbatim'] and x['no_overlaps']
+          assert all(c[i]['end']<c[i+1]['start'] for i in range(len(c)-1))
+          assert all(v['end']-v['start']>=0.45 for v in c)
+          assert all(v['max_glyph_width_px']<=760 and len(v['lines'])<=2 for v in c)
+          assert c[-1]['end']<=30.7
+          assert x['approved_for_publication'] is False
+          for v in c:
+            print(f"{v['start']:6.3f} - {v['end']:6.3f} | {' / '.join(v['lines'])}")
+          print('PASS — 23 semantic cues, exact accepted script, 86 words, no overlap')
+          PY
+      - name: Render a SEPARATE editorial caption proof; never overwrite V3/V5
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=/tmp/worldvision-semantic-captions
+          ffmpeg -y -hide_banner -loglevel error \
+            -i "$D/source.mp4" \
+            -vf "ass=filename=$D/captions-semantic-phrase.ass:fontsdir=$D/fonts" \
+            -map 0:v:0 -map 0:a:0 -c:v libx264 -preset medium -crf 18 \
+            -pix_fmt yuv420p -c:a copy -movflags +faststart \
+            "$D/33p7s-vivienne-semantic-phrase-audit.mp4"
+          python3 - <<'PY'
+          import json,subprocess,hashlib
+          from pathlib import Path
+          d=Path('/tmp/worldvision-semantic-captions')
+          p=d/'33p7s-vivienne-semantic-phrase-audit.mp4'
+          m=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-show_streams','-of','json',str(p)]))
+          v=next(x for x in m['streams'] if x['codec_type']=='video')
+          a=next(x for x in m['streams'] if x['codec_type']=='audio')
+          assert v['codec_name']=='h264' and (v['width'],v['height'])==(1080,1920)
+          assert int(v['nb_frames'])==1011
+          assert a['codec_name']=='aac' and abs(float(m['format']['duration'])-33.7)<0.07
+          report={'status':'NONPUBLISHABLE_EDITORIAL_CAPTION_AUDIT',
+            'voice':'fr-FR-VivienneMultilingualNeural','voice_not_publishing_licensed':True,
+            'cues':23,'word_boundaries':86,'no_overlap':True,
+            'source_video_sha256':'208f897eb84528025a0e9aee5104bebdb01e82de52735a6485ef631eedeb4b66',
+            'mp4_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size,
+            'frames':1011,'duration_sec':33.7,
+            'human_review_required':True,'publication_authorized':False,
+            'what_changed':'Semantic subtitle phrase splits and zero-overlap timing; picture and sound unchanged'}
+          (d/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(report))
+          PY
+          for pair in '1.9:leaders' '10.9:newstart' '17.8:china' '24.9:warning' '29.8:lastphrase' '32.2:silentbrand'; do
+            IFS=':' read -r t n <<< "$pair"
+            ffmpeg -y -v error -ss "$t" -i "$D/33p7s-vivienne-semantic-phrase-audit.mp4" \
+              -frames:v 1 -vf scale=540:960 -q:v 3 "$D/frames/$n.jpg"
+          done
+          ffmpeg -y -v error \
+            -i "$D/frames/leaders.jpg" -i "$D/frames/newstart.jpg" -i "$D/frames/warning.jpg" \
+            -filter_complex hstack=inputs=3 -q:v 3 "$D/frames/contact-sheet.jpg"
+      - name: Preserve experiment and real QA while respecting concurrent renderers
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-semantic-captions
+          cd /tmp/wv-semantic-captions
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          SRC=/tmp/worldvision-semantic-captions
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            OUT=media-lab/summit-2026/editorial-v2/semantic-phrase-audit
+            mkdir -p "$OUT/frames"
+            cp "$SRC/33p7s-vivienne-semantic-phrase-audit.mp4" "$SRC/report.json" "$OUT/"
+            cp "$SRC/captions-semantic-phrase."{srt,ass,json} "$OUT/"
+            cp "$SRC/frames/"*.jpg "$OUT/frames/"
+            git add "$OUT"
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "review(media): separate 33.7s Vivienne exact semantic captions, no overlap or script rewrite"
+            if git push origin HEAD:whv-media-studio-browser-preview; then
+              success=1; break
+            fi
+            sleep "$attempt"
+          done
+          test "$success" = 1
+          echo "Review: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/semantic-phrase-audit/33p7s-vivienne-semantic-phrase-audit.mp4"
