@@ -1,5 +1,14 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## DERNIER RENDU DU SOUDAN DU SUD — V3 VIVIENNE (14/11/2026)
+- **MP4 effectivement généré et accessible sur iPhone**, 22,367 secondes, H.264/AAC 1080×1920, 30 i/s : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v3/index.html
+- Le script original est **strictement verrouillé et vérifié en CI** (SHA `a5104cedab538771d1c649da242c7b32b4f438514a4230d3e5bb31628139afb9`). Voix **Vivienne** (`fr-FR-VivienneMultilingualNeural`). Globe géographique approuvé de la V2 intact, les 3 premières secondes.
+- Une photo différente de la mère et de son enfant pendant l'indépendance à Juba en 2011 (USAID, domaine public) a remplacé le plan de drapeau répétitif à la fin. Le montage vidéo et les médias originaux générés restent distincts ; deux ressources créatives sont enregistrées dans Canva, dont `MAHa5OsUdj4`, mais ne sont **PAS automatiquement intégrées au MP4**.
+- Vérification la plus récente du rendu : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43598471386 — SUCCESS ; manifeste MP4 SHA256 `69c893be34941c418b695858dba78665265d03635dc70e84872b398de065579a` ; contact-sheet 9 images consulté ; revue artistique propriétaire **non validée**, publication **non autorisée**.
+- Attention licence : la narration Edge Read Aloud via `edge-tts` ne vaut pas le droit de publier commercialement. Microsoft n'accorde explicitement l'usage commercial des voix prédéfinies qu'aux clients du [TTS payant d'Azure](https://www.microsoft.com/licensing/terms/en-US/product/MicrosoftAzure/all). Le master doit recevoir une piste valablement licenciée avant diffusion ; consulter `worldhealth-vision-v2/docs/media/VOICE_REFERENCE.md` sur branche V3.
+- Historique de la refonte : [PR #19](https://github.com/OBIANG5/World-Health-Vision/pull/19) (brouillon), [Issue transversale #18](https://github.com/OBIANG5/World-Health-Vision/issues/18). **Ce travail ne doit PAS écraser la production Shenzhen d'une autre branche.**
+
+
 ## MISE À JOUR TRANSVERSALE — RETOURS AUDIOVISUELS DU 14 NOVEMBRE 2026 (TOUTES LES VIDÉOS)
 
 **Ce bloc s'applique aussi au reportage Shenzhen et à tous les futurs épisodes, indépendamment de la branche de montage.** L'utilisateur a critiqué les montages précédents : le système doit mémoriser ses choix et ne plus changer silencieusement les scripts.
