@@ -38,14 +38,17 @@ def ease(t):
     t=np.clip(t,0.,1.)
     return t*t*t*(t*(6*t-15)+10)
 
+# Shared World-Vision typography. Pinned font, no silent system-font fallback.
+FONT_PATH=None
+FONT_CACHE={}
 def headline_font(size):
-    for name in [
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf",
-    ]:
-        if Path(name).is_file():
-            return ImageFont.truetype(name,size)
-    raise RuntimeError("No licensed legible font installed")
+    if FONT_PATH is None:
+        raise RuntimeError("Manrope font required before S03 render")
+    if size not in FONT_CACHE:
+        face=ImageFont.truetype(str(FONT_PATH),size)
+        face.set_variation_by_axes([800])
+        FONT_CACHE[size]=face
+    return FONT_CACHE[size]
 
 def canvas_base():
     yy,xx=np.mgrid[0:H,0:W]
@@ -167,6 +170,10 @@ def draw_logo(frame,logo):
     return fonttext(frame,word,x+w+21,y+19,headline_font(35),(236,249,255),1)
 
 def generate(args):
+    global FONT_PATH
+    FONT_PATH=args.font
+    if not args.font.is_file() or sha(args.font)!="3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6":
+        raise RuntimeError("Pinned Manrope font missing or modified")
     texture=np.asarray(Image.open(args.texture).convert("RGB"),dtype=np.uint8)
     if texture.shape[1]<4000 or texture.shape[0]*2!=texture.shape[1]:
         raise ValueError("Expected genuine NASA geographic 2:1 equirectangular texture.")
@@ -252,9 +259,8 @@ def generate(args):
             cv2.line(frame,(79,310),(361,310),(68,205,245),3,cv2.LINE_AA)
             if t>2.35:
                 overlay_rgba(frame,text_plate,float(ease((t-2.35)/.65)))
-            # Minimal sourcing at bottom; editorial date (not actual venue).
-            frame=fonttext(frame,"NASA BLUE MARBLE  /  NATURAL EARTH",80,1875,
-                           headline_font(18),(116,166,183))
+            # Internal NASA/Natural Earth provenance belongs in JSON metadata,
+            # never as a technical footer burnt into the video.
             proc.stdin.write(frame.tobytes())
         proc.stdin.close()
         err=proc.stderr.read().decode("utf-8",errors="replace")
@@ -279,6 +285,9 @@ def generate(args):
         "source_texture_sha256":sha(args.texture),
         "source_geojson":"Natural Earth country polygons public-domain",
         "source_geojson_sha256":sha(args.geojson),
+        "font_family":"Manrope Variable (OFL-1.1)",
+        "font_sha256":sha(args.font),"clean_plate":True,
+        "technical_source_footer_in_video":False,
         "logo_official_git_blob":SHA_LOGO_GIT_BLOB,
         "geography":{"from_lat":START_LAT,"from_lon":START_LON,
            "target_city":"Shenzhen","target_lat":TARGET_LAT,"target_lon":TARGET_LON,
@@ -301,6 +310,7 @@ if __name__=="__main__":
     p.add_argument("--texture",type=Path,required=True)
     p.add_argument("--geojson",type=Path,required=True)
     p.add_argument("--logo",type=Path,required=True)
+    p.add_argument("--font",type=Path,required=True)
     p.add_argument("--output",type=Path,required=True)
     args=p.parse_args()
     generate(args)
