@@ -65,6 +65,9 @@ jobs:
           curl -fLsS --retry 5 --retry-all-errors --max-time 150 -A "$USER_AGENT" \
             'https://commons.wikimedia.org/wiki/Special:Redirect/file/Flag_of_South_Sudan_in_to_the_Independence_Day.jpg' \
             -o "$D/flag_juba_hires.jpg"
+          curl -fLsS --retry 5 --retry-all-errors --max-time 180 -A "$USER_AGENT" \
+            'https://commons.wikimedia.org/wiki/Special:Redirect/file/Mother_and_child_on_South_Sudans_independence_day_(5926201660).jpg' \
+            -o "$D/mother_child_juba_2011.jpg"
           curl -fLsS --retry 5 --retry-all-errors --max-time 150 -A "$USER_AGENT" \
             'https://upload.wikimedia.org/wikipedia/commons/a/a2/South_Sudanese_crowd_gathers_on_independence_day_%285925619257%29.jpg' -o "$D/crowd_vertical.jpg"
           curl -fLsS --retry 5 --retry-all-errors --max-time 150 -A "$USER_AGENT" \
@@ -77,7 +80,7 @@ jobs:
           from PIL import Image
           from pathlib import Path
           d=Path('worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14')
-          for name in ['flag_juba_hires.jpg','crowd_vertical.jpg','president.jpg','flag_man.jpg','independence.jpg']:
+          for name in ['flag_juba_hires.jpg','mother_child_juba_2011.jpg','crowd_vertical.jpg','president.jpg','flag_man.jpg','independence.jpg']:
             with Image.open(d/name) as image:
               print(name,image.size,image.format)
               assert image.format in ('JPEG','MPO') and image.width>=1000 and image.height>=700
