@@ -1,5 +1,17 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+
+## NOUVELLE STRATÉGIE CONFIRMÉE — MONTAGE EN MOINS DE 5 MINUTES (14 NOVEMBRE 2026)
+
+**Utilisateur :** voix Guinée trop lente et insatisfaisante ; ne plus consacrer une heure à refaire les mêmes images. Dorénavant nous préparons ENSEMBLE le sujet, l'angle, le script, toutes les vidéos/images, les animations utiles, la prise de voix et la fin. GitHub doit s'occuper UNIQUEMENT du **montage rapide de ces éléments déjà validés**, du globe de localisation, de la signature animée et des contrôles de sortie. Objectif <300 s **pour la seule étape d'assemblage**, pas pour le sourcing ni pour l'art vivant. Les clips non préparés ou sans droits bloquent le montage : ne jamais improviser des images génériques.
+
+**Dernière référence vocale authentifiée retrouvée dans l'autre branche : VIVIENNE C5.2 — IMPACT MÉDIA.** Référence originale de 14,088 s, timbre fr-FR-VivienneMultilingualNeural, +8 %, voix enregistrée pour le reportage Nouvelle-Orléans seulement. Fichiers enregistrés sous la branche production/worldvision-vivienne-c52-voice-lock-2026-11-14 ; style sonore sélectionné, pas narration applicable à toutes les actualités. +6 % a été proposé pour une autre prise, non approuvé. Ne pas reprendre le trop lent montage Guinée ; ne pas remplacer le MP3 parlant du Mississippi pour narrer un nouveau sujet. Droits commerciaux d'Edge TTS non acquis.
+
+**Nouveau code déjà enregistré :** branche feature/worldvision-fastlane-assembly-only-2026-11-14, assembleur de clips préparés avec SHA, voix à un seul tenant et signature vidéo 3 s : worldhealth-vision-v2/services/media-renderer/fastlane/assemble.py. Détails et protocole : worldhealth-vision-v2/docs/media/WORLDVISION_FASTLANE_MONTAGE_ONLY_2026-11-14.md. Tests techniques avec FFmpeg : fastlane/test_assemble.py. CI : .github/workflows/worldvision-fastlane.yml. Le montage prend un manifeste verrouillé et refuse tout scénario non approuvé. Les tests synthétiques sont techniques uniquement et ne deviennent jamais un reportage. Revue humaine de la qualité et des droits avant toute diffusion.
+
+**Référence audio à écouter :** https://raw.githack.com/OBIANG5/World-Health-Vision/production/worldvision-vivienne-c52-voice-lock-2026-11-14/worldhealth-vision-v2/services/media-renderer/public/voice/vivienne-c52-impact-media-reference.mp3
+
+
 ## PRIORITÉ ACTUELLE — S03 SHENZHEN V2 VÉRIFIÉ, ENCHAÎNEMENT À 43 S (14/11/2026)
 
 **Commande utilisateur actuelle :** montage d'actualité premium **une vidéo courte à la fois**, et **chaque séquence autonome contrôlée avant assemblage**. Séquence dramatique obligatoire : **S01 vrais portraits Trump/Poutine/Xi → S02 image World-Vision D00-v6 ORIGINALE → S03 le globe tourne réellement depuis l'Afrique vers Shenzhen → S03b vrai visuel de la ville → reste du reportage sur le nucléaire/Iran/Ukraine → signature World-Vision**. Débit normal, 30 images/s, environ **43 secondes** AU TOTAL (surtout pas 3–4 minutes) ; pas de fausse conférence ou faux bâtiments.
