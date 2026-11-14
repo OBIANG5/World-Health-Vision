@@ -16,6 +16,9 @@
 5. Homme au drapeau — Juba 2011, 4000×3000, Sarah Taylor/USAID, domaine public ; https://commons.wikimedia.org/wiki/File:A_South_Sudanese_man_carries_the_flag_(5925642623).jpg.
 6. Autre photo Juba 2011 — 1024×768, Sarah Taylor/USAID, domaine public ; https://commons.wikimedia.org/wiki/File:South_Sudan_independence_celebration_in_Juba.jpg.
 
+
+7. **NOUVELLE PHOTO DE CONCLUSION (source variée, réelle)** : Sarah Taylor / USAID Africa Bureau, "Mother and child on South Sudans independence day (5926201660).jpg", 9 juillet 2011, Juba, **4000×3000**, domaine public (œuvre fédérale US). Page d'origine : https://commons.wikimedia.org/wiki/File:Mother_and_child_on_South_Sudans_independence_day_(5926201660).jpg. Cette vraie scène d'indépendance remplace la troisième réutilisation du drapeau de Juba en conclusion pour humaniser le sujet ; ne pas laisser croire à une élection filmée en 2026.
+
 ## Deux créations originales de studio (pas des reportages filmés)
 - **Image conceptuelle d'urne transparente, drapeau sud-soudanais et lumière dramatique** : génération originale demandée le 14 novembre 2026 ; en bibliothèque Canva : asset `MAHa5KhTKE0`, dimensions 941×1672.
 - **Composition éditoriale finale 1080×1920** : typographie sérif éditoriale avec « ÉLECTIONS REPORTÉES », « 11 février 2027 », rappel du 22 décembre 2026, aucun faux logo. Importée Canva : asset `MAHa5OsUdj4`. Elle remplace visuellement l'idée rejetée du grand 11 orange sur fond beige dans les maquettes artistiques.
