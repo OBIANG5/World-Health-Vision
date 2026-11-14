@@ -71,9 +71,9 @@ const Base:React.FC<{children:React.ReactNode;subtle?:boolean}> =({children,subt
   {children}
 </AbsoluteFill>;
 
-const Credit:React.FC<{text:string}>=({text})=><div style={{
-  position:"absolute",left:75,right:185,bottom:314,color:"#bddeeb",fontSize:18,
-  lineHeight:1.45,textShadow:"0 2px 7px #02101d",opacity:.94}}>{text}</div>;
+// Keep archive/licensing attribution in external metadata and published caption,
+// never burn technical or production credits into the master picture.
+const Credit:React.FC<{text:string}>=()=>null;
 
 const Logo:React.FC<{large?:boolean}>=({large=false})=><div style={{
   position:"absolute",left:73,top:83,zIndex:60,display:"flex",alignItems:"center",gap:16,
@@ -297,8 +297,8 @@ const CaptionOverlay:React.FC=()=>{
  </div>;
 };
 
-export type SummitProps={voiceFilename?:string|null;previewWatermark?:boolean};
-export const WorldVisionSummit2026:React.FC<SummitProps>=({voiceFilename,previewWatermark=true})=>{
+export type SummitProps={voiceFilename?:string|null};
+export const WorldVisionSummit2026:React.FC<SummitProps>=({voiceFilename})=>{
  return <AbsoluteFill style={{background:S.ink}}>
    {SCENE_PLAN.map(scene=><Sequence key={scene.id} name={scene.id}
      from={Math.round(scene.start*SUMMIT_FPS)}
@@ -313,10 +313,6 @@ export const WorldVisionSummit2026:React.FC<SummitProps>=({voiceFilename,preview
    </Sequence>)}
    <CaptionOverlay/>
    {voiceFilename&&<Audio src={staticFile(voiceFilename)} volume={1}/>}
-   {previewWatermark&&<div style={{position:"absolute",right:38,top:65,zIndex:100,
-     padding:"8px 16px",fontSize:18,letterSpacing:2,fontWeight:950,
-     color:S.white,border:"1px solid rgba(152,232,245,.6)",background:"rgba(1,12,30,.75)"}}>
-      PRÉVISUALISATION SANS VOIX FINALE
-   </div>}
+
  </AbsoluteFill>;
 };
