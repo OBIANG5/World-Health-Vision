@@ -1,0 +1,124 @@
+name: World-Vision 002 — complete genuine-footage archive documentary + iPhone preview
+
+on:
+  push:
+    branches: [production/worldvision-002-authentic-archives-documentary-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-002-render-authentic-documentary.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_002_true_archives_render.py'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_download_dvids.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/wv002-authentic-film-preview.html'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-002-documentary-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  full-film:
+    name: Native 1080p film + authentic USCG clips + Vivienne C5.2 + G0
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install video/image rendering dependencies and fonts
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg fonts-dejavu-core
+          fi
+          sudo apt-get install -y fonts-inter || true
+          python -m pip install -q Pillow requests yt-dlp
+          ffmpeg -version | head -1
+      - name: Reject broken renderer code BEFORE lengthy footage downloads
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python -m py_compile scripts/worldvision_002_true_archives_render.py
+          python -m py_compile scripts/worldvision_download_dvids.py
+      - name: Verify all real public-domain archival shots and acquire video
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python scripts/worldvision_download_dvids.py output/real-public-domain-footage
+      - name: Retrieve exact user-approved steel-light logo/outro and original C5.2
+        run: |
+          set -euo pipefail
+          ROOT=worldhealth-vision-v2/services/media-renderer
+          AUDIO="$ROOT/public/voice/vivienne-c52-impact-media-reference.mp3"
+          test "$(git hash-object "$AUDIO")" = "cd2254c1557b815fd63a4861af9086d26d960da6"
+          mkdir -p "$ROOT/output/brand"
+          git fetch --no-tags --depth=1 origin \
+            refs/heads/whv-media-studio-browser-preview:refs/remotes/origin/whv-media-studio-browser-preview
+          git show "origin/whv-media-studio-browser-preview:media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4" \
+            > "$ROOT/output/brand/worldvision-original-g0-graphite.mp4"
+          test "$(git hash-object "$ROOT/output/brand/worldvision-original-g0-graphite.mp4")" = \
+            "7ba4e883c68704ba457c484f2d1bbf7d3e3f956d"
+      - name: Render four real-video scenes, then selected voice and silent G0
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python scripts/worldvision_002_true_archives_render.py \
+            --assets output/real-public-domain-footage \
+            --voice public/voice/vivienne-c52-impact-media-reference.mp3 \
+            --outro output/brand/worldvision-original-g0-graphite.mp4 \
+            --work output/wv002-renderwork \
+            --out output/wv002-delivery/WORLD_VISION_002_ARCHIVES_REAL_FILM_17s.mp4
+      - name: Inspect actual encoded frames, mobile format and full-video decodability
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          MOV=output/wv002-delivery/WORLD_VISION_002_ARCHIVES_REAL_FILM_17s.mp4
+          python quality/worldvision_real_frame_audit.py \
+            --video "$MOV" --out output/wv002-delivery/real-frames --count 12
+          ffmpeg -hide_banner -loglevel error -i "$MOV" -f null -
+          ffmpeg -y -hide_banner -loglevel error -ss 1.0 -i "$MOV" \
+            -frames:v 1 -vf scale=540:960 output/wv002-delivery/poster-wv002.jpg
+          ffprobe -v error -show_format -show_streams -of json "$MOV" \
+            > output/wv002-delivery/encoded-streams.json
+      - name: Preserve final movie, real frame-contact sheet, original facts and audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-002-real-archives-complete-mp4-and-qa
+          path: worldhealth-vision-v2/services/media-renderer/output/wv002-delivery/
+          retention-days: 30
+      - name: Publish permanent iPhone player + MP4 to historical preview branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ROOT=worldhealth-vision-v2/services/media-renderer
+          SRC="$GITHUB_WORKSPACE/$ROOT/output/wv002-delivery"
+          HTML="$GITHUB_WORKSPACE/$ROOT/nextgen/wv002-authentic-film-preview.html"
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv002-static-preview
+          cd /tmp/wv002-static-preview
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          done=0
+          for attempt in 1 2 3 4 5; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            mkdir -p media-lab/reportages/worldvision-002-archives
+            cp "$SRC/WORLD_VISION_002_ARCHIVES_REAL_FILM_17s.mp4" \
+              media-lab/reportages/worldvision-002-archives/
+            cp "$SRC/poster-wv002.jpg" "$SRC/DELIVERY_AUDIT.json" \
+              media-lab/reportages/worldvision-002-archives/
+            cp "$HTML" media-lab/reportages/worldvision-002-archives/index.html
+            git add media-lab/reportages/worldvision-002-archives
+            if git diff --cached --quiet; then done=1; break; fi
+            git commit -m "review(worldvision): authentic USCG archive 17.1s documentary; C5.2 original voice, G0 light"
+            if git push origin HEAD:whv-media-studio-browser-preview; then done=1; break; fi
+            sleep "$attempt"
+          done
+          test "$done" = 1
+          echo "Permanent player: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/reportages/worldvision-002-archives/index.html"

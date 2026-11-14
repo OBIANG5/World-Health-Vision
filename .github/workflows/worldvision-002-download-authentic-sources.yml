@@ -1,0 +1,38 @@
+name: World-Vision 002 — collect REAL public-domain Mississippi archives
+
+on:
+  push:
+    branches: [production/worldvision-002-authentic-archives-documentary-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-002-download-authentic-sources.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_download_dvids.py'
+  workflow_dispatch:
+
+permissions: {contents: read}
+
+jobs:
+  licensed-by-public-domain:
+    name: Download and review REAL government archival footage
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Confirm FFmpeg and install video extractor
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+          python -m pip install -q requests yt-dlp
+          ffmpeg -version | head -1
+      - name: Download only DVIDS assets marked PUBLIC DOMAIN
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python scripts/worldvision_download_dvids.py output/real-public-domain-footage
+      - name: Preserve real videos and their photographic contact sheets
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-002-authentic-uscg-archives-with-provenance
+          path: worldhealth-vision-v2/services/media-renderer/output/real-public-domain-footage/
+          retention-days: 21

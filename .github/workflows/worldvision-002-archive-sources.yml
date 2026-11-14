@@ -1,0 +1,30 @@
+name: World-Vision WV002 — verify authentic public-domain footage sources
+
+on:
+  push:
+    branches: [production/worldvision-002-authentic-archives-documentary-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-002-archive-sources.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_probe_archive.py'
+  workflow_dispatch:
+
+permissions: {contents: read}
+
+jobs:
+  source-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Install fetch dependencies only
+        run: python -m pip install -q requests beautifulsoup4 yt-dlp
+      - name: Verify official public-domain archives before downloading
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: python scripts/worldvision_probe_archive.py output/archival-source-probe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wv002-public-domain-video-probe
+          path: worldhealth-vision-v2/services/media-renderer/output/archival-source-probe/
+          retention-days: 14
