@@ -64,8 +64,21 @@ def verify(profile_path=PROFILE, *, require_binary=True):
         problems.append("Approved original G0 steel-light signature replaced.")
     if brand.get("do_not_generate_new_logo") is not True:
         problems.append("New/invented logo forbidden.")
-    if profile.get("approved_scope")!="VOICE_STYLE_AND_SAMPLE_REFERENCE_ONLY":
+    if profile.get("approved_scope")!="VOICE_STYLE_AND_SAME_EVENT_WORKING_CUT_ONLY":
         problems.append("Incorrect publishing-scope statement.")
+    if selected.get("source_event_id")!="wv-002-new-orleans-2026-11-13":
+        problems.append("C5.2 may only narrate its original New Orleans event.")
+    if selected.get("can_use_for_same_event_working_cut") is not True:
+        problems.append("Cannot recover the user's chosen C5.2 for its own story.")
+    if selected.get("can_use_as_other_event_narration") is not False:
+        problems.append("The C5.2 recording cannot narrate unrelated news.")
+    if policy.get("reference_audio_reusable_only_for_same_event_working_cut") is not True:
+        problems.append("Same-event audio integrity rule missing.")
+    if policy.get("reference_audio_reuse_still_subject_to_commercial_rights") is not True:
+        problems.append("Audio rights gate cannot be waived.")
+    if not isinstance(selected.get("exact_transcript"),str) or "Mississippi" not in selected["exact_transcript"]:
+        problems.append("Exact C5.2 source transcript required.")
+
 
     source_report={}
     if require_binary:
@@ -86,6 +99,9 @@ def verify(profile_path=PROFILE, *, require_binary=True):
                 problems.append("Source synthesis rate is inconsistent.")
             if source_report.get("no_audio_splices") is not True:
                 problems.append("Approved original source must be a single uninterrupted take.")
+            if source_report.get("script") != selected.get("exact_transcript"):
+                problems.append("Story transcript differs from the original C5.2 recorded words.")
+
             if source_report.get("rights_verified") is not False:
                 problems.append("Unsupported claim of verified TTS commercial rights.")
         else:
