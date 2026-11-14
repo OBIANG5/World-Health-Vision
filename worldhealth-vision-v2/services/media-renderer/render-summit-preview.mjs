@@ -2,7 +2,8 @@
  * Standalone review export — existing Remotion renderer, no new editing engine.
  * Usage: node render-summit-preview.mjs [hook|full]
  * HOOK: real portraits + exact official G0 logo, 4.5 seconds (no audio yet).
- * FULL: fail-closed until original D00-v6 SHA and licensed audio/assets are present.
+ * FULL: fail-closed until original D00-v6 VIDEO, verified geospatial S03, 
+ * and approved French audio are present. No substitute art.
  */
 import path from "node:path";
 import {fileURLToPath} from "node:url";
@@ -20,8 +21,8 @@ const required=["public/brand/world-vision-official.png",
  "public/episodes/summit-2026/putin.jpg",
  "public/episodes/summit-2026/xi.jpg"];
 if(mode==="full")required.push(
- "public/episodes/summit-2026/shenzhen.jpg",
- "public/episodes/summit-2026/eye-earth-d00-v6.png");
+ "public/episodes/summit-2026/segment02-original-d00.mp4",
+ "public/episodes/summit-2026/segment03-shenzhen-4p9s.mp4");
 for(const relative of required){
  const absolute=path.join(base,relative);
  if(!existsSync(absolute))throw new Error("MANDATORY ASSET MISSING: "+relative+" — refusing substitute graphics.");
@@ -29,8 +30,12 @@ for(const relative of required){
 const sha256=filepath=>createHash("sha256").update(readFileSync(filepath)).digest("hex");
 const d00Hash="8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2";
 if(mode==="full"){
- const d00=path.join(base,"public/episodes/summit-2026/eye-earth-d00-v6.png");
- if(sha256(d00)!==d00Hash)throw new Error("D00-v6 identity SHA mismatch. No alternate image allowed.");
+ const d00Video=path.join(base,"public/episodes/summit-2026/segment02-original-d00.mp4");
+ const s03Video=path.join(base,"public/episodes/summit-2026/segment03-shenzhen-4p9s.mp4");
+ if(sha256(d00Video)!=="95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a")
+   throw new Error("Original D00 S02 video SHA mismatch: cannot substitute globe render.");
+ if(sha256(s03Video)!=="6bfb45a57794c7dbfc7dc9af9ddb818c67eae327f60216b46bf32f0afb7ba10e")
+   throw new Error("Shenzhen georeferenced locator SHA mismatch.");
  if(!existsSync(path.join(base,"public/episodes/summit-2026/voice-fr-approved.wav")))
    throw new Error("Full editorial release requires real approved voice WAV; silent render is NOT final.");
 }
@@ -64,7 +69,7 @@ const report={
  sha256:sha256(output),duration,width:video.width,height:video.height,
  logo_git_blob:logoGit,reference_d00_sha256:d00Hash,
  audio_present:mode==="full",
- note:"Le hook seul ne remplace pas une vidéo complète. La voix n'est pas générée automatiquement."
+ note:mode==="full"?"Montage complet en cours de contrôle artistique, son et droits":"Le hook seul ne remplace pas une vidéo complète. La voix n'est pas générée automatiquement."
 };
 writeFileSync(path.join(outputDir,mode+"-report.json"),JSON.stringify(report,null,2)+"\n");
 console.log(JSON.stringify(report,null,2));
