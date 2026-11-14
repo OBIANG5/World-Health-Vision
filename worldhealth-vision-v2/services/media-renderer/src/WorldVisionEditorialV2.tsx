@@ -15,16 +15,16 @@ import {AbsoluteFill, Img, Video, Sequence, interpolate, staticFile, useCurrentF
  *  - S08 is SILENT, its slogan must NEVER be spoken.
  */
 export const V2_FPS=30;
-export const V2_DURATION_FRAMES=1263; // 42.1 seconds, no artificial 0.9s logo filler.
+export const V2_DURATION_FRAMES=1011; // 33.7s: natural 30.6s Vivienne narration + silent 3s G0 signature.
 export const V2_TIMELINE=[
  {id:"leaders", start:0, end:135},
  {id:"globe", start:135, end:282},
- {id:"city", start:267, end:348}, // 15f circle reveal over last 0.5s globe
- {id:"new-start", start:348, end:585},
- {id:"china", start:585, end:771},
- {id:"agenda", start:771, end:987},
- {id:"uncertainty", start:987, end:1173},
- {id:"signature", start:1173, end:1263},
+ {id:"city", start:267, end:312}, // 0.5s circle reveal over last 0.5s globe
+ {id:"new-start", start:312, end:489}, // VO: "Au cœur" 9.932s / "traité" 13.491s
+ {id:"china", start:489, end:579}, // VO: "Trump veut associer Pékin" 16.340s
+ {id:"agenda", start:579, end:717}, // VO: "Iran" 19.79s, "Ukraine" 23.086s
+ {id:"uncertainty", start:717, end:921}, // VO: "aucun accord" 24.91s / question 26.678-30.6s
+ {id:"signature", start:921, end:1011}, // 30.7s–33.7s: no spoken brand slogan
 ] as const;
 
 const C={
@@ -189,7 +189,7 @@ const DiplomaticArchive:React.FC<{name:string;country:string;statement:string;ac
 
 const Agenda:React.FC=()=>{
  const f=useCurrentFrame();
- const p=smooth(f,107,122);
+ const p=smooth(f,63,78); // Ukraine wipe at 21.4s, matching Vivienne's "Mais..."
  return <Main>
   <DiplomaticArchive name="tehran-azadi-2025.jpg" country="IRAN" statement="À l'ordre du jour annoncé"/>
   {/* Non-transparent 15-frame documentary wipe: no ghosted double headlines. */}
@@ -237,11 +237,11 @@ export const WorldVisionEditorialV2:React.FC=()=>{
   <style>{styleFont}</style>
   <Sequence from={0} durationInFrames={135}><EditorialLeaders/></Sequence>
   <Sequence from={135} durationInFrames={147}><Globe/></Sequence>
-  <Sequence from={267} durationInFrames={81}><City/></Sequence>
-  <Sequence from={348} durationInFrames={237}><Treaty/></Sequence>
-  <Sequence from={585} durationInFrames={186}><China/></Sequence>
-  <Sequence from={771} durationInFrames={216}><Agenda/></Sequence>
-  <Sequence from={987} durationInFrames={186}><Uncertainty/></Sequence>
-  <Sequence from={1173} durationInFrames={90}><Signature/></Sequence>
+  <Sequence from={267} durationInFrames={45}><City/></Sequence>
+  <Sequence from={312} durationInFrames={177}><Treaty/></Sequence>
+  <Sequence from={489} durationInFrames={90}><China/></Sequence>
+  <Sequence from={579} durationInFrames={138}><Agenda/></Sequence>
+  <Sequence from={717} durationInFrames={204}><Uncertainty/></Sequence>
+  <Sequence from={921} durationInFrames={90}><Signature/></Sequence>
  </AbsoluteFill>;
 };
