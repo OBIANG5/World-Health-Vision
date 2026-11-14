@@ -1,0 +1,143 @@
+name: World-Vision V3 — Vivienne readable mobile subtitles review
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [rebuild/editorial-v2-quality-gates]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_subtitles_v3.py'
+      - '.github/workflows/whv-editorial-v3-vivienne-caption-review.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worldvision-v3-vivienne-subtitle-audition
+  cancel-in-progress: true
+
+jobs:
+  captions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout audition-only subtitle rules
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python with exact font metrics
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install glyph measurement and video tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet 'Pillow==12.0.0'
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -filters | grep -q ' ass '
+      - name: Authenticate DM Sans font, Vivienne word timings, and actual full V3 movie
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=/tmp/worldvision-v3-captions
+          mkdir -p "$D/fonts" "$D/stills"
+          curl -fL --retry 5 --retry-all-errors --max-time 120 \
+            'https://raw.githubusercontent.com/google/fonts/29b4ec6df2522a8aee279414b78a07910b065874/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf' \
+            -o "$D/fonts/DMSans-variable.ttf"
+          test "$(git hash-object "$D/fonts/DMSans-variable.ttf")" = c672f98060af9b2c85fca704ebd5ad9a8717c1df
+          ROOT=https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2
+          curl -fL --retry 5 --retry-all-errors --max-time 160 \
+            "$ROOT/voice-vivienne/vivienne-shenzhen-v2-manifest.json" -o "$D/voice.json"
+          curl -fL --retry 5 --retry-all-errors --max-time 180 \
+            "$ROOT/full-vivienne-v3/full-vivienne-review-33p7s-v3.mp4" -o "$D/film.mp4"
+          echo '208f897eb84528025a0e9aee5104bebdb01e82de52735a6485ef631eedeb4b66  '"$D/film.mp4" | sha256sum --check --
+      - name: Derive accurate two-line 78px captions from the real 86 words
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=/tmp/worldvision-v3-captions
+          python3 -m py_compile worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_subtitles_v3.py
+          python3 worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_subtitles_v3.py \
+            --voice-manifest "$D/voice.json" --font-file "$D/fonts/DMSans-variable.ttf" \
+            --output-stem "$D/captions-vivienne-v3"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          d=Path('/tmp/worldvision-v3-captions')
+          m=json.loads((d/'captions-vivienne-v3.json').read_text())
+          assert m['font']=='DM Sans' and m['size_px']==78 and m['max_lines']==2
+          assert m['cue_count']>=15 and m['cue_count']<50
+          assert all(x['end']<=30.7 and x['start']>=0 for x in m['cues'])
+          assert all(len(x['lines'])<=2 and x['max_glyph_width_px']<=760 for x in m['cues'])
+          assert not m['publishing_rights_cleared'] and not m['this_take_approved_by_user']
+          print('PREVIEW CAPTION QA PASS',m['cue_count'],'true timed captions')
+          PY
+      - name: Export separate captioned MP4 for mobile visual inspection only
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=/tmp/worldvision-v3-captions
+          ffmpeg -y -hide_banner -loglevel error -i "$D/film.mp4" \
+            -vf "ass=filename=$D/captions-vivienne-v3.ass:fontsdir=$D/fonts" \
+            -map 0:v:0 -map 0:a:0 \
+            -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+            -c:a copy -movflags +faststart \
+            "$D/full-vivienne-captions-33p7s-v3-review.mp4"
+          python3 - <<'PY'
+          import json,subprocess
+          from pathlib import Path
+          d=Path('/tmp/worldvision-v3-captions')
+          p=d/'full-vivienne-captions-33p7s-v3-review.mp4'
+          info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-show_streams','-of','json',str(p)]))
+          v=next(s for s in info['streams'] if s['codec_type']=='video')
+          a=next(s for s in info['streams'] if s['codec_type']=='audio')
+          assert v['codec_name']=='h264' and a['codec_name']=='aac'
+          assert (v['width'],v['height'])==(1080,1920)
+          assert int(v['nb_frames'])==1011 and abs(float(info['format']['duration'])-33.7)<.07
+          print('33.7s mobile ASS caption audition verified: not a release master')
+          PY
+          for pair in '1.8:leaders' '10.9:new-start' '17.5:china' '24.9:uncertainty' '32.3:silent-logo'; do
+            IFS=: read -r t name <<< "$pair"
+            ffmpeg -y -v error -ss "$t" \
+              -i "$D/full-vivienne-captions-33p7s-v3-review.mp4" \
+              -frames:v 1 -vf scale=540:960 -q:v 3 "$D/stills/$name.jpg"
+          done
+          ffmpeg -y -v error \
+            -i "$D/stills/leaders.jpg" -i "$D/stills/new-start.jpg" \
+            -i "$D/stills/uncertainty.jpg" \
+            -filter_complex hstack=inputs=3 -q:v 3 "$D/stills/contact-sheet.jpg"
+      - name: Publish review-only captions and frames with conflict-safe retries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          D=/tmp/worldvision-v3-captions
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/worldvision-caption-archive
+          cd /tmp/worldvision-caption-archive
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            OUT=media-lab/summit-2026/editorial-v2/full-vivienne-v3
+            mkdir -p "$OUT/review-subtitles"
+            cp "$D/full-vivienne-captions-33p7s-v3-review.mp4" "$OUT/"
+            cp "$D/captions-vivienne-v3."{ass,srt,json} "$OUT/"
+            cp "$D/stills/"*.jpg "$OUT/review-subtitles/"
+            git add "$OUT"
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "review(media): Vivienne 33.7s mobile subtitles 78px, two-line glyph QA, preview only"
+            if git push origin HEAD:whv-media-studio-browser-preview; then
+              success=1
+              break
+            fi
+            echo "Concurrent preview update; safe retry $attempt"
+            sleep "$attempt"
+          done
+          test "$success" = 1
+          echo "Caption test: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/full-vivienne-captions-33p7s-v3-review.mp4"
