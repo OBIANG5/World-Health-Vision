@@ -1,0 +1,93 @@
+{
+  "id": "future-episode-layout-demo",
+  "status": "EDITORIAL_DRAFT_NOT_PUBLISHABLE",
+  "format": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "brand": {
+    "use_eye_only_transparent_asset": true,
+    "header_white_tile": false,
+    "outro_layout": {
+      "mark": {
+        "x": 360,
+        "y": 560,
+        "width": 360,
+        "height": 220
+      },
+      "wordmark": {
+        "x": 140,
+        "y": 870,
+        "width": 800,
+        "height": 120
+      },
+      "tagline": {
+        "x": 190,
+        "y": 1060,
+        "width": 700,
+        "height": 75
+      }
+    }
+  },
+  "chapters": [
+    {
+      "id": "hook",
+      "headline": "UNE QUESTION ESSENTIELLE",
+      "spoken": "Une annonce vient de retenir l'attention. Et derrière ce titre, une question essentielle se pose.",
+      "visual_kind": "editorial_motion",
+      "depicts_real_event": false,
+      "title_boxes": [
+        {
+          "x": 90,
+          "y": 780,
+          "width": 690,
+          "height": 155,
+          "font_px": 99
+        }
+      ],
+      "caption_boxes": [
+        {
+          "x": 96,
+          "y": 1150,
+          "width": 680,
+          "height": 110,
+          "font_px": 64
+        }
+      ]
+    },
+    {
+      "id": "question",
+      "headline": "QUE SAVONS-NOUS ?",
+      "spoken": "Les premières informations méritent toujours d'être examinées avec prudence.",
+      "visual_kind": "editorial_motion",
+      "depicts_real_event": false,
+      "title_boxes": [
+        {
+          "x": 90,
+          "y": 500,
+          "width": 690,
+          "height": 130,
+          "font_px": 100
+        }
+      ],
+      "caption_boxes": [
+        {
+          "x": 96,
+          "y": 1150,
+          "width": 680,
+          "height": 110,
+          "font_px": 64
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "headline": "WORLD-VISION",
+      "spoken": "",
+      "visual_kind": "outro",
+      "title_boxes": [],
+      "caption_boxes": []
+    }
+  ]
+}
