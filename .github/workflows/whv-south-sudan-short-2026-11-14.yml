@@ -1,0 +1,101 @@
+name: World-Vision South Sudan 30s narrated news
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/worldvision-south-sudan-short-2026-11-14]
+    paths:
+      - '.github/workflows/whv-south-sudan-short-2026-11-14.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_south_sudan_30s.py'
+permissions:
+  contents: write
+concurrency:
+  group: south-sudan-worldvision-30s
+  cancel-in-progress: true
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prerequisites
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg espeak-ng libespeak-ng1
+          python -m pip install --quiet 'pillow==12.0.0' 'numpy==2.3.4' 'soundfile>=0.12' 'kokoro-onnx>=0.4' 'misaki-fork[en]'
+      - name: Authentic licensed documentary photographs and pinned typography
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14
+          mkdir -p "$D"
+          UA='World-Vision Editorial 1.0 (https://github.com/OBIANG5/World-Health-Vision)'
+          curl -fL --retry 5 --retry-all-errors --max-time 140 -A "$UA" 'https://upload.wikimedia.org/wikipedia/commons/a/a2/South_Sudanese_crowd_gathers_on_independence_day_%285925619257%29.jpg' -o "$D/crowd_vertical.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 140 -A "$UA" 'https://upload.wikimedia.org/wikipedia/commons/b/b6/Salva_Kiir_Mayardit_The_South_Sudan_president.jpg' -o "$D/president.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 140 -A "$UA" 'https://upload.wikimedia.org/wikipedia/commons/9/96/A_South_Sudanese_man_carries_the_flag_%285925642623%29.jpg' -o "$D/flag_man.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 140 -A "$UA" 'https://upload.wikimedia.org/wikipedia/commons/b/bb/South_Sudan_independence_celebration_in_Juba.jpg' -o "$D/independence.jpg"
+          curl -fL --retry 5 --retry-all-errors --max-time 140 'https://raw.githubusercontent.com/google/fonts/29b4ec6df2522a8aee279414b78a07910b065874/ofl/manrope/Manrope%5Bwght%5D.ttf' -o "$D/Manrope-variable.ttf"
+          echo "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6  $D/Manrope-variable.ttf" | sha256sum --check
+      - name: Acquire open Kokoro-82M French narrator model
+        run: |
+          set -euo pipefail
+          D=worldhealth-vision-v2/services/media-renderer/assets/south-sudan-2026-11-14
+          curl -fL --retry 5 --retry-all-errors --max-time 720 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/kokoro-v1.0.onnx' -o "$D/kokoro-v1.0.onnx"
+          curl -fL --retry 5 --retry-all-errors --max-time 720 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1/voices-v1.0.bin' -o "$D/voices-v1.0.bin"
+          test "$(stat -c%s "$D/kokoro-v1.0.onnx")" -gt 70000000
+          test "$(stat -c%s "$D/voices-v1.0.bin")" -gt 1000000
+      - name: Render real 9:16 news with synchronized French narration
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_south_sudan_30s.py
+          python scripts/guard_on_screen_copy.py scripts/worldvision_south_sudan_30s.py
+          python scripts/worldvision_south_sudan_30s.py --model assets/south-sudan-2026-11-14/kokoro-v1.0.onnx --voices assets/south-sudan-2026-11-14/voices-v1.0.bin --font assets/south-sudan-2026-11-14/Manrope-variable.ttf --logo public/brand/world-vision-official.png
+      - name: Verify file and sound
+        run: |
+          set -euo pipefail
+          F=worldhealth-vision-v2/services/media-renderer/output/south-sudan-2026-11-14/world-vision-soudan-du-sud-elections-v1.mp4
+          test -s "$F"
+          ffprobe -v error -show_entries stream=codec_type,codec_name,width,height,r_frame_rate -show_entries format=duration -of json "$F"
+          python - <<'PY'
+          import pathlib,json
+          d=pathlib.Path('worldhealth-vision-v2/services/media-renderer/output/south-sudan-2026-11-14')
+          m=json.loads((d/'manifest.json').read_text())
+          assert m['duration_seconds']<=30 and m['width']==1080 and m['height']==1920
+          assert m['audio_codec']=='aac' and m['video_codec']=='h264'
+          assert not m['user_publication_approval']
+          assert (d/'review/contact-sheet.jpg').is_file()
+          print('Technical 9:16 H264 AAC 30s QA passed; artistic approval outstanding.')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-south-sudan-30s-candidate
+          retention-days: 30
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-2026-11-14/world-vision-soudan-du-sud-elections-v1.mp4
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-2026-11-14/manifest.json
+            worldhealth-vision-v2/services/media-renderer/output/south-sudan-2026-11-14/review/*.jpg
+      - name: Publish candidate and proof on permanent phone preview branch
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-south-sudan-viewer
+          SRC=worldhealth-vision-v2/services/media-renderer/output/south-sudan-2026-11-14
+          TARGET=/tmp/wv-south-sudan-viewer/media-lab/south-sudan-2026-11-14
+          mkdir -p "$TARGET/review"
+          cp "$SRC/world-vision-soudan-du-sud-elections-v1.mp4" "$SRC/manifest.json" "$TARGET/"
+          cp "$SRC/review/"*.jpg "$TARGET/review/"
+          cp worldhealth-vision-v2/docs/media/episodes/2026-11-14_south_sudan_elections/VIEWER.html "$TARGET/index.html"
+          cd /tmp/wv-south-sudan-viewer
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/south-sudan-2026-11-14
+          if ! git diff --cached --quiet; then
+            git commit -m 'preview(media): South Sudan 30s narrated iPhone review candidate'
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
