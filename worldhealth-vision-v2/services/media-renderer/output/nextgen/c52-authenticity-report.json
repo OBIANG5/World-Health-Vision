@@ -1,0 +1,13 @@
+{
+  "profile_id": "worldvision-vivienne-c52-impact-media",
+  "status": "REFERENCE_AUTHENTICATED_NOT_PUBLISHING_CLEARED",
+  "errors": [],
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "version": "c5_broadcast",
+  "verified_binary": true,
+  "logo": "worldvision-original-g0-graphite.mp4",
+  "publisher_release_permitted": false,
+  "artistic_quality_certified": false,
+  "rights_verified": false,
+  "future_rate_6_percent_pending_audition": true
+}
