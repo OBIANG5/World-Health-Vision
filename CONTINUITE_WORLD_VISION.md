@@ -1,5 +1,20 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## MONTAGE GUINÉE V3 — REFONTE VISUELLE RÉELLE EN RÉPONSE AU REFUS DE LA V2
+
+Le propriétaire reproche aux V1/V2 Guinée de ne changer pratiquement **aucune image** et de conserver des photographies et plans fades/génériques, malgré ses demandes répétées. **Il demande de terminer l'épisode en conservant EXACTEMENT la dernière voix Vivienne** — ne plus rouvrir le chantier de la voix — tout en refaisant les visuels faibles.
+
+**Nouvelle réponse vérifiable :** branche `feature/worldvision-guinee-siguiri-v3-authentic-visuals-2026-11-14`, [PR #27](https://github.com/OBIANG5/World-Health-Vision/pull/27) brouillon. Script `worldhealth-vision-v2/services/media-renderer/scripts/worldvision_guinee_siguiri_v3_visual_editor.py`. Actions `.github/workflows/worldvision-guinee-siguiri-v3-real-guinea-images.yml`.
+
+- **13 plans sur 16 remplacés** : conserve UNIQUEMENT 0 = globe initial que l'utilisateur aime, 12 = vraie vidéo homme au marteau que l'utilisateur aime, 15 = signature World-Vision bleue.
+- **Audio source inchangé bit-à-bit** : le renderer prend le flux AAC de la V2 sans regénérer Vivienne, et teste l'identité binaire de ce flux. Texte choisi verrouillé SHA-256 `0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac`.
+- **Nouvelles sources** : série authentique de 5 photos prises le 21 juillet 2024 en Guinée, `Les Orpailleurs du Quotidien 01–05`, auteur LincolnGN/Wikimedia Commons, **CC BY-SA 4.0** ([sources](https://commons.wikimedia.org/wiki/Category:Gold_panning_in_Guinea)). **Attention à l'attribution, aux transformations signalées, à l'obligation de partage dans les mêmes conditions selon la licence et à la revue juridique si publication**. Elles illustrent l'orpaillage antérieur, PAS les affrontements de 2026. Également, deux vraies pages du communiqué officiel guinéen du 12 novembre 2026 ([texte original](https://gouvernement.gov.gn/wp-content/uploads/2026/11/COMMUNIQUE-NA%C2%B0-008-MATD-CAB-2026-DU-GOUVERNEMENT-RELATIF-AUX-EVENEMENTS-SURVENUS-LE-11-NOVEMBRE-2026-A-BALATO-PREFECTURE-DE-KINTINIAN-DU-12112026.pdf)).
+- **Design** : typographie Space Grotesk/DM Sans acceptée conservée, photographie plein cadre et déplacements lents, contenu unique à chaque scène, plus de pages noires vides ou d'incrustations techniques « ILLUSTRATION ». Communiqué mis en scène sans inventer de victimes ou de barricades.
+- **QA obligatoire avant livrer** : inspection d'un contact sheet 16 photogrammes, vérification du changement effectif scène par scène (les premières captures montrent des différences visuelles de 42 à 97 niveaux de pixels pour les 13 scènes ; les 3 conservées ~0–1), conservation EXACTE du flux AAC, durée <60 secondes, contrôle des sources et droits. CI réussite n'implique PAS une approbation artistique.
+- **Lecteur iPhone V3** : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/guinee-siguiri-v3-2026-11-14/index.html — ne le déclarer accessible qu'après l'exécution GH Actions validée.
+- On ne doit plus faire de fausses améliorations cosmétiques à la place de la demande précise. **Les retours négatifs de l'utilisateur sont contractuels, pas de simples préférences.**
+
+
 ## GUINÉE/SIGUIRI — CORRECTIONS V2 APRÈS RETOUR UTILISATEUR (14/11/2026)
 
 L'utilisateur a rejeté la V1 : **Vivienne trop lente, trop robotique et hachée**, blancs entre morceaux TTS, images trop statiques et peu parlantes, labels techniques « ILLUSTRATION »/« PHOTO USAID », logo blanc incongru à la fin. **Deux validations à préserver : la typographie Space Grotesk/DM Sans et le vrai plan vidéo de l'homme qui frappe/travaille dans la mine.**
