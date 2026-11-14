@@ -110,3 +110,31 @@ après stabilisation de la qualité et des droits.
 Limite fondamentale : tests « verts » ne signifient pas vidéo 8/10.
 Tout candidat reste DRAFT jusqu'à validation visuelle, écoute complète,
 crédits/licences et contrôle journalistique.
+
+
+## Résultats réels — CI indépendante du 14 novembre 2026
+
+Run GitHub Actions : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43603667229
+
+Tous les jobs du run ont réussi (4/4):
+- contrôle rapide et tests hors réseau;
+- audition Vivienne conversational;
+- audition Vivienne focused;
+- compilation TypeScript / Remotion, rendu du candidat et push dans la branche de prévisualisation.
+
+MP3 conversationnel : 15,595 secondes analysées, LRA 1,9 LU, 7 pauses > 220 ms.
+MP3 focused : 14,779 secondes analysées, LRA 1,3 LU, 7 pauses > 220 ms.
+Les deux MP3 sont accessibles comme artefacts non commerciaux dans le run.
+**Ces résultats ne prouvent aucune amélioration de l'intonation par rapport au MP4
+d'origine (LRA ~2,2 LU); il serait mensonger de valider la voix à ce stade.**
+
+Candidat eye-only outro : 1080×1920, 30 fps, 90 images, 3 secondes,
+rendu H.264 réellement produit, sans piste vocale. Ce n'est PAS l'ancien logo
+officiel restauré, mais une variante vectorielle pour examen graphique.
+Aperçu iPhone :
+https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-eye-only-outro-candidate.mp4
+
+La V3 Shenzhen, ses archives et ses sous-titres restent intacts.
+Nouveau média recommandé (non sélectionné, non rendu) : manœuvres militaires
+chinoises non annoncées autour de Taïwan, informations Reuters 13/11/2026.
+Avant toute prise de voix réelle : vérifier les faits et les droits des images.
