@@ -54,9 +54,9 @@ def qa_static(source,contract):
     ensure(top_match is not None,"Headline composition layout unexpectedly changed; inspect before rendering")
     if top_match:
         y1,z1,y2,z2=map(int,top_match.groups())
-        ensure(y2-y1>=z1+25 and max(z1,z2)<=122,
+        ensure(y2-y1>=z1+25 and y2+z2<=1330 and max(z1,z2)<=122,
                "Headline collision risk; leave at least one font-height plus 25px")
-    ensure('height:790' in source and 'shenzhen-city-2025.jpg' in source,
+    ensure('height:680' in source and 'shenzhen-city-2025.jpg' in source,
            "Shenzhen true skyline must be reframed at a sensible documentary aspect ratio")
     ensure("world-vision-official.png" in source,"G0 exact brand file missing")
     ensure('const Globe:' in source and 'const EditorialLeaders:' in source,
