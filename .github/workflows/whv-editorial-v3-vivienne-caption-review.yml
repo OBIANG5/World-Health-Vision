@@ -1,4 +1,4 @@
-name: World-Vision V3 — Vivienne semantic sentence subtitles V4
+name: World-Vision V3 — Vivienne French punctuation subtitles V5
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: worldvision-v3-vivienne-subtitle-semantic-v4
+  group: worldvision-v3-vivienne-subtitle-punctuation-v5
   cancel-in-progress: true
 
 jobs:
@@ -61,15 +61,18 @@ jobs:
           python3 -m py_compile worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_subtitles_v3.py
           python3 worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_subtitles_v3.py \
             --voice-manifest "$D/voice.json" --font-file "$D/fonts/DMSans-variable.ttf" \
-            --output-stem "$D/captions-vivienne-v4"
+            --output-stem "$D/captions-vivienne-v5"
           python3 - <<'PY'
           import json
           from pathlib import Path
           d=Path('/tmp/worldvision-v3-captions')
-          m=json.loads((d/'captions-vivienne-v4.json').read_text())
+          m=json.loads((d/'captions-vivienne-v5.json').read_text())
           assert m['font']=='DM Sans' and m['size_px']==78 and m['max_lines']==2
           assert m['cue_count']>=15 and m['cue_count']<50
           assert m['semantic_sentence_boundaries_respected'] is True
+          transcript=' '.join(' '.join(c['lines']) for c in m['cues'])
+          assert 'discussions :' in transcript and 'attention :' in transcript, 'French script colons were lost'
+          assert transcript.rstrip().endswith('puissance ?'), 'Final question punctuation lost'
           import re
           assert not any(re.search(r'[.!?]\s+\S', ' '.join(c['lines'])) for c in m['cues']), 'Cue crosses a sentence boundary'
           assert all(x['end']<=30.7 and x['start']>=0 for x in m['cues'])
@@ -83,16 +86,16 @@ jobs:
           set -euo pipefail
           D=/tmp/worldvision-v3-captions
           ffmpeg -y -hide_banner -loglevel error -i "$D/film.mp4" \
-            -vf "ass=filename=$D/captions-vivienne-v4.ass:fontsdir=$D/fonts" \
+            -vf "ass=filename=$D/captions-vivienne-v5.ass:fontsdir=$D/fonts" \
             -map 0:v:0 -map 0:a:0 \
             -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
             -c:a copy -movflags +faststart \
-            "$D/full-vivienne-captions-33p7s-v4-semantic-review.mp4"
+            "$D/full-vivienne-captions-33p7s-v5-punctuation-review.mp4"
           python3 - <<'PY'
           import json,subprocess
           from pathlib import Path
           d=Path('/tmp/worldvision-v3-captions')
-          p=d/'full-vivienne-captions-33p7s-v4-semantic-review.mp4'
+          p=d/'full-vivienne-captions-33p7s-v5-punctuation-review.mp4'
           info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-show_streams','-of','json',str(p)]))
           v=next(s for s in info['streams'] if s['codec_type']=='video')
           a=next(s for s in info['streams'] if s['codec_type']=='audio')
@@ -104,7 +107,7 @@ jobs:
           for pair in '1.8:leaders' '10.9:new-start' '17.5:china' '24.9:uncertainty' '32.3:silent-logo'; do
             IFS=: read -r t name <<< "$pair"
             ffmpeg -y -v error -ss "$t" \
-              -i "$D/full-vivienne-captions-33p7s-v4-semantic-review.mp4" \
+              -i "$D/full-vivienne-captions-33p7s-v5-punctuation-review.mp4" \
               -frames:v 1 -vf scale=540:960 -q:v 3 "$D/stills/$name.jpg"
           done
           ffmpeg -y -v error \
@@ -128,10 +131,10 @@ jobs:
             git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
             git reset --hard FETCH_HEAD
             OUT=media-lab/summit-2026/editorial-v2/full-vivienne-v3
-            mkdir -p "$OUT/review-subtitles-v4"
-            cp "$D/full-vivienne-captions-33p7s-v4-semantic-review.mp4" "$OUT/"
-            cp "$D/captions-vivienne-v4."{ass,srt,json} "$OUT/"
-            cp "$D/stills/"*.jpg "$OUT/review-subtitles-v4/"
+            mkdir -p "$OUT/review-subtitles-v5"
+            cp "$D/full-vivienne-captions-33p7s-v5-punctuation-review.mp4" "$OUT/"
+            cp "$D/captions-vivienne-v5."{ass,srt,json} "$OUT/"
+            cp "$D/stills/"*.jpg "$OUT/review-subtitles-v5/"
             git add "$OUT"
             if git diff --cached --quiet; then success=1; break; fi
             git commit -m "review(media): Vivienne 33.7s mobile subtitles 78px, two-line glyph QA, preview only"
@@ -143,4 +146,4 @@ jobs:
             sleep "$attempt"
           done
           test "$success" = 1
-          echo "Caption test: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/full-vivienne-captions-33p7s-v4-semantic-review.mp4"
+          echo "Caption test: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/full-vivienne-captions-33p7s-v5-punctuation-review.mp4"
