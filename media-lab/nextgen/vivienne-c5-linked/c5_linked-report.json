@@ -1,0 +1,43 @@
+{
+  "id": "c5_linked",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "same_persona_and_model_as_approved_impact_C": true,
+  "requested_rate": "+8%",
+  "script": "Un bateau de croisière chavire à La Nouvelle-Orléans ! Le choc survient sur le Mississippi où un navire-citerne vient de le heurter alors qu'il est à quai. Des passagers tombent dans l'eau. Trente-deux personnes sont conduites à l'hôpital et aucune n'est dans un état critique, selon les autorités. Mais comment cette collision a-t-elle pu se produire ?",
+  "raw_seconds": 15.168,
+  "review_seconds": 15.192,
+  "no_new_speaker": true,
+  "no_audio_splices": true,
+  "no_silence_cuts": true,
+  "no_filler_pauses": true,
+  "word_count": 55,
+  "target_diagnostics": [
+    {
+      "target": "Mississippi",
+      "word_start": 3.345,
+      "word_end": 4.039,
+      "previous_word": "le",
+      "next_word": "où",
+      "word_boundary_gap_before_sec": 0.001,
+      "word_boundary_gap_after_sec": 0.0,
+      "target_phoneme_naturalness_verified": false,
+      "acoustic_pauses_near_target": []
+    },
+    {
+      "target": "l'hôpital",
+      "word_start": 9.421,
+      "word_end": 9.953,
+      "previous_word": "à",
+      "next_word": "et",
+      "word_boundary_gap_before_sec": -0.001,
+      "word_boundary_gap_after_sec": 0.001,
+      "target_phoneme_naturalness_verified": false,
+      "acoustic_pauses_near_target": []
+    }
+  ],
+  "raw_long_pauses_over_450ms": 2,
+  "artistic_naturalness_verified": false,
+  "publishing_authorized": false,
+  "rights_verified": false,
+  "comment": "Word gaps cannot prove naturalness. Listen to full syllables in context."
+}
