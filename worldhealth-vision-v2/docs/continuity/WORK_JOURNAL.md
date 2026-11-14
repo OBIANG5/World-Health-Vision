@@ -600,3 +600,42 @@ Suite à la demande de supprimer définitivement les mentions de production et d
 **NEXT** : contrôle artistique de S03B / raccord V2 sur téléphone, puis produire S05 (Xi / réserve de Pékin) avec photos d'archives authentiques, Manrope, logos exacts, aucune mention technique brûlée, sans refaire d'éditeur. Avant publication vérifier les faits politiques de dernière minute et les droits des images.
 
 ---
+
+## 14 NOVEMBRE 2026 — REPORTAGE 001 VOIX + SOUS-TITRES, 43 SECONDES : RENDU COMPLET REVUE
+
+**Directive utilisateur explicite :** ne pas reprendre la refonte esthétique de la police pour cette vidéo. Terminer le documentaire actuel d'abord ; les nouvelles explorations typographiques seront pour la vidéo suivante. Aucun texte technique de production (QA, preview, sans voix, noms de fichiers) dans les pixels.
+
+### Livrable effectivement disponible (fichier binaire contrôlé)
+
+**Vidéo 43 s, narration française, 13 sous-titres calés sur 92 événements de parole, ambiance musicale originale :**
+https://raw.githack.com/OBIANG5/World-Health-Vision/8984a6017f3aade5e1205d68cce1170ad05da741/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.mp4
+
+- Source : branche de rendu permanent `whv-media-studio-browser-preview`, commit épinglé `8984a6017f3aade5e1205d68cce1170ad05da741`. `full-review/worldvision-001-43s-voiced-subtitled-review.mp4` (10 850 086 octets).
+- SHA-256 MP4 **`842ec6ad663379d82d5d51349b6d6b4f68e3dcbefdb0019919d9afe469d5a2e3`**. 1290 images, 30 images/s, 1080×1920, H.264 / AAC, 43,00 secondes.
+- Master de visionnage créé par `services/media-renderer/scripts/worldvision_assemble_preview.py` avec les MP4 indépendants S01 V2, S03+S03B circular V2, S04 V3, S05/S06/S07/S08. Le script approuvé est strictement conservé.
+- La voix française générique candidate est `fr-FR-HenriNeural` (43s PCM), empreinte `97eb96df880aaf8443f3e484951d1f0ce9e024e544e153f77bf1d3f20a0dd739`, récupérable dans `media-lab/summit-2026/voice/`. 92 frontières de parole horodatées, réparties en 7 prises.
+- `services/media-renderer/scripts/worldvision_captions_from_voice.py` exporte exactement **13 sous-titres** SRT/ASS aux vrais instants, et **seulement sur le montage complet**, jamais incrustés sur les petits MP4. Fichiers `full-review/captions.srt`, `captions.ass`, `captions.json`.
+- `full-review/review-frames/contact-sheet.jpg` et neuf captures avec scène précise sont présentes pour contrôle artistique. Workflow [#43592437584](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43592437584) **SUCCESS**.
+
+### Incident détecté et corrigé — ne pas reproduire
+
+Un premier montage de 43 secondes avait bien 1290 images mais affichait des plans **dans le mauvais ordre**, à cause du concat FFmpeg par démultiplexeur MP4 et de timebases dissemblables. Ce premier MP4 a été **rejeté**. Le script utilise désormais le **concat filter** FFmpeg, avec `fps=30,settb=1/30,setpts=PTS-STARTPTS` pour chaque plan décodé. Il compare les images du montage aux **véritables images sources à NEUF instants** (0,8s, 5s, 8s, 11,5s, 16,4s, 24s, 30s, 37,1s, 41,8s), moyenne de différence de pixel inférieure à 0,23 en valeur RGB. L'ordre et la durée du nouveau fichier sont vérifiés. Ne JAMAIS se fier seulement à la durée pour valider l'ordre des scènes.
+
+### Point BLOQUANT et distinction ESSENTIELLE
+
+Ce MP4 est **un FILM COMPLET À REGARDER, pas le MASTER FINAL À PUBLIER** :
+- **Le vrai clip terrestre D00-v6 source S02 (3,1s, Canva asset `VAHa4ZT_ySo`, SHA-256 `95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a`) n'a PAS pu être extrait en binaire depuis Canva** ; l'app Canva a confirmé l'existence de cet asset, mais n'expose pas de téléchargement de MP4. Le 0,9s à 04:50–05:40 est temporairement un **fond bleu nuit avec le véritable logo G0**, PAS une recréation/invention de Terre D00. Il faut remplacer par l'extrait authentique de S02 pour la version définitive, en contrôlant l'empreinte avant montage. Le rendu ne prétend pas contenir ce plan.
+- **Le son et la direction artistique attendent approbation humaine de l'utilisateur**, y compris la voix de synthèse. Aucune publication autorisée.
+- Aucune scène ne prétend que la réunion du 19 novembre 2026 s'est déjà tenue. Vérifier l'état des annonces/faits avant publication. Licence photographique CC0 de Shenzhen et photo d'archive historique de Prague dans les manifestes.
+
+### Références pour une reprise dans un nouveau chat
+
+- Lien vidéo complet vérifié (épinglé ci-dessus).
+- Registre complet `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/SEGMENT_LEDGER.json` et conducteur `EDL_V3_REAL_CITY_MATCHCUT.md`.
+- Manifeste fichier binaire : https://github.com/OBIANG5/World-Health-Vision/blob/8984a6017f3aade5e1205d68cce1170ad05da741/media-lab/summit-2026/full-review/worldvision-001-43s-voiced-subtitled-review.json
+- Sous-titres : https://github.com/OBIANG5/World-Health-Vision/blob/8984a6017f3aade5e1205d68cce1170ad05da741/media-lab/summit-2026/full-review/captions.srt
+- Fichiers et workflows GitHub créés : `services/media-renderer/render-summit-remaining.mjs`, `scripts/worldvision_voice_fr.py`, `scripts/worldvision_captions_from_voice.py`, `scripts/worldvision_assemble_preview.py`, `.github/workflows/whv-summit-s05-s08-final-scenes.yml`, `.github/workflows/whv-summit-voice-fr.yml`, `.github/workflows/whv-summit-43s-review.yml`.
+
+**Suite recommandée sans refaire des plans existants :** écouter/regarder les 43s sur téléphone, retrouver le MP4 authentique S02 D00-v6 (dans Canva, asset `VAHa4ZT_ySo`), remplacer le seul clip temporaire par son extrait 0,9s à vitesse 1x, re-rendre et repasser QA/écoute/artistic review ; figer master uniquement avec approbation. La refonte esthétique de la police doit être réservée au **prochain reportage**, sur demande de l'utilisateur.
+
+---
