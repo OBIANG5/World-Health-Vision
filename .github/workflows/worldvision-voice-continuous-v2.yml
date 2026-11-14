@@ -1,0 +1,156 @@
+name: World-Vision Voice 2 — continuous voices, no artificial splice pauses
+
+on:
+  push:
+    branches: [improve/worldvision-voice-first-pipeline-2026-11-14]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_voice_continuous_v2.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/continuous_v2_sample.json'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_continuous_audio.py'
+      - '.github/workflows/worldvision-voice-continuous-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worldvision-continuous-v2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install FFmpeg and numpy for waveform-safe silence tests
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+          python -m pip install --disable-pip-version-check 'numpy>=2.0,<3'
+      - name: Run actual audio continuity and publication-security tests
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python -m unittest discover -v -s nextgen -p 'test_continuous_audio.py'
+          python -m py_compile scripts/worldvision_voice_continuous_v2.py
+
+  voices:
+    name: Continuous audition ${{ matrix.variant }}
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [vivienne_continuous, denise_news, coralie_warm]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencies and FFmpeg
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+          python -m pip install --disable-pip-version-check 'numpy>=2.0,<3' 'edge-tts>=7.2,<8'
+      - name: One native-length utterance with silence-only tightening
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python scripts/worldvision_voice_continuous_v2.py \
+            --variant "${{ matrix.variant }}" \
+            --brief nextgen/continuous_v2_sample.json \
+            --out output/nextgen/voice-v2/${{ matrix.variant }}
+      - name: Verify MP3 and report are genuinely usable
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          test -s "output/nextgen/voice-v2/${{ matrix.variant }}/${{ matrix.variant }}-audition-only.mp3"
+          test -s "output/nextgen/voice-v2/${{ matrix.variant }}/${{ matrix.variant }}-report.json"
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \
+            "output/nextgen/voice-v2/${{ matrix.variant }}/${{ matrix.variant }}-audition-only.mp3"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-v2-${{ matrix.variant }}-audit
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice-v2/${{ matrix.variant }}/*-audition-only.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice-v2/${{ matrix.variant }}/*-report.json
+          retention-days: 21
+
+  publish-review:
+    name: Save stable, versioned listening URLs (NOT social publishing)
+    needs: voices
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: worldvision-v2-*-audit
+          merge-multiple: true
+          path: /tmp/wv-voice-2
+      - name: Inspect all 3 distinct actual voices before publishing links
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base=Path('/tmp/wv-voice-2')
+          voices={
+            'vivienne_continuous':['fr-FR-VivienneMultilingualNeural'],
+            'denise_news':['fr-FR-DeniseNeural'],
+            'coralie_warm':['fr-FR-CoralieNeural','fr-FR-BrigitteNeural','fr-FR-CelesteNeural','fr-CA-SylvieNeural']
+          }
+          checksums=set()
+          scripts=set()
+          for tag,voice in voices.items():
+              mp3=base/f'{tag}-audition-only.mp3'
+              report=base/f'{tag}-report.json'
+              assert mp3.exists() and mp3.stat().st_size>30000, tag
+              data=json.loads(report.read_text())
+              assert data['voice'] in voice
+              assert data['rights_verified'] is False
+              assert data['publication_authorized'] is False
+              assert data['duration_sec']>10
+              assert data['surgery']['unchanged_speech_segments'] is True
+              checksums.add(data['polished_audio_sha256'])
+              scripts.add(data['comparison_script_sha256'])
+          assert len(checksums)==3
+          assert len(scripts)==1
+          print('Verified 3 distinct files from one identical script: audit only')
+          PY
+      - name: Publish only to shared static preview branch (retain historical MP3)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-voice-v2-preview
+          cd /tmp/wv-voice-v2-preview
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          done=0
+          for attempt in 1 2 3 4 5; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            mkdir -p media-lab/nextgen/voice-v2
+            cp /tmp/wv-voice-2/*-audition-only.mp3 media-lab/nextgen/voice-v2/
+            cp /tmp/wv-voice-2/*-report.json media-lab/nextgen/voice-v2/
+            git add media-lab/nextgen/voice-v2
+            if git diff --cached --quiet; then done=1; break; fi
+            git commit -m "review(voice): three distinct continuous voices with silence-safe edits, preview only"
+            if git push origin HEAD:whv-media-studio-browser-preview; then done=1; break; fi
+            sleep "$attempt"
+          done
+          test "$done" = 1
+          for voice in vivienne_continuous denise_news coralie_warm; do
+            echo "Listen $voice: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/voice-v2/$voice-audition-only.mp3"
+          done

@@ -1,0 +1,225 @@
+name: World-Vision NEXT — voice-first quality laboratory
+
+on:
+  push:
+    branches: [improve/worldvision-voice-first-pipeline-2026-11-14]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/**'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_voice_lab.py'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/extract_official_eye.py'
+      - 'worldhealth-vision-v2/services/media-renderer/quality/worldvision_nextgen_gate.py'
+      - 'worldhealth-vision-v2/services/media-renderer/src/nextgen/**'
+      - 'worldhealth-vision-v2/services/media-renderer/render-nextgen-brand.mjs'
+      - '.github/workflows/worldvision-nextgen-voice-first.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-nextgen-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    name: Fast offline quality gates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Basic dependencies
+        run: |
+          python -m pip install --disable-pip-version-check pillow
+          ffmpeg -version | head -1
+      - name: Enforce all regression gates (no remote synthesis)
+        run: |
+          set -euo pipefail
+          cd worldhealth-vision-v2/services/media-renderer
+          python -m unittest discover -v -s nextgen -p 'test_nextgen_media.py'
+          python quality/worldvision_nextgen_gate.py \
+            --storyboard nextgen/storyboard_demo.json \
+            --report output/nextgen/layout-preflight.json
+          python -m py_compile scripts/worldvision_voice_lab.py quality/worldvision_nextgen_gate.py
+      - name: Store visual gate report
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-nextgen-preflight
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/layout-preflight.json
+
+  auditions:
+    name: Vivienne experimental audition — ${{ matrix.variant }}
+    needs: preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [conversational, focused]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install limited audition dependencies
+        run: python -m pip install --disable-pip-version-check edge-tts
+      - name: Guarantee FFmpeg for audition workers
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -1
+      - name: Render two independent voice styles in CI matrix
+        run: |
+          set -euo pipefail
+          cd worldhealth-vision-v2/services/media-renderer
+          python scripts/worldvision_voice_lab.py audition \
+            --brief nextgen/audition_demo.json \
+            --variant "${{ matrix.variant }}" \
+            --out-dir "output/nextgen/voice/${{ matrix.variant }}"
+      - name: Preserve voice audition without granting publishing rights
+        uses: actions/upload-artifact@v4
+        with:
+          name: vivienne-${{ matrix.variant }}-audition-only
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice/${{ matrix.variant }}/*.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/voice/${{ matrix.variant }}/*-report.json
+          retention-days: 14
+
+  brand-proposal:
+    name: Remotion original G0 eye only — alpha extracted from source
+    needs: preflight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Recover EXACT original G0 logo; extract paper background without redrawing
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check pillow
+          LOGO=worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png
+          test "$(git hash-object "$LOGO")" = "bc80fa70cebd566768bfb1703a0f1f636a78c196"
+          python worldhealth-vision-v2/services/media-renderer/scripts/extract_official_eye.py
+      - name: Install pinned Remotion and compile all TypeScript
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          npm install --no-audit --no-fund
+          npm run typecheck
+      - name: Render candidate only, never touching existing published film
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        env:
+          REMOTION_DISABLE_UPDATE_CHECK: '1'
+        run: node render-nextgen-brand.mjs
+      - name: Stage original eye and preview in one flat, reproducible artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT=worldhealth-vision-v2/services/media-renderer
+          mkdir -p "$ROOT/output/nextgen/brand-package"
+          cp "$ROOT/output/nextgen/worldvision-original-g0-midnight.mp4" "$ROOT/output/nextgen/brand-package/"
+          cp "$ROOT/output/nextgen/worldvision-original-g0-graphite.mp4" "$ROOT/output/nextgen/brand-package/"
+          cp "$ROOT/output/nextgen/logo-extraction.json" "$ROOT/output/nextgen/brand-package/"
+          cp "$ROOT/public/brand/world-vision-eye-original-transparent.png" "$ROOT/output/nextgen/brand-package/"
+      - name: Preserve render as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-original-g0-outro-candidate
+          path: worldhealth-vision-v2/services/media-renderer/output/nextgen/brand-package/
+          retention-days: 14
+
+  publish-review-assets:
+    name: Save permanent MP3 review URLs and original G0 logo on GitHub preview
+    needs: [auditions, brand-proposal]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: vivienne-*-audition-only
+          merge-multiple: true
+          path: /tmp/wv-voices
+      - uses: actions/download-artifact@v4
+        with:
+          name: worldvision-original-g0-outro-candidate
+          path: /tmp/wv-brand
+      - name: Verify all source artifacts exist and are not the old invented eye
+        run: |
+          set -euo pipefail
+          test -s /tmp/wv-voices/vivienne-conversational-review.mp3
+          test -s /tmp/wv-voices/vivienne-focused-review.mp3
+          test -s /tmp/wv-voices/vivienne-conversational-report.json
+          test -s /tmp/wv-voices/vivienne-focused-report.json
+          test -s /tmp/wv-brand/worldvision-original-g0-midnight.mp4
+          test -s /tmp/wv-brand/worldvision-original-g0-graphite.mp4
+          test -s /tmp/wv-brand/world-vision-eye-original-transparent.png
+          test -s /tmp/wv-brand/logo-extraction.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          meta=json.loads(Path('/tmp/wv-brand/logo-extraction.json').read_text())
+          assert meta['same_original_logo_art'] is True
+          assert meta['new_logo_generated'] is False
+          for v in ('conversational','focused'):
+              data=json.loads(Path(f'/tmp/wv-voices/vivienne-{v}-report.json').read_text())
+              assert data['voice']=='fr-FR-VivienneMultilingualNeural'
+              assert data['publishing_authorized'] is False
+          print('Two real MP3s and actual official G0 eye available for stable GitHub preview')
+          PY
+      - name: Publish both MP3s, source-corrected logo, and preview — review only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/whv-review-static
+          cd /tmp/whv-review-static
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            mkdir -p media-lab/nextgen/voice media-lab/nextgen/brand
+            cp /tmp/wv-voices/vivienne-{conversational,focused}-review.mp3 media-lab/nextgen/voice/
+            cp /tmp/wv-voices/vivienne-{conversational,focused}-report.json media-lab/nextgen/voice/
+            cp /tmp/wv-brand/worldvision-original-g0-midnight.mp4 media-lab/nextgen/brand/
+            cp /tmp/wv-brand/worldvision-original-g0-graphite.mp4 media-lab/nextgen/brand/
+            cp /tmp/wv-brand/world-vision-eye-original-transparent.png media-lab/nextgen/brand/
+            cp /tmp/wv-brand/logo-extraction.json media-lab/nextgen/brand/
+            # Remove the PREVIOUS misleading pseudo-logo preview from the latest branch
+            # while retaining its complete Git commit history for audit.
+            if test -f media-lab/nextgen/brand/worldvision-eye-only-outro-candidate.mp4; then
+              git rm -f media-lab/nextgen/brand/worldvision-eye-only-outro-candidate.mp4
+            fi
+            git add media-lab/nextgen
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "fix(media): stable Vivienne auditions + corrected original G0 eye; retire invented preview"
+            if git push origin HEAD:whv-media-studio-browser-preview; then
+              success=1; break
+            fi
+            sleep "$attempt"
+          done
+          test "$success" = 1
+          echo "Vivienne conversational: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/voice/vivienne-conversational-review.mp3"
+          echo "Vivienne focused: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/voice/vivienne-focused-review.mp3"
+          echo "True G0 midnight: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-original-g0-midnight.mp4"
+          echo "True G0 graphite: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/brand/worldvision-original-g0-graphite.mp4"
