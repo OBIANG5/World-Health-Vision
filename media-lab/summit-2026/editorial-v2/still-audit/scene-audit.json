@@ -29,36 +29,36 @@
       "label": "newstart-archive",
       "frame": 402,
       "second": 13.4,
-      "sha256": "e52e06103965264bbae7231678c509aecea3639662fd9ac899c5242e0c4b2da7",
-      "bytes": 1958446
+      "sha256": "88699d5813fde0dffcb33276d9e7bbdaf12e064d5d2db1636654fed73a8d1566",
+      "bytes": 1669966
     },
     {
       "label": "newstart-expiry",
       "frame": 527,
       "second": 17.566666666666666,
-      "sha256": "b3fd13730041c17ee78a8368e7973796a134c7222bd925daf680468f53a4df06",
-      "bytes": 1935936
+      "sha256": "7cdc91179c3ce486781d8d38aea2ece1b21482d3e6d6a562ec08b9d9ebb88a0f",
+      "bytes": 1681630
     },
     {
       "label": "china",
       "frame": 680,
       "second": 22.666666666666668,
-      "sha256": "3d4c1dc05994ed3c22024e44956a563a6cbdf99879e56d23066c567099fd850e",
-      "bytes": 2716132
+      "sha256": "3ea7d6c0583afcd02e260c39c18f5d8007e832aa1740d8a9f3545b5fe42aaa5b",
+      "bytes": 2765617
     },
     {
       "label": "iran-ukraine",
       "frame": 885,
       "second": 29.5,
-      "sha256": "4eb5faa3bae44036cb452684e0f6af0622e83379d784f945e3172fbb22509adc",
-      "bytes": 993676
+      "sha256": "07b7eabe4dcf7c4815bc603de423d0911f4d58fedc16ec0396d755b6f4e1baac",
+      "bytes": 2181868
     },
     {
       "label": "uncertainty",
       "frame": 1076,
       "second": 35.86666666666667,
-      "sha256": "57db2e31957da0877f240d0dbb9c1aeda1abaa96a78263e3aeec4ffa8da245d2",
-      "bytes": 2584693
+      "sha256": "8335c38b430b9b89d9e2581d903430cd280d4939f21021c139036bdd4d97bc37",
+      "bytes": 2641900
     },
     {
       "label": "silent-signature",
