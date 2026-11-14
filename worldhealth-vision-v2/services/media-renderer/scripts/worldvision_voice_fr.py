@@ -17,13 +17,13 @@ VOICE="fr-FR-HenriNeural"
 # These 7 contiguous groups reproduce the accepted French script exactly,
 # without adding or removing any words or punctuation.
 LINES=[
- ("B01",0.,4.5,"+12%","Trois puissances nucléaires. Une même table. Et une rencontre inédite."),
- ("B02",4.5,12.5,"+8%","Jeudi 19 novembre, Donald Trump, Vladimir Poutine et Xi Jinping doivent se réunir à Shenzhen, en Chine."),
- ("B03",12.5,20.4,"+16%","Au cœur des discussions : réduire les arsenaux nucléaires. Le dernier grand traité entre Washington et Moscou a expiré en février."),
+ ("B01",0.,4.5,"+35%","Trois puissances nucléaires. Une même table. Et une rencontre inédite."),
+ ("B02",4.5,12.5,"+17%","Jeudi 19 novembre, Donald Trump, Vladimir Poutine et Xi Jinping doivent se réunir à Shenzhen, en Chine."),
+ ("B03",12.5,20.4,"+30%","Au cœur des discussions : réduire les arsenaux nucléaires. Le dernier grand traité entre Washington et Moscou a expiré en février."),
  ("B04",20.4,26.6,"+0%","Trump veut maintenant associer Pékin, qui reste réticent."),
- ("B05",26.6,33.8,"+12%","La guerre en Iran devrait aussi être abordée. Mais selon Washington, pas celle en Ukraine."),
- ("B06",33.8,40.,"+22%","Et attention : aucun accord n’est attendu pour le moment. Alors, véritable tournant diplomatique, ou simple démonstration de puissance ?"),
- ("B07",40.,43.,"+5%","World-Vision. Voir le monde, le comprendre.")
+ ("B05",26.6,33.8,"+18%","La guerre en Iran devrait aussi être abordée. Mais selon Washington, pas celle en Ukraine."),
+ ("B06",33.8,40.,"+35%","Et attention : aucun accord n’est attendu pour le moment. Alors, véritable tournant diplomatique, ou simple démonstration de puissance ?"),
+ ("B07",40.,43.,"+13%","World-Vision. Voir le monde, le comprendre.")
 ]
 def sh(*args):
  return subprocess.check_output(list(map(str,args)),stderr=subprocess.STDOUT).decode("utf8","replace")
