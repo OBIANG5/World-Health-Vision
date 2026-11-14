@@ -22,7 +22,7 @@
   "publication_authorized": false,
   "duration_seconds": 51.733,
   "audio_duration_seconds": 51.69,
-  "video_sha256": "1e108a1ef29a94efd234b55b9fbcbe754db6675bc18b8d5bebd3e69799bf0782",
+  "video_sha256": "028ca808171133af83d37a9a66728c823e8173bf34d823dbc69e2b71b0a56d17",
   "resolution": "1080x1920",
   "fps": 30,
   "video_codec": "h264",
@@ -45,8 +45,9 @@
       "seconds": 3.0
     },
     {
-      "visual": "gold",
-      "seconds": 4.7
+      "visual": "gold_panning_video",
+      "seconds": 4.7,
+      "source_type": "actual_stock_footage_illustration_NOT_Guinea"
     },
     {
       "visual": "location",
@@ -148,6 +149,14 @@
       "license": "Pexels License",
       "url": "https://www.pexels.com/video/afican-worker-in-a-mine-28657918/",
       "note": "Actual moving video, strictly documentary illustration of mining labour; NOT recorded in Guinea or the 2026 protests"
+    },
+    {
+      "kind": "illustration_video_not_guinea",
+      "name": "Real gold panning / sluice box close-up",
+      "creator": "Alex Moliski, via Pexels",
+      "license": "Pexels License",
+      "url": "https://www.pexels.com/video/gold-panning-activity-in-natural-creek-setting-40458553/",
+      "note": "Macro mining motion; no claim of Balato location or November 2026 footage"
     }
   ],
   "photo_sha256": {
@@ -156,7 +165,10 @@
     "red_soil_illustration.jpg": "48d0d80708fec3af1b08a3940cd87c8338c194d4f6a0576614a2cc4c918cacfa",
     "river_illustration.jpg": "464d928f3fab0639e9fb87dbe512a6cd1e00c22c59a2290d96ad0002c088b76e"
   },
-  "stock_footage_sha256": "86946becb8b0ab9e0f748a0177721f1b193ba26b032bb8af0b73d5a126a0fa7a",
+  "stock_footage_sha256": {
+    "worker": "86946becb8b0ab9e0f748a0177721f1b193ba26b032bb8af0b73d5a126a0fa7a",
+    "panning": "0e5cc9a034b51649fc13a690d273e65383b0764f745b202cec901b8f06865d90"
+  },
   "headfont_sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72",
   "bodyfont_sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
   "official_logo_sha256": "b5e76e19260a6c405c17d54695278c12adb5e8b90f241deddf351620d7e7d9fb",
