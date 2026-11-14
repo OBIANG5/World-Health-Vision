@@ -26,7 +26,8 @@ test("Full 43-second timeline has no missing or overlapping subtitle windows",()
 });
 test("Uses official unchanged G0 logo and original D00 asset path",()=>{
  assert.match(component,/staticFile\("brand\/world-vision-official\.png"\)/);
- assert.match(component,/staticFile\(rootAssets\+"eye-earth-d00-v6\.png"\)/);
+ assert.match(component,/staticFile\(rootAssets\+"segment02-original-d00\.mp4"\)/);
+ assert.doesNotMatch(component,/eye-earth-d00-v6\.png/);
  const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
  assert.match(render,/bc80fa70cebd566768bfb1703a0f1f636a78c196/);
  assert.match(render,/8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2/);
