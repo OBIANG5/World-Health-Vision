@@ -87,6 +87,28 @@ try {
     await closeSource.click();
     await page.locator(".whv-modal").waitFor({state:"hidden",timeout:10000});
 
+    // A scrolling home must never open an absolute panel far above the user.
+    await page.locator(".wv-selected-country").scrollIntoViewIfNeeded();
+    await page.locator(".wv-selected-main button").click();
+    const countryDrawer=page.locator(".country-drawer.open");
+    await countryDrawer.waitFor({state:"visible",timeout:15000});
+    const countryBox=await countryDrawer.boundingBox();
+    assert(countryBox && countryBox.y>=-5 && countryBox.y<=20,
+      device.name+" country detail is offscreen after scrolling");
+    assert.equal(await countryDrawer.evaluate(el=>getComputedStyle(el).position),"fixed");
+    await countryDrawer.locator(".drawer-btn.close").click();
+    await countryDrawer.waitFor({state:"hidden",timeout:10000});
+
+    // Currency tool also stays visible when launched below the fold.
+    await page.locator(".wv-quick-links button").first().click();
+    const currencyPanel=page.locator(".cur-panel");
+    await currencyPanel.waitFor({state:"visible",timeout:15000});
+    const currencyBox=await currencyPanel.boundingBox();
+    assert(currencyBox && currencyBox.y>=0 && currencyBox.y<=140,
+      device.name+" currency tool positioned outside the viewport");
+    await currencyPanel.locator(".prf-close-btn").click();
+    await currencyPanel.waitFor({state:"hidden",timeout:10000});
+
     // Four category cards must call real navigation, not inert mock cards.
     const economy=page.locator(".wv-feature-card").nth(1);
     await economy.click();
