@@ -39,3 +39,10 @@ test("No unsupported claim that the meeting has already happened",()=>{
  assert.match(scriptMd,/doivent se réunir à Shenzhen/);
  assert.match(component,/Sommet ANNONCÉ|RENCONTRE ANNONCÉE|rencontre inédite/i);
 });
+
+test("No production watermark or internal credit is drawn into any master frame",()=>{
+ assert.doesNotMatch(component,/previewWatermark\s*&&|PRÉVISUALISATION SANS VOIX FINALE/);
+ assert.match(component,/const Credit:React\.FC<\{text:string\}>=\(\)=>null;/);
+ const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
+ assert.doesNotMatch(render,/previewWatermark\s*:/);
+});
