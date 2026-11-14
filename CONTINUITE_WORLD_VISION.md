@@ -1,5 +1,22 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## GUINÉE/SIGUIRI — CORRECTIONS V2 APRÈS RETOUR UTILISATEUR (14/11/2026)
+
+L'utilisateur a rejeté la V1 : **Vivienne trop lente, trop robotique et hachée**, blancs entre morceaux TTS, images trop statiques et peu parlantes, labels techniques « ILLUSTRATION »/« PHOTO USAID », logo blanc incongru à la fin. **Deux validations à préserver : la typographie Space Grotesk/DM Sans et le vrai plan vidéo de l'homme qui frappe/travaille dans la mine.**
+
+### Version V2 vérifiée techniquement
+- Branche dédiée : `feature/worldvision-guinee-siguiri-v2-voice-endcard-2026-11-14` et [PR #25](https://github.com/OBIANG5/World-Health-Vision/pull/25) (brouillon).
+- Lecteur iPhone : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/guinee-siguiri-v2-2026-11-14/index.html
+- MP4 **réel** : 47,133 secondes, 1080×1920, H.264/AAC ; SHA-256 `7fd2082b086f570c046d9595db2c0fc8e0705accb9177da71e7712b6504f39b2`. [CI réussi](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43610939312).
+- **Script verrouillé inchangé** : SHA-256 `0d0e268a9f189b9ae4b1714e89dbd67872444340ebce9c64260ee3f440cde8ac`.
+- Vivienne `fr-FR-VivienneMultilingualNeural` : **une prise intégrale** sans assemblage de phrases ; trois variantes A (148,11 mots/min), B (159,96), C (168,36), accessibles sur la page du lecteur. A utilisée par défaut, mais cela ne vaut pas approbation humaine définitive.
+- Ancien carré blanc totalement supprimé, ainsi que les incrustations techniques. Police et homme au marteau préservés. Fin remplacée par une signature bleu cyan pleine hauteur.
+- **Original de signature fourni par le propriétaire** : MP4 **3 sec / 512×910 / 30 fps**, SHA-256 `b1a875dd2611e2fc1e10f9f233b8e42d7065faacaecdc520c52af72c90e7d855`, **archivé dans Canva, asset vidéo `VAHa58Do0Cc`**. Important : le MP4 V2 GitHub utilise **une vidéo de trois secondes reconstruite à partir d'un photogramme de cette signature**, pas encore le mouvement exact des 90 images du MP4 original. Ne jamais prétendre le contraire. La version originale réencodée en 1080×1920 a également été générée dans le chat de l'utilisateur. À l'étape suivante, privilégier les octets de la vidéo originale pour l'export final, ne plus reconstruire de photo fixe.
+- Les licences TTS commerciales `edge-tts` restent non confirmées. L'export V2 est une version de relecture, non une autorisation automatique de publier.
+
+**Priorité artistique suivante :** davantage de rushes réels pertinents à la Guinée/Siguiri, mieux articuler les relances visuelles avec les faits et obtenir une narration réellement humaine. Le test technique vert ne signifie pas que l'utilisateur a aimé la vidéo. Ne jamais réduire ces critiques au seul débit.
+
+
 ## LIVRABLE VÉRIFIÉ — GUINÉE/SIGUIRI — VIDÉO 02 (14 NOVEMBRE 2026)
 
 - **Vrai MP4 de relecture produit et accessible sur téléphone**, 51,733 secondes, vertical 1080×1920/30fps, H.264/AAC : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/guinee-siguiri-2026-11-14/index.html?revision=028ca808
