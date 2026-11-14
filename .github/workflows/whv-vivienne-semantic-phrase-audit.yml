@@ -67,17 +67,20 @@ jobs:
           d=Path('/tmp/worldvision-semantic-captions')
           x=json.loads((d/'captions-semantic-phrase.json').read_text())
           c=x['cues']
-          assert x['cue_count']==23 and x['word_boundary_count']==86
+          assert x['cue_count']==25 and x['word_boundary_count']==86
           assert x['original_script_verbatim'] and x['no_overlaps']
           assert all(c[i]['end']<c[i+1]['start'] for i in range(len(c)-1))
           assert all(v['end']-v['start']>=0.45 for v in c)
           assert all(v['max_glyph_width_px']<=760 and len(v['lines'])<=2 for v in c)
           assert c[-1]['end']<=30.7
           assert x['approved_for_publication'] is False
+          # Lock word-for-word integrity and non-overlapping cues as a reusable release gate.
           for v in c:
             print(f"{v['start']:6.3f} - {v['end']:6.3f} | {' / '.join(v['lines'])}")
-          print('PASS — 23 semantic cues, exact accepted script, 86 words, no overlap')
+          print('PASS — 25 semantic cues, exact accepted script, 86 words, no overlap')
           PY
+          python3 worldhealth-vision-v2/services/media-renderer/quality/caption_nonoverlap_gate.py \
+            --cues "$D/captions-semantic-phrase.json" --voice-manifest "$D/voice.json"
       - name: Render a SEPARATE editorial caption proof; never overwrite V3/V5
         shell: bash
         run: |
@@ -102,7 +105,7 @@ jobs:
           assert a['codec_name']=='aac' and abs(float(m['format']['duration'])-33.7)<0.07
           report={'status':'NONPUBLISHABLE_EDITORIAL_CAPTION_AUDIT',
             'voice':'fr-FR-VivienneMultilingualNeural','voice_not_publishing_licensed':True,
-            'cues':23,'word_boundaries':86,'no_overlap':True,
+            'cues':25,'word_boundaries':86,'no_overlap':True,
             'source_video_sha256':'208f897eb84528025a0e9aee5104bebdb01e82de52735a6485ef631eedeb4b66',
             'mp4_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size,
             'frames':1011,'duration_sec':33.7,
@@ -142,7 +145,7 @@ jobs:
             cp "$SRC/frames/"*.jpg "$OUT/frames/"
             git add "$OUT"
             if git diff --cached --quiet; then success=1; break; fi
-            git commit -m "review(media): separate 33.7s Vivienne exact semantic captions, no overlap or script rewrite"
+            git commit -m "review(media): separate 33.7s Vivienne 25 phrase-safe captions, no overlap or script rewrite"
             if git push origin HEAD:whv-media-studio-browser-preview; then
               success=1; break
             fi
