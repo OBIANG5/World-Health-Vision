@@ -17,7 +17,7 @@ from edge_tts import Communicate
 
 WIDTH,HEIGHT,FPS=1080,1920,30
 GW,GH=810,1440
-CX,CY,RR=GW//2,615,322
+CX,CY,RR=GW//2,610,371
 ROOT=Path(__file__).resolve().parent.parent
 A=ROOT/"assets"/"south-sudan-2026-11-14"
 O=ROOT/"output"/"south-sudan-editorial-v2"
@@ -26,7 +26,7 @@ DARKBLUE=(9,37,51); DIM=(188,202,203); WHITE=(255,255,255)
 TARGET=(4.8594,31.5713)  # Geographical locator for capital Juba, South Sudan.
 START=(5.,-37.)          # Atlantic-facing Earth, genuine 69-degree turn.
 SCRIPT=[
- "Quinze ans d'indépendance. Zéro élection nationale.",
+ "Quinze ans d'indépendance. Aucune élection nationale.",
  "Au Soudan du Sud, indépendant depuis deux mille onze, le premier scrutin se fait toujours attendre.",
  "Les citoyens devaient élire leur président et leurs députés le vingt-deux décembre.",
  "Mais nouveau report : le vote est désormais fixé au onze février deux mille vingt-sept.",
@@ -122,11 +122,11 @@ def brand_end(im,logo):
     # the opening contains NO hard white logo plaque.
     im=im.convert("RGBA")
     d=ImageDraw.Draw(im)
-    d.rounded_rectangle((61,1730,1015,1841),radius=22,fill=(248,247,242,234))
-    logo=logo.copy();logo.thumbnail((88,80),Image.Resampling.LANCZOS)
-    im.alpha_composite(logo,(78+(90-logo.width)//2,1746+(78-logo.height)//2))
+    # Exact official logo asset remains intact; no big surrounding pill/box.
+    logo=logo.copy();logo.thumbnail((70,57),Image.Resampling.LANCZOS)
+    im.alpha_composite(logo,(75,1738))
     d=ImageDraw.Draw(im)
-    write(d,"WORLD-VISION",194,1752,53,C)
+    write(d,"WORLD-VISION",167,1734,48,PAPER)
     return im.convert("RGB")
 def easy(x):
     x=np.clip(x,0,1);return x*x*(3-2*x)
@@ -163,7 +163,7 @@ def globe_clip(texture,geo,logo,seconds=3.0):
     textplate=Image.fromarray(top,"RGB")
     d=ImageDraw.Draw(textplate)
     # Typeface stays consistently different from the rejected Manrope.
-    d.text((56,79),"LE MONDE EN 30 SECONDES",font=fit_text("LE MONDE EN 30 SECONDES",FONT_NEWS,698,28),fill=(205,215,213))
+    
     d.text((55,1165),"SOUDAN DU SUD",font=fit_text("SOUDAN DU SUD",FONT_HEAVY,720,70),fill=PAPER)
     d.text((55,1281),"15 ANS. ZÉRO ÉLECTION.",font=fit_text("15 ANS. ZÉRO ÉLECTION.",FONT_HEAVY,715,44),fill=ACCENT)
     plate=np.asarray(textplate,dtype=np.uint8)
