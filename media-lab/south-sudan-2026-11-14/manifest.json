@@ -1,0 +1,85 @@
+{
+  "episode": "south-sudan-election-delay-2026-11-14",
+  "status": "rendered_awaiting_human_artistic_and_vocal_review",
+  "user_publication_approval": false,
+  "is_news_footage": false,
+  "documentary_method": "authentic archival photographs + original text animation + French synthetic narrator",
+  "voice": "Kokoro French ff_siwis / Apache-2.0 model / SIWIS source CC BY 4.0",
+  "voice_atempo": 1.0,
+  "narration": [
+    "Imagine un pays indépendant depuis quinze ans… mais qui n'a encore jamais organisé d'élections nationales !",
+    "C'est le Soudan du Sud.",
+    "Le pays devait enfin voter le 22 décembre. Mais nouveau coup de théâtre : les élections sont repoussées au 11 février 2027 !",
+    "Aucune raison officielle n'a été donnée.",
+    "Pendant ce temps, l'ONU alerte sur les violences et les tensions politiques.",
+    "Quinze ans après l'indépendance, les Sud-Soudanais attendent toujours leur premier scrutin national."
+  ],
+  "duration_seconds": 27.576,
+  "scene_durations": [
+    6.039,
+    1.666667,
+    7.912,
+    2.366667,
+    4.033333,
+    5.537
+  ],
+  "frame_rate": 30,
+  "width": 1080,
+  "height": 1920,
+  "video_codec": "h264",
+  "audio_codec": "aac",
+  "sources": [
+    {
+      "name": "Reuters",
+      "url": "https://www.reuters.com/world/africa/south-sudan-delays-election-february-11-2027-2026-11-14/"
+    },
+    {
+      "name": "AP",
+      "url": "https://apnews.com/article/c62033bb79a606ef8ce7e335cfc8478b"
+    },
+    {
+      "name": "UNMISS 10 November 2026",
+      "url": "https://unmiss.unmissions.org/en/press-releases/remarks-by-anita-kiki-gbeho-special-representative-of-the-secretary-general-1"
+    }
+  ],
+  "photos": {
+    "crowd_vertical": {
+      "name": "South Sudanese crowd gathers on independence day (5925619257).jpg",
+      "author": "Sarah Taylor/USAID Africa Bureau",
+      "date": "2011-07-09",
+      "license": "Public domain — U.S. federal government",
+      "page": "https://commons.wikimedia.org/wiki/File:South_Sudanese_crowd_gathers_on_independence_day_(5925619257).jpg"
+    },
+    "president": {
+      "name": "Salva Kiir Mayardit The South Sudan president.jpg",
+      "author": "Evon2023",
+      "date": "2020-10-02",
+      "license": "CC0 1.0",
+      "page": "https://commons.wikimedia.org/wiki/File:Salva_Kiir_Mayardit_The_South_Sudan_president.jpg"
+    },
+    "flag_man": {
+      "name": "A South Sudanese man carries the flag (5925642623).jpg",
+      "author": "Sarah Taylor/USAID Africa Bureau",
+      "date": "2011-07-09",
+      "license": "Public domain — U.S. federal government",
+      "page": "https://commons.wikimedia.org/wiki/File:A_South_Sudanese_man_carries_the_flag_(5925642623).jpg"
+    },
+    "independence": {
+      "name": "South Sudan independence celebration in Juba.jpg",
+      "author": "Sarah Taylor/USAID Africa Bureau",
+      "date": "2011-07-09",
+      "license": "Public domain — U.S. federal government",
+      "page": "https://commons.wikimedia.org/wiki/File:South_Sudan_independence_celebration_in_Juba.jpg"
+    }
+  },
+  "photo_sha256": {
+    "crowd_vertical": "0094e423b3f9fd00d7749cbfcc3829a1c5eada6c09314b57f91c260a69564a26",
+    "president": "19ba3ee62fe21c2358c3ecc27a3cf745a1fad87a56c30776fd611ec468a3e95f",
+    "flag_man": "b16734a77ff4b8561143db387bd898f59ef78503a95d8bb1eb882555b7e7a86e",
+    "independence": "1a4b889b9209ac08f582d5104246ac3c8e4c12744fd9d2b8b75e3e8fa717e909"
+  },
+  "logo_sha256": "b5e76e19260a6c405c17d54695278c12adb5e8b90f241deddf351620d7e7d9fb",
+  "font_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+  "file_sha256": "bda65edf53c7589e1fc143aece452063653e3e80fc189aa365d7ba36180e91f1",
+  "note": "Archival shots explicitly captioned as ARCHIVES; no claim these are video of Nov 2026 electoral decision. No background music. Generated French voice must be listened to and approved."
+}
