@@ -1,0 +1,127 @@
+name: World-Vision — Vivienne C5 without sentence-reset micro-pauses
+
+on:
+  push:
+    branches: [improve/worldvision-vivienne-impact-c4-natural-flow-2026-11-14]
+    paths:
+      - '.github/workflows/worldvision-vivienne-c5-linked.yml'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_c5_linked.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/vivienne_c5_linked_brief.json'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/test_vivienne_c5_linked.py'
+      - 'worldhealth-vision-v2/services/media-renderer/nextgen/vivienne-c5-listen.html'
+  workflow_dispatch:
+
+permissions: {contents: read}
+concurrency:
+  group: wv-vivienne-c5-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Validate same Impact voice and punctuation-free target link
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python -m unittest discover -v -s nextgen -p test_vivienne_c5_linked.py
+          python -m py_compile scripts/worldvision_vivienne_c5_linked.py
+
+  auditions:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    strategy:
+      fail-fast: false
+      matrix: {variant: [c5_linked, c5_broadcast]}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install 'edge-tts>=7.2,<8'
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: One single full uninterrupted Vivienne voice take
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python scripts/worldvision_vivienne_c5_linked.py \
+            --variant ${{ matrix.variant }} \
+            --brief nextgen/vivienne_c5_linked_brief.json \
+            --out output/nextgen/vivienne-c5/${{ matrix.variant }}
+      - name: Verify exact model and word boundaries without splices
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          k='${{ matrix.variant }}'
+          p=Path('output/nextgen/vivienne-c5')/k
+          report=json.loads((p/(k+'-report.json')).read_text())
+          assert report['voice']=='fr-FR-VivienneMultilingualNeural'
+          assert report['same_persona_and_model_as_approved_impact_C']
+          assert report['no_audio_splices'] and report['no_silence_cuts']
+          assert not report['rights_verified']
+          assert (p/(k+'-raw-service.mp3')).stat().st_size>40000
+          assert (p/(k+'-review-only.mp3')).stat().st_size>40000
+          assert len(report['target_diagnostics'])>=2
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vivienne-c5-${{ matrix.variant }}
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/vivienne-c5/${{ matrix.variant }}/*-raw-service.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/vivienne-c5/${{ matrix.variant }}/*-review-only.mp3
+            worldhealth-vision-v2/services/media-renderer/output/nextgen/vivienne-c5/${{ matrix.variant }}/*-report.json
+          retention-days: 21
+
+  publish:
+    needs: auditions
+    runs-on: ubuntu-latest
+    permissions: {contents: write}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: vivienne-c5-*
+          merge-multiple: true
+          path: /tmp/wv-c5
+      - name: Publish true C5 audition files to versioned static preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for id in c5_linked c5_broadcast; do
+            test -s "/tmp/wv-c5/$id-review-only.mp3"
+            test -s "/tmp/wv-c5/$id-raw-service.mp3"
+            test -s "/tmp/wv-c5/$id-report.json"
+          done
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/worldvision-c5static
+          cd /tmp/worldvision-c5static
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for retry in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            mkdir -p media-lab/nextgen/vivienne-c5-linked
+            cp /tmp/wv-c5/*.mp3 /tmp/wv-c5/*.json media-lab/nextgen/vivienne-c5-linked/
+            cp "$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/nextgen/vivienne-c5-listen.html" \
+              media-lab/nextgen/vivienne-c5-linked/index.html
+            git add media-lab/nextgen/vivienne-c5-linked
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "review(voice): same Vivienne C Impact, no punctuation after Mississippi or hôpital"
+            if git push origin HEAD:whv-media-studio-browser-preview; then success=1; break; fi
+            sleep "$retry"
+          done
+          test "$success" -eq 1
+          echo "Permanent player: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/nextgen/vivienne-c5-linked/index.html"

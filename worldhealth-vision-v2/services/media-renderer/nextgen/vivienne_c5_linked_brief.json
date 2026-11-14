@@ -1,0 +1,28 @@
+{
+  "id": "wv-vivienne-c5-linked-syllables",
+  "status": "AUDITION_ONLY",
+  "publication_authorized": false,
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "parent": "Vivienne C impact",
+  "brand": "official G0 light graphite approved",
+  "test_intent": "No punctuation immediately after Mississippi or hôpital; compare word-boundary gap with C4 variants.",
+  "source_fact_check": "US Coast Guard/New Orleans officials, AP 2026-11-13, 32 hospitalized and no critical injuries; investigation ongoing.",
+  "variants": [
+    {
+      "id": "c5_linked",
+      "label": "Vivienne C5.1 — sans rupture",
+      "rate": "+8%",
+      "pitch": "+0Hz",
+      "script": "Un bateau de croisière chavire à La Nouvelle-Orléans ! Le choc survient sur le Mississippi où un navire-citerne vient de le heurter alors qu'il est à quai. Des passagers tombent dans l'eau. Trente-deux personnes sont conduites à l'hôpital et aucune n'est dans un état critique, selon les autorités. Mais comment cette collision a-t-elle pu se produire ?",
+      "reason": "Mississippi où and hôpital et join words syntactically, no punctuation immediately after target"
+    },
+    {
+      "id": "c5_broadcast",
+      "label": "Vivienne C5.2 — accent média",
+      "rate": "+8%",
+      "pitch": "+0Hz",
+      "script": "Un navire-citerne frappe un bateau de croisière à quai à La Nouvelle-Orléans ! C'est sur le Mississippi que le bateau chavire et que des passagers finissent dans l'eau. Trente-deux personnes sont transportées à l'hôpital pour être soignées, sans qu'aucune soit dans un état critique. Comment un tel accident a-t-il pu se produire ?",
+      "reason": "Mississippi que and hôpital pour remove punctuation breaks while staying an uninterrupted Vivienne broadcast take"
+    }
+  ]
+}

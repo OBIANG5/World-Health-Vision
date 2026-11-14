@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>World-Vision · Vivienne C Impact : liaisons naturelles</title>
+<meta name="theme-color" content="#07192c">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07192c;color:#edf7ff;font:16px system-ui,-apple-system,sans-serif}
+main{max-width:720px;margin:auto;padding:22px 15px 52px}
+h1{font-size:clamp(25px,6vw,40px);line-height:1.16}
+header{padding-bottom:18px;border-bottom:1px solid #2b4a64}
+.eyebrow{letter-spacing:.12em;color:#98d3ea;font-size:12px;font-weight:750}
+.card{background:#10283e;border:1px solid #385b73;border-radius:16px;padding:18px;margin-top:17px}
+h2{font-size:21px;margin:6px 0}audio{width:100%;margin:14px 0;min-height:55px}
+button{background:#d6edf6;color:#0a2b44;border:0;border-radius:9px;min-height:40px;padding:7px 12px;font-weight:700;margin:3px 5px 5px 0;cursor:pointer}
+small,.muted{color:#adc4d5}p{line-height:1.55}
+details{margin-top:12px}a{color:#a8e7fd}
+.note{background:#142e40;border-left:3px solid #8ec8dc;padding:12px 15px}
+</style></head><body><main>
+<header><div class="eyebrow">WORLD-VISION · AUDIO LAB · VIVIENNE C</div>
+<h1>Deux nouvelles prises, sans coupure après les mots sensibles</h1>
+<p>Tu as retenu la voix <strong>C — Impact</strong>. Ici nous conservons exactement son modèle et sa vitesse, mais « Mississippi » et « hôpital » sont suivis d'autres mots sans ponctuation, pour tester une liaison plus naturelle.</p>
+</header>
+<section class="card" data-take="c5_linked">
+<div class="eyebrow">C5.1 · CONTINUITÉ</div>
+<h2>Impact naturel</h2>
+<small>Vivienne originale · +8 % · prise intégrale sans collage</small>
+<audio controls preload="metadata" src="c5_linked-review-only.mp3"></audio>
+<div><button data-target="mississippi">Écouter « Mississippi »</button><button data-target="hôpital">Écouter « hôpital »</button></div>
+<details><summary>Audio brut et données de prononciation</summary><p><a href="c5_linked-raw-service.mp3">Écouter le brut</a> · <a href="c5_linked-report.json">Rapport des pauses</a></p></details>
+</section>
+<section class="card" data-take="c5_broadcast">
+<div class="eyebrow">C5.2 · MÉDIA</div>
+<h2>Plus incisive, toujours Vivienne</h2>
+<small>Vivienne originale · +8 % · prise intégrale sans collage</small>
+<audio controls preload="metadata" src="c5_broadcast-review-only.mp3"></audio>
+<div><button data-target="mississippi">Écouter « Mississippi »</button><button data-target="hôpital">Écouter « hôpital »</button></div>
+<details><summary>Audio brut et données de prononciation</summary><p><a href="c5_broadcast-raw-service.mp3">Écouter le brut</a> · <a href="c5_broadcast-report.json">Rapport des pauses</a></p></details>
+</section>
+<p class="note">Les boutons de comparaison commencent environ une seconde avant le mot indiqué, puis la lecture continue naturellement. Aucune coupe n'est pratiquée dans l'enregistrement. Il faut juger le son à l'oreille : les métriques ne certifient pas une voix humaine.</p>
+<p class="muted">Toujours la même signature World-Vision officielle sur fond acier clair pour les futures vidéos. Les auditions ne sont pas autorisées à une diffusion commerciale et aucun nouveau reportage n'est publié.</p>
+<p><a href="../vivienne-c4-impact/index.html">Comparer également les quatre premières versions C4</a></p>
+</main>
+<script>
+document.querySelectorAll("section[data-take]").forEach(async section=>{
+ const id=section.dataset.take;
+ let data;
+ try{
+  const response=await fetch(id+"-report.json");
+  if(!response.ok)throw Error("rapport");
+  data=await response.json();
+ }catch{return}
+ const audio=section.querySelector("audio");
+ section.querySelectorAll("button[data-target]").forEach(button=>{
+  button.addEventListener("click",()=>{
+   const word=button.dataset.target.toLocaleLowerCase("fr");
+   const target=data.target_diagnostics.find(
+    t=>t.target.toLocaleLowerCase("fr").includes(word));
+   if(!target)return;
+   audio.currentTime=Math.max(0,target.word_start-1.0);
+   audio.play().catch(()=>{});
+  });
+ });
+});
+</script>
+</body></html>
