@@ -24,6 +24,15 @@ const clamp={extrapolateLeft:"clamp",extrapolateRight:"clamp"} as const;
 const ease=Easing.bezier(.22,1,.36,1);
 const P=(n:number)=>Math.max(0,Math.min(1,n));
 const brand=staticFile("brand/world-vision-official.png");
+const manrope=staticFile("fonts/Manrope-variable.ttf");
+const BrandType:React.FC=()=><style>{`
+@font-face {
+  font-family: "WorldVision-Manrope";
+  src: url("${manrope}") format("truetype");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: block;
+}`}</style>;
 const rootAssets="episodes/summit-2026/";
 
 const SCENE_PLAN=[
@@ -65,7 +74,7 @@ const scale=(f:number,duration:number,from=1,to=1.085)=>
 
 const Base:React.FC<{children:React.ReactNode;subtle?:boolean}> =({children,subtle=false})=><AbsoluteFill style={{
   color:S.white,background:subtle?S.deep:S.ink,
-  fontFamily:"Inter,Arial,Helvetica,sans-serif",overflow:"hidden"}}>
+  fontFamily:"WorldVision-Manrope, sans-serif",overflow:"hidden"}}>
   <AbsoluteFill style={{background:"radial-gradient(ellipse at 58% 33%,rgba(24,95,153,.35),transparent 57%),linear-gradient(160deg,rgba(4,39,84,.12),transparent 56%,rgba(2,7,20,.56))"}}/>
   <AbsoluteFill style={{opacity:.05,backgroundImage:"repeating-linear-gradient(0deg,transparent,transparent 42px,rgba(213,246,255,.22) 43px)"}}/>
   {children}
@@ -285,7 +294,8 @@ const CaptionOverlay:React.FC=()=>{
 
 export type SummitProps={voiceFilename?:string|null};
 export const WorldVisionSummit2026:React.FC<SummitProps>=({voiceFilename})=>{
- return <AbsoluteFill style={{background:S.ink}}>
+ return <AbsoluteFill style={{background:S.ink,fontFamily:"WorldVision-Manrope, sans-serif"}}>
+   <BrandType/>
    {SCENE_PLAN.map(scene=><Sequence key={scene.id} name={scene.id}
      from={Math.round(scene.start*SUMMIT_FPS)}
      durationInFrames={Math.round((scene.end-scene.start)*SUMMIT_FPS)}>
@@ -297,7 +307,8 @@ export const WorldVisionSummit2026:React.FC<SummitProps>=({voiceFilename})=>{
       scene.id==="agenda"?<Agenda/>:
       scene.id==="uncertainty"?<Uncertainty/>:<Outro/>}
    </Sequence>)}
-   <CaptionOverlay/>
+   {/* Captions are applied only when an approved voice exists. Every standalone clip remains a clean plate. */}
+   {voiceFilename&&<CaptionOverlay/>}
    {voiceFilename&&<Audio src={staticFile(voiceFilename)} volume={1}/>}
 
  </AbsoluteFill>;
