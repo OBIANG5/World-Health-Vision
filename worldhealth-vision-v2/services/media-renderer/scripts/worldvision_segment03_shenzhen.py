@@ -70,7 +70,7 @@ def fonttext(base,text,x,y,font,color,spacing=0):
         for ch in text:
             d.text((p,y),ch,font=font,fill=tuple(int(a) for a in color))
             p+=d.textlength(ch,font=font)+spacing
-    return np.asarray(im)
+    return np.array(im, dtype=np.uint8, copy=True)
 
 def text_layer(title,subtitle,badge):
     # Full-frame transparent overlay. Pre-rendered once for smooth animation.
