@@ -115,7 +115,7 @@ def scene_movie(src,scene,work,mask):
  # crop the upper 70% before compositing, not by hiding names with fake stickers.
  source_pre="[0:v]fps=30"+(",crop=iw:ih*0.70:0:0" if scene["id"]=="01" else "")+",split=2[a][b];"
  filt=(
-  source_pre
+  source_pre+
   "[a]scale=1080:1920:force_original_aspect_ratio=increase,"
   "crop=1080:1920,gblur=sigma=34,"
   "eq=brightness=-0.17:contrast=1.10:saturation=0.67[bg];"
