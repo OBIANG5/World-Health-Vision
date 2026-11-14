@@ -16,12 +16,20 @@ def e(x):
 def s(x):
  x=max(0.,min(1.,x));return x*x*(3-2*x)
 def gate(t,a,b,f=.25):return s((t-a)/f)*(1-s((t-b)/f))
-FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+# The actual glyphs come from Manrope Variable (OFL 1.1); supplied to --font
+# by the reproducible rendering workflow, and pinned by SHA256. Never fall back
+# silently to a generic workstation font.
+FONT_PATH=None
 CACHE={}
 def font(z,bold=True):
- p='/usr/share/fonts/truetype/dejavu/DejaVuSans'+('-Bold' if bold else '')+'.ttf'
- k=(z,bold)
- if k not in CACHE:CACHE[k]=ImageFont.truetype(p,z)
+ if FONT_PATH is None:
+  raise RuntimeError('Pinned Manrope variable font was not configured')
+ weight=800 if bold else 500
+ k=(z,weight)
+ if k not in CACHE:
+  face=ImageFont.truetype(str(FONT_PATH),z)
+  face.set_variation_by_axes([weight])
+  CACHE[k]=face
  return CACHE[k]
 def tx(im,txt,x,y,z,color=WHITE,opacity=1,offset=0,bold=True):
  if opacity<=0:return
@@ -61,7 +69,7 @@ def frame(t,logo,photo):
  im=BASE.copy();d=ImageDraw.Draw(im,'RGBA')
  d.ellipse((719,1370,1370,2021),outline=(76,221,248,28),width=2)
  d.ellipse((781,1430,1307,1956),outline=(76,221,248,22),width=2)
- d.line((79,1741,79+int(920*t/7.9),1741),fill=(*CYAN,210),width=4)
+ # No player-like progress bar or production-only overlays are burnt in.
  # A: arms reduction, 0-3.2s
  p=gate(t,-.13,3.23,.32)
  if p>.001:
@@ -107,7 +115,7 @@ def frame(t,logo,photo):
   q=e((t-3.68)/.6)*p
   tx(im,'WASHINGTON  /  MOSCOU',80,1323,39,CYAN,q,int((1-q)*35))
   tx(im,'UN ACCORD SUR LES ARMES STRATÉGIQUES',82,1409,22,ICE,p,bold=False)
-  tx(im,'Photo : Chuck Kennedy / Maison-Blanche (2010)',82,1644,20,MUTED,p,bold=False)
+  # Archive photo credit stays in the machine-readable manifest and publication caption.
  # C: expiration, 5.9-7.9
  p=gate(t,5.88,8.09,.33)
  if p>.001:
@@ -131,20 +139,22 @@ def frame(t,logo,photo):
  im.alpha_composite(logo,(86+(112-logo.width)//2,82+(76-logo.height)//2))
  tx(im,'WORLD–VISION',233,90,35,WHITE)
  tx(im,'VOIR LE MONDE, LE COMPRENDRE.',233,144,15,ICE,bold=False)
- tx(im,'GÉOPOLITIQUE / DOSSIER 001',80,248,21,MUTED,bold=False)
- tx(im,'S04 / 07,9 S',799,248,18,ICE,bold=False)
- tx(im,'ARCHIVES & MOTION DESIGN',81,1784,18,MUTED,bold=False)
- tx(im,'WORLD–VISION · 14 NOV. 2026',81,1831,17,MUTED,bold=False)
- tx(im,'PRÉVISUALISATION · SANS VOIX',81,1875,14,MUTED,bold=False)
+ # Only the programme identity and editorial storytelling may appear on-screen.
+ # The segment ID, pipeline status, credits, and audio notes live in JSON, not video frames.
+ tx(im,'DIPLOMATIE INTERNATIONALE',81,255,23,ICE,bold=False)
  return im.convert('RGB')
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def main():
  ap=argparse.ArgumentParser()
  ap.add_argument('--logo',type=Path,required=True)
  ap.add_argument('--photo',type=Path,required=True)
+ ap.add_argument('--font',type=Path,required=True,help='Pinned Manrope variable TTF')
  ap.add_argument('--output',type=Path,required=True)
  a=ap.parse_args()
- assert a.logo.is_file() and a.photo.is_file(),"Original assets required, no placeholder allowed"
+ assert a.logo.is_file() and a.photo.is_file() and a.font.is_file(),"Original assets and Manrope font required; no placeholder allowed"
+ global FONT_PATH
+ FONT_PATH=a.font
+ assert sha(a.font)=='d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40','Font digest mismatch; refusing unapproved typography'
  a.output.parent.mkdir(parents=True,exist_ok=True)
  lg=official_logo(a.logo);ph=source_photo(a.photo)
  cmd=['ffmpeg','-y','-hide_banner','-loglevel','error','-f','rawvideo','-pixel_format','rgb24','-video_size',
@@ -170,11 +180,15 @@ def main():
  'seconds':7.9,'frames':237,'fps':30,'pixels':[1080,1920],
  'sha256':sha(a.output),'bytes':a.output.stat().st_size,
  'photo_sha256':sha(a.photo),'logo_sha256':sha(a.logo),
+ 'font_family':'Manrope Variable (OFL-1.1)','font_sha256':sha(a.font),
+ 'clean_plate':True,'embedded_preview_labels':False,'technical_metadata_on_screen':False,
  'photo':'Chuck Kennedy/White House 2010 signing, public domain, historic archive NOT 2026',
  'photo_source':'https://commons.wikimedia.org/wiki/File:Obama_and_Medvedev_sign_New_START.jpg',
  'fact':'New START expired 2026-02-05',
  'fact_source':'https://www.diplomatie.gouv.fr/en/presse-et-ressources/decouvrir-et-informer/actualites/expiration-du-traite-new-start',
- 'audio':'NONE — final voice and subtitles NOT aligned'}
+ 'audio':'NONE — final voice and subtitles NOT aligned',
+ 'archive_credit_for_caption':'Photo : Chuck Kennedy / The White House (2010). Original archive, not footage of the 2026 summit.',
+ 'release_notice':'Use this clean plate as the only source for assembly; never reuse V1/V2 in the final edit.'}
  a.output.with_suffix('.json').write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n')
  print(json.dumps(record,ensure_ascii=False))
 if __name__=='__main__':main()
