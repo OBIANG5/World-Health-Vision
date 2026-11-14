@@ -40,4 +40,17 @@ Une branche expérimentale distincte `refine/worldvision-shenzhen-vivienne-v4-ca
 5. Le nouvel aperçu doit être **écouté intégralement et examiné artistiquement par une personne**, indépendamment de toute QA technique.
 6. Pas de version finale publiée avant vérification factuelle et approbation utilisateur.
 
-**Statut initial de ce document :** exécution du contrôle des 25 segments engagée sur GitHub. Ce document est un registre de continuité, et non une déclaration de qualité artistique ou d'export final.
+## Résultat effectif après exécution
+
+- GitHub Actions : [#43598690740](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43598690740) — **success** après révision d'une phrase refusée car trop large.
+- Nouvelle vidéo 33,7 s (1011 images) : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/semantic-phrase-audit/33p7s-vivienne-semantic-phrase-audit.mp4
+- MP4 SHA256 : `2da048ad9970e3e6aadf721dcdc32669fe99aa5a7ef5a2870699cad466a86ddd` ; 13 706 800 octets.
+- Planche de comparaison réelle : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/semantic-phrase-audit/frames/contact-sheet.jpg
+- Métadonnées exactes : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/semantic-phrase-audit/report.json
+- **25 sous-titres non superposés**, tous testés par la vérification indépendante `quality/caption_nonoverlap_gate.py`, 86 événements vocaux, source de parole non altérée, police DM Sans 78px, largeur ≤760px, deux lignes maximum, fin des sous-titres à 30,7 secondes.
+- Durée de l'image, voix, globe et cadence **inchangées** par rapport au MP4 V3 ; seule la composition des sous-titres diffère.
+- Statut : **TECHNIQUE RÉUSSIE / VALIDATION ARTISTIQUE ET LICENCE COMMERCIALE DE LA VOIX EN ATTENTE**. Ne pas présenter comme master publiable.
+
+La version V5 concurrente est restée en archive pour comparaison; ses métadonnées montraient encore des chevauchements de quelques centièmes de seconde. L'expérience indépendante ne doit pas écraser V3/V5.
+
+**Statut initial de ce document :** exécution des 25 segments terminée avec succès sur GitHub. Ce document est un registre de continuité, et non une déclaration de qualité artistique ou d'export final.
