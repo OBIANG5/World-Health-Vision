@@ -118,26 +118,31 @@ def make_map_photo(photo,paint,geo):
     paint.text(d,"BALATO",76,1315,128,WHITE,True)
     paint.text(d,"PRÈS DE SIGUIRI",80,1453,45,GOLD,False)
     return im
-def show_document(background,document,paint,eyebrow,heading,sub=None,lower=False):
+def show_document(background,document,paint,eyebrow,heading,sub=None,lower=False,mode="front"):
     im=tinted(darken(background,.74),.24)
-    # The real government PDF page: not a fabricated arrest/riot scene.
-    # Crop title and official crest so it reads on a phone; preserve photo
-    # traceable to https://gouvernement.gov.gn/...
+    # Show different authentic sections, not the same entire white page three times.
     page=Image.open(document).convert("RGB")
-    page=ImageOps.fit(page,(800,1110),Image.Resampling.LANCZOS,centering=(.5,.29 if not lower else .62))
-    page=ImageEnhance.Contrast(page).enhance(1.15)
-    shadow=Image.new("RGBA",(840,1150),(0,0,0,0))
+    if mode=="front":
+        doc_w,doc_h,center,x,y=800,1060,(.5,.30),140,270
+    elif mode=="casualties":
+        doc_w,doc_h,center,x,y=890,575,(.5,.69),95,580
+    elif mode=="investigation":
+        doc_w,doc_h,center,x,y=880,770,(.5,.64),100,500
+    else:raise RuntimeError("Unknown official-document mode "+mode)
+    crop=ImageOps.fit(page,(doc_w,doc_h),Image.Resampling.LANCZOS,centering=center)
+    crop=ImageEnhance.Contrast(crop).enhance(1.12)
+    shadow=Image.new("RGBA",(doc_w+34,doc_h+34),(0,0,0,0))
     d=ImageDraw.Draw(shadow)
-    d.rounded_rectangle((10,10,830,1140),radius=18,fill=(0,0,0,140))
-    im.paste(shadow,(120,240),shadow)
-    im.paste(page,(140,260))
-    im=darken(im,.42)
+    d.rounded_rectangle((12,12,doc_w+22,doc_h+22),radius=14,fill=(0,0,0,175))
+    im.paste(shadow,(x-17,y-17),shadow)
+    im.paste(crop,(x,y))
+    im=darken(im,.45)
     d=ImageDraw.Draw(im)
-    if eyebrow:paint.text(d,eyebrow,75,200,28,MUTED,False)
-    y=1412
+    if eyebrow:paint.text(d,eyebrow,75,222,28,MUTED,False)
+    y0=1375
     for i,line in enumerate(heading):
-        paint.text(d,line,76,y+i*118,94,GOLD if i==len(heading)-1 else WHITE,True)
-    if sub:paint.text(d,sub,78,1718,28,MUTED,False)
+        paint.text(d,line,76,y0+i*115,94,GOLD if i==len(heading)-1 else WHITE,True)
+    if sub:paint.text(d,sub,78,1698,28,MUTED,False)
     return im
 def new_scene(index,assets,paint,geo):
     base=assets
@@ -162,10 +167,10 @@ def new_scene(index,assets,paint,geo):
     if index==7:
         return show_document(image_fitted(base/"04.jpg",(.44,.5),.74),
              base/"official_statement.jpg",paint,"BILAN OFFICIEL",
-             ["IDENTITÉS","NON IDENTIFIÉES"],lower=True)
+             ["IDENTITÉS","NON IDENTIFIÉES"],lower=True,mode="casualties")
     if index==8:
-        return title(image_fitted(base/"03.jpg",(.44,.43),.8),paint,
-              "EN GUINÉE",["POURQUOI","UNE TELLE TENSION ?"],size=99)
+        return title(image_fitted(base/"02.jpg",(.57,.47),.88),paint,
+              "LA QUESTION RESTE ENTIÈRE",["POURQUOI","UNE TELLE TENSION ?"],size=99)
     if index==9:
         return title(image_fitted(base/"05.jpg",(.44,.47),.82),paint,
               "LES CONSÉQUENCES DÉNONCÉES",["DES TERRES","DÉGRADÉES."],size=103)
@@ -176,9 +181,9 @@ def new_scene(index,assets,paint,geo):
         return title(image_fitted(base/"03.jpg",(.43,.31),1.02),paint,
               "DERRIÈRE LA RUÉE VERS L'OR",["DES FAMILLES","EN DÉPENDENT."],size=103)
     if index==13:
-        return show_document(image_fitted(base/"02.jpg",(.65,.44),.8),
-               base/"official_statement.jpg",paint,"UNE QUESTION SANS RÉPONSE",
-               ["QUI A TIRÉ","LE PREMIER ?"])
+        return show_document(image_fitted(base/"01.jpg",(.45,.54),.70),
+               base/"official_statement_page2.jpg",paint,"UNE QUESTION SANS RÉPONSE",
+               ["QUI A TIRÉ","LE PREMIER ?"],mode="investigation")
     if index==14:
         return title(image_fitted(base/"04.jpg",(.51,.52),.78),paint,
               "BALATO · GUINÉE",["UNE ENQUÊTE","EST OUVERTE."],size=104)
@@ -278,6 +283,7 @@ def main():
           "modified":"Cropped, adjusted color, editorial typography and slow camera push; not footage from 2026"})
     statement={
       "file":"official_statement.jpg","sha256":sha(a.assets/"official_statement.jpg"),
+      "file_page2":"official_statement_page2.jpg","sha256_page2":sha(a.assets/"official_statement_page2.jpg"),
       "publisher":"Ministère de l’Administration du Territoire et de la Décentralisation, République de Guinée",
       "publication_date":"2026-11-12",
       "url":"https://gouvernement.gov.gn/wp-content/uploads/2026/11/COMMUNIQUE-NA%C2%B0-008-MATD-CAB-2026-DU-GOUVERNEMENT-RELATIF-AUX-EVENEMENTS-SURVENUS-LE-11-NOVEMBRE-2026-A-BALATO-PREFECTURE-DE-KINTINIAN-DU-12112026.pdf",
