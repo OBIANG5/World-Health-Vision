@@ -1,0 +1,123 @@
+name: World-Vision Editorial V2 — Vivienne Shenzhen narration audition
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [rebuild/editorial-v2-quality-gates]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_vivienne_shenzhen_v2.py'
+      - 'worldhealth-vision-v2/docs/media/VOICE_REFERENCE.md'
+      - '.github/workflows/whv-editorial-v2-vivienne-voice.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worldvision-v2-vivienne-single-continuous
+  cancel-in-progress: true
+
+jobs:
+  audition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout editorial script and canonical voice selection
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install neural audition client and FFmpeg
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet 'edge-tts>=7.0,<8.0'
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Verify voice availability and generate ONE uninterrupted French reading
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_vivienne_shenzhen_v2.py
+          python - <<'PY'
+          import asyncio,edge_tts
+          async def main():
+              voices={v['ShortName'] for v in await edge_tts.list_voices()}
+              assert 'fr-FR-VivienneMultilingualNeural' in voices, 'Chosen user voice unavailable'
+              print('Verified live voice fr-FR-VivienneMultilingualNeural')
+          asyncio.run(main())
+          PY
+          python scripts/worldvision_vivienne_shenzhen_v2.py
+      - name: Check natural duration, original text, no final slogan, no forced gaps
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          D=output/editorial-v2/voice-vivienne
+          python - <<'PY'
+          import json,hashlib,subprocess
+          from pathlib import Path
+          d=Path('output/editorial-v2/voice-vivienne')
+          p=json.loads((d/'vivienne-shenzhen-v2-manifest.json').read_text())
+          assert p['voice']=='fr-FR-VivienneMultilingualNeural'
+          assert p['rate']=='+11%' and p['pitch']=='+0Hz'
+          assert p['verbatim_except_silent_outro']
+          assert not p['outro_read_aloud']
+          assert 'World-Vision. Voir le monde, le comprendre.' not in p['spoken_script']
+          assert p['continuous_single_utterance'] and not p['audio_padded_per_scene']
+          assert not p['atempo_used'] and not p['silence_inserted_artificially']
+          assert not p['this_take_approved_by_user'] and not p['publishing_rights_cleared']
+          assert p['source_type']=='edge-tts-noncommercial-audition'
+          assert 20 < p['audio_duration_sec'] < 55, 'Audio duration deserves manual investigation'
+          assert len(p['word_boundaries'])>=50, 'Word alignment missing'
+          wav=d/'vivienne-shenzhen-v2-continuous-review.wav'
+          mp3=d/'vivienne-shenzhen-v2-continuous-review.mp3'
+          sample=d/'vivienne-shenzhen-v2-first-12s.mp3'
+          assert hashlib.sha256(wav.read_bytes()).hexdigest()==p['wav_sha256']
+          assert hashlib.sha256(mp3.read_bytes()).hexdigest()==p['mp3_sha256']
+          assert sample.stat().st_size>50000
+          probe=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-show_streams','-of','json',str(wav)]))
+          assert abs(float(probe['format']['duration'])-p['audio_duration_sec'])<.03
+          print('PREVIEW QA PASS (not artistic approval). Duration=',p['audio_duration_sec'])
+          print('Fits V2 39.1s narration window:',p['fits_visual_script_without_timestretch'])
+          print('Non-editorial long pauses:',len(p['long_noneditorial_pauses']))
+          PY
+      - name: Publish listenable Vivienne WAV MP3 and timing evidence without overwriting other projects
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SRC="$GITHUB_WORKSPACE/worldhealth-vision-v2/services/media-renderer/output/editorial-v2/voice-vivienne"
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/worldvision-vivienne-audition
+          cd /tmp/worldvision-vivienne-audition
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          success=0
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet --depth 1 origin whv-media-studio-browser-preview
+            git reset --hard FETCH_HEAD
+            OUT=media-lab/summit-2026/editorial-v2/voice-vivienne
+            mkdir -p "$OUT"
+            cp "$SRC/vivienne-shenzhen-v2-continuous-review.wav" \
+               "$SRC/vivienne-shenzhen-v2-continuous-review.mp3" \
+               "$SRC/vivienne-shenzhen-v2-first-12s.mp3" \
+               "$SRC/vivienne-shenzhen-v2-manifest.json" "$OUT/"
+            git add "$OUT"
+            if git diff --cached --quiet; then success=1; break; fi
+            git commit -m "review(audio): Vivienne preferred 1-take Shenzhen VO, no spoken end-card or scene padding"
+            if git push origin HEAD:whv-media-studio-browser-preview; then
+              success=1
+              break
+            fi
+            echo "Shared preview updated by another render; retrying ($attempt)"
+            sleep "$attempt"
+          done
+          test "$success" = 1
+          echo "Full Vivienne audition: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/voice-vivienne/vivienne-shenzhen-v2-continuous-review.mp3"
+          echo "First 12s: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/voice-vivienne/vivienne-shenzhen-v2-first-12s.mp3"
