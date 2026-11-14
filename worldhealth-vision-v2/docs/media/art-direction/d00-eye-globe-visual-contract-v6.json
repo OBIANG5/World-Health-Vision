@@ -1,0 +1,135 @@
+{
+  "schema_version": "world-vision-eye-globe-art-contract-v2",
+  "date": "2026-11-13",
+  "stage": "G1",
+  "frame_id": "D00",
+  "iteration": "v6",
+  "status": "image_generated_waiting_for_explicit_review",
+  "human_feedback_last_approved": "G0 logo only; visual D00 not yet approved",
+  "sources": {
+    "source_image_v5": {
+      "filename": "la_terre_iris_lumineux_dans_l_espace.png",
+      "sha256": "8091826a484d090f624b70c5b3169a8bf4775ca5b8b05c35d93527c784728463",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "user_feedback": "Très beau mais blanc trop gris, atmosphère moins mise en valeur que les deux arcs et frontières pas assez tracées",
+      "binary_in_github": false
+    },
+    "current_image_v6": {
+      "filename": "a_crisp_ultra_detailed_high_contrast_digital_ill.png",
+      "sha256": "8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2",
+      "dimensions": [
+        1086,
+        1448
+      ],
+      "bytes": 2296765,
+      "binary_in_github": false,
+      "reviewed": false
+    },
+    "official_logo": {
+      "repo_path": "frontend/web/src/assets/logo.png",
+      "git_blob_sha": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+      "status": "approved_official_current",
+      "do_not_modify": true
+    }
+  },
+  "requirements": {
+    "eye": {
+      "shape": "two_open_lid_arcs",
+      "arcs": 2,
+      "white_fill": "#FFFFFF",
+      "white_fill_region": "between_earth_edge_and_eye_lid_arcs_only",
+      "corners": "beyond_frame_invisible",
+      "arc_brightness_priority": "lower_than_earth_atmosphere",
+      "not_circle": true
+    },
+    "earth": {
+      "size": "keep_previous_approved_proportions",
+      "day_earth": true,
+      "cloud_cover": "slightly_reduced",
+      "artificial_city_lights": false,
+      "terrain": "physically_plausible_satellite_like",
+      "country_boundaries": "readable_and_precise_using_real_GIS_not_generated_guess",
+      "priority_regions": [
+        "Sahara",
+        "Sahel",
+        "Africa",
+        "all_visible_countries"
+      ]
+    },
+    "atmosphere": {
+      "render": "bright_cyan_blue_limb_light_scattering",
+      "priority": "higher_visual_salience_than_eye_arcs",
+      "note": "cinematic atmosphere, not a literal image of the ozone layer"
+    },
+    "background": {
+      "color": "deep_space_navy",
+      "stars": "few_small_subtle",
+      "sun": false,
+      "clouds_outside_earth": false,
+      "extra_glowing_rings": false
+    },
+    "future_output": {
+      "format": "9:16",
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "brand_logo_corner_placement": "candidate_top_left_not_approved"
+    }
+  },
+  "future_animation": {
+    "proposed_story_driven": true,
+    "input_contract": [
+      "story_id",
+      "mode",
+      "target.latitude",
+      "target.longitude",
+      "target.country_iso3",
+      "target_name",
+      "source_provenance"
+    ],
+    "modes": [
+      "single_location",
+      "related_locations",
+      "global_overview",
+      "no_specific_geography"
+    ],
+    "single_location_default": true,
+    "camera_behavior": "globe_rotates_to_target_country_after_G1_approval_without_forcing_multiple_countries",
+    "implementation_candidates": [
+      "TypeScript React Remotion",
+      "Three.js WebGL GLSL",
+      "Blender Python",
+      "GeoJSON source data",
+      "FFmpeg"
+    ],
+    "safeguards": [
+      "verify_coordinates_and_borders",
+      "no_fabricated_news_video",
+      "no_full_video_before_human_component_approval"
+    ],
+    "next_steps": [
+      "approve_D00_still",
+      "render_deterministic_9x16_D00",
+      "approve_deterministic_still",
+      "develop_D01_targeting_and_camera_tests",
+      "prototype_3_to_6_seconds",
+      "approve_microclip",
+      "D02_D03_D04_D05_staged_storyboard",
+      "three_voice_auditions",
+      "word_level_alignment",
+      "preview_and_QA",
+      "master_and_channel_specific_exports"
+    ]
+  },
+  "pending_goals": [
+    "logo_corner_safe_zone_comparison",
+    "three_french_voice_samples_comparison",
+    "montage_rushes_screen_dressing_SRT_segmented_render_skills",
+    "quality_validation_before_channel_publication"
+  ],
+  "documentation": "../AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md",
+  "confidence_note": "Artwork may depict non-geospatial generated boundaries; the future production engine must use validated border polygons."
+}

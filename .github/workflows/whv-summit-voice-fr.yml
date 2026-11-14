@@ -1,0 +1,93 @@
+name: World-Vision 001 — French documentary narration 43s
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/world-vision-media-studio]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_voice_fr.py'
+      - '.github/workflows/whv-summit-voice-fr.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worldvision-voice-fr
+  cancel-in-progress: true
+
+jobs:
+  voice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out approved editorial script
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install trusted TTS client and FFmpeg
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet 'edge-tts>=7.1,<9'
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Synthesize exact 7-scene French script with neural speech and word timing
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_voice_fr.py
+          python scripts/worldvision_voice_fr.py
+      - name: Build mobile listenable MP3 and audit real 43-second PCM master source
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          F=output/summit-2026/voice/worldvision-voice-fr-43s-candidate.wav
+          ffmpeg -y -v error -i "$F" -codec:a libmp3lame -b:a 192k \
+            output/summit-2026/voice/worldvision-voice-fr-43s-candidate.mp3
+          python - <<'PY'
+          import json,hashlib,subprocess
+          from pathlib import Path
+          p=Path('output/summit-2026/voice')
+          data=json.loads((p/'worldvision-voice-fr-43s-candidate.json').read_text())
+          wav=p/'worldvision-voice-fr-43s-candidate.wav'
+          mp3=p/'worldvision-voice-fr-43s-candidate.mp3'
+          assert data['approved_script_unchanged'] and not data['published'] and not data['approved_by_user']
+          assert len(data['segments'])==7
+          assert mp3.stat().st_size>350000
+          assert data['bytes']>4000000
+          meta=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-show_streams','-of','json',str(wav)]))
+          assert abs(float(meta['format']['duration'])-43.)<.035
+          assert all(z['codec_type']=='audio' for z in meta['streams'])
+          assert len(data['word_boundaries'])>50
+          print('VOICE QA PASSED',data['voice'],len(data['word_boundaries']),'word boundaries, 43s')
+          PY
+      - name: Archive neural narration and machine timing without corrupting visual clean plates
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-voice
+          SRC=worldhealth-vision-v2/services/media-renderer/output/summit-2026/voice
+          OUT=/tmp/wv-voice/media-lab/summit-2026/voice
+          mkdir -p "$OUT"
+          cp "$SRC/worldvision-voice-fr-43s-candidate.wav" "$OUT/"
+          cp "$SRC/worldvision-voice-fr-43s-candidate.mp3" "$OUT/"
+          cp "$SRC/worldvision-voice-fr-43s-candidate.json" "$OUT/"
+          cd /tmp/wv-voice
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/summit-2026/voice
+          if ! git diff --cached --quiet; then
+            git commit -m "preview(media): 43s French neural voice candidate exact script plus boundaries; not approved"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
+          echo "Listen: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/voice/worldvision-voice-fr-43s-candidate.mp3"

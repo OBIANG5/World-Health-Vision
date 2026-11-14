@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "story_id": "wv-cop31-un-risk-finance-2026-11-12",
+  "slug": "cop31-onu-financement-anticipation",
+  "title": "COP31 : l'ONU vise plus de 3 milliards de dollars pour anticiper les catastrophes",
+  "subtitle": "Une plateforme commune pour financer l'action avant les crises",
+  "category": "Climat & monde",
+  "country_name": "Monde",
+  "event_location": "Antalya, Türkiye",
+  "event_date": "2026-11-12",
+  "editorial_review_date": "2026-11-13",
+  "status": "source_reviewed_not_published",
+  "publication_consent": false,
+  "format": "9:16",
+  "target_fps": 30,
+  "target_width": 1080,
+  "target_height": 1920,
+  "verified_claims": [
+    {
+      "id": "claim-01",
+      "text": "Six agences des Nations unies ont lancé une plateforme commune à la COP31 à Antalya le 12 novembre 2026.",
+      "sources": [
+        "un-news",
+        "un-geneva"
+      ]
+    },
+    {
+      "id": "claim-02",
+      "text": "La plateforme vise à faciliter l'accès à plus de 3 milliards de dollars de financement des risques.",
+      "sources": [
+        "un-news",
+        "un-sdg"
+      ]
+    },
+    {
+      "id": "claim-03",
+      "text": "L'objectif annoncé est de protéger 75 millions de personnes et leurs moyens de subsistance d'ici 2030.",
+      "sources": [
+        "un-news",
+        "un-sdg"
+      ]
+    },
+    {
+      "id": "claim-04",
+      "text": "Le mécanisme doit contribuer à financer des mesures anticipées avant des catastrophes prévisibles.",
+      "sources": [
+        "un-news"
+      ]
+    },
+    {
+      "id": "claim-05",
+      "text": "Les 3 milliards correspondent à un objectif de financement, et non à une somme intégralement déjà versée.",
+      "sources": [
+        "un-news"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "un-news",
+      "name": "Nations unies — UN News",
+      "url": "https://news.un.org/feed/view/en/story/2026/11/1168794",
+      "type": "institution",
+      "scope": "international",
+      "is_primary": true,
+      "published_at": "2026-11-12"
+    },
+    {
+      "id": "un-geneva",
+      "name": "Nations unies — Genève",
+      "url": "https://www.ungeneva.org/en/news-media/news-list?page=0",
+      "type": "institution",
+      "scope": "international",
+      "is_primary": true,
+      "published_at": "2026-11-12"
+    },
+    {
+      "id": "un-sdg",
+      "name": "Nations unies — Développement durable",
+      "url": "https://www.un.org/sustainabledevelopment/",
+      "type": "institution",
+      "scope": "international",
+      "is_primary": true,
+      "published_at": "2026-11-12"
+    },
+    {
+      "id": "unfccc",
+      "name": "CCNUCC — À propos de la COP31",
+      "url": "https://unfccc.int/cop31/about",
+      "type": "institution",
+      "scope": "international",
+      "is_primary": true,
+      "published_at": "2026-11-09"
+    }
+  ],
+  "narration": "Les catastrophes arrivent vite. Mais l'aide financière, parfois trop tard. À la COP trente et un, six agences des Nations unies ont lancé une plateforme pour agir plus tôt. Leur objectif annoncé : rendre accessibles plus de trois milliards de dollars pour protéger soixante-quinze millions de personnes d'ici deux mille trente. Le principe : financer des mesures avant les inondations, les tempêtes ou les canicules. Attention : c'est un objectif de mobilisation, pas trois milliards de dollars déjà versés. World-Vision. Voir le monde, le comprendre.",
+  "voiceover_engine": "Piper fr_FR-siwis-medium; CC BY 4.0 training dataset; needs listening review",
+  "narration_disclosure": "Voix générée par IA",
+  "copy_tiktok": "🌍 COP31 : l'ONU annonce une nouvelle plateforme pour financer l'action avant les catastrophes. Objectif : plus de 3 milliards de dollars mobilisables et 75 millions de personnes mieux protégées d'ici 2030. ⚠️ Il s'agit d'un objectif annoncé, non d'une somme déjà versée. Sources : UN News (12/11/2026), UN Geneva, UNFCCC. #COP31 #Climat #ONU #WorldVision",
+  "copy_whatsapp": "*COP31 : agir avant les catastrophes ?* 🌍\n\nSix agences des Nations unies ont lancé le 12 novembre une plateforme visant à faciliter l'accès à *plus de 3 milliards de dollars* de financement des risques, pour protéger *75 millions de personnes d'ici 2030*.\n\n⚠️ *Objectif annoncé, pas argent déjà intégralement versé.*\n\n*Sources :* UN News (12/11/2026), UN Geneva, CCNUCC.\n_Voix générée par IA._",
+  "scenes": [
+    {
+      "id": "scene-01",
+      "label": "HOOK",
+      "headline": "ET SI L'AIDE ARRIVAIT AVANT ?",
+      "eyebrow": "CATASTROPHES · CLIMAT",
+      "subline": "Une nouvelle approche présentée à la COP31",
+      "visual": "hook_globe",
+      "claim_ids": []
+    },
+    {
+      "id": "scene-02",
+      "label": "ANNONCE",
+      "headline": "6 AGENCES DE L'ONU",
+      "eyebrow": "COP31 · ANTALYA",
+      "subline": "Une plateforme commune lancée le 12 novembre 2026",
+      "visual": "six_agencies",
+      "claim_ids": [
+        "claim-01"
+      ]
+    },
+    {
+      "id": "scene-03",
+      "label": "CHIFFRE CLÉ",
+      "headline": "+3 MILLIARDS $",
+      "eyebrow": "FINANCEMENT VISÉ",
+      "subline": "Des ressources à rendre accessibles avant la crise",
+      "visual": "money_goal",
+      "claim_ids": [
+        "claim-02"
+      ]
+    },
+    {
+      "id": "scene-04",
+      "label": "OBJECTIF 2030",
+      "headline": "75 MILLIONS",
+      "eyebrow": "PERSONNES À PROTÉGER",
+      "subline": "Un objectif annoncé d'ici 2030",
+      "visual": "people_goal",
+      "claim_ids": [
+        "claim-03"
+      ]
+    },
+    {
+      "id": "scene-05",
+      "label": "MÉCANISME",
+      "headline": "ANTICIPER. AGIR.",
+      "eyebrow": "AVANT LA CATASTROPHE",
+      "subline": "Alerte → financement → intervention",
+      "visual": "early_action",
+      "claim_ids": [
+        "claim-04"
+      ]
+    },
+    {
+      "id": "scene-06",
+      "label": "NUANCE",
+      "headline": "OBJECTIF ≠ ARGENT VERSÉ",
+      "eyebrow": "NE PAS CONFONDRE",
+      "subline": "La mobilisation de ces fonds reste à concrétiser",
+      "visual": "caveat",
+      "claim_ids": [
+        "claim-05"
+      ]
+    },
+    {
+      "id": "scene-07",
+      "label": "SOURCES",
+      "headline": "VOIR LE MONDE. LE COMPRENDRE.",
+      "eyebrow": "WORLD-VISION",
+      "subline": "Sources : Nations unies · CCNUCC",
+      "visual": "source_close",
+      "claim_ids": []
+    }
+  ],
+  "visual_assets": {
+    "type": "original_vector_motion_design",
+    "third_party_media": [],
+    "license": "Original World-Vision layout; no external photographs or stock footage",
+    "note": "Conceptual globe and data graphics, not purported photographic scenes from the COP31."
+  },
+  "risk_note": "A signed-off editorial test of an actual UN announcement; not a public post and not a substitute for final visual/audio review."
+}

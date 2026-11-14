@@ -1,0 +1,602 @@
+# World-Vision — journal de travail évolutif
+
+**Principe :** journal **append-only**. Ajouter une entrée par session ou incrément utile. **Ne pas effacer les entrées anciennes** au prochain chat. Chaque entrée distingue code, tests, déploiement et approbation humaine.
+
+## 2026-11-13, 15 h 26 CET — alerte conversation expirée, état réel et correction du format
+
+**Demande utilisateur explicite :** risque de perte du chat, priorité à la documentation GitHub ; préciser le jalon présent et l'état réel du comparatif du PDF de 137 pages, du code de montage, de Google Flow/Gemini, ElevenLabs, n8n et Make. **Rappel majeur :** la vidéo TikTok d'inspiration présentait plusieurs pays, mais World-Vision ne doit **pas** imposer plusieurs pays par vidéo.
+
+**Constat vérifié dans les sources de code GitHub :**
+- `GeoGlobe.tsx` : projection orthographique Canvas avec données pays GeoJSON ; maquettes fixes. Aucun moteur photo-satellite ni animation Remotion du nouveau globe dans ce module.
+- `GlobeDirection.tsx` : six poses D00–D05 et notes par image, démonstration d'un **seul pays** (Turquie / Antalya).
+- `WorldVisionFirstReport.tsx`, `WorldVisionShort.tsx` : compositions Remotion historiques ; le premier MP4 est rejeté artistiquement 1/10.
+- `services/media-renderer/server.mjs` : capacité de rendu MP4/FFmpeg, normalisation audio, jobs et stockage ; infrastructure de rendu existante mais pas un nouvel épisode approuvé.
+- `services/media-service/src/media_service/voiceover.py` : narration API **OpenAI Realtime** avec transcription/QA ; n'est PAS la voix Gemini/ElevenLabs choisie par l'utilisateur.
+- `frontend/web-v2/package.json` : React/Vite, aucune dépendance de globe photoréaliste dans cette application.
+- Des tests CI GitHub ont été verts précédemment, mais **aucun test ne remplace l'accord artistique du propriétaire**.
+
+**Cours de 137 pages :** fichier retrouvé dans la Library `monter-et-animer-vos-videos-avec-claude-v2.pdf`, sections consultées sur workflow, choix de moteur, mémoire des décisions, design system, médias et droits, mixage, studio et QA. Le rapprochement partiel avec le code existe dans `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md`. **Ne pas affirmer un audit exhaustif de chaque page et chaque ligne de code.**
+
+**Recherche de faisabilité externe :** API de vidéo Gemini/Veo documentée par Google ; API ElevenLabs TTS et Forced Alignment documentées par ElevenLabs. Ces services sont disponibles comme options techniques *à qualifier*, mais **aucune authentification, quota, voix ni budget n'a été configuré ou approuvé** dans le repo. Les workflows n8n/Make restent des idées et non un moteur actif.
+- https://ai.google.dev/gemini-api/docs/video
+- https://elevenlabs.io/docs/overview/capabilities/text-to-speech
+- https://elevenlabs.io/docs/overview/capabilities/forced-alignment
+
+**Action réellement enregistrée dans GitHub :**
+- Nouveau contrat `docs/media/art-direction/EDITORIAL_GLOBE_FORMATS_AND_REVIEW_CONTRACT_2026-11-13.md` détaillant `single_location` (un seul lieu), `related_locations` (relation justifiant plusieurs lieux) et `global_overview` (véritable tour du monde).
+- Mise à jour `docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md` : G1 en cours, code D00–D05 fixes, audit partiel, connecteurs non configurés.
+
+**Statut :** logo validé ; anciennes A/B/C refusées ; D00–D05 non approuvées ; pas de voix candidate approuvée, pas de nouvelle animation vidéo, pas de publication.
+
+**Prochain livrable :** inspection de la vraie capture D00, amélioration du cadrage/relief/luminosité si nécessaire, puis **évaluation du premier plan visuel**, pas d'assemblage final.
+
+---
+
+## 2026-11-13 — reprise de l'identité géographique après rejet d'A/B/C
+
+**Demande de l'utilisateur :** continuer le logiciel sans perdre le fil ; les trois directions initiales A/B/C sont jugées « moches » et rejetées. Les deux anciennes vidéos TikTok inspiraient un globe terrestre tournant vers le pays de l'actualité, suivi du zoom et d'images/vidéos réelles. Les nouveaux rendus doivent être magnifiques, minutieux et évaluables à **chaque étape**, jamais entièrement montés d'un coup. Le prompt historique exact reste inaccessible, malgré la récupération du contexte.
+
+**Source pédagogique retrouvée :** `monter-et-animer-vos-videos-avec-claude-v2.pdf`, **137 pages**. Chapitres sur design systems, outils, mémoire des décisions, motion design, dérushage, voix, alignement et QA consultés. L'adaptation technique est dans `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md`.
+
+**Code ajouté ou modifié :**
+- `docs/media/art-direction/WORLD_VISION_GLOBE_SIGNATURE_DIRECTIVE_2026-11-13.md` : règles de la nouvelle identité, rejet A/B/C sans scores inventés, porte d'approbation.
+- `frontend/web-v2/src/media/GeoGlobe.tsx` : projection géographique orthographique depuis `public/countries.geojson`, effet de lumière/atmosphère et ciblage Turquie/Antalya pour un exemple déjà sourcé.
+- `frontend/web-v2/src/media/GlobeDirection.tsx` + CSS : six maquettes fixes D00–D05 avec contrôle individuel, note 1–10, commentaire et lien d'avis GitHub. Aucun nouveau MP4 généré.
+- `CreativeDirections.tsx`, `ReviewStudio.tsx` : remplacement des anciennes propositions A/B/C par la direction globe ; scores anciens encore conservés dans le stockage local lorsqu'ils existent.
+- `ProductionJourney.tsx`, `MediaStudio.tsx` : mise à jour de l'accès depuis le lien permanent pour montrer clairement le nouveau travail.
+- `frontend/web-v2/media-preview-smoke.mjs` : tests iPhone sur les six plans, vraie source GeoJSON, persistance d'avis D00 et captures par plan.
+
+**Observation technique et design des premières captures :**
+- CI/frontend et preview iPhone ont passé les tests sur le commit `728b1a504581`.
+- Les images initiales `style-frame-globe-d00.png`, `...d02.png`, `...d03.png` et `...d04.png` ont été inspectées : le globe est géographiquement lisible, mais la composition présentait un titre trop encombrant et des marqueurs techniques visibles dans le cadre. Correctifs : titre plus court, suppression des mentions de production à l'écran. Ces corrections sont en attente d'une nouvelle preview après les derniers commits documentaires.
+- **Ce rendu vectoriel n'est pas encore le globe 3D/satellite premium demandé** et le plan D03 n'a pas encore d'extrait de reportage authentique licencié ; le site le signale honnêtement.
+- La première voix Piper reste rejetée ; aucun accès API Gemini/ElevenLabs/Flow, n8n ou Make n'a été configuré.
+
+**Droits et véracité :** ne pas rediffuser la vidéo TikTok de référence ni copier ses textures/audio. Cartes : fichiers géographiques intégrés à la V2. Sujet d'exemple : COP31/Antalya sourcé UNICEF/FAO. Les vrais plans de terrain devront être trouvés, autorisés et approuvés indépendamment.
+
+**Statut de cette session :** logiciel modifié et documentation commitée ; nouvelle direction D **NON approuvée**. A/B/C sont refusées. Aucune publication.
+**Action suivante :** vérifier le run de preview au dernier HEAD, les captures d'images D00–D05 sur téléphone, corriger toute faute de composition puis soumettre le plan D00 à l'utilisateur. Ne pas passer au court mouvement de 3–6 secondes avant validation du style correspondant.
+
+---
+
+## 2026-11-13 — vidéo géopolitique renvoyée, analyse réelle et traçabilité
+
+**Entrée utilisateur :** une vidéo MP4 a été remise afin de retrouver l'inspiration pour la signature géographique World-Vision et d'éviter de perdre ce travail si le chat bloque.
+
+**Preuves locales réellement vérifiées :**
+- Fichier : `v26044gc0000dbrcrf7og65qnjb2qh6g(1).mp4`, 38 285 831 octets.
+- SHA-256 : `4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb`.
+- FFprobe : 64,921667 s, 512×910, H.264 ~30fps, stéréo HE-AAC 44,1 kHz.
+- Inspection visuelle des captures à 2 s d'intervalle : intro globe; Mexique; Royaume-Uni; Riyad/Bruxelles; Soudan du Sud; Turquie/Chine, cadres géographiques, contours rouges, lignes pointillées, sous-titres blancs/jaunes.
+- Filigrane visible : `@focus.geopolitique`. Source/usage commercial des graphismes, de la voix, de la musique et des textures **non autorisés** par défaut.
+- Les **faits d'actualité narrés dans la vidéo tierce ne sont pas réputés vérifiés** par cette analyse technique.
+
+**Modifications GitHub :**
+- `docs/media/references/2026-11-13-focus-geopolitique-video-reference.md` — étude chronométrée, règles de design et proposition D.
+- `docs/media/references/2026-11-13-focus-geopolitique-video-reference.json` — manifeste source avec SHA exact.
+- `docs/continuity/RECOVERED_TIKTOK_VIDEO_REFERENCES_2026-11-13.md` — correction de l'ancien état « aucune vidéo retrouvée ».
+- `docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md` — état à jour avec référence D.
+- La source originale **n'est PAS dans GitHub** : stockage séparé requis pour pérenniser les 38 Mo et droits tiers à clarifier.
+
+**Décision artistique :** A/B/C restent non validées. D « Globe → pays → information vérifiée » est seulement une nouvelle piste étayée par une vidéo réellement examinée ; aucune note ni validation n'a été attribuée à D.
+
+**Prochaine étape :** faire comparer au propriétaire une maquette fixe indépendante D à A/B/C, puis **seulement si validée**, prototype animé 3–6 s ; suivre ensuite le protocole d'évaluations.
+
+**Tests :** métadonnées et hash calculés directement sur le MP4 ; documentation commise dans la branche média. Aucun CI d'application ni nouveau déploiement nécessaire pour cette étude documentaire.
+
+---
+
+## 2026-11-13 — livraison finale du lien et du dossier de reprise
+
+- **Dernière UI réellement publiée :** code source `ab4a7410f89b7a19e2db652950e95e8036fcb7fb`, commit de la branche d'aperçu `596de0202df2c47909f1db13a9696074477e8565`.
+- **Workflow iPhone/desktop :** [run #43436631737](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43436631737) = `completed / success`. Les contrôles incluent accès A/B/C depuis l'ancien lien, affichage de la version, 14 étapes, avis COP31 conservé, maquettes et sources.
+- **Historique accessible depuis le site :** lien visible « Historique intégral & reprise du projet » vers [Issue #11](https://github.com/OBIANG5/World-Health-Vision/issues/11).
+- **Documentation supplémentaire :** [inventaire 26 branches](BRANCHES_SNAPSHOT_2026-11-13.md), [guide de cache](PREVIEW_RELEASES_AND_CACHE.md), [index du projet](README.md), [décisions](DECISION_REGISTER.md), [état](CURRENT_STATE_AND_NEXT_STEP.md), [prompt nouveau chat](NEW_CHAT_HANDOFF.md) et [chronologie](PROJECT_TIMELINE.md).
+- **Limite constatée :** RawGitHack garde des caches temporaires ; les fichiers et le build sont prouvés sur GitHub mais leur affichage instantané sur chaque navigateur n'est pas garanti.
+- **Validation humaine encore attendue :** A/B/C ; aucune nouvelle animation/voix/vidéo finale ne doit être démarrée au simple prétexte que les tests sont verts.
+- **Observation de prudence Vercel :** un projet existant `world-health-vision-v2` appartient à la plateforme globale ; **ne pas le réutiliser/écraser** pour Media Studio sans identifier et approuver explicitement le projet et les règles de déploiement. Aucun changement Vercel n'a été réalisé dans cette session.
+
+---
+
+## 2026-11-13 — session de continuité après question « Pourquoi le lien permanent n'est-il pas à jour ? »
+
+**Demande utilisateur :** ne pas avoir à ouvrir plusieurs liens pour voir les nouveaux designs, garder **une URL permanente et mise à jour**, et sauvegarder dans GitHub l'historique depuis l'origine, avec instructions de reprise quand les chats ChatGPT se bloquent.
+
+**Diagnostic vérifié :**
+- Dernière preview vérifiée lors de l'examen : branche `whv-media-studio-browser-preview` HEAD `a7d991a1287485b22a1dce30bb00f5f501738f49`, manifeste `source_commit=95fafc93895b64f73724cb61b374a8f4d6a32e31`.
+- Les images `style-frame-terrain.png`, `style-frame-chiffres.png`, `style-frame-pedagogie.png` et `editorial/harvey-rescue-2017.jpg` étaient **dans le dépôt de preview** ; dernier workflow de preview associé à `95fafc938` conclu `success`.
+- Mais l'URL historique `?view=media` ouvrait toujours le parcours 14 étapes au lieu de l'écran G1, donc la dernière activité était **peu visible**.
+- RawGitHack utilise du cache ; sur l'URL de développement d'une branche, de nouveaux commits peuvent n'être reflétés qu'après quelques minutes, voire jusqu'à une heure en fort trafic. **Le query string ne constitue pas une purge de cache fiable.**
+- L'URL du site est différente d'une branche source : `feature/world-vision-media-studio` = code, `whv-media-studio-browser-preview` = fichiers compilés. Ne pas affirmer « le site est à jour » sur la seule base d'un push sur la branche source.
+
+**Modifications de cette session :**
+1. Ajout d'un bandeau « Les trois nouvelles ouvertures sont disponibles ici » sur la **page d'accueil Parcours vidéo**, avec bouton direct « Voir A, B et C · noter une proposition » vers G1 (sans modifier l'adresse du lien permanent).
+2. Ajout d'une bande de provenance de version dans l'interface publique, lisant `preview-deployment.json` (12 premiers caractères du `source_commit`) et renvoyant à GitHub pour vérification.
+3. Conservation de l'onglet « Noter & valider » et du parcours complet ; ne pas faire disparaître les avis utilisateur au changement de page.
+4. Création d'un [index Git de 586 commits](COMMIT_HISTORY_INDEX.md), incluant les ancêtres de janvier 2026 à novembre 2026 ; les commits postérieurs à la date d'indexation restent accessibles dans l'historique natif.
+5. Reconstitution chronologique de la V0, de la V2, de la restauration OneDrive, du Media Studio, des épisodes de rendu, des refus 1/10, du logo officiel confirmé et des maquettes A/B/C (voir [PROJECT_TIMELINE.md](PROJECT_TIMELINE.md)).
+6. Création du [registre de décisions humaines](DECISION_REGISTER.md), de l'[état de reprise](CURRENT_STATE_AND_NEXT_STEP.md) et du [mode d'emploi pour un nouveau chat](NEW_CHAT_HANDOFF.md).
+7. Mise en place d'une entrée de documentation à la racine du dépôt et d'un index de référence dans `docs/continuity/`.
+
+**Validation humaine actuelle :** logo bleu approuvé sans note ; **aucune** direction A/B/C approuvée ; première vidéo COP31 refusée 1/10 ; **pas de nouveau MP4**.
+
+**Contrôles réalisés avant clôture :**
+- Source UI du déploiement : commit `8cb97eccded03d4dc066dcec55ea6efb026278ba`.
+- Workflow mobile : [run #43435702707](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43435702707), **completed/success** avec test iPhone : l'ancien lien `?view=media` expose désormais un panneau A/B/C et le bouton ouvre les trois maquettes ; lecture du SHA de version testée.
+- CI source même commit : [run #43435710013](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43435710013), **completed/success**.
+- Branche de prévisualisation compilée lors du contrôle : commit `060362eb3f7dc14c6ee2e2aa6b99838612446f0f`. Son `preview-deployment.json` désigne bien `8cb97eccded0`.
+- Lien GitHub grand public de reprise : [Issue #11 — START HERE](https://github.com/OBIANG5/World-Health-Vision/issues/11), créée pour rester accessible même lorsqu'un nouveau chat ne sélectionne pas la bonne branche.
+- **Limite de vérification :** les tests ont vérifié le frontend réellement compilé et les fichiers poussés. Ils **ne prouvent pas** que le CDN RawGitHack a renouvelé son cache sur tous les iPhones au même instant. La bande de version rend ce décalage observable ; ne pas dire que le cache a été purgé.
+
+**Test manuel utilisateur encore nécessaire :** regarder le panneau sur le lien permanent depuis son iPhone et choisir/noter A, B ou C.
+
+**Prochaine décision utilisateur :** examiner les trois designs A/B/C et choisir/évaluer celui qui servira de direction de base. Si les trois sont refusés, corriger uniquement les maquettes, puis redemander notation.
+
+---
+
+## 2026-11-13 — décisions antérieures conservées
+
+- Logo : PNG bleu œil+globe original confirmé comme identité actuelle ; variantes vertes et multicolores reportées.
+- Premier MP4 COP31 généré et inspecté ; refus **1/10 partout**, [Issue #9](https://github.com/OBIANG5/World-Health-Vision/issues/9).
+- Formulaire de notation : correctifs mobile, persistence local/session et archive GitHub ; confirmation manuelle toujours nécessaire pour les nouvelles Issues.
+- Trois orientations 9:16 documentaires/chiffrées/pédagogiques avec logos officiels, faits sourcés UNICEF/FAO et photo archives U.S. Army/Houston 2017 ; tests de chargement JPEG et SHA-256.
+- Aucune des propositions n'a été validée.
+
+---
+
+## 2026-11-12 — travaux antérieurs (synthèse, pas une transcription de chat)
+
+- Construction du code Media Studio : RADAR, VERIFY, SCORE, approbation, CREATIVE, ASSETS, audio, Remotion, QA, manifests, différenciation TikTok/WhatsApp, reçus de publication, Control Room.
+- Développement d'un aperçu statique compilé de V2 pour iPhone/desktop avec branche `whv-media-studio-browser-preview`.
+- Six familles CI pour le moteur (frontend V2, service média, PostgreSQL, gateway, Compose, renderer) ; les résultats doivent être revérifiés au nouveau HEAD.
+- [PR #5](https://github.com/OBIANG5/World-Health-Vision/pull/5) reste en draft vers `v2`.
+
+---
+
+## Depuis janvier 2026 — notes de source
+
+L'historique technique antérieur est présent dans [COMMIT_HISTORY_INDEX.md](COMMIT_HISTORY_INDEX.md) et les documents `docs/media/REPRISE_PROJET_WORLD_VISION_2026-11-12.md`, `docs/architecture/*` et les branches `v0`, `v1`, `v2`. Il ne faut pas le réécrire à partir d'une supposition : lire les commits et notes datées.
+
+## Modèle pour la prochaine entrée
+
+```markdown
+## AAAA-MM-JJ — [nom de l'incrément]
+Objectif :
+Faits/limitations vérifiés avant modification :
+Fichiers et commits modifiés :
+Tests (run URL + conclusion exacte) :
+Aperçu téléphone (URL stable + source_commit affiché) :
+Capture(s) / SHA médias :
+Validation/refus de l'utilisateur :
+Problèmes ouverts :
+Prochaine action soumise à validation :
+```
+
+---
+
+## 2026-11-13 — nouveau chat : lecture, vérification GitHub et audit de reprise
+
+**Demande :** le propriétaire fournit la dernière réponse du chat bloqué et demande de relire tout le contexte accessible, la branche du média et le point d'arrêt réel. **Aucune nouvelle direction, voix, animation ou diffusion n'est validée dans cette session.**
+
+**Travail vérifié :** lecture des références de continuité et décisions, de la documentation Media Studio/formation, de la directive géographique et de modules de code (frontend, API, Remotion/FFmpeg). Vérification réelle des branches, PR #5 (ouverte, draft), PR #6 (fusionnée), issues #8/#9/#11, SHAs et manifeste de preview ; la CI associée au SHA source initial `c422eafa1bbb...` est marquée success. L'aperçu pointe vers `e57207ba1b19...`, cinq commits documentaires avant ce SHA, sans modification du frontend entre ces points. Les 521 fichiers de la branche ont été inventoriés, **pas tous lus ligne par ligne**.
+
+**Preuve durable créée :** [MEDIA_STUDIO_RECOVERY_AUDIT_2026-11-13.md](MEDIA_STUDIO_RECOVERY_AUDIT_2026-11-13.md) (audit détaillé avec liens et limites), commit `0a4a7495c7f21268fad377cfa77b7c385b55215f`.
+
+**Décisions préservées :** G0 logo bleu approuvé ; MP4 COP31 1/10 refusé ; A/B/C refusées ; G1 direction D00–D05 fixes et non approuvées ; un seul pays si événement local ; services externes non prouvés connectés. **Aucun changement audiovisuel ou déploiement n'a été réalisé dans cette session de lecture.**
+
+**Prochaine action maintenue :** inspecter la capture du D00 réellement publiée et améliorer seulement ce premier plan, montrer le rendu sur téléphone, recueillir l'avis explicite avant toute animation ou passage à D01–D05.
+
+
+---
+
+## 2026-11-13 — G1/D00, itérations du globe dans l'œil, nouvelle image et exigences
+
+**Demande utilisateur :** construire minutieusement l'identité audiovisuelle World-Vision, avec globe géant tournant plus tard ; forme de l'œil tirée des **deux arcs du vrai logo**. Retours successifs : globe beau, mais arc/cercle trop visible ou incorrect ; garder exactement deux arcs fins non fermés, plus grands que le cadre, sans afficher leurs extrémités. Augmenter la taille de la Terre, conserver l'atmosphère bleue, rendre les frontières nationales très claires, éliminer les lumières nocturnes, le petit soleil, les nuages décoratifs hors planète et réduire les étoiles.
+
+**Travail de cette session :** véritable logo PNG officiel lu dans GitHub et inspecté visuellement (SHA blob `bc80fa70cebd566768bfb1703a0f1f636a78c196`). Nouvelle proposition d'image fixe D00-v4 générée dans le chat ; dimensions 1086 × 1448, SHA-256 `5f97e5f0d29551e187b50106e0aaf2f00e700062a9a2f5845dbf9f9715b6a90e`. Elle n'est **pas validée** et n'est **pas encore un rendu 9:16, une géographie certifiée ou un film**.
+
+**Éléments enregistrés sur GitHub :**
+- [Historique précis des quatre images et des retours](../media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md).
+- [Contrat JSON exploitable pour le futur globe codé](../media/art-direction/d00-eye-globe-visual-contract-v4.json).
+- Décisions de conception et corrections D-018 à D-022 ajoutées dans `DECISION_REGISTER.md`.
+- État courant maintenu dans `CURRENT_STATE_AND_NEXT_STEP.md`.
+
+**Limitation de sauvegarde :** le PNG D00-v4 est un fichier généré dans la session ChatGPT ; **son binaire n'a pas été envoyé sur GitHub**. Son hash et ses caractéristiques y sont inscrits pour éviter les confusions de version. Le PNG source officiel du logo reste inchangé. Aucun nouveau build du site d'aperçu, aucun MP4 et aucun rendu Three.js/Blender/Remotion n'ont été exécutés ici.
+
+**Prochaine étape après avis humain :** corriger les défauts éventuels de cette proposition, puis réaliser un vrai globe 3D reproductible avec frontières GeoJSON, émission atmosphérique contrôlée et arcs paramétriques, d'abord en still vertical 1080×1920 ; ne passer aux mouvements caméra/globe de 3–6 s qu'après validation.
+
+
+---
+
+## 13 novembre 2026 — D00-v6 et conservation intégrale du parcours vidéo 137 pages
+
+**Retour de l'utilisateur :** D00-v5 est jugée « très belle », mais il faut un **blanc d'œil réellement blanc**, une **lumière de l'atmosphère terrestre plus claire que les deux arcs**, et des **frontières nationales mieux tracées** (notamment Afrique/Sahara), sans changer la bonne taille actuelle de la Terre. L'étape suivante sera de **transformer le globe en vidéo** : le globe doit se tourner à chaque nouvelle pertinente vers **le pays** où se situe l'événement ; ce n'est pas toujours un format multi-pays. Le propriétaire rappelle de ne perdre **aucune** étape du PDF, en particulier les futures voix, le montage et l'habillage discret avec le véritable logo (éventuellement en haut à gauche, lieu non validé).
+
+**Production réalisée dans le chat :** D00-v6, image de conception `a_crisp_ultra_detailed_high_contrast_digital_ill.png`, 1086×1448, 2 296 765 octets, hash réel SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. **Pas de retour utilisateur sur v6 à cette étape. Aucun MP4 codé, aucune vidéo animée, aucune validation D00.** Le concept image peut présenter des frontières de pays non exactes ; le moteur futur devra projeter de vrais polygones GIS. Les PNG originaux v5/v6 restent hors GitHub ; metadata et exigences enregistrées seulement.
+
+**Vérification de la formation source :** fichier original `monter-et-animer-vos-videos-avec-claude-v2.pdf` retrouvé dans la Library (137 pages) ; texte des neuf parties consulté de la page 1 à 137. Accès au binaire intégral de la Library par materialize indisponible. Le document GitHub `TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md` a été enrichi des sections et des quatre skills. **Cet examen du cours ne constitue pas un audit complet/exécuté de tout le code.**
+
+**Nouveaux livrables GitHub :**
+- `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md` : neuf parties du manuel, 14 étapes du produit, géociblage, test moteur 3D, trois voix, alignement, montage rushes, SRT, rendu long, position logo, qa et publications.
+- `docs/media/art-direction/d00-eye-globe-visual-contract-v6.json` : contrat structuré pour le code futur, statut d'approbation et empreinte de la v6.
+- `docs/media/art-direction/D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md` complété pour les images v5 et v6 avec retours exacts.
+- `docs/continuity/DECISION_REGISTER.md` étendu avec D-023–D-026, `docs/media/TRAINING_137_PAGES_IMPLEMENTATION_AUDIT_2026-11-13.md` enrichi.
+
+**Travail non réalisé :** pas de connexion Flow/ElevenLabs/Gemini/n8n/Make, pas de voix auditionnée, pas de scène de reportage intégrée, pas de rendu Remotion 3D/Blender, pas de nouvelle preview GitHack publiée et pas d'export TikTok/WhatsApp. **Ne pas fusionner la PR #5 ni publier un contenu.**
+
+**Prochaine décision :** validation ou correction D00-v6 par le propriétaire. Ensuite image finale 9:16 calculée (atmosphère, frontières fiables, œil), QA mobile, puis D01 et micro-clip 3–6 s ; conserver les gates du PDF pour la voix et le montage.
+
+
+### Complément — visibilité du plan sur le site (après le plan directeur D00-v6)
+
+- **Code frontend modifié :** `ProductionJourney.tsx` (commit `fa26c788b463269f64afbb760a4099d8e2498f35`) et `ProductionJourney.css` (commit `00224feaaffb97c13a65e2518ee301d7aaefa910`). L'accueil du Media Studio montre un **statut D00-v6 non validé**, les prochaines étapes du parcours vidéo et un lien clair vers le plan directeur du manuel, en précisant que les six captures du laboratoire sont **plus anciennes**.
+- **CI de compilation** pour le commit source `00224fea...` : succès [run #43457617960](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457617960).
+- **Workflow de preview** [run #43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661), statut **in_progress** lors du contrôle initial. Ne pas prétendre à une livraison CDN réussie tant que le manifeste n'est pas actualisé et que le run n'est pas vert.
+- **Image D00-v6** : toujours absente des fichiers publiés dans GitHack ; le site ne contient que le **statut et les instructions**, pas les pixels de ce visuel. Aucune vidéo CGI tournante n'a été produite.
+
+
+### Confirmation de publication du panneau de continuité (13 novembre, contrôle final)
+
+Le workflow [World-Vision Media Studio real-UI mobile preview #43457606661](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43457606661) est désormais **completed / success** (y compris build React, test Playwright iPhone/desktop, publication de la branche de preview). Branche de preview : HEAD `bdd6277fd88b9a5eebefe1e1737ac6ad19d31931`, manifeste `source_commit=00224feaaffb97c13a65e2518ee301d7aaefa910`. **Ce qu'il prouve** : le panneau « D00-v6 non encore validé » et la feuille de route sont intégrés au bundle statique. **Ce qu'il ne prouve pas** : synchronisation instantanée du cache RawGitHack, présence des pixels du concept D00-v6, moteur 3D fonctionnel, ou backend actif. Les captures anciennes du laboratoire restent explicitement distinguées de la nouvelle image dans l'UI.
+
+
+---
+
+## 2026-11-13 — récupération d'une réponse interrompue et vérification géociblage
+
+Le propriétaire a signalé « A cessé de réfléchir » durant la construction du laboratoire géographique. **Code conservé dans GitHub** : `geoTargeting.mjs`, `geoTargeting.d.mts`, `geoTargeting.test.mjs`, `GeoTargetingLab.tsx/.css`, adaptation `GeoGlobe.tsx` et intégration `GlobeDirection` → `CreativeDirections` → `ReviewStudio`. Aucun reset, aucun abandon.
+
+**Preuves techniques :** dernier run CI source observé `43460449189` → six jobs terminés avec succès, dont tests `node --test` des coordonnées et front TypeScript. Dernier run de site mobile observé `43460509829` → `completed/success` ; manifeste preview `source_commit=30f280b089148dd12768ce67d6bf7adea270419b` ; branche preview `08492abc9ab7ab55f2beebb4e0f1d268e8365765`. Capture Playwright `media-globe-motion-lab-iphone.png`, blob `a1dae4c14ab68e352cdcc21fda58deac7cc91fa4`. Le test vérifie la sélection Gabon, le mouvement, le reset, puis le Mali.
+
+**Document de reprise détaillé :** `docs/media/GEO_TARGETING_MOTION_LAB_2026-11-13.md` (créé au commit `44045d957518a3e59da204714bd45ffe8d55ea57`). Code réellement interactif **Canvas/GeoJSON**, pas CGI satellite, pas MP4, pas de publication d'actualité et aucune approbation implicite de D00-v6.
+
+**Suite** : retour utilisateur sur le prototype fonctionnel, puis master CGI 9:16 visuellement fidèle à la signature œil/globe validable (blanc pur, halo atmosphérique, frontières précises), puis micro-animation 3–6 s vers pays d'une nouvelle réelle ; continuer le pipeline voix, montage et QA du manuel de 137 pages.
+
+
+---
+
+## 13 novembre 2026, 17h (Europe/Paris) — PREMIER MOTEUR GÉOCIBLÉ CODÉ, TESTÉ ET PUBLIÉ SUR LE SITE
+
+**Décision de travail :** développer la brique technique la plus utile avant une vidéo complète : faire **tourner le globe vers un pays du dossier médiatique**, avec géographie réelle vérifiable, sans supposer que la composition D00-v6 ou la voix/montage sont déjà validés. La directive G0 (logo bleu officiel) et l'historique D00-v1–v6 restent intacts.
+
+**Source de vérité du code écrit :**
+- `frontend/web-v2/src/media/geoTargeting.mjs` et `geoTargeting.d.mts` : calcul sans DOM (SLERP/easing, longitude/antiméridien, extraction de pays via GeoJSON, `MediaStory.country_iso3`).
+- `geoTargeting.test.mjs` : tests Node, cas antipodal, longitude ±180°, Mali, Niger, Gabon, France, Japon, Fidji, cas sans destination. La géographie de base vient du **vrai** `public/countries.geojson` du projet, pas d'un croquis IA.
+- `GeoGlobe.tsx` : refonte incrémentale (thème espace, halo bleu, vecteurs exacts sur face visible à l'arrivée). **Rendu Canvas 2.5D technique, PAS le master satellite CGI**.
+- `GeoTargetingLab.tsx` et `GeoTargetingLab.css` : module interactif intégré par `GlobeDirection.tsx → CreativeDirections.tsx → ReviewStudio.tsx`. Contrôles de sélection pays, mouvement 4 s, curseur, reset, état sans ISO3, provenance et avertissement centre approximatif.
+- `GlobeDirection.css` : raccourci visible vers le nouveau laboratoire depuis la page de revue, sans supprimer les **six images fixes historiques**.
+- `media-preview-smoke.mjs` : Playwright iPhone sélectionne Gabon et Mali, vérifie que la rotation progresse, la réinitialisation, prend une capture **en cours** et une capture **à l'arrivée au Gabon**.
+- CI: `.github/workflows/media-studio-ci.yml` et `whv-media-studio-mobile-preview.yml` exécutent `node --test src/media/geoTargeting.test.mjs` avant build/publication.
+
+**Preuves réellement vérifiées :**
+- `World-Vision Media Studio CI` (SHA `f0b281889676a20fbefba62fd45cf1fd5c2856ed`) : **success**.
+- `World-Vision Media Studio real-UI mobile preview` [run #43461296086](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43461296086) : **completed/success**. Tests géographiques, build TypeScript/Vite, smoke iPhone/desktop et publication sur la **même branche de preview**.
+- Manifeste réellement relu sous `whv-media-studio-browser-preview/preview-deployment.json` : `source_commit=f0b281889676a20fbefba62fd45cf1fd5c2856ed`, `backend_connected=false`, `channel_published=false`, `human_qa_completed=false`.
+- Captures réelles sous `whv-media-studio-browser-preview/media-globe-motion-lab-iphone.png` (pendant la rotation) et `media-globe-motion-arrival-gabon-iphone.png` (à 100 %), **fichiers images réellement présents dans la branche preview**, inspection visuelle effectuée dans le chat. La capture finale montre le marqueur du Gabon et les frontières vectorielles renforcées.
+
+**Lien permanent :** https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/index.html?view=media&screen=review&gate=direction — utiliser le bouton **« Tester le nouveau moteur : la Terre tourne vers un pays »**. Les caches CDN peuvent temporairement différer du manifeste GitHub, ne jamais inventer un SHA affiché par un appareil.
+
+**État artistique :** D00-v6 reste **non encore approuvé**, concept PNG gardé seulement dans la conversation et documenté avec SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. Le moteur livré ici est une **preuve technique**, graphiquement moins ambitieuse que la cible ; ne pas présenter cette capture comme la future ouverture 3D ou comme une vidéo MP4.
+
+**Aucun changement** : aucune vraie voix Gemini/ElevenLabs/OpenAI auditionnée pour la nouvelle identité, aucune vidéo du terrain inventée, aucun rendu Remotion de la nouvelle 3D, aucun montage complet, aucune API de publication, aucune PR fusionnée. Pour reprise, lire `docs/media/engineering/GEO_TARGETING_PROTOTYPE_2026-11-13.md`, `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md` et `docs/continuity/CURRENT_STATE_AND_NEXT_STEP.md`.
+
+**Prochaine étape intelligente :** construire le master D00 **vraiment 3D, 9:16**, texture terrestre sous licence, précision GIS, atmosphère bleu/cyan plus forte que les deux arcs, vrai blanc de l'œil et contours du Sahara ; le montrer avant animation/final. Puis raccorder ce visuel au mouvement géographique déjà codé et produire un micro-test 3–6 s, puis seulement suite du workflow voix/montage.
+
+
+---
+
+## 2026-11-13 — correction de confusion entre « prototype géographique » et identité artistique
+
+Le propriétaire a constaté que le globe simplifié sur le site ne ressemblait pas à la référence artistique D00-v6. Décision : **ne pas réduire la qualité visuelle de la Terre** ; préserver D00-v6, conserver la seule logique géographique du prototype et reconstruire l'esthétique en véritable CGI avant de parler de rendu audiovisuel.
+
+La dernière image de référence **a été retrouvée dans le répertoire de cette conversation et ouverte visuellement**, `/mnt/data/a_crisp_ultra_detailed_high_contrast_digital_ill.png`, 1086×1448, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`. Ce chemin est **éphémère et non une URL GitHub** ; l'intégration binaire exacte dans le dépôt reste à réaliser.
+
+**Correctifs réellement committés :** `GlobeDirection.tsx` (référence D00-v6 explicitement protégée, labo dans `<details>` replié), `GlobeDirection.css` (lisibilité de la distinction), `media-preview-smoke.mjs` (test automatisé : référence présente, labo replié initialement, ouverture volontaire puis rotation fonctionnelle). Ces changements ne modifient ni le code géographique, ni le logo officiel, ni le prototype de vidéo.
+
+**Suite** : vérifier CI et preview GitHack après les correctifs ; travailler sur une vraie scène D00 photo-CGI 9:16 et non réintroduire le Canvas comme image finale. Lire le plan directeur du manuel de 137 pages pour conserver les futurs jalons voix, montage, vérification et publication.
+
+
+### Sauvegarde locale exportable de l'original D00-v6
+
+Le fichier PNG original (1086×1448, SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`) a également été **copié sans modification des octets** dans une archive téléchargeable de la conversation, `World-Vision_D00-v6_reference_originale.zip`, avec manifeste de provenance et rappel de la non-validation. **Important** : cette archive est un artefact téléchargeable du chat, **pas encore un fichier committé sur GitHub** ; son lien `sandbox:` est spécifique à la conversation. Conserver/exporter ce ZIP avant de changer de chat si nécessaire.
+
+
+---
+
+## 13 novembre 2026 — premier incrément de Terre phototexturée CGI (retour aux vrais détails)
+
+À la demande « arrête de perdre du temps, la suite intelligente pour le média », intervention effective dans le code : **nouveau renderer `CinematicEarth.tsx` avec shader sphérique WebGL, photo-texture equirectangulaire NASA Blue Marble, éclairage diurne, halo cyan, blancs purs dans l'œil à deux arcs et frontières nationales GeoJSON**. Le laboratoire géociblé utilise désormais ce globe ; le Media Studio l'affiche au-dessus des anciennes maquettes comme **candidat CGI à revoir**. Les six maquettes historiques sont conservées, et l'identité D00-v6 issue du chat demeure la référence de comparaison, **sans approbation automatique**.
+
+Build GitHub Actions modifié pour embarquer une source NASA avec provenance, contrôle JPEG/taille et empreinte SHA-256. Source exacte téléchargée et vérifiée : `9743175942473681d78838ca1042553dab4779cf957fb6d8f22a81fb796f7797`. Nouveau test navigateur : texture obligatoire, shader WebGL actif, capture D00 9:16 sur iPhone.
+
+**Preuves :** commit de source publié `2f9fedd46ae2ee77e3984814b3d47710e0a25c27`, workflow mobile https://github.com/OBIANG5/World-Health-Vision/actions/runs/43464929633 = **completed/success**. Manifeste de preview pointant ce même SHA ; screenshot `media-globe-cinematic-d00-candidate-iphone.png` dans `whv-media-studio-browser-preview` (SHA blob `1e1b718b3e010d065ec1ff3aef9da79711e48b9c`). Capture réellement consultée dans le chat : Terre bleue, relief et pays sahariens tracés, œil blanc et atmosphère apparents.
+
+**Limites non masquées :** ce n'est pas une vidéo exportée, le design n'a pas encore la validation artistique du propriétaire et le PNG d'origine D00-v6 n'a pas été committé. L'outil est un premier CGI contrôlable. Ne pas substituer un dessin plat ni chercher à prétendre que la référence IA et le shader sont pixel-identiques.
+
+**Reprise suivante :** inspection esthétique du CGI avec le propriétaire ; calage fidèle aux deux arcs/au halo du D00-v6 ; puis D01 au pays ciblé et micro-clip de 3–6 secondes, montage et voix selon `docs/media/AUDIOVISUAL_PRODUCTION_MASTER_PLAN_2026-11-13.md`. Document technique [CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md](../media/CINEMATIC_EARTH_D00_ENGINE_2026-11-13.md).
+
+
+---
+
+## 13 novembre 2026 — Export CGI D01 / 4 s : image vers vidéo, sans perte du projet
+
+**Développement effectif** : `CinematicCapture.tsx` (route de rendu plein écran et pilotage déterministe same-origin par frame), `render-cinematic-d01.mjs` (96 captures Playwright, vraie texture NASA, coordination avec interpolation sphérique, encodage FFmpeg H.264, vérification FFprobe) et `.github/workflows/whv-cinematic-motion-d01.yml` (build, tests, rendu, archivage artifact et GitHub Preview). `.github/workflows/whv-media-studio-mobile-preview.yml` modifié pour préserver `media-lab/` à chaque mise à jour.
+
+**Résultat vérifié en ligne** : Workflow https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755 completed/success ; manifest JSON déclare **GAB, 4 s, 24fps, 1080×1920, 96 frames**, technique non approuvée. SHA-256 du vrai MP4 `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a`, blob Git `8dd35afc5f5ef56eae1b40b72208dfc19380cb78`. Lien durable : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4.
+
+**Important** : cette réalisation n'est pas une nouvelle validation artistique de D00-v6 et n'est pas un film sur une véritable actualité du Gabon : ce pays sert de cible géographique d'essai. Voix, actualité sourcée, photos sous droits, sous-titres, montage et contrôles finaux restent à venir. **Ne pas publier sur un réseau social.** Plus de détails dans [CINEMATIC_D01_MICROCLIP_2026-11-13.md](../media/CINEMATIC_D01_MICROCLIP_2026-11-13.md). Reprendre la revue de la vidéo et de la fidélité à l'image D00-v6, puis le storyboard et la voix de qualité.
+
+---
+
+
+## 2026-11-13 — D01 export 4s, trois frames et lecteur mobile
+
+**Continuité après la livraison CGI D00** : travail repris sur le code réellement présent, sans écraser `CinematicEarth`. La branche média disposait déjà d'un nouveau pipeline de capture déterministe `CinematicCapture.tsx`, de `render-cinematic-d01.mjs` et du workflow `.github/workflows/whv-cinematic-motion-d01.yml` ; exécution [#43466731755](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43466731755) terminée avec succès. Sortie `media-lab/wv-d01-gab-technical-4s.mp4`, SHA-256 `17796338023f0ffd9732739390ac2535c816113baf8e6dd773879314604bb22a`, 1080×1920, 24 fps, 96 photogrammes, quatre secondes. Pays de démonstration : Gabon (`GAB`) sans localisation inventée de l'actualité.
+
+**Amélioration réalisée dans cette reprise :** création `CinematicMotionReview.tsx/.css`, intégration dans `GlobeDirection.tsx` : vrai lecteur iPhone HTML5 contrôlable et désactivé avant présence d'un manifeste valide, aucune lecture automatique. Ajout du poster de la première frame et du lien vers les trois photogrammes de contrôle. Test Playwright ajouté pour vérifier la présence du lecteur et l'absence d'autoplay. CI du commit visuel `94336393e7659303780c406bd30a8f3cba5ee5de` réussie.
+
+**QA du film :** nouveau workflow `.github/workflows/whv-d01-motion-qa.yml`. Premier passage [#43468544350](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43468544350) échoué pour une **dépendance absente** (`ffprobe`) sur le runner, non pour le film ; installation explicite de FFmpeg/FFprobe ajoutée et reprise [#43468666079](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43468666079) **success**. Vidéo recontrôlée SHA-256 + métadonnées, trois vraies frames différentes archivées dans `media-lab/review/` sur la branche permanente, contact sheet `contact-sheet.jpg`. Inspection des frames dans le chat : mouvement de l'Europe/Afrique vers l'Afrique centrale visible ; l'avis esthétique humain reste à recueillir.
+
+**Document canonique** : [D01_GABON_MOTION_REVIEW_2026-11-13.md](../media/D01_GABON_MOTION_REVIEW_2026-11-13.md). **Aucun faux contenu d'actualité, aucune approbation, aucune diffusion réseau social.**
+
+**Suite intelligente :** consolider la fidélité des arcs/du blanc et de la diffusion atmosphérique à D00-v6, tester le film sur téléphone, puis D02 zoom vers un lieu seulement si coordonnées vérifiées ; viendront vidéos réelles sous licence, voix et montage avec toutes les validations du PDF de 137 pages.
+
+
+
+---
+
+## 13 novembre 2026 — système de vidéo complète multi-outils (suite du retour qualité)
+
+L'utilisateur a demandé de transposer le manuel PDF original (137 pages) en un atelier professionnel qui **sélectionne l'outil le plus adapté à chaque étape**, en tenant compte de ChatGPT Plus et Google AI Pro, plutôt que de continuer exclusivement le développement CGI. Une recherche sur les documentations officielles a confirmé l'intérêt de **Google Vids** pour la voix off française, les éditions verticales 9:16 et l'export MP4 ; Flow pour plans illustratifs depuis image ; Gemini/ChatGPT pour script et vérification ; FFmpeg pour QA et sous-titres FR si nécessaires. Les API Google et OpenAI restent distinctes des abonnements, ElevenLabs est optionnel avec licence commerciale payante.
+
+Livrables réellement écrits et committés :
+- [WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md](../media/WORLD_VISION_PRODUCTION_CONDUCTOR_2026-11-13.md), méthode complète mappant 9 parties de la formation + 14 étapes, outils/fallbacks, livrables, économie des crédits, montage, voix, sources, validations et droits.
+- [WORLD_VISION_EPISODE_TEMPLATE.md](../media/WORLD_VISION_EPISODE_TEMPLATE.md), fiche duplicable par actualité avec dossier d'affirmations, script, storyboard minuté, voix, médias et licences, QA, hashes, états des 14 étapes.
+- Mise à jour de `CONTINUITE_WORLD_VISION.md` et `CURRENT_STATE_AND_NEXT_STEP.md`.
+
+**Ne pas surpromettre :** c'est un conducteur de travail versionné, pas un moteur Flow/Vids automatisé ni un premier reportage finalisé. Objectif réel suivant : mener **un reportage complet de 40–50 secondes** au bout (un sujet réellement sourcé, une vraie voix, un montage vérifié), sans laisser le CGI du globe bloquer la production.
+
+
+---
+
+## 13 novembre — premier épisode éditorial NASA mangroves (pilote de la méthode multi-outils)
+
+Après bascule du projet vers un système de production basé sur le manuel 137 pages et sur les abonnements ChatGPT Plus / Google AI Pro, le **premier épisode réel est démarré**. Sujet : publication NASA Earth Observatory du 13 novembre 2026 sur la reprise des mangroves mondiales et comparaison de vraies images Landsat prises en 2010/2026 au Myanmar. Sources factuelles croisées avec la publication scientifique présentée par Tulane University et l'explication écologique NOAA.
+
+**Éléments créés et versionnés dans GitHub** :
+- `docs/media/episodes/2026-11-13_mangroves_nasa/voix_off_fr_v1.txt` (script narratif français exact, 112 mots environ, non approuvé et pas encore enregistré vocalement).
+- `docs/media/episodes/2026-11-13_mangroves_nasa/PRODUCTION_PACK.md` (fact-check, sources et nuances, médias NASA haute définition à télécharger, licences, six plans chronométrés, texte exact, auditions voix, choix Vids sur PC ou CapCut sur iPhone, exports/QA, statut des 14 étapes).
+
+**Décision outil économique :** ne pas utiliser Flow pour le pilote, car NASA met à disposition deux vraies photographies satellites et NOAA une photographie illustrative ; les zooms et transitions relèvent du montage. La prochaine action dépend des outils d'édition disponibles et doit porter sur **la voix puis le montage complet**, pas sur une autre animation de Terre codée.
+
+**Limites vérifiées :** pas de vraie voix Google Vids auditionnée, pas de téléchargement des photos dans ce repo au moment de cette entrée, aucun MP4 complet ni diffusion. Chaque source et lieu doivent être crédités ; droits NASA et NOAA vérifiés à la source avant l'export final. Les chiffres mondiaux reposent sur 1984–2023 ; les photos locales sur 2010/2026.
+
+
+---
+
+## 13 novembre — correction stratégique du radar et de l'automatisation de toute la production
+
+L'utilisateur a rejeté le pilote NASA mangroves : sujet jugé peu accrocheur, inadapté à la ligne de World-Vision. Il a aussi rappelé deux exigences fondamentales oubliées : **la vraie identité visuelle œil/globe/logo doit figurer dans le modèle de chaque reportage** et **l'objectif est une usine orchestrée par un seul endroit**, pas le passage manuel entre de multiples sites et pas la réécriture d'un logiciel vidéo.
+
+**Actions réelles GitHub :**
+- Pilot `docs/media/episodes/2026-11-13_mangroves_nasa/PRODUCTION_PACK.md` marqué `REFUSÉ / ARRÊTÉ`, sans effacer l'historique.
+- `automation/n8n/world-vision-radar-v1.n8n.json` : **workflow n8n importable de 8 nœuds**, RSS (BBC World/Business/Technology + ONU), Schedule Trigger chaque heure, Merge, Code scoring/déduplication et sortie des candidats `TO_VERIFY`, **aucun déclencheur de publication ni achat/API**. Workflow `active:false`.
+- Un test synthétique du nœud de classement a été exécuté sur le code extrait du fichier réel : **syntaxe JS valide**, 3 entrées de test → **2 sorties sans doublon**, séisme classé **95/100**, lifestyle **32/100**, toutes les sorties `TO_VERIFY`. Ce test **n'est pas un test des vrais flux RSS sur une instance n8n**.
+- `automation/brand/WORLD_VISION_BRAND_LOCK.json` : logo bleu G0 officiel (SHA blob), D00-v6 concept (SHA-256), cahier de composition, assets obligatoires, garde-fous, blocage du master si identité non approuvée.
+- `automation/WORLD_VISION_AUTOMATION_COCKPIT.md` : choix n8n + moteur à templates Shotstack, état des outils réellement connectés, limites API des abonnements, calendrier d'intégration, cycle éditorial et QA.
+- Continuité racine, état courant et conducteur multi-outils mis à jour en tête pour qu'aucun futur chat ne reprenne le mauvais pilote.
+
+**Investigation services** : n8n Cloud Starter 20 €/mois facturé annuellement, Community Edition auto-hébergée ; Make Free alternatif 1000 crédits mensuels et deux scénarios actifs ; Shotstack dispose d'une intégration n8n vérifiée avec modèles et rendu cloud ; Flow de Google AI Pro donne accès à l'application mais pas automatiquement à une API de rendu. Toutes les licences/quotas restant liés aux comptes réels et aux APIs doivent être contrôlés avant achat.
+
+**Ce qui NE fonctionne PAS encore** : n8n non connecté à ce chat, workflow RADAR non exécuté sur flux réel depuis une instance, aucun tableau éditorial persistant connecté, Shotstack non connecté, modèle vidéo encore à créer une fois avec le vrai logo et la D00-v6, aucune TTS/API ni chaîne de diffusion intégrée, aucun MP4 complet automatisé. **Ne jamais écrire que le système est déjà en production.**
+
+**La prochaine opération la plus utile** est l'activation d'une instance n8n (ou la voie moins chère Make si nécessaire), l'import et la mise en marche du radar après test; puis Google Drive + un seul modèle de rendu Shotstack/Creatomate et les gates humains.
+
+---
+
+## 13 novembre — recentrage définitif du travail sur le montage vidéo
+
+Nouvelle instruction utilisateur : « une vidéo par une vidéo » ; ChatGPT doit chercher automatiquement les meilleures nouvelles chaque heure, mais le **travail à réaliser dans GitHub est uniquement le MONTAGE**, à partir d'un script dont le propriétaire aura validé le contenu. Refus explicite des chantiers techniques hors sujet et des passages obligatoires entre de nombreux sites.
+
+**Action automatisation réelle :** tâche ChatGPT « World-Vision Breaking News » ID `6a9050fddd5c8191929b1f8cfa8d0f3e` retrouvée désactivée ; **modifiée et réactivée**, `RRULE:FREQ=HOURLY`, premiers contrôles avec utilisateur Europe/Paris, filtrage 3–5 sujets majeurs vérifiés, nouvelle notification seulement si développement significatif, aucun script/MP4/publication automatique. Pas de doublon de tâche créé.
+
+**Audit du code existant :** `services/media-renderer/src/WorldVisionShort.tsx` supporte `<Video>`, `<Img>`, `<Audio>`, `<Sequence>`, attributions ; `services/media-renderer/src/types.ts` supporte `asset_url`, `asset_license`, `asset_attribution`. Logo original du renderer présent à `public/brand/world-vision-official.png`. Réutiliser plutôt que refaire le montage from scratch.
+
+**Référence de méthode créée** : `docs/media/MONTAGE_ONLY_HANDOFF_2026-11-13.md` ; sélection de scènes, voix FR, Flow / Vids uniquement pour les plans concernés, Remotion/FFmpeg pour rendu et QA. **Aucune nouvelle vidéo produite dans ce tour**, car aucun nouveau script validé / aucun fichier sonore et visuel approuvé.
+
+**Prochain acte concret** : sur réception du script approuvé, préparer le découpage précis, sélectionner des clips authentiques/licenciés, proposer les prompts Flow si nécessaire et lancer une production de film réel une fois les assets/voix accessibles, en préservant G0 et D00-v6.
+
+
+## 14 NOVEMBRE 2026 — SOMMET TRUMP XI POUTINE : PREMIER HOOK EN VRAI MP4 ET MONTAGE 43 S CODÉ
+
+**Instruction actuelle du propriétaire** : construire **un montage professionnel** basé sur le script accepté, pas seulement du texte ni un nouvel éditeur. Le style de marque doit reprendre le **PNG logo G0 officiel** exact et le visuel **D00-v6 original** pour une brève introduction. Le sommet du 19 novembre à Shenzhen **n'a pas encore eu lieu** ; utiliser des archives explicitement étiquetées, aucune fausse scène de sommet.
+
+**Vrai code et premier artefact produit :**
+- Composition Remotion professionnelle séparée `services/media-renderer/src/WorldVisionSummit2026.tsx` (8 plans, 43 secondes, 13 segments de sous-titres reprenant mot à mot le script, photos d'archives, typographie bleu nuit/cyan, zones sûres, logo exact ; **aucune couleur rose/orange de l'ancien template**).
+- Entrée ajoutée à `services/media-renderer/src/Root.tsx` sans écraser l'ancien moteur.
+- `services/media-renderer/render-summit-preview.mjs` (vidéo 1080×1920 à 30fps, vérification du Git blob du logo `bc80fa70cebd566768bfb1703a0f1f636a78c196`, SHA-256 D00 attendu `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`, master complet bloqué si assets D00 originaux et voix WAV approuvée manquent).
+- `.github/workflows/whv-summit-hook-preview.yml` (téléchargement des vrais portraits à licences vérifiées, build Remotion, 3 captures FFmpeg, publication même branche d'aperçu). **Hook corrigé et livré** via `media-lab/summit-2026/hook-4p5s-preview.mp4` sur `whv-media-studio-browser-preview`, MP4 de **4,5 s 1080×1920, sans voix**, SHA-256 `8e0975eb2fe66cb502271d23c542b120271f9b9d3df989306dd2840a1e1bf05a` au premier contrôle après correction des collisions. Capture `media-lab/summit-2026/review/contact-sheet.jpg`.
+- Test de conservation **mot à mot du script** dans `summit-2026-contract.test.mjs`, comparé avec `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/SCRIPT_V1.md` ; 13 segments, aucune coupure du texte, 43 secondes. Contrôle unitaire également ajouté au workflow ; les dernières exécutions doivent être vérifiées avant d'affirmer vert.
+- SRT préparatoire `SOUS_TITRES_BROUILLON_43S.srt` sur le dossier d'épisode, **non encore aligné à une vraie voix**, 13 sous-titres.
+- Import **sans redessin** dans Canva connecté : original globe D00-v6 Canva media `MAHa4F1Owfk`, logo officiel exact téléchargé depuis Github Canva media `MAHa4H6Rel4`. Importation GDrive depuis l'ancien file-ref non aboutie : ne pas prétendre D00 dans Drive ou en binaire dans Github.
+
+**Preuves et limites** :
+- Premier hook animé a été généré par l'action [#43579184494](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43579184494), statut **success** : trois images vérifiées avec logo officiel exact et portraits de Trump, Poutine et Xi ; collision texte/labels corrigée et rerendu par l'action [#43579354004](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43579354004) success.
+- Le **master 43 s n'existe PAS** à ce stade : le rendu est volontairement bloqué tant que l'image D00 originale n'a pas été **copiée en tant que binaire exact dans l'asset du renderer**, et la vraie voix française choisie/validée n'est pas fournie.
+- Photos Reuters/AP sous licence **non utilisées** dans le hook ; photos d'archives d'origine White House / Kremlin téléchargées par Github Action, attributions dans `MONTAGE_PLAN_V1.md`.
+- L'audition/choix de voix française et l'alignement réel des sous-titres restent à faire. Aucun MP4 n'est approuvé pour publication.
+
+**LIENS** :
+- Vidéo hook https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4
+- Dossier storyboard https://github.com/OBIANG5/World-Health-Vision/blob/feature/world-vision-media-studio/worldhealth-vision-v2/docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/MONTAGE_PLAN_V1.md
+
+**Suite obligatoire (pas une autre refonte)** : revue qualitative du hook et correction ; intégrer le PNG D00-v6 ORIGINAL **une seule fois** au renderer, générer/tester une vraie voix française via outil Google accessible puis produire tout le master Remotion de 43 s, aligner SRT sur WAV, QA iPhone et rendre à l'utilisateur. **Ne jamais remplacer l'image par une reconstruction du globe.**
+
+---
+
+## 14 NOV 2026 — NOUVELLE MÉTHODE VALIDÉE : UN CLIP À LA FOIS, PUIS ASSEMBLAGE
+
+**Instruction utilisateur prioritaire :** arrêter de vouloir tout rendre d'un seul bloc. Construire **huit petites vidéos indépendantes**, chacune très bien montée/contrôlée/revue, avec code ponctuel lorsque plus beau (sans réinventer le globe). **Assembler seulement les séquences validées.** La ligne éditoriale reste la vidéo approuvée dans le chat sur le sommet annoncé Trump–Poutine–Xi du 19 novembre 2026.
+
+**Livrables concrets vérifiés cette session :**
+- **S02 identité D00-v6 : film MP4 de 3,1 secondes, H.264 1080×1920, 30fps, 93 images, animé et non statique.** Image originale exactement conservée en entrée (SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`). Mouvement caméra discret + respiration cyan, sans reconstruire la planète ni prétendre une rotation réelle. **MP4 SHA-256 `95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a` ; 2 688 754 octets**, vérifié par FFprobe et lecture 93 frames. Résultat visuel contrôlé sur contact-sheet 3 images.
+- Code générateur autonome committé : `worldhealth-vision-v2/services/media-renderer/scripts/worldvision_segment02_globe.py` (exige SHA exact D00 original, produit vidéo MP4 + manifeste). **N'a pas besoin d'un nouvel éditeur** ; FFmpeg/OpenCV/Pillow.
+- **Clip S02 archivé dans Canva utilisateur connecté** (véritable vidéo, media ID `VAHa4ZT_ySo`, nom `World-Vision — S02 D00-v6 globe cinématique original — 3,1 s`). L'image source D00 original est également dans Canva sous `MAHa4F1Owfk` et le logo officiel G0 sous `MAHa4H6Rel4`.
+- Traçabilité de chaque plan : `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/SEGMENT_LEDGER.json`, S01 hook 4,5 s déjà vérifié sur branche preview, S02 3,1 s créé localement+Canva, S03–S08 restent à produire, montage cible total **43 s**, les timecodes sont PROVISOIRES jusqu'à voix FR approuvée.
+
+**Liens locaux pour ce chat** (peuvent ne pas survivre aux nouveaux chats ; Canva est l'archive persistante) :
+- `sandbox:/mnt/data/WorldVision_S02_Globe_D00_3s.mp4`
+- `sandbox:/mnt/data/WorldVision_S02_contact_sheet.jpg`
+- `sandbox:/mnt/data/worldvision_segment02_globe.py`
+
+**Qualité et limites :** le film est un plan original avec faible zoom, **PAS** une rotation géographique de la Terre, ni une simulation de trajet vers Shenzhen. Aucun son/voix dans le clip ; on synchronisera à la voix quand les huit vidéos seront faites. Le logo officiel se trouve déjà dans la composition générale et doit rester inchangé. S02 est **soumis à revue artistique utilisateur**, pas « approuvé pour publication ». **Le montage intégral et sa narration n'existent pas encore.**
+
+**PROCHAIN CLIP S03 (7,6–12,5 s, 4,9 s)** : construire **une vraie localisation de Shenzhen en Chine avec une carte exacte** et typographie/motion design bleu nuit/cyan compatible World-Vision. Ne pas reprendre la vieille carte plate, les logos emoji ni une vidéo de ville non autorisée. Fournir un MP4 de 4,9 s, ses images de contrôle, le code GitHub et son état d'approbation. Ne pas démarrer autre chose avant de récolter une appréciation du clip S02, sauf si utilisateur demande explicitement de poursuivre.
+
+---
+
+## PRIORITÉ ACTUELLE — S03 SHENZHEN V2 VÉRIFIÉ, ENCHAÎNEMENT À 43 S (14/11/2026)
+
+**Commande utilisateur actuelle :** montage d'actualité premium **une vidéo courte à la fois**, et **chaque séquence autonome contrôlée avant assemblage**. Séquence dramatique obligatoire : **S01 vrais portraits Trump/Poutine/Xi → S02 image World-Vision D00-v6 ORIGINALE → S03 le globe tourne réellement depuis l'Afrique vers Shenzhen → S03b vrai visuel de la ville → reste du reportage sur le nucléaire/Iran/Ukraine → signature World-Vision**. Débit normal, 30 images/s, environ **43 secondes** AU TOTAL (surtout pas 3–4 minutes) ; pas de fausse conférence ou faux bâtiments.
+
+**Faits revérifiés le 14 novembre 2026 :** la Maison-Blanche annonce la rencontre trilatérale le **jeudi 19 novembre 2026** en marge de l'APEC, et la diplomatie chinoise confirme l'APEC à **Shenzhen** les 18–19 novembre. **La salle/l'adresse précise de la rencontre ne sont PAS confirmées**. L'animation vise donc **le centre géographique de la ville (22.5431°N, 114.0579°E)**, pas un bâtiment inventé. Sources : https://www.fmprc.gov.cn/eng/xw/wsrc/202611/t20261113_12058556.html ; https://www.afp.com/en/trump-xi-putin-hold-historic-meeting-china-white-house-0.
+
+**VRAIS LIVRABLES vérifiés, pas des promesses :**
+1. **S01 HOOK** 4,5 s H264 1080×1920 : vrais portraits photographiques, logo G0 officiel, MP4 sur branche \`whv-media-studio-browser-preview/media-lab/summit-2026/hook-4p5s-preview.mp4\`. Sans narration, non approuvé définitivement.
+2. **S02 D00-v6** 3,1 s H264 1080×1920, SHA-256 \`95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a\` ; VRAIE image originale D00-v6 non reconstruite (SHA-256 \`8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2\`), mouvement de caméra sans rotation fictive, archivé Canva ID \`VAHa4ZT_ySo\`.
+3. **S03 NASA véritable rotation vers Shenzhen V1** janvier 4,9 s, SHA-256 \`6bfb45a57794c7dbfc7dc9af9ddb818c67eae327f60216b46bf32f0afb7ba10e\`, QA passée, mais trop enneigé visuellement.
+4. **S03 améliorée JULY V2** 4,9 s, **147 frames/30fps 1080×1920**, SHA-256 **\`1e49e5b6dc36c9dde2494253a8ee5c2b426863bed7fd33cd0cd24b4012be4558\`**, NASA July topo 5400×2700 SHA \`85a24885616097b5e06532b7d8e30fa5d749a782e70ea55971dd8539a0899206\`, Natural Earth GeoJSON SHA \`392a03db8aa3ba82c105852655620129b11182b95dfc34ef046827ea7d0e5b8c\`. **Run GitHub Actions #43582938864 = SUCCESS**. Quatre images de contrôle vraiment inspectées ; V2 donne une Eurasie plus verte et cohérente avec D00. **Canva archive média S03 V2 ID \`VAHa4gCj5SQ\`**, import vérifié. **ATTENTE validation artistique utilisateur**, aucun son encore, non publié.
+5. Le **fichier exact du logo officiel G0** dans renderer Git blob \`bc80fa70cebd566768bfb1703a0f1f636a78c196\` est contrôlé et utilisé (jamais redessiné).
+
+**LIENS :**
+- Vidéo S03 V2 : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v2-4p9s.mp4
+- Contact sheet 4 photogrammes S03 V2 : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03-july-v2/contact-sheet.jpg
+- Ancienne vidéo S03 V1 gardée sur branche preview pour comparaison ; ne pas effacer.
+- Code source S03 : \`worldhealth-vision-v2/services/media-renderer/scripts/worldvision_segment03_shenzhen.py\`.
+- Workflow de build/QA mobile : \`.github/workflows/whv-summit-shenzhen-s03.yml\`.
+- Journal d'état 8 clips : \`docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/SEGMENT_LEDGER.json\` (v2 retenue comme candidate).
+- **NOUVELLE EDL** \`docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/EDL_V2_FAST_GLOBE.md\` : S01 4,5s, **extrait S02 0,9s à 1×**, **extrait S03 4,4s à 1×**, futur vrai plan de Shenzhen 2,7s ; suite 12,5s–43s inchangée. **La source n'est pas accélérée, seulement recadrée temporellement.**
+- Remotion master existant \`services/media-renderer/src/WorldVisionSummit2026.tsx\` et script \`render-summit-preview.mjs\` ont été raccordés aux **vraies vidéos S02 + S03 V2** avec empreintes SHA exigées ; pas de substitution de globe. La composition finale à ~43 s reste NON RENDUE, car fichiers source n'ont pas encore été installés en binaire dans le repo/renderer et **voix FR approuvée absente**.
+
+**Prochain travail utile :** recueillir avis artistique sur S03 V2 et sur cohérence S02→S03 ; sélectionner vrai plan de Shenzhen 2,7s aux droits confirmés ; **produire le prochain clip autonome S04** (enjeux nucléaires) en motion design soigné ; préparer audition de voix française (2–3 voix) puis calage syllabique des 13 sous-titres ; exporter 43s seulement APRÈS ces validations. Ne pas coder un nouvel éditeur, ne pas réinventer une Terre, ne pas produire un clip sur une autre actualité sans accord.
+
+**Ce qui manque honnêtement :** V2 non encore approuvée artistiquement par l'utilisateur, pas de voix/audio à écouter, pas de vidéo finale 43 s. L'original D00 existe en fichier chat et Canva ; son binaire original n'est pas committé dans GitHub. Les deux clips S02/S03 sont stockés dans Canva mais leur insertion en tant que fichiers locaux dans le renderer final devra être réalisée avant le master.
+
+---
+
+
+## 14 NOV. 2026 — S04 NEW START PRODUITE ET ARCHIVÉE (QA TECHNIQUE VÉRIFIÉE)
+
+**Suite immédiate du raccord Shenzhen** : production autonome **S04 (12,5–20,4 s, 7,9 s)** sur le traité New START, sans modifier S01/S02/S03 et sans assembler de master fictif.
+
+**Rendu réel vérifié :** vidéo S04 `segment04-new-start-7p9s.mp4`, H.264, 1080×1920, 30 fps, 237 images, 7,9 s, **aucun audio**, SHA-256 `1e25443e40b4b9a867bcbd53f5f7ad4f977cb7577cf6277b348f3bf2e05ec6c9`, 1 150 810 octets. Workflow GitHub Actions [#43585854686](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43585854686) terminé avec job `render` success (vérification des six captures distinctes et de FFprobe).
+
+**Image réelle et vérifiée :** signature de New START à Prague le 8 avril 2010, photographie officielle Chuck Kennedy / Maison-Blanche, domaine public US ; source https://commons.wikimedia.org/wiki/File:Obama_and_Medvedev_sign_New_START.jpg ; SHA-256 du fichier photo `36789c11b8a4777dc432213fcd206b05a09feda7d1f1809f592b4904ccec43a1`. **Pas une image de novembre 2026.** G0 officiel contrôlé avant rendu (Git blob `bc80fa70cebd566768bfb1703a0f1f636a78c196`).
+
+**Fait sourcé :** New START a expiré le 5 février 2026 selon le ministère français des Affaires étrangères https://www.diplomatie.gouv.fr/en/presse-et-ressources/decouvrir-et-informer/actualites/expiration-du-traite-new-start .
+
+**Liens de reprise et d'affichage iPhone :**
+- MP4 : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.mp4
+- Images de contrôle : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04/contact-sheet.jpg
+- Script : `services/media-renderer/scripts/worldvision_segment04_new_start.py`
+- Workflow : `.github/workflows/whv-summit-s04-new-start.yml`
+- Conducteur : `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/S04_DIRECTION_ARTISTIQUE_QA.md`
+- Registre `SEGMENT_LEDGER.json` mis à jour.
+
+**État fidèle :** S04 est TECHNIQUEMENT produite, pas encore approuvée visuellement par l'utilisateur, pas de voix ni musique. S03B **authentiques images Shenzhen** manquante. S05–S08 restent à produire. Contradiction existante : `WorldVisionSummit2026.tsx` doit encore intégrer la nouvelle EDL S02 (0,9s) → S03 (4,4s) → S03B (2,7s), sinon le master sera incohérent. Pas de master 43s et pas d'autorisation de publication.
+
+**Suite recommandée :** vérifier la qualité réelle du clip S04 sur téléphone, puis fournir S03B avec des images authentiques de Shenzhen licenciées, avant de produire S05. En parallèle rechercher une voix française naturelle approuvable puis aligner les 13 sous-titres, sans changer le script validé.
+
+---
+
+### 14 NOV. 2026 — REFINEMENT S04 V2 / TRÈS IMPORTANT
+
+Une inspection visuelle des **vrais** photogrammes GitHub S04 V1 a révélé une **grille de fond exagérément lumineuse** en raison d'une mauvaise composition alpha PIL (RGBA direct). Le script a été corrigé pour composer la grille sur RGB avec transparence, puis revenir à RGBA; **V1 n'a pas été supprimée**.
+
+**V2 sélectionnée comme candidate technique :** GitHub Actions [#43586235979](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43586235979) SUCCESS ; 7,9 secondes / 237 frames / 1080×1920 / H.264 / silence ; MP4 SHA-256 `5ae78d45850aa9eeb51c30f3f83e99a93cac244f327233fd04257c01906e97a1`, 1 109 346 octets.
+- [V2 vidéo mobile](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.mp4)
+- [V2 planche de contrôle](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04-v2/contact-sheet.jpg)
+- [V1 originale archivée](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-7p9s.mp4)
+- [Journal JSON source et empreintes](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.json)
+- Statut : **TECHNICAL V2 READY / HUMAN ART REVIEW REQUIRED**, ni voix ni publication. Le `SEGMENT_LEDGER.json` pointe désormais vers V2 tout en conservant V1.
+- Source photographique S04 inchangée, White House 2010, et logo G0 inchangé.
+- Recherche S03B engagée : choisir une **image réelle vérifiable de Shenzhen** ; ne jamais montrer faux lieu de réunion. Une photo CC0 de 2025 trouvée sur Wikimedia Commons a été écartée artistiquement car peu représentative du skyline ; d'autres options sont encore à comparer.
+---
+
+
+## 14 NOV. 2026 — CORRECTION ÉDITORIALE PRIORITAIRE : AUCUN TEXTE DE PRODUCTION À L'ÉCRAN
+
+**Retour utilisateur explicite :** rejet de la police DejaVu et des phrases incrustées « PRÉVISUALISATION · SANS VOIX », « ARCHIVES & MOTION DESIGN », des numéros internes et des dates de fabrication. NE JAMAIS répéter ce défaut. Chaque MP4 doit être **un clean plate** directement utilisable, aucune promesse d'effacement ultérieur au master.
+
+**Correction S04 V3 VÉRIFIÉE** : Manrope Variable OFL 1.1 depuis commit immuable google/fonts 29b4ec6df2522a8aee279414b78a07910b065874, SHA-256 `3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6`. Aucun repli sur DejaVu.
+- MP4 final de *séquence* (pas master 43s) : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v3-clean-7p9s.mp4
+- Contact sheet : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04-v3/contact-sheet.jpg
+- GitHub Actions **SUCCESS** https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587064217
+- SHA-256 vidéo `4fa8aebec451f4edb0d8bd495655b619feaab0d9fb0d517c12e4bd9f88b33e69`; 1 097 118 octets; 7,9 s, 237 images, 30 i/s, H264, 1080×1920, sans piste audio; QA de six photogrammes distincts. Vérifié visuellement sur les captures.
+- Les seuls textes visibles sont **éditoriaux** : réduction des arsenaux, NEW START, date d'expiration, logo original et « Archives · Prague · 8 avril 2010 » pour signaler la vraie image historique. AUCUN status de prévisualisation, crédit de pipeline ou chronomètre technique. Crédit Chuck Kennedy / Maison-Blanche déplacé vers manifeste/légende.
+- V1 et V2 archives conservées dans GitHub mais explicitement **interdites dans le master**. `SEGMENT_LEDGER.json` garde les trois états et l'empreinte V3.
+
+**Blocage technique contre oubli** : `WorldVisionSummit2026.tsx` lit désormais le fichier `segment04-new-start-v3-clean-7p9s.mp4`, plus son dessin ancien. `render-summit-preview.mjs` impose l'existence et le SHA-256 EXACT de cette V3 avant tout master. Le composant `Credit` ne dessine plus de texte technique ; l'option d'affichage de watermark a été supprimée. Tests de contrat renforcés ; la CI bloque les textes de production incrustés via `scripts/guard_on_screen_copy.py`.
+Règle inscrite : `docs/media/EDITORIAL_ON_SCREEN_RULES.md`.
+
+**Audit des autres séquences** : S03 avait également une police DejaVu et une mention technique « NASA BLUE MARBLE / NATURAL EARTH » incrustée. Le script S03 et son workflow ont été corrigés vers une **V3 Manrope propre** conservant la même géographie ; rendu de cette S03 V3 lancé, à vérifier puis à raccorder au master seulement après QC. S01/S02 ne doivent recevoir aucune phrase interne.
+
+**État d'approbation** : S04 V3 QA techniquement passée, **validation artistique humaine non encore obtenue**. S03B Shenzhen absent ; voix définitive absente ; master 43 s non disponible, publication non autorisée.
+
+---
+
+
+### 14 NOV. 2026 — S03 V3 GÉOGRAPHIQUE PROPRE AUSSI VÉRIFIÉE
+
+État précédent S03 V2 : vrai globe NASA juillet, mais police système DejaVu et footer « NASA BLUE MARBLE / NATURAL EARTH » **incrusté** malgré caractère technique. La source a été modifiée **sans modifier les coordonnées, la texture NASA ni les frontières Natural Earth** ; les informations techniques ont été déplacées dans le manifeste JSON.
+- S03 V3 Manrope, 147 frames / 4,9 s / 1080×1920 H264 / 30fps, **sans son**, SHA-256 `59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe`, 3 633 979 octets.
+- [V3 regarder sur iPhone](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4) ; [quatre images de contrôle](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03-july-v3/contact-sheet.jpg).
+- [GitHub Actions #43587396877 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587396877). Texture/geojson SHA de V2 inchangés ; logo G0 exact et centre géographique Shenzhen 22.5431N 114.0579E.
+- Le code de montage master `WorldVisionSummit2026.tsx` et `render-summit-preview.mjs` exige désormais **S03 V3 sha 59028e59... et S04 V3 sha 4fa8aebe...**, avec impossibilité de substituer les anciennes V2. Les sources originales restent archivée. Garder S02 D00 original.
+- Contrôle contractuel ajouté au test `summit-2026-contract.test.mjs`; profil et le graphisme documentaire du reportage restent provisoires jusqu'à validation artistique.
+- Aucun master 43s, aucune voix française ni vraie vue de Shenzhen S03B. Ne pas prétendre le contraire.
+
+---
+
+## 14 NOV. 2026 — S01 V2 MANROPE / CLEAN PLATE CONFIRMÉE
+
+Suite à la demande de supprimer définitivement les mentions de production et d'améliorer la typographie, un deuxième contrôle a identifié un mauvais sous-titrage **serif** dans le clip S01 d'origine (sous-titres provisoires dessinés par la composition et non alignés à une vraie voix). Décision : les segments autonomes sont **sans sous-titres brûlés dans les pixels** ; le calage des sous-titres n'a lieu que lors du montage avec la voix française approuvée.
+
+**Livrable réel :** S01 V2 MP4 4,5 secondes 1080×1920 30fps, portraits d'archives et G0 intacts, typographie Manrope Variable (Google Fonts commit immuable 29b4ec6df2522a8aee279414b78a07910b065874, SHA-256 3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6). MP4 SHA256 **3a73172cd565f1b8d075166a6ae8f50572af77dceb97e91999c7d53a63456979**, 1 774 610 octets.
+
+- **Regarder sur téléphone** : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/hook-v2-clean-manrope-4p5s.mp4
+- **Trois photogrammes de contrôle** : https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s01-v2/contact-sheet.jpg
+- **Exécution GitHub** : https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587829876 (success).
+- Le hook initial V1 reste archivé, non retenu pour le master.
+- `WorldVisionSummit2026.tsx` charge la Manrope authentique ; `render-summit-preview.mjs` vérifie son empreinte ; `summit-2026-contract.test.mjs` interdit le sous-titrage sans voix approuvée et le watermark de production.
+- `SEGMENT_LEDGER.json` mis à jour avec empreinte, URL, statut et V1 historique.
+
+**État :** S01 V2, S03 V3 (rotation Shenzhen, clean plate) et S04 V3 (New START, clean plate) sont techniquement vérifiées. Les clips ne sont PAS approuvés artistiquement pour publication. S02 D00-v6 reste source originale distincte, S03B images authentiques de la ville manque, S05–S08 à produire ; narration, synchronisation et master 43s absents. Ne pas renommer un artefact dans le master sans hash ni QA.
+
+---
+
+## 14 NOV 2026 — S03B RÉELLE VUE DE SHENZHEN ET RACCORD CIRCULAIRE V2
+
+**Dernière décision utilisateur :** poursuivre la vidéo World-Vision « Trump, Poutine, Xi — réunion annoncée à Shenzhen le 19 novembre 2026 », de manière professionnelle, une séquence authentique à la fois. Surtout, AUCUNE mention technique dans les pixels (« Prévisualisation », « sans voix », « motion design », identifiant de segment, QA). Manrope hash-locked, logo officiel exact, aucune recréation du globe original.
+
+**Nouvelle séquence S03B réalisée :** vrai panorama urbain de Shenzhen (Lianhuashan / Futian), photo photographiée par **Renek78 le 13 septembre 2025**, publiée CC0 1.0, source https://commons.wikimedia.org/wiki/File:02_View_from_Lianhuashan,_Shenzhen_in_2025.jpg ; photo SHA-256 `213604b3c78690367db2be0f8152e687923c1a4fb56474a095019cc8ae22bfa6`. Film issu de photo réelle, 2,7 secondes, 81 frames 30fps vertical 1080x1920 H264, MP4 SHA-256 `cd0dfa113ec71d95b615fba341f0aec5db8953ad1ca520dc292db6c11540f016`, 729265 octets. Véritable logo G0 et police Manrope, sans voix, sans textes de fabrication. **Photo de la ville uniquement — PAS de salle de réunion.** Workflow [#43589613072](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43589613072) succès, six photogrammes distincts vérifiés.
+- [Voir S03B vrai film mobile 2,7 s](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment03b-shenzhen-city-v1-2p7s.mp4)
+- [Contrôle visuel S03B](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s03b-v1/contact-sheet.jpg)
+- Source Python `services/media-renderer/scripts/worldvision_segment03b_shenzhen_city.py` et CI `.github/workflows/whv-summit-s03b-shenzhen-city.yml`.
+
+**RACCORD FINAL DE TRAVAIL S03→S03B réalisé : 7,1 secondes = 4,9 secondes du S03 NASA géoréférencé + 2,7 secondes du S03B photo de ville - 0,5 seconde de chevauchement, playback RATE 1x.** 
+- V1 `s03-to-s03b-shenzhen-matchcut-7p1s.mp4` techniquement correcte mais **rejetée artistiquement** car un fondu entier superposait deux logos et les titres.
+- V2 `s03-to-s03b-shenzhen-matchcut-v2-circleopen-7p1s.mp4`, ouverture circulaire de 0,5 s, fait la transition map→ville avec moins de titres fantômes. Exécution [#43590163241](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43590163241) **SUCCESS**, 213 frames /30fps / 7,1 secondes / H264 1080x1920 / pas de voix. SHA-256 `8ab698002dfd82375423e6866b5bf0a7e602af5a7bba3a0ebafdce3b9191ef37`, 4010873 octets. Photogrammes inspectés, **validation artistique utilisateur toujours nécessaire**.
+- [Voir V2 RACCORDE 7,1 s sur iPhone](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/s03-to-s03b-shenzhen-matchcut-v2-circleopen-7p1s.mp4)
+- [Comparer images arrivée globe→ville](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-transition-v2/contact-sheet.jpg)
+- Workflow `.github/workflows/whv-summit-s03-s03b-transition-v2.yml`.
+
+**EDL du 43s réellement mise à jour dans le code Remotion** : S01 0,00–4,50 s ; original S02 D00-v6 coupé 4,50–5,40 s (0,9 s au naturel) ; S03 globe NASA 5,40–10,30 s (4,9 s intégral) ; S03B 9,80–12,50 s (2,7 s intégral), cercle d'ouverture 0,5 s ; S04 New START 12,50–20,40 s ; S05–S08 selon découpage original jusqu'à 43 s. Le code Remotion `WorldVisionSummit2026.tsx` utilise `clipPath: circle(...)` au lieu de fondu global, et le script de master `render-summit-preview.mjs` refuse tout SHA absent ou incohérent, dont S03B. Test contrat renforcé (13 sous-titres verrouillés texte exact + 0,5s recouvrement + font Manrope et clean plate).
+
+**Source de vérité** `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/EDL_V3_REAL_CITY_MATCHCUT.md` et `SEGMENT_LEDGER.json`, maintenant 9 plans visuels incluant le petit S03B ajouté, correspondant aux 8 séquences originales. Original NASA, photo CC0 et anciennes versions conservés.
+
+**N'EXISTE PAS ENCORE** : voix FR approuvée, alignement 13 sous-titres à une vraie voix, S05–S08 vidéo autonome, master final 43 s, approbation artistique S03B/raccord, fichier binaire exact S02 dans renderer final. Pas de réunion tenue ni de faux bâtiment de sommet. Tout est archivé pour un nouveau chat.
+
+**NEXT** : contrôle artistique de S03B / raccord V2 sur téléphone, puis produire S05 (Xi / réserve de Pékin) avec photos d'archives authentiques, Manrope, logos exacts, aucune mention technique brûlée, sans refaire d'éditeur. Avant publication vérifier les faits politiques de dernière minute et les droits des images.
+
+---

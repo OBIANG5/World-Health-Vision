@@ -1,0 +1,120 @@
+{
+  "schema_version": "world-vision-external-reference-v1",
+  "reference_id": "wv-ref-geopolitique-globe-20261113-4e4e9791",
+  "analyzed_at": "2026-11-13",
+  "source": "user_uploaded_chat_video",
+  "file": {
+    "original_name": "v26044gc0000dbrcrf7og65qnjb2qh6g(1).mp4",
+    "bytes": 38285831,
+    "sha256": "4e4e979144b59ee9359287c75773cfbbb5cefbd12d05f71ec9ba3bd66f3328bb",
+    "duration_seconds": 64.921667,
+    "video": {
+      "codec": "h264",
+      "width": 512,
+      "height": 910,
+      "fps_approx": 29.99,
+      "colorspace": "bt709"
+    },
+    "audio": {
+      "codec": "aac",
+      "sample_rate_hz": 44100,
+      "channels": 2
+    }
+  },
+  "visible_brand": {
+    "creator_watermark": "@focus.geopolitique",
+    "platform": "TikTok",
+    "intro": "1 MINUTE pour booster ta culture internationale — LES DERNIÈRES 24 HEURES — GÉOPOLITIQUE",
+    "date_caption": "13/11/2026"
+  },
+  "media_preservation": {
+    "stored_in_git": false,
+    "stored_in_drive": false,
+    "available_only_in_current_chat": true,
+    "needs_private_backup": true,
+    "no_redistribution_license_verified": true
+  },
+  "observation_method": "frames sampled every 2 s; manual visual inspection; all boundaries approximate +/-2s; no human playback transcription",
+  "scenes": [
+    {
+      "id": "intro",
+      "start_approx": 0,
+      "end_approx": 6,
+      "description": "Globe Earth full shot, introduction and typography, small flags"
+    },
+    {
+      "id": "mx",
+      "start_approx": 6,
+      "end_approx": 20,
+      "description": "Travel/zoom to Mexico; red country outline; Mexico–US flags; captions"
+    },
+    {
+      "id": "uk",
+      "start_approx": 20,
+      "end_approx": 32,
+      "description": "Shift to United Kingdom; red borders; geographic title"
+    },
+    {
+      "id": "riyadh-brussels",
+      "start_approx": 32,
+      "end_approx": 41,
+      "description": "Europe/Middle East map with place markers and dotted bilateral connection"
+    },
+    {
+      "id": "south-sudan",
+      "start_approx": 41,
+      "end_approx": 53,
+      "description": "Africa shift and South Sudan outlined with marker and place name"
+    },
+    {
+      "id": "turkey-china",
+      "start_approx": 53,
+      "end_approx": 64.921667,
+      "description": "Europe–Asia overview; Turkey and China highlighted; dashed connection"
+    }
+  ],
+  "observed_style": {
+    "layout": "vertical approximately 9:16",
+    "background": "very dark space / satellite earth",
+    "titles": "white serif uppercase geographic place labels",
+    "captions": "bold sans-serif white with yellow highlighted words",
+    "highlighting": "red country outlines",
+    "relations": "dotted white lines and geolocated markers",
+    "chapter_indicator": "01/05 to 05/05 in third-party video; do not replicate in WV public footage",
+    "reference_audio": "stereo audio exists; narration/prosody unverified"
+  },
+  "verified_news_facts_from_clip": false,
+  "third_party_reuse_permission": false,
+  "allowed_use": "private research and independent design inspiration only",
+  "proposed_world_vision_variant": {
+    "id": "D",
+    "name": "Le globe raconte l'actualité",
+    "status": "proposal_unapproved",
+    "separation_from_logo": "logo official original blue eye/globe stays unchanged",
+    "next_artifact": "static style frame or storyboard for human rating",
+    "no_automatic_video_render": true,
+    "concept_sequence_seconds": [
+      {
+        "from": 0,
+        "to": 1.2,
+        "action": "earth overview"
+      },
+      {
+        "from": 1.2,
+        "to": 2.7,
+        "action": "travel toward factual country"
+      },
+      {
+        "from": 2.7,
+        "to": 4,
+        "action": "highlight country"
+      },
+      {
+        "from": 4,
+        "to": 5,
+        "action": "transition to truthful sourced evidence"
+      }
+    ]
+  },
+  "documentation": "worldhealth-vision-v2/docs/media/references/2026-11-13-focus-geopolitique-video-reference.md"
+}

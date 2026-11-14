@@ -1,0 +1,77 @@
+{
+  "schema": "world-vision.visual-art-direction.v1",
+  "story_context": "brand_signature_world_vision",
+  "gate": "G1",
+  "shot": "D00",
+  "revision": "v4",
+  "date": "2026-11-13",
+  "approval_status": "candidate_unreviewed",
+  "output": {
+    "preview_format": "9:16 portrait",
+    "target_width_px": 1080,
+    "target_height_px": 1920,
+    "visual_proposal_dimensions_px": [
+      1086,
+      1448
+    ],
+    "visual_proposal_sha256": "5f97e5f0d29551e187b50106e0aaf2f00e700062a9a2f5845dbf9f9715b6a90e",
+    "visual_proposal_png_committed_to_github": false
+  },
+  "logo_reference": {
+    "file": "frontend/web/src/assets/logo.png",
+    "git_blob_sha": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+    "status": "official_current_logo_do_not_modify",
+    "geometry": "two wide eyelid curves upper and lower inspired by official logo, no visible arc ends"
+  },
+  "globe": {
+    "role": "dominant_pupil",
+    "target_width_fraction": [
+      0.9,
+      0.98
+    ],
+    "look": "satellite_realistic_3D",
+    "city_lights": false,
+    "country_borders": "clear_geospatial_overlay_not_AI_guessed",
+    "earth_clouds": "on_globe_only",
+    "atmosphere": "cyan_blue_limb_scattering_separate_from_eye_arcs"
+  },
+  "eye": {
+    "arc_count": 2,
+    "arc_shapes": [
+      "upper_eyelid",
+      "lower_eyelid"
+    ],
+    "endpoints": "offscreen",
+    "curvature": "eye_lid_not_ring_or_circle",
+    "weight": "thin_or_subtle",
+    "glow": "soft",
+    "extra_strokes": false,
+    "visible_closure": false
+  },
+  "scene": {
+    "background": "deep_navy_space",
+    "star_density": "very_sparse",
+    "star_size": "tiny",
+    "sun_visible": false,
+    "clouds_outside_globe": false,
+    "extra_rings": false
+  },
+  "future_render": {
+    "geography": "GeoJSON verified borders",
+    "candidates": [
+      "Blender Python procedural globe and volumetrics",
+      "Three.js TypeScript WebGL globe preview",
+      "Remotion TypeScript React assembly",
+      "FFmpeg encode and QC"
+    ],
+    "integration": "use_existing_media_renderer",
+    "next_technical_gate": "render D00 9:16 verified 3D still; no animation until artistically approved"
+  },
+  "constraints": [
+    "do_not_claim_ozone_depletion_or_map_accuracy_from_image_generator",
+    "do_not_force_multi_country_sequence",
+    "no_full_mp4_without_human_approval",
+    "do_not_change_official_logo_png"
+  ],
+  "canonical_document": "D00_EYE_GLOBE_VISUAL_ITERATIONS_2026-11-13.md"
+}
