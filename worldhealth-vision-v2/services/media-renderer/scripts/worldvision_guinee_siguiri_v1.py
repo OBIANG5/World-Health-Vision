@@ -345,6 +345,35 @@ def render_still(path,length,out):
              "-vf",vf,"-frames:v",str(n),"-c:v","libx264","-preset","veryfast",
              "-crf","18","-pix_fmt","yuv420p",str(out)])
     return n/FPS
+def render_stock_worker_video(src,length,out):
+    """Motion footage of an actual miner, stock illustration, not Balato news.
+    Intentionally no composited victims, police or violent acts.
+    """
+    plate=Image.new("RGBA",(W,H),(0,0,0,0))
+    d=ImageDraw.Draw(plate)
+    # Linear soft contrast shadow to support legible, consistently aligned title.
+    for y in range(H):
+        q=max(0,min(1,(y-875)/850))
+        alpha=int(214*q*q)
+        if alpha:d.line((0,y,W,y),fill=(4,12,15,alpha))
+    label(d,"ILLUSTRATION · ACTIVITÉ MINIÈRE",76,262,28,WHITE,False)
+    label(d,"DES FAMILLES",76,1262,94,PAPER,True)
+    label(d,"EN DÉPENDENT.",76,1380,89,GOLD,True)
+    transparent=OUT/"worker-video-overlay.png"
+    plate.save(transparent)
+    n=max(1,round(FPS*length))
+    # HD center crop preserves true video motion and avoids stretching or
+    # any false attribution of footage to the Balato clashes.
+    filters=("[0:v]fps=30,scale=1080:1920:force_original_aspect_ratio=increase,"
+             "crop=1080:1920,setsar=1[real];[real][1:v]overlay=0:0:format=auto,"
+             "format=yuv420p[v]")
+    execute(["ffmpeg","-y","-v","error","-stream_loop","-1","-i",str(src),
+             "-loop","1","-i",str(transparent),"-filter_complex",filters,
+             "-map","[v]","-an","-frames:v",str(n),
+             "-c:v","libx264","-preset","veryfast","-crf","18",
+             "-pix_fmt","yuv420p",str(out)])
+    return n/FPS
+
 def clip_plan(events,voice_seconds,geo,logo):
     opening=globe(A/"nasa-earth-5400.jpg",geo)
     photos=[];plan=[]
@@ -353,6 +382,11 @@ def clip_plan(events,voice_seconds,geo,logo):
         dst=OUT/f"shot-{len(photos):02d}-{kind}.mp4"
         actual=render_still(p,max(.2,s),dst)
         photos.append(dst);plan.append({"visual":kind,"seconds":actual})
+    def make_motion(kind,s):
+        dst=OUT/f"shot-{len(photos):02d}-{kind}.mp4"
+        actual=render_stock_worker_video(A/"real_worker_illustration.mp4",max(.2,s),dst)
+        photos.append(dst);plan.append({"visual":kind,"seconds":actual,
+                       "source_type":"actual_stock_footage_illustration_NOT_Balato"})
     photos.append(opening);plan.append({"visual":"globe_guinea_verified_geography","seconds":3.})
     # First 3s preserve every syllable; remainder of first narration on new real
     # photo board. No duplicated scene or text on top of title.
@@ -369,6 +403,9 @@ def clip_plan(events,voice_seconds,geo,logo):
         elif kind=="river":
             make("river",duration*.55)
             make("river_close",duration*.45)
+        elif kind=="families":
+            make("families",duration*.45)
+            make_motion("worker_illustration",duration*.55)
         else:
             make(kind,duration)
     return photos,plan
@@ -390,7 +427,8 @@ def main():
     OUT.mkdir(parents=True,exist_ok=True)
     for p in [HEAD,BODY,a.texture,a.geojson,a.logo,
               A/"woman_siguiri_usaid.jpg",A/"siguiri_village_usaid.jpg",
-              A/"red_soil_illustration.jpg",A/"river_illustration.jpg"]:
+              A/"red_soil_illustration.jpg",A/"river_illustration.jpg",
+              A/"real_worker_illustration.mp4"]:
         if not p.exists():raise FileNotFoundError(str(p))
     assert execute(["git","hash-object",str(a.logo)]).strip()==LOGO_BLOB,"Original World-Vision logo changed"
     lines=load_script()
@@ -448,9 +486,11 @@ def main():
         {"kind":"authentic_archival_photo","name":"Guinea Siguiri miner woman, 2000","license":"US Federal Government PD (USAID)","url":"https://commons.wikimedia.org/wiki/File:Guinea_Siguiri_miner_woman.jpg"},
         {"kind":"authentic_archival_photo","name":"Guinea Siguiri village, published 2006","license":"US Federal Government PD (USAID)","url":"https://commons.wikimedia.org/wiki/File:Guinea_Siguiri_village.jpg"},
         {"kind":"illustration_not_guinea","name":"Aerial view of red soil extraction","creator":"Umar Yakubu, via Pexels","license":"Pexels License","url":"https://www.pexels.com/photo/aerial-view-of-red-soil-extraction-scene-31570538/"},
-        {"kind":"illustration_not_guinea","name":"Aerial river excavation (Paraguay)","creator":"Perrito doggy Fotos y videos variados, via Pexels","license":"Pexels License","url":"https://www.pexels.com/photo/aerial-view-of-a-river-with-excavators-digging-sand-and-clay-deposits-on-its-banks-17165570/"}
+        {"kind":"illustration_not_guinea","name":"Aerial river excavation (Paraguay)","creator":"Perrito doggy Fotos y videos variados, via Pexels","license":"Pexels License","url":"https://www.pexels.com/photo/aerial-view-of-a-river-with-excavators-digging-sand-and-clay-deposits-on-its-banks-17165570/"},
+        {"kind":"illustration_video_not_guinea","name":"African worker digging outdoors / stock footage, filmed outside the Balato events","creator":"JMT 35, via Pexels","license":"Pexels License","url":"https://www.pexels.com/video/afican-worker-in-a-mine-28657918/","note":"Actual moving video, strictly documentary illustration of mining labour; NOT recorded in Guinea or the 2026 protests"}
       ],
       "photo_sha256":{f:digest(A/f) for f in ["woman_siguiri_usaid.jpg","siguiri_village_usaid.jpg","red_soil_illustration.jpg","river_illustration.jpg"]},
+      "stock_footage_sha256":digest(A/"real_worker_illustration.mp4"),
       "headfont_sha256":digest(HEAD),"bodyfont_sha256":digest(BODY),
       "official_logo_sha256":digest(a.logo),"narration_audition_required":True,"artistic_approval":False
     }
