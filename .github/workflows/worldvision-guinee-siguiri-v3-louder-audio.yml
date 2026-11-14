@@ -1,0 +1,125 @@
+name: World-Vision Guinée — audibilité mobile V3 sans changer une image
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/worldvision-guinee-siguiri-v3-authentic-visuals-2026-11-14
+    paths:
+      - '.github/workflows/worldvision-guinee-siguiri-v3-louder-audio.yml'
+permissions:
+  contents: write
+concurrency:
+  group: worldvision-guinea-v3-audio-qa
+  cancel-in-progress: true
+jobs:
+  remaster_volume:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ffmpeg and recover the exact reviewed V3 video
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          mkdir -p /tmp/worldvision_volume
+          curl -fLsS --retry 5 --retry-all-errors --max-time 180 \
+            'https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/guinee-siguiri-v3-2026-11-14/worldvision-guinee-siguiri-v3-visuels-refaits-voix-identique.mp4' \
+            -o /tmp/worldvision_volume/source.mp4
+          echo 'ea5598ec106c0b43c1d8cf71d947d789c0b4ff12e086c5f563038581babe8e96  /tmp/worldvision_volume/source.mp4' | sha256sum -c
+      - name: Gently compress only extreme peaks, clarify voice and normalize for phones
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/worldvision_volume
+          ffmpeg -y -hide_banner -loglevel error -i source.mp4 \
+            -map 0:v:0 -map 0:a:0 -c:v copy \
+            -af 'highpass=f=78,equalizer=f=3000:t=q:w=1.0:g=1.4,acompressor=threshold=0.26:ratio=1.8:attack=18:release=160:makeup=1.0,loudnorm=I=-12.8:TP=-1.5:LRA=5' \
+            -ar 48000 -ac 1 -c:a aac -b:a 192k -t 47.133333 -movflags +faststart \
+            worldvision-guinee-siguiri-v3-son-clarifie-et-renforce.mp4
+      - name: "Quality gate: same video bitstream; stronger audio; no clipped speech"
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/worldvision_volume
+          ffmpeg -hide_banner -loglevel error -i source.mp4 -map 0:v:0 -c:v copy -f hash -hash sha256 - > before-video.hash
+          ffmpeg -hide_banner -loglevel error -i worldvision-guinee-siguiri-v3-son-clarifie-et-renforce.mp4 -map 0:v:0 -c:v copy -f hash -hash sha256 - > after-video.hash
+          diff -u before-video.hash after-video.hash
+          ffmpeg -hide_banner -nostats -i source.mp4 -af 'loudnorm=I=-13:TP=-1.5:LRA=5:print_format=json' -f null - 2> before-audio.txt
+          ffmpeg -hide_banner -nostats -i worldvision-guinee-siguiri-v3-son-clarifie-et-renforce.mp4 -af 'loudnorm=I=-13:TP=-1.5:LRA=5:print_format=json' -f null - 2> after-audio.txt
+          python - <<'PY'
+          import re,json,subprocess,hashlib,pathlib
+          root=pathlib.Path('.')
+          def loudness(p):
+              s=(root/p).read_text()
+              items=re.findall(r'\{\s*"input_i".*?\}',s,re.S)
+              assert items, "Cannot measure LUFS"
+              data=json.loads(items[-1])
+              return float(data['input_i']),float(data['input_tp'])
+          old_i,old_tp=loudness('before-audio.txt')
+          new_i,new_tp=loudness('after-audio.txt')
+          assert -17.0<old_i<-15.6
+          assert -14.2<=new_i<=-12.5,("Still too quiet",new_i)
+          assert new_i-old_i>=2.0,("Not audibly improved",old_i,new_i)
+          assert new_tp<=-1.0,("Transcoding clipping risk",new_tp)
+          src=root/'source.mp4'
+          dst=root/'worldvision-guinee-siguiri-v3-son-clarifie-et-renforce.mp4'
+          a=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-of','json',src]))
+          b=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_format','-of','json',dst]))
+          assert abs(float(a['format']['duration'])-float(b['format']['duration']))<0.025
+          record=dict(
+              reason="Propriétaire: voix de la V3 trop basse sur smartphone, note artistique globale 6/10.",
+              old_lufs=old_i,new_lufs=new_i,loudness_gain_lu=round(new_i-old_i,2),
+              old_true_peak_dbtp=old_tp,new_true_peak_dbtp=new_tp,
+              unchanged_video_stream=True,unmodified_script=True,identical_vivienne_words_and_timing=True,
+              no_new_synthetic_voice=True,voice_license_verified_for_commercial_use=False,
+              user_artistic_score_before_change="6/10",visual_emotional_direction_approved=False,
+              output_sha256=hashlib.sha256(dst.read_bytes()).hexdigest(),
+              status="technical pass, owner artistic evaluation outstanding"
+          )
+          (root/'volume-qa.json').write_text(json.dumps(record,indent=2,ensure_ascii=False)+"\n")
+          print(json.dumps(record,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-guinee-v3-phone-loudness-corrected
+          retention-days: 30
+          path: |
+            /tmp/worldvision_volume/worldvision-guinee-siguiri-v3-son-clarifie-et-renforce.mp4
+            /tmp/worldvision_volume/volume-qa.json
+      - name: Publish louder rendition to same permanent phone preview
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/worldvision_audio_preview
+          DEST=/tmp/worldvision_audio_preview/media-lab/guinee-siguiri-v3-2026-11-14
+          cp /tmp/worldvision_volume/worldvision-guinee-siguiri-v3-son-clarifie-et-renforce.mp4 "$DEST/"
+          cp /tmp/worldvision_volume/volume-qa.json "$DEST/"
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('/tmp/worldvision_audio_preview/media-lab/guinee-siguiri-v3-2026-11-14/index.html')
+          html=p.read_text()
+          html=html.replace('worldvision-guinee-siguiri-v3-visuels-refaits-voix-identique.mp4',
+                            'worldvision-guinee-siguiri-v3-son-clarifie-et-renforce.mp4')
+          html=html.replace('La voix Vivienne est strictement celle de ta dernière version.',
+                            'La prise Vivienne reste la même, avec le volume rééquilibré pour smartphone.')
+          html=html.replace('le script choisi et l’intégralité du flux audio Vivienne.',
+                            'le script choisi et les mots et le rythme de Vivienne, avec un remaster de volume.')
+          html=html.replace('La piste de voix Vivienne reste celle déjà utilisée dans ta V2,',
+                            'La voix Vivienne reste la même prise, mais son volume a été corrigé ;')
+          html=html.replace('La voix Vivienne est strictement celle de ta dernière version.',
+                            'La prise Vivienne reste la même, avec un volume rééquilibré.')
+          html=html.replace('</div>\n<section>', '</div>\n<p class="note">Version avec son rehaussé : mesure de loudness avant/après et vérification vidéo identique disponibles dans <a href="volume-qa.json">le rapport audio</a>. Les images et le script sont inchangés.</p>\n<section>',1)
+          p.write_text(html)
+          PY
+          cd /tmp/worldvision_audio_preview
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/guinee-siguiri-v3-2026-11-14/
+          if ! git diff --cached --quiet; then
+            git commit -m 'audio(media): louder 6/10 Guinea V3, no visual changes and audited true peak'
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
