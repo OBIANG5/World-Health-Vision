@@ -1,5 +1,27 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## 14 NOVEMBRE 2026 — VIVIENNE TROUVÉE ET RÉUTILISÉE / SHENZHEN V3
+
+**La demande de reprendre exactement après l'interruption a été exécutée sans reprendre de zéro.** La référence Vivienne a été retrouvée sur la branche `feature/worldvision-south-sudan-v3-locked-vivienne-2026-11-14` dans `docs/media/VOICE_REFERENCE.md` : `fr-FR-VivienneMultilingualNeural`, débit `+11%`, tonalité `+0Hz`, A/B/C original visible sur https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/south-sudan-editorial-v2/voice-auditions/vivienne.mp3 . Le choix utilisateur est confirmé ; ne jamais revenir à Henri/Remy/Kokoro par défaut.
+
+**Vivienne Shenzhen — prise CONTINUE réelle :** audio 30,912s, 86 événements de mots, dernier mot 30,597s, zéro silence interne >0,65s (silencedetect −35 dB), aucun `apad`/accélération forcée sur les phrases et aucun slogan de fin prononcé. WAV SHA `96b8ebf4a2692ad67170b98e66144784508a0ca29e6884a65c1b2882db858b7b`, MP3 SHA `b30dd0b21d33c3d563a579c9cd02c1d727c2ff97771ed5bcca7459eae403a473`. [Écouter tout le reportage avec Vivienne seule](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/voice-vivienne/vivienne-shenzhen-v2-continuous-review.mp3). **Cette prise reste un essai, pas un master vocal validé.** Rights edge-tts commercial non confirmés ; publication bloquée jusqu'à voix sous licence/autorisation et accord de l'utilisateur.
+
+**Raccord image sur la parole, pas l'inverse :** durée retouchée `33,7 s` / 1011 frames 30fps (au lieu de 42,1). Directement trois dirigeants → globe NASA géoréférencé **4,9s intacts à 1×** → véritable Shenzhen, sans ancien plan-logo de remplissage. New START / Xi / Iran-Ukraine / incertitude sont calés sur les vrais WordBoundary de Vivienne. Slogan uniquement **écrit** sur l'écran de signature pendant `30,7–33,7s`.
+
+**NOUVELLE VIDÉO réellement produite et enregistrée sur GitHub :**
+- [Voir le montage V3 de 33,7 secondes AVEC Vivienne](https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/full-vivienne-review-33p7s-v3.mp4)
+- SHA256 `208f897eb84528025a0e9aee5104bebdb01e82de52735a6485ef631eedeb4b66`, 13 887 492 octets, codec H264/AAC, 1080×1920, 30fps, 1011 frames, run GitHub Actions [#43597359922](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43597359922) **success**.
+- [Images réelles du début](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/review-frames/contact-sheet-opening.jpg) et [images de fin](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/review-frames/contact-sheet-ending.jpg).
+- [EDL V3 Vivienne horodatée](https://github.com/OBIANG5/World-Health-Vision/blob/rebuild/editorial-v2-quality-gates/worldhealth-vision-v2/docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/VIVIENNE_V3_EDIT_DECISION.md).
+- Code / automation : `scripts/worldvision_vivienne_shenzhen_v2.py`, `scripts/worldvision_mux_vivienne_review_v3.py`, `src/WorldVisionEditorialV2.tsx`, `.github/workflows/whv-editorial-v3-vivienne-full-review.yml`.
+- **Sous-titres V3 en essai :** `scripts/worldvision_vivienne_subtitles_v3.py` + `.github/workflows/whv-editorial-v3-vivienne-caption-review.yml` génèrent un clip séparé avec DM Sans 78px, deux lignes maximum et largeur mesurée ; ne pas confondre ce test avec une validation artistique.
+- Le pipeline d'archivage GitHub a été corrigé par retries `fetch/reset/reapply/commit/push` sans force-push pour éviter le problème de concurrence précédent.
+
+**CRITIQUE : aucun master public n'est approuvé.** Il manque validation artistique intégrale, mixage et écoute de la voix complète par le propriétaire, droit de diffusion commerciale pour Vivienne, finalisation et revue visuelle des sous-titres, dernier contrôle factuel sur la rencontre annoncée à Shenzhen. Ne pas réutiliser l'ancien film 43s à voix Henri qui a été rejeté.
+
+---
+
+
 ## 14 NOV 2026 — V2 42,1 S VISUELLE RENDUE + 4 AUDITIONS VOIX FR (DERNIER ÉTAT CERTIFIÉ)
 
 **RÉSULTATS RÉELS, conservés dans la branche d'aperçu `whv-media-studio-browser-preview` :**
