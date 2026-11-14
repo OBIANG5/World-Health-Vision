@@ -9,9 +9,13 @@
     "rate": "+8%",
     "pitch": "+0Hz",
     "duration_seconds_approx": 14.088,
-    "sample_story": "New Orleans Mississippi cruise ship collision Nov 13 2026"
+    "sample_story": "New Orleans Mississippi cruise ship collision Nov 13 2026",
+    "source_event_id": "wv-002-new-orleans-2026-11-13",
+    "exact_transcript": "Un navire-citerne frappe un bateau de croisière à quai à La Nouvelle-Orléans ! C'est sur le Mississippi que le bateau chavire et que des passagers finissent dans l'eau. Trente-deux personnes sont transportées à l'hôpital pour être soignées, sans qu'aucune soit dans un état critique. Comment un tel accident a-t-il pu se produire ?",
+    "can_use_for_same_event_working_cut": true,
+    "can_use_as_other_event_narration": false
   },
-  "approved_scope": "VOICE_STYLE_AND_SAMPLE_REFERENCE_ONLY",
+  "approved_scope": "VOICE_STYLE_AND_SAME_EVENT_WORKING_CUT_ONLY",
   "not_approved": "No final narration for a new story, no commercial publishing rights approved",
   "provenance": {
     "repository": "OBIANG5/World-Health-Vision",
@@ -42,7 +46,9 @@
     "postmaster_normalization_only": true,
     "requires_full_human_listening": true,
     "commercial_voice_rights_verified": false,
-    "allow_automatic_tiktok_publication": false
+    "allow_automatic_tiktok_publication": false,
+    "reference_audio_reusable_only_for_same_event_working_cut": true,
+    "reference_audio_reuse_still_subject_to_commercial_rights": true
   },
   "branding": {
     "original_official_logo_path": "worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png",
