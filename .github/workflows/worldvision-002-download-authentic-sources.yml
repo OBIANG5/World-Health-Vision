@@ -21,9 +21,11 @@ jobs:
         with: {python-version: '3.12'}
       - name: Confirm FFmpeg and install video extractor
         run: |
-          command -v ffmpeg
-          command -v ffprobe
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
           python -m pip install -q requests yt-dlp
+          ffmpeg -version | head -1
       - name: Download only DVIDS assets marked PUBLIC DOMAIN
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: |
