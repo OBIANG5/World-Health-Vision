@@ -54,8 +54,18 @@ def attach_punctuation(source,events):
   suffix=""
   while end<len(source) and source[end] in ".,;:!?\u2026":
    suffix+=source[end];end+=1
-  result.append({**item,"display":token+suffix})
+  # French editorial convention allows a space before : ; ! ?. The Edge
+  # WordBoundary text omits those punctuation marks, so recover them from
+  # the exact accepted script (e.g. "discussions : réduire" must not become
+  # "discussions réduire" on screen).
   pos=end
+  k=end
+  while k<len(source) and source[k] in " \u00a0\u202f" and k-end<3:
+   k+=1
+  if k> end and k<len(source) and source[k] in ":;!?":
+   suffix+=source[k]
+   pos=k+1
+  result.append({**item,"display":token+suffix})
  # The user-approved script contains whitespace before the final '?'
  if result and result[-1]["display"].lower()=="puissance":
   result[-1]["display"]="puissance ?"
