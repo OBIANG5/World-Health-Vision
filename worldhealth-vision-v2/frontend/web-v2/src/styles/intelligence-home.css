@@ -671,3 +671,175 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media(prefers-reduced-motion:reduce){
   .wv-intelligence-home *{animation-duration:.01ms!important;transition-duration:.01ms!important;}
 }
+
+/*
+ * Workspaces & documents: the original V2 used absolute panels in a fixed
+ * viewport. The editorial home now scrolls, so these must be fixed, readable
+ * workspaces that can be opened from ANY part of the page.
+ */
+.whv-page .country-drawer.open,
+.whv-page .region-drawer.open {
+  position:fixed !important;
+  top:0 !important;bottom:0 !important;right:0 !important;
+  left:auto !important;
+  z-index:1500 !important;
+  display:flex;
+  flex-direction:column;
+  width:min(930px,92vw) !important;
+  height:100dvh !important;
+  max-height:100dvh !important;
+  padding:24px 28px !important;
+  overflow:hidden;
+  transition:none !important;
+}
+.whv-page .country-drawer.fullscreen,
+.whv-page .region-drawer.fullscreen {
+  width:100vw !important;
+}
+.whv-page .country-drawer::before,
+.whv-page .region-drawer::before {
+  border-radius:0 !important;
+  box-shadow:-25px 0 70px rgba(12,30,52,.18) !important;
+}
+.whv-page .country-drawer-header {
+  flex:0 0 auto;
+  align-items:center;
+  gap:16px;
+  padding:0 0 16px;
+  margin-bottom:16px;
+  border-bottom:1px solid var(--wv-line);
+}
+.whv-page .country-drawer-body {
+  flex:1 1 auto;
+  min-height:0 !important;
+  height:auto !important;
+  overflow:auto;
+  overscroll-behavior:contain;
+  gap:18px;
+  padding-right:7px;
+  padding-bottom:26px;
+  scrollbar-width:thin;
+  scrollbar-color:#bdd0e5 #f4f7fc;
+}
+.whv-page .country-hero-flag {filter:none;font-size:35px;}
+.whv-page .country-drawer-title {font-size:clamp(24px,2.6vw,38px);line-height:1.12;}
+.whv-page .country-drawer .drawer-btn {
+  background:#f2f5fa !important;color:#2c425c !important;
+  border:1px solid #d9e2ee !important;border-radius:7px !important;
+  min-height:32px;
+  font-weight:700 !important;
+}
+.whv-page .country-drawer .drawer-btn:hover {
+  color:#0f53b0 !important;background:#eaf2ff !important;border-color:#b9d1f0 !important;
+}
+.whv-page .country-drawer .drawer-btn.close {
+  background:#15263e !important;color:#fff !important;border-color:#15263e !important;
+}
+.whv-page .country-select {
+  background:#fff !important;color:#1e3450 !important;
+  border:1px solid #c6d5e6 !important;
+  border-radius:8px !important;
+  min-height:40px;
+}
+.whv-page .country-select-label {
+  color:#627389 !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  letter-spacing:.065em;
+}
+.whv-page .drawer-tab-bar {
+  padding:7px 0 12px;
+  border-bottom:1px solid #dce5ef;
+  gap:5px;
+}
+.whv-page .drawer-tab-btn {
+  color:#4e617b !important;background:#f1f5fb !important;
+  border:1px solid #e1e8f1 !important;
+  border-radius:7px !important;
+  font-size:12px !important;
+  font-weight:720 !important;
+  padding:9px 12px !important;
+}
+.whv-page .drawer-tab-btn:hover {color:#1055b5 !important;background:#e5efff !important;}
+.whv-page .drawer-tab-btn.active {
+  color:#fff !important;background:#1859b1 !important;
+  border-color:#1859b1 !important;
+}
+.whv-page .country-drawer .country-meta-grid {gap:9px;}
+.whv-page .country-drawer .country-meta-item {
+  border-color:#e0e8f1 !important;background:#fafcff !important;
+}
+.whv-page .country-drawer .overview-kpi-grid {
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;
+}
+.whv-page .country-drawer .overview-kpi-card {
+  background:#f9fbff !important;border:1px solid #e1e8f2 !important;
+  box-shadow:none !important;border-radius:8px !important;
+  padding:15px 14px !important;
+}
+.whv-page .country-drawer .overview-kpi-card:hover {background:#edf5ff !important;border-color:#a9c9ef !important;}
+.whv-page .country-drawer :is(.overview-kpi-label,.overview-kpi-desc,.overview-kpi-footer) {
+  color:#566981 !important;
+}
+.whv-page .country-drawer .overview-kpi-value {color:#0b2446 !important;font-variant-numeric:tabular-nums;}
+.whv-page .country-drawer :is(.indicator-tab-view,.overview-tab,.forecasts-tab) {
+  max-width:100%;
+}
+.whv-page .country-drawer .detail-chart-block {
+  border-color:#dce5f0 !important;
+  border-radius:10px !important;
+}
+.whv-page .country-drawer .source-chip {
+  border-color:#d1dfec !important;
+}
+.whv-page :is(.rt-panel,.ds-panel,.tv-panel,.re-panel,.cur-panel,.al-panel,.adv-panel,.prf-panel,.pp-panel,.watchlist-panel) {
+  position:fixed !important;
+  top:90px !important;
+  bottom:auto !important;
+  left:auto !important;
+  right:24px !important;
+  z-index:1400 !important;
+  width:min(590px,calc(100vw - 48px)) !important;
+  max-height:calc(100dvh - 111px) !important;
+  border-radius:12px !important;
+  overflow:hidden;
+  overscroll-behavior:contain;
+}
+.whv-page :is(.rt-header,.ds-header,.tv-header,.re-header,.cur-header,.al-header,.adv-header,.prf-header) {
+  padding-top:15px !important;padding-bottom:14px !important;
+}
+.whv-page :is(.rt-body,.ds-body,.tv-body,.re-body,.cur-body,.al-body,.adv-body,.prf-body) {
+  overscroll-behavior:contain;
+}
+@media(max-width:1080px){
+  .whv-page :is(.rt-panel,.ds-panel,.tv-panel,.re-panel,.cur-panel,.al-panel,.adv-panel,.prf-panel,.pp-panel,.watchlist-panel){
+    top:107px !important;right:12px !important;
+    max-height:calc(100dvh - 120px) !important;
+  }
+}
+@media(max-width:720px){
+  .whv-page .country-drawer.open,
+  .whv-page .region-drawer.open {
+    width:100vw !important;height:100dvh !important;max-height:100dvh !important;
+    padding:15px 13px !important;
+  }
+  .whv-page .country-drawer-header {
+    display:flex;flex-direction:column;align-items:stretch;
+    gap:11px;padding-bottom:12px;margin-bottom:11px;
+  }
+  .whv-page .country-hero-flag{font-size:29px;}
+  .whv-page .country-drawer-title{font-size:23px;white-space:normal;}
+  .whv-page .country-drawer-subtitle{font-size:12px;}
+  .whv-page .country-drawer-actions {flex-wrap:wrap;gap:5px;}
+  .whv-page .country-drawer .drawer-btn{min-height:30px;padding:5px 9px !important;font-size:11px !important;}
+  .whv-page .country-drawer-body{gap:12px;padding-right:3px;}
+  .whv-page .drawer-tab-btn{padding:8px 10px !important;font-size:11px !important;}
+  .whv-page .country-drawer .overview-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .whv-page .country-drawer .overview-kpi-card{padding:10px !important;}
+  .whv-page :is(.rt-panel,.ds-panel,.tv-panel,.re-panel,.cur-panel,.al-panel,.adv-panel,.prf-panel,.pp-panel,.watchlist-panel) {
+    top:97px !important;bottom:8px !important;left:8px !important;right:8px !important;
+    width:calc(100vw - 16px) !important;
+    max-height:calc(100dvh - 105px) !important;
+    border-radius:11px !important;
+  }
+}
