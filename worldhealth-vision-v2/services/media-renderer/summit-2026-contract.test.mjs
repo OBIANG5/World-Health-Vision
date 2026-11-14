@@ -53,3 +53,9 @@ test("Final assembly requires the precise S04 clean plate — V1/V2 cannot leak"
  assert.match(render,/4fa8aebec451f4edb0d8bd495655b619feaab0d9fb0d517c12e4bd9f88b33e69/);
  assert.match(render,/S04 must be exact Manrope clean-plate V3/);
 });
+
+test("Geographic segment S03 also uses exact clean premium version",()=>{
+ assert.ok(component.includes("segment03-shenzhen-july-v3-clean-4p9s.mp4"));
+ const render=readFileSync(path.join(root,"render-summit-preview.mjs"),"utf8");
+ assert.ok(render.includes("59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe"));
+});
