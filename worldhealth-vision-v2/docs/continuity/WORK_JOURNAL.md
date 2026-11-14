@@ -735,3 +735,14 @@ Actuellement la portion **4,5–5,4 s** du montage complet (27 frames) contient 
 **CRITIQUE : aucun master public n'est approuvé.** Il manque validation artistique intégrale, mixage et écoute de la voix complète par le propriétaire, droit de diffusion commerciale pour Vivienne, finalisation et revue visuelle des sous-titres, dernier contrôle factuel sur la rencontre annoncée à Shenzhen. Ne pas réutiliser l'ancien film 43s à voix Henri qui a été rejeté.
 
 ---
+
+### VIVIENNE V5 SOUS-TITRES — QA TECHNIQUE ET INSPECTION VISUELLE (14 NOV. 2026)
+
+- Nouveau **MP4 V3 de 33,7 secondes avec voix Vivienne et SOUS-TITRES V5** réel, archivé : https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/full-vivienne-captions-33p7s-v5-punctuation-review.mp4
+- GitHub Actions [#43598338515](https://github.com/OBIANG5/World-Health-Vision/actions/runs/43598338515) **SUCCESS**. Fichier MP4 13 901 886 octets, H.264 + AAC, vertical 1080×1920, 30 fps, 33,7 s. Sous-titres authentiquement dérivés des **86 mots horodatés** de la prise Vivienne, **23 blocs** de deux lignes maximum, police DM Sans 78px, largeur réelle contrôlée par métrique de fonte (<=760px), placés hors des titres éditoriaux (zone mobile y1543).
+- **Erreur corrigée lors de la revue :** le prévisualisateur V3 mélangeait deux phrases (« nucléaires. Une ») et une prévisualisation V4 supprimait les deux-points après « discussions : » et « Et attention : ». La V5 maintient les frontières des phrases et la ponctuation du texte accepté ; images de contrôle inspectées.
+- [Contrôle image V5](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/review-subtitles-v5/contact-sheet.jpg), [SRT V5](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/captions-vivienne-v5.srt), [ASS V5](https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/full-vivienne-v3/captions-vivienne-v5.ass).
+- Le code source est dans `services/media-renderer/scripts/worldvision_vivienne_subtitles_v3.py`, la CI de vérification dans `.github/workflows/whv-editorial-v3-vivienne-caption-review.yml`. La V4 demeure archivée.
+- **Ne pas publier** : le choix utilisateur de Vivienne ne remplace PAS l'approbation de cette prise complète ; la licence de la version générée via `edge-tts` n'est pas démontrée pour diffusion commerciale, le mixage musical et la revue artistique du master ne sont pas approuvés.
+
+---
