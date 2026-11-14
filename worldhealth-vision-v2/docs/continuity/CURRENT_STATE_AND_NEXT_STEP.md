@@ -1,5 +1,26 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## 14 NOV 2026 — NOUVELLE MÉTHODE VALIDÉE : UN CLIP À LA FOIS, PUIS ASSEMBLAGE
+
+**Instruction utilisateur prioritaire :** arrêter de vouloir tout rendre d'un seul bloc. Construire **huit petites vidéos indépendantes**, chacune très bien montée/contrôlée/revue, avec code ponctuel lorsque plus beau (sans réinventer le globe). **Assembler seulement les séquences validées.** La ligne éditoriale reste la vidéo approuvée dans le chat sur le sommet annoncé Trump–Poutine–Xi du 19 novembre 2026.
+
+**Livrables concrets vérifiés cette session :**
+- **S02 identité D00-v6 : film MP4 de 3,1 secondes, H.264 1080×1920, 30fps, 93 images, animé et non statique.** Image originale exactement conservée en entrée (SHA-256 `8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2`). Mouvement caméra discret + respiration cyan, sans reconstruire la planète ni prétendre une rotation réelle. **MP4 SHA-256 `95c47d1a94a1d0487e5b8f2d4c622bedcf6bad980938947ac003be34a8f8ea2a` ; 2 688 754 octets**, vérifié par FFprobe et lecture 93 frames. Résultat visuel contrôlé sur contact-sheet 3 images.
+- Code générateur autonome committé : `worldhealth-vision-v2/services/media-renderer/scripts/worldvision_segment02_globe.py` (exige SHA exact D00 original, produit vidéo MP4 + manifeste). **N'a pas besoin d'un nouvel éditeur** ; FFmpeg/OpenCV/Pillow.
+- **Clip S02 archivé dans Canva utilisateur connecté** (véritable vidéo, media ID `VAHa4ZT_ySo`, nom `World-Vision — S02 D00-v6 globe cinématique original — 3,1 s`). L'image source D00 original est également dans Canva sous `MAHa4F1Owfk` et le logo officiel G0 sous `MAHa4H6Rel4`.
+- Traçabilité de chaque plan : `docs/media/episodes/2026-11-14_trump_xi_putin_shenzhen/SEGMENT_LEDGER.json`, S01 hook 4,5 s déjà vérifié sur branche preview, S02 3,1 s créé localement+Canva, S03–S08 restent à produire, montage cible total **43 s**, les timecodes sont PROVISOIRES jusqu'à voix FR approuvée.
+
+**Liens locaux pour ce chat** (peuvent ne pas survivre aux nouveaux chats ; Canva est l'archive persistante) :
+- `sandbox:/mnt/data/WorldVision_S02_Globe_D00_3s.mp4`
+- `sandbox:/mnt/data/WorldVision_S02_contact_sheet.jpg`
+- `sandbox:/mnt/data/worldvision_segment02_globe.py`
+
+**Qualité et limites :** le film est un plan original avec faible zoom, **PAS** une rotation géographique de la Terre, ni une simulation de trajet vers Shenzhen. Aucun son/voix dans le clip ; on synchronisera à la voix quand les huit vidéos seront faites. Le logo officiel se trouve déjà dans la composition générale et doit rester inchangé. S02 est **soumis à revue artistique utilisateur**, pas « approuvé pour publication ». **Le montage intégral et sa narration n'existent pas encore.**
+
+**PROCHAIN CLIP S03 (7,6–12,5 s, 4,9 s)** : construire **une vraie localisation de Shenzhen en Chine avec une carte exacte** et typographie/motion design bleu nuit/cyan compatible World-Vision. Ne pas reprendre la vieille carte plate, les logos emoji ni une vidéo de ville non autorisée. Fournir un MP4 de 4,9 s, ses images de contrôle, le code GitHub et son état d'approbation. Ne pas démarrer autre chose avant de récolter une appréciation du clip S02, sauf si utilisateur demande explicitement de poursuivre.
+
+---
+
 
 ## 14 NOVEMBRE 2026 — SOMMET TRUMP XI POUTINE : PREMIER HOOK EN VRAI MP4 ET MONTAGE 43 S CODÉ
 
