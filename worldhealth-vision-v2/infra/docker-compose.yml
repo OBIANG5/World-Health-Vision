@@ -24,6 +24,8 @@ services:
       WHV_CATALOG_BASE_URL: http://catalog-service:8080
       WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
       WHV_ANALYTICS_BASE_URL: http://analytics-service:8000
+      WHV_MEDIA_BASE_URL: http://media-service:8000
+      WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
     ports:
       - "8080:8080"
     depends_on:
@@ -33,6 +35,10 @@ services:
         condition: service_healthy
       analytics-service:
         condition: service_started
+      media-service:
+        condition: service_healthy
+      media-renderer:
+        condition: service_healthy
     networks:
       - whv-private
       - whv-public
@@ -137,6 +143,130 @@ services:
         condition: service_healthy
     networks:
       - whv-private
+
+  media-renderer:
+    container_name: whv-media-renderer
+    build:
+      context: ..
+      dockerfile: services/media-renderer/Dockerfile
+    image: whv/media-renderer:local
+    restart: unless-stopped
+    environment:
+      WHV_RENDER_PORT: 8011
+      WHV_RENDER_OUTPUT_DIR: /app/output
+      WHV_RENDER_AUDIO_DIR: /app/audio
+      WHV_RENDER_CONCURRENCY: 1
+      WHV_RENDER_JOB_MAX_ATTEMPTS: 3
+      WHV_RENDER_REDIS_URL: redis://redis:6379/1
+      WHV_RENDER_REDIS_PREFIX: whv:media-renderer
+      WHV_RENDER_TEMP_MAX_AGE_HOURS: 6
+      WHV_RENDER_STORAGE_CLEANUP_INTERVAL_SECONDS: 3600
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - whv_media_renders:/app/output
+      - whv_media_audio:/app/audio
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8011/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 45s
+    networks:
+      - whv-private
+      - whv-public
+
+  media-service:
+    container_name: whv-media
+    build:
+      context: ..
+      dockerfile: services/media-service/Dockerfile
+    image: whv/media-service:local
+    restart: unless-stopped
+    environment:
+      WHV_MEDIA_SERVICE_PORT: 8000
+      WHV_MEDIA_DEFAULT_LANGUAGE: fr
+      WHV_MEDIA_REPOSITORY_BACKEND: postgres
+      WHV_MEDIA_DATABASE_URL: postgresql://whv_user:whv_password@whv-timescaledb:5432/whv
+      WHV_MEDIA_DATABASE_POOL_MIN_SIZE: 1
+      WHV_MEDIA_DATABASE_POOL_MAX_SIZE: 5
+      WHV_MEDIA_SEED_DEMO_STORY: "false"
+      WHV_MEDIA_CATALOG_BASE_URL: http://catalog-service:8080
+      WHV_MEDIA_RENDERER_BASE_URL: http://media-renderer:8011
+      WHV_MEDIA_AUDIO_OUTPUT_DIR: /app/audio
+      WHV_MEDIA_AUDIO_RENDERER_URL_PREFIX: /api/media-renderer/audio
+      WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
+      WHV_MEDIA_REDIS_URL: redis://redis:6379/0
+      WHV_MEDIA_RADAR_SCHEDULER_ENABLED: ${WHV_MEDIA_RADAR_SCHEDULER_ENABLED:-true}
+      WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS: ${WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS:-300}
+      WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS: ${WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS:-3}
+      WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES: ${WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES:-12}
+      WHV_MEDIA_RADAR_SCHEDULER_HEARTBEAT_TTL_SECONDS: 120
+      WHV_MEDIA_RADAR_SCHEDULER_LOCK_TTL_SECONDS: 240
+    depends_on:
+      catalog-service:
+        condition: service_healthy
+      media-renderer:
+        condition: service_healthy
+      whv-timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+    networks:
+      - whv-private
+      - whv-public
+
+  media-scheduler:
+    container_name: whv-media-scheduler
+    build:
+      context: ..
+      dockerfile: services/media-service/Dockerfile
+    image: whv/media-service:local
+    restart: unless-stopped
+    command: ["python", "-m", "media_service.scheduler"]
+    environment:
+      WHV_MEDIA_REPOSITORY_BACKEND: postgres
+      WHV_MEDIA_DATABASE_URL: postgresql://whv_user:whv_password@whv-timescaledb:5432/whv
+      WHV_MEDIA_DATABASE_POOL_MIN_SIZE: 1
+      WHV_MEDIA_DATABASE_POOL_MAX_SIZE: 3
+      WHV_MEDIA_SEED_DEMO_STORY: "false"
+      WHV_MEDIA_CATALOG_BASE_URL: http://catalog-service:8080
+      WHV_MEDIA_OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      WHV_MEDIA_RADAR_MODEL: ${WHV_MEDIA_RADAR_MODEL:-gpt-6-astra}
+      WHV_MEDIA_REDIS_URL: redis://redis:6379/0
+      WHV_MEDIA_RADAR_SCHEDULER_ENABLED: ${WHV_MEDIA_RADAR_SCHEDULER_ENABLED:-true}
+      WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS: ${WHV_MEDIA_RADAR_SCHEDULER_INTERVAL_SECONDS:-300}
+      WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS: ${WHV_MEDIA_RADAR_SCHEDULER_SCAN_HOURS:-3}
+      WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES: ${WHV_MEDIA_RADAR_SCHEDULER_MAX_CANDIDATES:-12}
+      WHV_MEDIA_RADAR_SCHEDULER_INITIAL_DELAY_SECONDS: 15
+      WHV_MEDIA_RADAR_SCHEDULER_HEARTBEAT_TTL_SECONDS: 120
+      WHV_MEDIA_RADAR_SCHEDULER_LOCK_TTL_SECONDS: 240
+    depends_on:
+      catalog-service:
+        condition: service_healthy
+      media-service:
+        condition: service_healthy
+      whv-timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "media_service.scheduler_health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+    networks:
+      - whv-private
+      - whv-public
 
   whv-timescaledb:
     image: timescale/timescaledb:2.15.3-pg16
@@ -350,3 +480,5 @@ volumes:
   whv_loki_data:
   whv_grafana_data:
   whv_data_lake:
+  whv_media_renders:
+  whv_media_audio:

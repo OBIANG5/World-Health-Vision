@@ -1,0 +1,77 @@
+name: World-Vision D01 verify video motion and publish contact sheet
+on:
+  push:
+    branches: [feature/world-vision-media-studio]
+    paths: [.github/workflows/whv-d01-motion-qa.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: wv-d01-qa
+  cancel-in-progress: true
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Read already rendered video from exact preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: whv-media-studio-browser-preview
+          path: published
+          persist-credentials: false
+      - name: Validate real MP4 and extract first middle last frames
+        run: |
+          set -euo pipefail
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          F=published/media-lab/wv-d01-gab-technical-4s.mp4
+          M=published/media-lab/wv-d01-gab-technical-4s.json
+          test -s "$F" && test -s "$M"
+          mkdir -p qa
+          python3 - "$F" "$M" <<'PY'
+          import json,sys,hashlib,subprocess
+          from pathlib import Path
+          p=Path(sys.argv[1]); m=json.loads(Path(sys.argv[2]).read_text())
+          sha=hashlib.sha256(p.read_bytes()).hexdigest()
+          assert sha==m['video_sha256']
+          assert m['target_iso3']=='GAB' and not m['publication_authorized']
+          assert m['art_direction_approved'] is False
+          info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=width,height,nb_frames,avg_frame_rate:format=duration','-of','json',str(p)]))
+          s=info['streams'][0]
+          assert (int(s['width']),int(s['height']),int(s['nb_frames']))==(1080,1920,96)
+          assert abs(float(info['format']['duration'])-4.0)<.06
+          print('Verified MP4',sha)
+          PY
+          ffmpeg -y -v error -ss 0.0 -i "$F" -frames:v 1 -vf scale=540:960 qa/frame-start.jpg
+          ffmpeg -y -v error -ss 2.0 -i "$F" -frames:v 1 -vf scale=540:960 qa/frame-middle.jpg
+          ffmpeg -y -v error -ss 3.87 -i "$F" -frames:v 1 -vf scale=540:960 qa/frame-end.jpg
+          test -s qa/frame-start.jpg && test -s qa/frame-middle.jpg && test -s qa/frame-end.jpg
+          [ "$(sha256sum qa/frame-start.jpg | cut -d' ' -f1)" != "$(sha256sum qa/frame-middle.jpg | cut -d' ' -f1)" ]
+          [ "$(sha256sum qa/frame-middle.jpg | cut -d' ' -f1)" != "$(sha256sum qa/frame-end.jpg | cut -d' ' -f1)" ]
+          ffmpeg -y -v error -i qa/frame-start.jpg -i qa/frame-middle.jpg -i qa/frame-end.jpg -filter_complex hstack=inputs=3 -q:v 2 qa/contact-sheet.jpg
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          files=['frame-start.jpg','frame-middle.jpg','frame-end.jpg','contact-sheet.jpg']
+          data={'status':'technical-only-not-approved','frames_differ':True,'not_for_social_publication':True,'images':[{'name':p,'sha256':hashlib.sha256((Path('qa')/p).read_bytes()).hexdigest()} for p in files]}
+          (Path('qa')/'qa-proof.json').write_text(json.dumps(data,indent=2))
+          PY
+      - name: Save visual evidence without rewriting existing technical video
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone -q --depth 1 --branch whv-media-studio-browser-preview "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/wv-review
+          mkdir -p /tmp/wv-review/media-lab/review
+          cp qa/* /tmp/wv-review/media-lab/review/
+          cd /tmp/wv-review
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add media-lab/review
+          if ! git diff --cached --quiet; then
+            git commit -m "qa(d01): archive three visual keyframes from verified CGI MP4"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi

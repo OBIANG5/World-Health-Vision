@@ -1,0 +1,179 @@
+/* World-Vision — geographic editorial identity laboratory (style frames, NOT rendered video) */
+.wv-globe-lab{
+  margin:0 10px 35px;color:#f4f9fa;
+  --globe-blue:#125276;--globe-mist:#dff2f3;--globe-teal:#1d8298;
+}
+.wv-globe-lab *{box-sizing:border-box}
+.wv-globe-lab-intro{
+  padding:26px 27px;border:1px solid rgba(139,213,223,.38);
+  background:linear-gradient(130deg,#12384d,#0d2632);
+  border-radius:14px;margin-bottom:20px
+}
+.wv-globe-lab-intro>span{color:#9ce2e2;font-size:10px;letter-spacing:.13em;font-weight:900}
+.wv-globe-lab-intro h3{font-size:clamp(30px,4.1vw,49px);letter-spacing:-.055em;line-height:1.06;margin:12px 0}
+.wv-globe-lab-intro p{max-width:950px;font-size:13px;line-height:1.8;color:#b9d5dd;margin:0}
+.wv-globe-lab-intro strong{color:#f0ffff}
+.wv-globe-stage-list{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin:17px 0 22px}
+.wv-globe-stage-list button{min-width:0;border:1px solid #7faec155;
+ background:#173746;border-radius:9px;padding:12px 8px;display:flex;flex-direction:column;
+ gap:5px;align-items:center;color:#ccdee3;text-align:center}
+.wv-globe-stage-list button b{font-size:12px;color:#79d8df;font-weight:900}
+.wv-globe-stage-list button span{font-size:10px;font-weight:800;line-height:1.4}
+.wv-globe-stage-list button.active{
+ background:#ddf9f4;color:#164a53;border-color:#ddf9f4;box-shadow:0 0 0 2px #9edac651}
+.wv-globe-stage-list button.active b{color:#1d7284}
+.wv-globe-lab-comparison{display:grid;grid-template-columns:minmax(0,410px) minmax(0,1fr);
+  justify-content:center;gap:clamp(16px,4vw,46px);padding:18px 26px 28px;
+  border-radius:15px;background:#0c2634;border:1px solid #98cbd446}
+.wv-globe-visual{margin:auto;min-width:0;width:100%;max-width:410px}
+.wv-globe-visual>p{font-size:10px;font-weight:700;text-align:center;color:#9fbcc5;line-height:1.5;margin:12px auto 0}
+.wv-globe-scene{
+  position:relative;overflow:hidden;isolation:isolate;
+  width:100%;aspect-ratio:9/16;border-radius:11px;
+  font-family:Inter,system-ui,Arial,sans-serif;
+  color:#123c55;background:#e0eef0;container-type:inline-size;
+  box-shadow:0 15px 55px #0005;
+}
+.wv-globe-canvas-wrap{position:relative;width:100%;height:100%;min-height:100px}
+.wv-globe-canvas{display:block;width:100%;height:100%}
+.wv-globe-data-warning{position:absolute;left:6%;right:6%;bottom:6%;
+  background:#fff9e9;color:#67522e;padding:6px;border-radius:4px;font-size:9px;text-align:center}
+.wv-globe-scene-top{position:absolute;top:0;left:0;right:0;z-index:3;
+  height:18%;display:flex;align-items:center;justify-content:space-between;gap:7px;
+  padding:5.5% 6% 7%;background:linear-gradient(180deg,#ffffffef,#ffffff55,transparent)}
+.wv-globe-brand{display:flex;align-items:center;gap:7px;min-width:0}
+.wv-globe-brand img{width:17.5%;min-width:44px;max-width:72px;aspect-ratio:1.5;object-fit:contain;
+  background:#f7f5f0;border-radius:3px}
+.wv-globe-brand b{font-size:clamp(9px,3.5cqw,17px);letter-spacing:-.035em;font-weight:950;white-space:nowrap}
+.wv-globe-scene-top>span{font-size:clamp(5px,1.45cqw,8px);font-weight:850;line-height:1.35;
+  letter-spacing:.025em;text-align:right;max-width:23%;color:#527a86}
+.wv-globe-stage-planet{position:absolute;top:12%;bottom:13%;left:0;right:0;z-index:0}
+.wv-globe-stage-headline{position:absolute;z-index:2;left:6%;right:6%}
+.wv-globe-stage-headline>span{display:block;font-size:clamp(9px,2.5cqw,13px);
+  letter-spacing:.10em;font-weight:900;color:#176d83}
+.wv-globe-stage-headline h3{font-size:clamp(30px,10.2cqw,52px);line-height:1.04;
+  letter-spacing:-.07em;font-weight:950;margin:2.8% 0}
+.wv-globe-stage-headline h3 em{font-style:normal;color:#14869a}
+.wv-globe-stage-headline p{font-size:clamp(10px,3.25cqw,15px);line-height:1.42;
+  font-weight:600;max-width:91%;margin:0}
+.wv-globe-stage-headline.intro{top:68%;background:linear-gradient(180deg,#f6fffee8,#e4f5f3ef);
+  padding:6% 5%;left:4%;right:4%;border-radius:8px;box-shadow:0 7px 28px #285d7330}
+.wv-globe-stage-headline.focus,.wv-globe-stage-headline.country{
+  top:73%;background:#f9fdfaf0;padding:5%;left:5%;right:5%;border-radius:8px;
+  border-left:5px solid #1689a6}
+.wv-globe-stage-headline.country{top:70%}
+.wv-globe-stage-headline.close{top:67%;padding:5%;
+  left:5%;right:5%;background:#e5f4f1ee;border-radius:8px}
+.wv-globe-scene-bottom{position:absolute;z-index:4;bottom:0;left:0;right:0;
+  padding:5% 6%;display:flex;justify-content:space-between;align-items:end;
+  font-size:clamp(5px,1.6cqw,8px);font-weight:850;color:#4b6e7f;
+  background:linear-gradient(0deg,#e3f0f4 50%,transparent);gap:8px}
+.wv-globe-scene-bottom span:last-child{max-width:45%;text-align:right}
+.wv-globe-scene-d03{background:linear-gradient(160deg,#edf7f8,#d9ecf1)}
+.wv-globe-evidence-frame{position:absolute;inset:18% 7% 15%;
+  display:flex;flex-direction:column;justify-content:center;gap:5%}
+.wv-globe-evidence-frame>span{font-size:clamp(10px,3cqw,15px);font-weight:950;
+  letter-spacing:.1em;color:#237b90}
+.wv-globe-evidence-frame h3{font-size:clamp(31px,10cqw,48px);font-weight:950;
+ letter-spacing:-.065em;line-height:1.08;margin:0;color:#16445a}
+.wv-globe-source-card{background:#fcfcf8;border-radius:11px;display:flex;flex-direction:column;
+ gap:11px;border-top:6px solid #2285a3;padding:8%;box-shadow:0 14px 38px #2c60731a}
+.wv-globe-source-card b{font-size:clamp(11px,3.2cqw,17px);letter-spacing:.06em;color:#218ca6}
+.wv-globe-source-card strong{font-size:clamp(18px,6.1cqw,28px);letter-spacing:-.04em;line-height:1.2}
+.wv-globe-source-card p{font-size:clamp(10px,3cqw,14px);line-height:1.5;margin:0;color:#466474}
+.wv-globe-evidence-frame>small{font-size:clamp(8px,2.1cqw,11px);line-height:1.55;
+ color:#63818a;font-weight:850}
+.wv-globe-scene-d04{background:linear-gradient(150deg,#e9f6f5,#c8e5ed)}
+.wv-globe-data-frame{position:absolute;inset:19% 6% 14%;
+ display:flex;flex-direction:column;justify-content:center;gap:6%}
+.wv-globe-data-frame>span{font-size:clamp(10px,2.65cqw,14px);font-weight:900;letter-spacing:.08em;color:#297d91}
+.wv-globe-data-main{display:flex;flex-direction:column;gap:0}
+.wv-globe-data-main b{font-size:clamp(100px,42cqw,170px);font-weight:1000;letter-spacing:-.115em;
+ line-height:.85;color:#124c69}
+.wv-globe-data-main strong{font-size:clamp(32px,10.7cqw,48px);letter-spacing:-.07em;
+ font-weight:950;line-height:1.03;color:#12506e}
+.wv-globe-data-frame>p{font-size:clamp(12px,3.8cqw,17px);line-height:1.5;
+ font-weight:700;margin:0;color:#2c6876}
+.wv-globe-data-secondary{display:flex;align-items:center;gap:6%;
+ background:#fffdfa;border-radius:9px;padding:6%;box-shadow:0 5px 20px #28618419}
+.wv-globe-data-secondary strong{font-size:clamp(40px,14cqw,67px);letter-spacing:-.065em;color:#1c91a7}
+.wv-globe-data-secondary span{font-size:clamp(11px,3cqw,16px);line-height:1.45;font-weight:800}
+.wv-globe-data-frame>small{font-size:clamp(8px,2cqw,12px);
+ letter-spacing:.04em;font-weight:900;color:#58838f}
+.wv-globe-lab-review{display:flex;flex-direction:column;gap:13px;padding:12px 5px 8px}
+.wv-globe-lab-review>span{color:#89cddd;font-size:11px;letter-spacing:.13em;font-weight:900}
+.wv-globe-lab-review h4{font-size:clamp(26px,3.5vw,42px);letter-spacing:-.055em;line-height:1.06;margin:0}
+.wv-globe-lab-review>p{font-size:13px;line-height:1.75;color:#b5d0d8;margin:0}
+.wv-globe-question{border-left:3px solid #8bd8cc;background:#163949;padding:15px 17px;border-radius:5px}
+.wv-globe-question strong{font-size:12px;color:#d0f7f0}
+.wv-globe-question p{font-size:12px;line-height:1.7;color:#c2d9dd;margin:7px 0 0}
+.wv-globe-lab-review label{font-size:12px;font-weight:850;color:#edf6f7}
+.wv-globe-lab-review select,.wv-globe-lab-review textarea{
+ border:1px solid #7fc6d370;border-radius:8px;background:#193d4a;color:white;
+ font-size:12px;padding:13px 14px;min-height:45px
+}
+.wv-globe-lab-review textarea{resize:vertical;line-height:1.65;min-height:110px}
+.wv-globe-lab-review textarea::placeholder{color:#99bfc8}
+.wv-globe-validation-warn{font-size:11px;color:#f4be9b;line-height:1.6}
+.wv-globe-feedback-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:5px}
+.wv-globe-feedback-actions button,.wv-globe-feedback-actions a{
+  min-height:44px;border-radius:9px;padding:12px 16px;
+  font-size:12px;font-weight:850;text-align:center;display:flex;align-items:center;justify-content:center;
+}
+.wv-globe-feedback-actions button{background:#c5f0eb;color:#14515a;border:0}
+.wv-globe-feedback-actions button:disabled{opacity:.5}
+.wv-globe-feedback-actions a{text-decoration:none;color:#e5f8ff;border:1px solid #87c8db;
+ background:#205166}
+.wv-globe-feedback-status{color:#c9f5da;font-size:12px;line-height:1.6}
+.wv-globe-lab-caveat{font-size:11px;line-height:1.8;color:#9dbdc8;border-top:1px solid #86adbd47;
+ padding-top:18px}
+.wv-globe-lab-caveat strong{color:#d3f6e9}
+.wv-globe-lab-sources{padding:22px 26px;margin-top:19px;border:1px solid #8ac5cc47;
+ border-radius:12px;background:#143441}
+.wv-globe-lab-sources strong{font-size:13px;color:white}
+.wv-globe-lab-sources p{font-size:12px;line-height:1.75;color:#b9d3da}
+.wv-globe-lab-sources>div{display:flex;gap:18px;flex-wrap:wrap}
+.wv-globe-lab-sources a{color:#a6e6f2;font-size:11px;text-decoration:underline}
+@media(max-width:900px){
+ .wv-globe-stage-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .wv-globe-lab-comparison{grid-template-columns:minmax(0,1fr);padding:16px;gap:25px}
+ .wv-globe-visual{max-width:360px}
+}
+@media(max-width:520px){
+ .wv-globe-lab-intro{padding:17px}
+ .wv-globe-lab-intro h3{font-size:32px}
+ .wv-globe-stage-list{gap:6px}
+ .wv-globe-stage-list button{padding:9px 4px}
+ .wv-globe-stage-list button span{font-size:10px}
+ .wv-globe-lab-comparison{padding:10px}
+ .wv-globe-visual{max-width:100%}
+ .wv-globe-lab-review{padding:7px}
+ .wv-globe-feedback-actions{flex-direction:column}
+ .wv-globe-feedback-actions>*{width:100%}
+ .wv-globe-lab-sources{padding:16px}
+}
+
+
+/* Visible jump to the real geo-motion lab; no confusing it with the static D00 art. */
+.wv-globe-lab-motion-jump{display:inline-flex;align-items:center;justify-content:center;
+ margin:13px 0;padding:12px 16px;border-radius:8px;border:1px solid rgba(26,126,156,.42);
+ background:#075572;color:#fff!important;font-weight:800;font-size:12px;
+ text-decoration:none;line-height:1.45;min-height:44px}
+.wv-globe-lab-motion-jump:hover{background:#087b94}
+
+/* The photographic D00-v6 design reference is immutable until user approval.
+   Clear technical/artistic separation prevents mistaking the Canvas prototype
+   for a visual downgrade of the approved brand identity. */
+.wv-globe-art-reference{margin:17px 0 20px;padding:17px 19px;
+  background:#062535;border:1px solid rgba(99,210,232,.65);
+  border-left:4px solid #50d2ef;border-radius:10px;max-width:1000px}
+.wv-globe-art-reference>strong{display:block;color:#adf5ff;
+  font-size:12px;font-weight:900;letter-spacing:.1em;margin-bottom:10px}
+.wv-globe-lab-intro .wv-globe-art-reference p{margin:8px 0;line-height:1.7;color:#f0f9fc}
+.wv-globe-lab-intro .wv-globe-art-reference b{color:#fff;font-weight:850}
+.wv-globe-tech-fold{margin:30px 0;border:1px solid rgba(88,181,205,.4);
+  background:#061625;border-radius:13px;padding:10px 16px}
+.wv-globe-tech-fold>summary{cursor:pointer;display:list-item;padding:14px 9px;
+  color:#e3f8fc;font-weight:850;font-size:clamp(13px,2vw,16px);line-height:1.6}
+.wv-globe-tech-fold>summary:focus-visible{outline:2px solid #8ce1ef;outline-offset:3px}
+.wv-globe-tech-fold[open]>summary{border-bottom:1px solid rgba(120,220,238,.25);margin-bottom:18px}

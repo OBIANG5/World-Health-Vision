@@ -82,6 +82,63 @@ spring:
 
         # Only the data-grounded advisor chat may be submitted by the public
         # frontend. Keep ingestion and internal service mutation routes private.
+        - id: media-radar-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/radar/**
+            - Method=POST
+          metadata:
+            response-timeout: 130000
+            connect-timeout: 5000
+
+        - id: media-verify-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/stories/*/verify
+            - Method=POST
+          metadata:
+            response-timeout: 130000
+            connect-timeout: 5000
+
+        - id: media-creative-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/stories/*/creative/generate
+            - Method=POST
+          metadata:
+            response-timeout: 70000
+            connect-timeout: 5000
+
+        - id: media-audio-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/stories/*/audio/generate
+            - Method=POST
+          metadata:
+            response-timeout: 100000
+            connect-timeout: 5000
+
+        - id: media-qa-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/stories/*/qa/run
+            - Method=POST
+          metadata:
+            response-timeout: 70000
+            connect-timeout: 5000
+
+        - id: media-service-route
+          uri: ${WHV_MEDIA_BASE_URL:http://localhost:8010}
+          predicates:
+            - Path=/api/media/**
+            - Method=GET,POST,PATCH,PUT,DELETE
+
+        - id: media-renderer-route
+          uri: ${WHV_MEDIA_RENDERER_BASE_URL:http://localhost:8011}
+          predicates:
+            - Path=/api/media-renderer/**
+            - Method=GET,POST
+
         - id: analytics-advisor-chat-route
           uri: ${WHV_ANALYTICS_BASE_URL:http://localhost:8000}
           predicates:

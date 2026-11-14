@@ -1,0 +1,469 @@
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+from media_service.models import (
+    ChannelExportRef,
+    ConfirmPublicationRequest,
+    CreateStoryRequest,
+    DecisionRequest,
+    DiscoverAssetsRequest,
+    GenerateCreativeRequest,
+    GenerateVoiceoverRequest,
+    MediaDashboard,
+    MediaStory,
+    PrepareDraftRequest,
+    PreparePublicationRequest,
+    RadarScanHistoryItem,
+    RadarScanRequest,
+    RadarScanResult,
+    RadarSchedulerStatus,
+    RunQaRequest,
+    SelectAssetRequest,
+    SelectHookRequest,
+    StoryStatus,
+    VerifyStoryRequest,
+)
+from media_service.asset_workflow import (
+    AssetWorkflowError,
+    discover_asset_bundle,
+)
+from media_service.editorial_creative import (
+    CREATIVE_CLIENT,
+    CreativeConfigurationError,
+    CreativeGroundingError,
+    CreativeProviderError,
+)
+from media_service.qa import (
+    QA_LANGUAGE_CLIENT,
+    QaConfigurationError,
+    QaProviderError,
+    run_publication_qa,
+)
+from media_service.radar import (
+    RADAR_CLIENT,
+    RadarConfigurationError,
+    RadarProviderError,
+)
+from media_service.radar_workflow import execute_radar_scan
+from media_service.scheduler_state import read_scheduler_status
+from media_service.renderer_client import RENDERER_CLIENT, RendererDependencyError
+from media_service.store import (
+    MediaStoryNotFoundError,
+    MediaWorkflowConflictError,
+    STORE,
+)
+from media_service.wikimedia_assets import (
+    WIKIMEDIA_CLIENT,
+    AssetProviderError,
+)
+from media_service.voiceover import (
+    VOICEOVER_CLIENT,
+    VoiceoverConfigurationError,
+    VoiceoverProviderError,
+    VoiceoverQualityError,
+)
+from media_service.verification import (
+    VERIFICATION_CLIENT,
+    VerificationConfigurationError,
+    VerificationProviderError,
+)
+
+
+app = FastAPI(title="World-Vision Media Studio Service")
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "media-service"}
+
+
+@app.get("/metrics")
+async def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
+@app.get("/api/media/dashboard", response_model=MediaDashboard)
+async def media_dashboard() -> MediaDashboard:
+    return STORE.dashboard()
+
+
+@app.post("/api/media/radar/scans", response_model=RadarScanResult)
+async def run_radar_scan(request: RadarScanRequest) -> RadarScanResult:
+    try:
+        return await execute_radar_scan(
+            request,
+            radar_client=RADAR_CLIENT,
+            store=STORE,
+        )
+    except RadarConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except RadarProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/media/radar/scans", response_model=list[RadarScanHistoryItem])
+async def list_radar_scan_history(
+    limit: int = Query(default=20, ge=1, le=100),
+) -> list[RadarScanHistoryItem]:
+    return STORE.list_radar_scans(limit=limit)
+
+
+@app.get("/api/media/radar/scheduler", response_model=RadarSchedulerStatus)
+async def radar_scheduler_status() -> RadarSchedulerStatus:
+    return await read_scheduler_status()
+
+
+@app.get("/api/media/stories", response_model=list[MediaStory])
+async def list_media_stories(
+    status: StoryStatus | None = Query(default=None),
+) -> list[MediaStory]:
+    return STORE.list(status=status)
+
+
+@app.post("/api/media/stories", response_model=MediaStory, status_code=201)
+async def create_media_story(request: CreateStoryRequest) -> MediaStory:
+    return STORE.create(request)
+
+
+@app.get("/api/media/stories/{story_id}", response_model=MediaStory)
+async def get_media_story(story_id: str) -> MediaStory:
+    try:
+        return STORE.get(story_id)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+
+
+@app.post("/api/media/stories/{story_id}/verify", response_model=MediaStory)
+async def verify_media_story(
+    story_id: str,
+    request: VerifyStoryRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        report = await VERIFICATION_CLIENT.verify(story, request)
+        return STORE.apply_verification(story_id, report)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except VerificationConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except VerificationProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/score/recompute", response_model=MediaStory)
+async def recompute_story_score(story_id: str) -> MediaStory:
+    try:
+        return STORE.recompute_score(story_id)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+
+
+@app.post("/api/media/stories/{story_id}/hooks/select", response_model=MediaStory)
+async def select_story_hook(story_id: str, request: SelectHookRequest) -> MediaStory:
+    try:
+        return STORE.select_hook(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/creative/generate", response_model=MediaStory)
+async def generate_story_creative(
+    story_id: str,
+    request: GenerateCreativeRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        package = await CREATIVE_CLIENT.generate(story, request)
+        return STORE.apply_creative_package(story_id, package)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except CreativeGroundingError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except CreativeConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except CreativeProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/assets/discover", response_model=MediaStory)
+async def discover_story_assets(
+    story_id: str,
+    request: DiscoverAssetsRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        bundle = await discover_asset_bundle(
+            story,
+            request,
+            asset_client=WIKIMEDIA_CLIENT,
+        )
+        return STORE.apply_asset_bundle(story_id, bundle)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except AssetWorkflowError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except AssetProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/assets/select", response_model=MediaStory)
+async def select_story_asset(
+    story_id: str,
+    request: SelectAssetRequest,
+) -> MediaStory:
+    try:
+        return STORE.select_asset(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/draft/prepare", response_model=MediaStory)
+async def prepare_story_draft(story_id: str, request: PrepareDraftRequest) -> MediaStory:
+    try:
+        return STORE.prepare_draft(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/audio/generate", response_model=MediaStory)
+async def generate_story_voiceover(
+    story_id: str,
+    request: GenerateVoiceoverRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        voiceover = await VOICEOVER_CLIENT.generate(story, request)
+        return STORE.apply_voiceover(story_id, voiceover)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except VoiceoverQualityError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except VoiceoverConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except VoiceoverProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/render-preview", response_model=MediaStory)
+async def launch_preview_render(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        if story.video_draft is None:
+            raise MediaWorkflowConflictError("Prepare a video draft before rendering.")
+        if story.status not in {"scripting", "assets", "rendering"}:
+            raise MediaWorkflowConflictError(
+                f"Render cannot start from status '{story.status}'."
+            )
+        render_job = await RENDERER_CLIENT.create_job(story)
+        return STORE.attach_render_job(story_id, render_job)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/render-preview/retry", response_model=MediaStory)
+async def retry_preview_render(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        if story.render_job is None:
+            raise MediaWorkflowConflictError("Story has no render job.")
+        if story.render_job.status != "failed":
+            raise MediaWorkflowConflictError(
+                "Only a failed preview render can be retried."
+            )
+        if story.render_job.attempts >= story.render_job.max_attempts:
+            raise MediaWorkflowConflictError(
+                "Preview render retry limit has been reached."
+            )
+        render_job = await RENDERER_CLIENT.retry_job(story.render_job.id)
+        return STORE.sync_render_job(story_id, render_job)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/render-preview/sync", response_model=MediaStory)
+async def sync_preview_render(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        if story.render_job is None:
+            raise MediaWorkflowConflictError("Story has no render job.")
+        render_job = await RENDERER_CLIENT.get_job(story.render_job.id)
+        return STORE.sync_render_job(story_id, render_job)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/exports/tiktok", response_model=MediaStory)
+async def launch_tiktok_clean_export(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        package = story.publication_package
+        if package is None:
+            raise MediaWorkflowConflictError(
+                "Prepare the canonical publication package first."
+            )
+        if "tiktok" not in package.target_channels:
+            raise MediaWorkflowConflictError(
+                "TikTok is not part of the active publication package."
+            )
+        render_job = await RENDERER_CLIENT.create_job(
+            story,
+            render_profile="tiktok_api_clean_v1",
+        )
+        export = ChannelExportRef(
+            channel="tiktok",
+            canonical_manifest_sha256=package.manifest_sha256,
+            render_job=render_job,
+        )
+        return STORE.attach_channel_export(story_id, export)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/exports/tiktok/retry", response_model=MediaStory)
+async def retry_tiktok_clean_export(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        export = next(
+            (
+                candidate
+                for candidate in story.channel_exports
+                if candidate.channel == "tiktok"
+            ),
+            None,
+        )
+        if export is None:
+            raise MediaWorkflowConflictError("Story has no TikTok clean export.")
+        if export.render_job.status != "failed":
+            raise MediaWorkflowConflictError(
+                "Only a failed TikTok clean export can be retried."
+            )
+        if export.render_job.attempts >= export.render_job.max_attempts:
+            raise MediaWorkflowConflictError(
+                "TikTok clean export retry limit has been reached."
+            )
+        render_job = await RENDERER_CLIENT.retry_job(export.render_job.id)
+        return STORE.sync_channel_export(story_id, "tiktok", render_job)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/exports/tiktok/sync", response_model=MediaStory)
+async def sync_tiktok_clean_export(story_id: str) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        export = next(
+            (
+                candidate
+                for candidate in story.channel_exports
+                if candidate.channel == "tiktok"
+            ),
+            None,
+        )
+        if export is None:
+            raise MediaWorkflowConflictError(
+                "Story has no TikTok clean export."
+            )
+        render_job = await RENDERER_CLIENT.get_job(export.render_job.id)
+        return STORE.sync_channel_export(
+            story_id,
+            "tiktok",
+            render_job,
+        )
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except RendererDependencyError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/prepare", response_model=MediaStory)
+async def prepare_story_publication(
+    story_id: str,
+    request: PreparePublicationRequest,
+) -> MediaStory:
+    try:
+        return STORE.prepare_publication_package(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/publication/confirm", response_model=MediaStory)
+async def confirm_story_publication(
+    story_id: str,
+    request: ConfirmPublicationRequest,
+) -> MediaStory:
+    try:
+        return STORE.confirm_publication(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/qa/run", response_model=MediaStory)
+async def run_story_publication_qa(
+    story_id: str,
+    request: RunQaRequest,
+) -> MediaStory:
+    try:
+        story = STORE.get(story_id)
+        state, report = await run_publication_qa(
+            story,
+            request,
+            language_client=QA_LANGUAGE_CLIENT,
+        )
+        return STORE.apply_qa_report(story_id, state, report)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except QaConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except QaProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.post("/api/media/stories/{story_id}/decision", response_model=MediaStory)
+async def decide_story(story_id: str, request: DecisionRequest) -> MediaStory:
+    try:
+        return STORE.decide(story_id, request)
+    except MediaStoryNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Story not found") from exc
+    except MediaWorkflowConflictError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc

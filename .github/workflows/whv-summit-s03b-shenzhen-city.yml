@@ -1,0 +1,138 @@
+name: World-Vision S03B — genuine Shenzhen 2.7-second city film
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/world-vision-media-studio]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_segment03b_shenzhen_city.py'
+      - '.github/workflows/whv-summit-s03b-shenzhen-city.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: worldvision-s03b-city-render
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet 'pillow==12.0.0' 'numpy==2.3.4'
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Acquire exact authentic CC0 Shenzhen photograph
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIR=worldhealth-vision-v2/services/media-renderer/assets/summit-2026
+          mkdir -p "$DIR"
+          curl -fL --retry 5 --retry-all-errors --max-time 160 \
+            --user-agent 'World-Vision Editorial 1.0 (+https://github.com/OBIANG5/World-Health-Vision)' \
+            'https://upload.wikimedia.org/wikipedia/commons/5/57/02_View_from_Lianhuashan%2C_Shenzhen_in_2025.jpg' \
+            -o "$DIR/shenzhen-lianhuashan-2025.jpg"
+          python - <<'PY'
+          from PIL import Image
+          f='worldhealth-vision-v2/services/media-renderer/assets/summit-2026/shenzhen-lianhuashan-2025.jpg'
+          im=Image.open(f)
+          assert im.format=='JPEG' and im.size==(4000,2252),(im.format,im.size)
+          print('Authentic Renek78 photo confirmed:',im.size)
+          PY
+          sha256sum "$DIR/shenzhen-lianhuashan-2025.jpg"
+      - name: Acquire pinned premium typography, verify genuine World-Vision logo
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIR=worldhealth-vision-v2/services/media-renderer/assets/summit-2026
+          curl -fL --retry 5 --retry-all-errors --max-time 120 \
+            'https://raw.githubusercontent.com/google/fonts/29b4ec6df2522a8aee279414b78a07910b065874/ofl/manrope/Manrope%5Bwght%5D.ttf' \
+            -o "$DIR/Manrope-variable.ttf"
+          echo '3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6  '"$DIR/Manrope-variable.ttf" | sha256sum --check --
+          LOGO=worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png
+          test "$(git hash-object "$LOGO")" = 'bc80fa70cebd566768bfb1703a0f1f636a78c196'
+      - name: Reject internal captions, render genuine 81-frame film
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_segment03b_shenzhen_city.py
+          python scripts/guard_on_screen_copy.py scripts/worldvision_segment03b_shenzhen_city.py
+          python scripts/worldvision_segment03b_shenzhen_city.py \
+            --photo assets/summit-2026/shenzhen-lianhuashan-2025.jpg \
+            --logo public/brand/world-vision-official.png \
+            --font assets/summit-2026/Manrope-variable.ttf \
+            --output output/summit-2026/segment03b-shenzhen-city-v1-2p7s.mp4
+      - name: Verify 81 frames, 2.7 seconds, vertical H264, real photograph and distinct moments
+        shell: bash
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          F=output/summit-2026/segment03b-shenzhen-city-v1-2p7s.mp4
+          R=output/summit-2026/review-s03b-v1
+          mkdir -p "$R"
+          for TIME in 0.15 0.52 0.96 1.38 1.87 2.47; do
+            ffmpeg -y -v error -ss "$TIME" -i "$F" -frames:v 1 \
+              -vf scale=540:960 -q:v 3 "$R/frame-$TIME.jpg"
+          done
+          ffmpeg -y -v error -i "$R/frame-0.52.jpg" -i "$R/frame-1.38.jpg" \
+            -i "$R/frame-2.47.jpg" -filter_complex hstack=inputs=3 \
+            -q:v 3 "$R/contact-sheet.jpg"
+          python - <<'PY'
+          import json,hashlib,subprocess
+          from pathlib import Path
+          p=Path('output/summit-2026/segment03b-shenzhen-city-v1-2p7s.mp4')
+          metadata=json.loads(p.with_suffix('.json').read_text())
+          info=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(p)]))
+          v=next(x for x in info['streams'] if x['codec_type']=='video')
+          assert v['codec_name']=='h264' and (v['width'],v['height'])==(1080,1920)
+          assert v['nb_frames']=='81' and abs(float(info['format']['duration'])-2.7)<.04
+          assert not any(x['codec_type']=='audio' for x in info['streams'])
+          assert metadata['license'].startswith('CC0') and metadata['is_photo_of_meeting'] is False
+          assert metadata['is_photo_of_meeting_venue'] is False
+          assert metadata['clean_plate'] and not metadata['production_labels_embedded']
+          R=Path('output/summit-2026/review-s03b-v1')
+          files=sorted(R.glob('frame-*.jpg'))
+          assert len(files)==6
+          hashes=[hashlib.sha256(f.read_bytes()).hexdigest() for f in files]
+          assert len(set(hashes))==6,'Images not changing over 2.7s'
+          print('QA PASS: 81 frames / 2.7s / H264 / 30fps / clean plate / CC0 source')
+          PY
+          ffprobe -v error -show_entries stream=codec_name,width,height,nb_frames,r_frame_rate \
+            -show_entries format=duration -of json "$F"
+      - name: Archive video and evidence on permanent mobile preview branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/worldvision-s03b-review
+          SRC=worldhealth-vision-v2/services/media-renderer/output/summit-2026
+          OUT=/tmp/worldvision-s03b-review/media-lab/summit-2026
+          mkdir -p "$OUT/review-s03b-v1"
+          cp "$SRC/segment03b-shenzhen-city-v1-2p7s.mp4" \
+            "$SRC/segment03b-shenzhen-city-v1-2p7s.json" "$OUT/"
+          cp "$SRC/review-s03b-v1/"*.jpg "$OUT/review-s03b-v1/"
+          cd /tmp/worldvision-s03b-review
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/summit-2026
+          if ! git diff --cached --quiet; then
+            git commit -m "preview(media): S03B authentic 2.7s CC0 Shenzhen photo motion with QA"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi

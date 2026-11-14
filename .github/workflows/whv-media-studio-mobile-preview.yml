@@ -1,0 +1,220 @@
+name: World-Vision Media Studio real-UI mobile preview
+
+on:
+  push:
+    branches:
+      - 'improve/media-studio-mobile-preview-2026-11-12'
+      - 'feature/world-vision-media-studio'
+    paths:
+      - '.github/workflows/whv-media-studio-mobile-preview.yml'
+      - 'worldhealth-vision-v2/frontend/web-v2/**'
+      - 'worldhealth-vision-v2/scripts/media-preview-bootstrap.js'
+      - 'worldhealth-vision-v2/scripts/build-media-preview.mjs'
+  workflow_dispatch:
+
+concurrency:
+  group: world-vision-media-mobile-preview
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout actual V2 Media Studio source
+        uses: actions/checkout@v4
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install canonical React frontend dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Test news-driven country targeting and dateline navigation
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node --test src/media/geoTargeting.test.mjs
+      - name: Typecheck and compile original V2 React Media Studio
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        env:
+          VITE_WHV_PREVIEW_MODE: 'true'
+        run: npm run build -- --base=./
+      - name: Add explicitly labelled fictional preview adapter
+        run: |
+          node --check worldhealth-vision-v2/scripts/media-preview-bootstrap.js
+          node worldhealth-vision-v2/scripts/build-media-preview.mjs
+      - name: Retrieve existing REAL video archive for mobile end-to-end testing
+        uses: actions/checkout@v4
+        with:
+          ref: whv-media-studio-browser-preview
+          path: existing-real-media
+          persist-credentials: false
+      - name: Test the same real source archive that users will view
+        run: |
+          set -euo pipefail
+          REAL=existing-real-media/media-pilots/cop31-risk-finance-2026-11-12
+          test -s "${REAL}/story.json"
+          test -s "${REAL}/world-vision-cop31-master.mp4"
+          (cd "${REAL}" && sha256sum --check SHA256SUMS)
+          mkdir -p worldhealth-vision-v2/frontend/web-v2/dist/media-pilots
+          cp -a existing-real-media/media-pilots/. \
+            worldhealth-vision-v2/frontend/web-v2/dist/media-pilots/
+      - name: Bundle credited historical photograph for documentary style frame
+        run: |
+          set -euo pipefail
+          DEST=worldhealth-vision-v2/frontend/web-v2/dist/editorial
+          mkdir -p "$DEST"
+          # A 2017 public-domain U.S. Army archive is illustrative of
+          # disaster risk. It is NOT footage of COP31 2026.
+          URLS=(
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg/960px-Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg'
+            'https://commons.wikimedia.org/wiki/Special:FilePath/Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg?width=960'
+            'https://media.defense.gov/2017/Aug/27/2002037959/-1/-1/0/170827-A-ZW944-005A.JPG'
+          )
+          ok=0
+          for u in "${URLS[@]}"; do
+            echo "Retrieving licensed source from ${u%%/*}//... "
+            if curl -L --fail --silent --show-error --retry 2 \
+              --max-time 25 -A 'WorldVisionNewsroom/1.0 (editorial source QA)' \
+              "$u" -o "$DEST/harvey-rescue-2017.jpg" && \
+              test "$(stat -c %s "$DEST/harvey-rescue-2017.jpg")" -gt 25000 && \
+              test "$(file -b --mime-type "$DEST/harvey-rescue-2017.jpg")" = "image/jpeg"; then
+              ok=1
+              break
+            fi
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo "A photographic design without its verified archival photo is NOT publishable."
+            exit 1
+          fi
+          echo "58bc6d400c6d264465d2f0a1962b07e298371c01fe0527f743fd0b7d2068c8ec  $DEST/harvey-rescue-2017.jpg" | sha256sum --check
+          cat > "$DEST/harvey-rescue-2017.provenance.json" <<'EOF'
+          {
+            "asset_id": "harvey-us-army-2017",
+            "title": "Hurricane Harvey, Houston rescue archival photograph",
+            "event_date": "2017-08-27",
+            "location": "Houston, Texas, USA",
+            "credit": "U.S. Army / 1st Lt. Zachary West",
+            "source_url": "https://www.war.gov/Multimedia/Photos/igphoto/2002037959/",
+            "retrieval_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg/960px-Texas_Army_National_Guard_Hurricane_Harvey_Response.jpg",
+            "license_status": "U.S. federal government public-domain work; no endorsement implied",
+            "sha256": "58bc6d400c6d264465d2f0a1962b07e298371c01fe0527f743fd0b7d2068c8ec",
+            "depicts_cop31": false,
+            "use": "historical illustration of disaster risk for an editorial style-frame proof only"
+          }
+          EOF
+          echo "Source credit: US Army photographer 1st Lt. Zachary West, 2017 Houston, public domain US federal work."
+          test -s worldhealth-vision-v2/docs/media/art-direction/cop31-opening-directions-v1.json
+      - name: Bundle NASA Blue Marble daytime topography for the cinematic Earth
+        run: |
+          set -euo pipefail
+          DEST=worldhealth-vision-v2/frontend/web-v2/dist/earth
+          mkdir -p "$DEST"
+          # The source is a global, equirectangular NASA satellite mosaic.
+          # Do NOT substitute generated / invented political borders or city lights.
+          SOURCE='https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography/january/world.topo.200401.3x5400x2700.jpg'
+          curl --fail --location --retry 4 --retry-all-errors \
+            --retry-delay 2 --connect-timeout 20 --max-time 140 \
+            --silent --show-error \
+            "$SOURCE" -o "$DEST/blue-marble-topography-nasa.jpg"
+          test "$(stat -c %s "$DEST/blue-marble-topography-nasa.jpg")" -gt 400000
+          test "$(stat -c %s "$DEST/blue-marble-topography-nasa.jpg")" -lt 20000000
+          test "$(file -b --mime-type "$DEST/blue-marble-topography-nasa.jpg")" = "image/jpeg"
+          SHA=$(sha256sum "$DEST/blue-marble-topography-nasa.jpg" | awk '{print $1}')
+          cat > "$DEST/provenance.json" <<EOF
+          {
+            "asset": "blue-marble-topography-nasa.jpg",
+            "source": "$SOURCE",
+            "source_page": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography/",
+            "credit": "NASA Earth Observatory / Reto Stöckli et al. (Blue Marble Next Generation)",
+            "month": "January",
+            "type": "global equirectangular daytime land/topography mosaic",
+            "night_city_lights": false,
+            "country_borders": "supplied separately via V2 countries.geojson, not part of imagery",
+            "sha256": "$SHA"
+          }
+          EOF
+          echo "NASA texture SHA256 $SHA"
+      - name: Write source-version proof for in-browser release visibility
+        run: |
+          cat > worldhealth-vision-v2/frontend/web-v2/dist/preview-deployment.json <<EOF
+          {
+            "source_branch": "feature/world-vision-media-studio",
+            "source_commit": "${GITHUB_SHA}",
+            "preview_type": "STATIC_REAL_NEWS_EDITORIAL_ARCHIVE",
+            "backend_connected": false,
+            "editorial_sources_real": true,
+            "generated_media_proof": true,
+            "channel_published": false,
+            "human_qa_completed": false
+          }
+          EOF
+          grep -F "${GITHUB_SHA}" worldhealth-vision-v2/frontend/web-v2/dist/preview-deployment.json
+      - name: Install browser smoke-test dependency
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+      - name: Verify the real Media Studio on iPhone and desktop
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node media-preview-smoke.mjs
+      - name: Verify public artifact is transparently labelled and independent
+        run: |
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/index.html
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/media-preview-bootstrap.js
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/media-studio-iphone.png
+          test -s worldhealth-vision-v2/frontend/web-v2/dist/media-studio-desktop.png
+          grep -q 'media-preview-bootstrap.js' worldhealth-vision-v2/frontend/web-v2/dist/index.html
+      - name: Update SAME Media Studio preview branch without rewriting its history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Preserve the existing branch and its permanent preview URL.
+          git clone --quiet --depth 1 --single-branch \
+            --branch whv-media-studio-browser-preview \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            /tmp/whv-media-studio-preview
+          # Refresh only the static build; never touch canonical V2 or media code.
+          find /tmp/whv-media-studio-preview \
+            -mindepth 1 -maxdepth 1 ! -name .git ! -name media-pilots ! -name media-lab -exec rm -rf {} +
+          cp -a worldhealth-vision-v2/frontend/web-v2/dist/. /tmp/whv-media-studio-preview/
+          # This static site is an authentic editorial archive. It is not a
+          # connected newsroom server; declare the true artifact state.
+          REAL_MEDIA_DIR=/tmp/whv-media-studio-preview/media-pilots/cop31-risk-finance-2026-11-12
+          PROOF=false
+          if test -s "${REAL_MEDIA_DIR}/world-vision-cop31-master.mp4" && \
+             test -s "${REAL_MEDIA_DIR}/story.json" && \
+             (cd "${REAL_MEDIA_DIR}" && sha256sum --check SHA256SUMS); then
+            PROOF=true
+          fi
+          # Remove only an obsolete raw temp intermediate, never the signed
+          # canonical MP4 or its provenance / archived publication evidence.
+          rm -f "${REAL_MEDIA_DIR}/.pilot-render-raw.mp4"
+          cat > /tmp/whv-media-studio-preview/preview-deployment.json <<EOF
+          {
+            "source_branch": "feature/world-vision-media-studio",
+            "source_commit": "${GITHUB_SHA}",
+            "preview_type": "STATIC_REAL_NEWS_EDITORIAL_ARCHIVE",
+            "backend_connected": false,
+            "editorial_sources_real": true,
+            "generated_media_proof": ${PROOF},
+            "channel_published": false,
+            "human_qa_completed": false
+          }
+          EOF
+          cd /tmp/whv-media-studio-preview
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No static preview changes"
+          else
+            git commit -m "preview(media): update real UI from ${GITHUB_SHA::12}"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
+          echo "Stable preview: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/index.html?view=media"

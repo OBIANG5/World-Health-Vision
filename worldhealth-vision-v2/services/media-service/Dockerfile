@@ -1,0 +1,17 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+COPY services/media-service /app/services/media-service
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir ./services/media-service \
+    && chmod +x /app/services/media-service/entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/app/services/media-service/entrypoint.sh"]
+CMD ["uvicorn", "media_service.api:app", "--host", "0.0.0.0", "--port", "8000"]

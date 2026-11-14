@@ -1,0 +1,143 @@
+name: World-Vision S03 V3 — clean geographic Earth toward Shenzhen
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/world-vision-media-studio]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/worldvision_segment03_shenzhen.py'
+      - 'worldhealth-vision-v2/services/media-renderer/scripts/guard_on_screen_copy.py'
+      - '.github/workflows/whv-summit-shenzhen-s03.yml'
+permissions:
+  contents: write
+concurrency:
+  group: wv-shenzhen-s03-v3-release
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python deps and video probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          pip install --quiet numpy pillow opencv-python-headless
+          if ! command -v ffprobe >/dev/null || ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+          python -c 'import cv2,numpy,PIL; print("opencv",cv2.__version__,"numpy",numpy.__version__)'
+      - name: Lock professional Manrope font to immutable Google Fonts commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wv-geography
+          curl -fsSL --retry 5 --retry-all-errors --max-time 120 \
+            'https://raw.githubusercontent.com/google/fonts/29b4ec6df2522a8aee279414b78a07910b065874/ofl/manrope/Manrope%5Bwght%5D.ttf' \
+            -o /tmp/wv-geography/Manrope-variable.ttf
+          echo '3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6  /tmp/wv-geography/Manrope-variable.ttf' | sha256sum --check --
+      - name: Download authentic NASA texture and Natural Earth borders
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wv-geography
+          curl -fsSL --retry 5 --retry-all-errors --max-time 180 \
+            'https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography/july/world.topo.200407.3x5400x2700.jpg' \
+            -o /tmp/wv-geography/nasa-blue-marble-topography.jpg
+          curl -fsSL --retry 5 --retry-all-errors --max-time 180 \
+            'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson' \
+            -o /tmp/wv-geography/countries.geojson
+          python - <<'PY'
+          import json
+          from PIL import Image
+          t=Image.open('/tmp/wv-geography/nasa-blue-marble-topography.jpg')
+          assert t.size==(5400,2700),t.size
+          borders=json.load(open('/tmp/wv-geography/countries.geojson'))
+          assert borders['type']=='FeatureCollection'
+          assert len(borders['features'])>=200
+          print('Texture:',t.size,'Country polygons:',len(borders['features']))
+          PY
+          G0=worldhealth-vision-v2/services/media-renderer/public/brand/world-vision-official.png
+          test "$(git hash-object "$G0")" = "bc80fa70cebd566768bfb1703a0f1f636a78c196"
+          echo "Verified G0 official logo, no synthetic redraw"
+          sha256sum /tmp/wv-geography/* "$G0"
+      - name: Render 147-frame geospatial globe toward Shenzhen
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/worldvision_segment03_shenzhen.py
+          python scripts/guard_on_screen_copy.py scripts/worldvision_segment03_shenzhen.py
+          python scripts/worldvision_segment03_shenzhen.py \
+            --texture /tmp/wv-geography/nasa-blue-marble-topography.jpg \
+            --geojson /tmp/wv-geography/countries.geojson \
+            --logo public/brand/world-vision-official.png \
+            --font /tmp/wv-geography/Manrope-variable.ttf \
+            --output output/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4
+      - name: Check frame differences and release metadata
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          F=output/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4
+          mkdir -p output/summit-2026/review-s03-july-v3
+          for entry in 0.3:start 1.65:turn 2.65:target 4.35:end; do
+            sec="$(echo "$entry" | cut -d: -f1)"
+            label="$(echo "$entry" | cut -d: -f2)"
+            ffmpeg -y -v error -ss "$sec" -i "$F" -frames:v 1 \
+              -vf scale=480:853 -q:v 3 "output/summit-2026/review-s03-july-v3/$label.jpg"
+          done
+          ffmpeg -y -v error \
+            -i output/summit-2026/review-s03-july-v3/start.jpg \
+            -i output/summit-2026/review-s03-july-v3/turn.jpg \
+            -i output/summit-2026/review-s03-july-v3/target.jpg \
+            -i output/summit-2026/review-s03-july-v3/end.jpg \
+            -filter_complex hstack=inputs=4 -q:v 3 \
+            output/summit-2026/review-s03-july-v3/contact-sheet.jpg
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          j=json.loads(Path('output/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.json').read_text())
+          assert j['geography']['target_city']=='Shenzhen'
+          assert j['geography']['precision'].startswith('city centre')
+          assert j['portrait']['frames']==147
+          assert abs(j['duration']-4.9)<0.05
+          x=Path('output/summit-2026/review-s03-july-v3')
+          digests=[hashlib.sha256((x/f'{z}.jpg').read_bytes()).hexdigest()
+                   for z in ['start','turn','target','end']]
+          assert len(set(digests))==4,'Geographic turn appears frozen'
+          print('QA:',j['duration'],'sec',j['sha256'],'4 distinct frames')
+          PY
+          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate \
+            -show_entries format=duration -of json "$F"
+      - name: Publish preview to permanent mobile review branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-release
+          OUT=/tmp/wv-release/media-lab/summit-2026
+          mkdir -p "$OUT/review-s03-july-v3"
+          SRC=worldhealth-vision-v2/services/media-renderer/output/summit-2026
+          cp "$SRC/segment03-shenzhen-july-v3-clean-4p9s.mp4" "$OUT/"
+          cp "$SRC/segment03-shenzhen-july-v3-clean-4p9s.json" "$OUT/"
+          cp "$SRC/review-s03-july-v3/"* "$OUT/review-s03-july-v3/"
+          cd /tmp/wv-release
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/summit-2026
+          if ! git diff --cached --quiet; then
+            git commit -m "preview(summit): 4.9s S03 V3 Manrope clean geographic Earth locator"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
+          echo "Preview: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/segment03-shenzhen-july-v3-clean-4p9s.mp4"

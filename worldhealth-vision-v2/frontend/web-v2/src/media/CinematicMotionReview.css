@@ -1,0 +1,27 @@
+/* D01 technical review only — distinct from the approved logo and D00 art direction. */
+.wv-motion-review{margin:20px 0 28px;border:1px solid rgba(74,198,226,.37);
+  border-radius:14px;background:linear-gradient(135deg,#081e34,#061427);
+  padding:clamp(16px,3vw,28px);color:#e9f8fc}
+.wv-motion-review-heading>span{font-weight:850;font-size:10px;letter-spacing:.16em;color:#8be5ee}
+.wv-motion-review-heading h4{font-size:clamp(20px,3vw,31px);line-height:1.16;
+  margin:11px 0 12px;letter-spacing:-.03em;color:#fff}
+.wv-motion-review-heading p{color:#c3dce7;font-size:12px;line-height:1.8;max-width:760px}
+.wv-motion-review-player{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);
+  gap:20px;align-items:center;margin-top:16px}
+.wv-motion-review-player video{display:block;width:100%;aspect-ratio:9/16;max-height:600px;
+  background:#030b16;border:1px solid rgba(89,213,235,.4);border-radius:10px;
+  object-fit:contain}
+.wv-motion-review-technical{display:flex;flex-direction:column;gap:12px;font-size:12px;
+  color:#cce6ee;line-height:1.6;min-width:0}
+.wv-motion-review-technical strong{font-weight:900;color:#adf0fa;letter-spacing:.08em;font-size:11px}
+.wv-motion-review-technical span{overflow-wrap:anywhere}
+.wv-motion-review-technical a{display:inline-block;width:fit-content;max-width:100%;
+  color:#9cefff;font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.wv-motion-review-pending{margin:16px 0;padding:15px 17px;border:1px solid rgba(131,192,208,.32);
+  background:rgba(6,39,57,.8);border-radius:8px;color:#e3f5fa;font-size:12px;line-height:1.7}
+.wv-motion-review-caution{font-size:11px;line-height:1.7;color:#acccd7;margin:16px 0 0;
+  border-top:1px solid rgba(124,195,217,.16);padding-top:14px}
+@media(max-width:680px){
+ .wv-motion-review-player{grid-template-columns:minmax(0,1fr)}
+ .wv-motion-review-player video{max-width:350px;margin:auto}
+}

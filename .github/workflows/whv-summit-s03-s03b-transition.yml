@@ -1,0 +1,118 @@
+name: World-Vision — true 7.1s Shenzhen geographic and city raccord
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/world-vision-media-studio]
+    paths:
+      - '.github/workflows/whv-summit-s03-s03b-transition.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wv-shenzhen-s03-city-raccord
+  cancel-in-progress: true
+
+jobs:
+  transition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout media source branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install FFmpeg
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Load only genuine SHA-locked MP4s from original GitHub review branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/wv-raccord
+          P=https://raw.githubusercontent.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026
+          curl -fL --retry 5 --retry-all-errors --max-time 180 \
+            "$P/segment03-shenzhen-july-v3-clean-4p9s.mp4" \
+            -o /tmp/wv-raccord/geo.mp4
+          curl -fL --retry 5 --retry-all-errors --max-time 180 \
+            "$P/segment03b-shenzhen-city-v1-2p7s.mp4" \
+            -o /tmp/wv-raccord/city.mp4
+          echo '59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe  /tmp/wv-raccord/geo.mp4' | sha256sum --check --
+          echo 'cd0dfa113ec71d95b615fba341f0aec5db8953ad1ca520dc292db6c11540f016  /tmp/wv-raccord/city.mp4' | sha256sum --check --
+      - name: Join at native 1x speed using last half-second double exposure
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=/tmp/wv-raccord/s03-to-s03b-shenzhen-matchcut-7p1s.mp4
+          ffmpeg -y -hide_banner -loglevel error \
+            -i /tmp/wv-raccord/geo.mp4 -i /tmp/wv-raccord/city.mp4 \
+            -filter_complex '[0:v]fps=30,format=yuv420p,settb=AVTB[a];[1:v]fps=30,format=yuv420p,settb=AVTB[b];[a][b]xfade=transition=fade:duration=0.5:offset=4.4,format=yuv420p[v]' \
+            -map '[v]' -an -c:v libx264 -preset medium -crf 18 \
+            -pix_fmt yuv420p -movflags +faststart "$OUT"
+      - name: Verify actual temporal bridge and real source provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=/tmp/wv-raccord/s03-to-s03b-shenzhen-matchcut-7p1s.mp4
+          QA=/tmp/wv-raccord/review-transition
+          mkdir -p "$QA"
+          for SEC in 0.15 2.2 4.30 4.62 4.83 5.18 6.72; do
+            ffmpeg -y -v error -ss "$SEC" -i "$OUT" -frames:v 1 \
+              -vf scale=540:960 -q:v 3 "$QA/t-$SEC.jpg"
+          done
+          ffmpeg -y -v error -i "$QA/t-4.30.jpg" -i "$QA/t-4.62.jpg" -i "$QA/t-5.18.jpg" \
+            -filter_complex hstack=inputs=3 -q:v 3 "$QA/contact-sheet.jpg"
+          python3 - <<'PY'
+          import json,subprocess,hashlib
+          from pathlib import Path
+          p=Path('/tmp/wv-raccord/s03-to-s03b-shenzhen-matchcut-7p1s.mp4')
+          meta=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(p)]))
+          stream=next(x for x in meta['streams'] if x['codec_type']=='video')
+          assert stream['codec_name']=='h264' and (stream['width'],stream['height'])==(1080,1920)
+          assert stream['nb_frames']=='213',stream['nb_frames']
+          assert abs(float(meta['format']['duration'])-7.1)<.06
+          assert not any(x['codec_type']=='audio' for x in meta['streams'])
+          stills=list(Path('/tmp/wv-raccord/review-transition').glob('t-*.jpg'))
+          assert len(stills)==7
+          assert len(set(hashlib.sha256(p.read_bytes()).digest() for p in stills))==7
+          report={'status':'TECHNICAL_PASS_REVIEW_ONLY','duration_sec':7.1,
+           'source_s03_sha256':'59028e59f40585ed30419a56b083386e492d5cd37920f022f5e3b5301f9423fe',
+           'source_s03b_sha256':'cd0dfa113ec71d95b615fba341f0aec5db8953ad1ca520dc292db6c11540f016',
+           'overlap_sec':0.5,'playback_rate':1.0,'frames':213,'fps':30,
+           'width':1080,'height':1920,'audio_present':False,
+           'venue_or_meeting_fabricated':False,'original_photo_license':'CC0',
+           'technical_labels_burnt_in':False,'approval_pending':True,
+           'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size,
+           'editing_note':'Match between 4.9s real geographic globe and 2.7s genuine Shenzhen photo.'}
+          p.with_suffix('.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps(report,ensure_ascii=False))
+          PY
+          ffprobe -v error -show_entries format=duration \
+            -show_entries stream=codec_name,width,height,r_frame_rate,nb_frames -of json "$OUT"
+      - name: Archive coupled preview without modifying any source MP4
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch whv-media-studio-browser-preview \
+            "https://x-access-token:$GH_TOKEN@github.com/$GITHUB_REPOSITORY.git" /tmp/wv-raccord-archive
+          SRC=/tmp/wv-raccord
+          DST=/tmp/wv-raccord-archive/media-lab/summit-2026
+          mkdir -p "$DST/review-transition"
+          cp "$SRC/s03-to-s03b-shenzhen-matchcut-7p1s.mp4" \
+            "$SRC/s03-to-s03b-shenzhen-matchcut-7p1s.json" "$DST/"
+          cp "$SRC/review-transition/"*.jpg "$DST/review-transition/"
+          cd /tmp/wv-raccord-archive
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab/summit-2026
+          if ! git diff --cached --quiet; then
+            git commit -m "preview(worldvision): 7.1s Shenzhen geo-to-city true-speed cinematic overlap"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi

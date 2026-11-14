@@ -1,0 +1,118 @@
+name: World-Vision D01 CGI technical 4s motion (review only)
+on:
+  push:
+    branches:
+      - 'feature/world-vision-media-studio'
+    paths:
+      - '.github/workflows/whv-cinematic-motion-d01.yml'
+      - 'worldhealth-vision-v2/frontend/web-v2/render-cinematic-d01.mjs'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicCapture.tsx'
+  workflow_dispatch:
+concurrency:
+  group: world-vision-d01-cinematic-render
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  d01:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - name: Checkout canonical media branch
+        uses: actions/checkout@v4
+      - name: Install Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install exact frontend dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Test deterministic country coordinates
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node --test src/media/geoTargeting.test.mjs
+      - name: Compile production frontend with private preview mode
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        env:
+          VITE_WHV_PREVIEW_MODE: 'true'
+        run: npm run build -- --base=./
+      - name: Build clearly labelled static editorial adapter
+        run: |
+          node --check worldhealth-vision-v2/scripts/media-preview-bootstrap.js
+          node worldhealth-vision-v2/scripts/build-media-preview.mjs
+      - name: Bundle already source-checked editorial fixture
+        uses: actions/checkout@v4
+        with:
+          ref: whv-media-studio-browser-preview
+          path: previously-published
+          persist-credentials: false
+      - name: Copy read-only archive required by the review route
+        run: |
+          mkdir -p worldhealth-vision-v2/frontend/web-v2/dist/media-pilots
+          cp -a previously-published/media-pilots/. worldhealth-vision-v2/frontend/web-v2/dist/media-pilots/
+          (cd worldhealth-vision-v2/frontend/web-v2/dist/media-pilots/cop31-risk-finance-2026-11-12 && sha256sum --check SHA256SUMS)
+      - name: Embed NASA Blue Marble only from NASA's verified data source
+        run: |
+          set -euo pipefail
+          DEST=worldhealth-vision-v2/frontend/web-v2/dist/earth
+          mkdir -p "$DEST"
+          SOURCE='https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-topography/january/world.topo.200401.3x5400x2700.jpg'
+          curl --fail --location --retry 4 --retry-all-errors --retry-delay 2 \
+            --connect-timeout 20 --max-time 140 --silent --show-error \
+            "$SOURCE" -o "$DEST/blue-marble-topography-nasa.jpg"
+          test "$(stat -c %s "$DEST/blue-marble-topography-nasa.jpg")" -gt 400000
+          test "$(file -b --mime-type "$DEST/blue-marble-topography-nasa.jpg")" = "image/jpeg"
+          SHA=$(sha256sum "$DEST/blue-marble-topography-nasa.jpg" | awk '{print $1}')
+          cat > "$DEST/provenance.json" <<EOF
+          {
+            "asset": "blue-marble-topography-nasa.jpg",
+            "source": "$SOURCE",
+            "source_page": "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography/",
+            "credit": "NASA Earth Observatory / Blue Marble Next Generation",
+            "sha256": "$SHA"
+          }
+          EOF
+      - name: Install Chromium for deterministic frames
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install chromium
+          if ! command -v ffmpeg; then
+            sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+          fi
+      - name: Render 4s of country-directed real CGI, verify H.264 metadata
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        env:
+          WV_CINEMA_TARGET_ISO3: GAB
+        run: node render-cinematic-d01.mjs
+      - name: Archive exact technical film as a build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-vision-d01-gabon-cgi-4s-technical
+          path: worldhealth-vision-v2/frontend/web-v2/dist/media-lab/*
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve reviewed technical MP4 on SAME permanent preview branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --single-branch \
+            --branch whv-media-studio-browser-preview \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            /tmp/worldvision-film-preview
+          mkdir -p /tmp/worldvision-film-preview/media-lab
+          cp -a worldhealth-vision-v2/frontend/web-v2/dist/media-lab/. \
+            /tmp/worldvision-film-preview/media-lab/
+          cd /tmp/worldvision-film-preview
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add media-lab
+          if git diff --cached --quiet; then
+            echo "Unchanged technical clip already archived"
+          else
+            git commit -m "media-lab(d01): reproducible NASA CGI 4s GAB technical review only"
+            git push origin HEAD:whv-media-studio-browser-preview
+          fi
+          echo "Technical preview: https://raw.githack.com/${GITHUB_REPOSITORY}/whv-media-studio-browser-preview/media-lab/wv-d01-gab-technical-4s.mp4"

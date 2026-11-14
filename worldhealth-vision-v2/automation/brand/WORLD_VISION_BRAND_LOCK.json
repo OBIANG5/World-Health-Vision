@@ -1,0 +1,113 @@
+{
+  "schema": "world-vision/brand-lock/v1",
+  "edition_date": "2026-11-13",
+  "brand": "World-Vision",
+  "slogan": "Voir le monde, le comprendre.",
+  "logo": {
+    "official_status": "APPROVED_G0",
+    "repository": "OBIANG5/World-Health-Vision",
+    "path": "frontend/web/src/assets/logo.png",
+    "git_blob_sha": "bc80fa70cebd566768bfb1703a0f1f636a78c196",
+    "manual_asset_upload_required_for_video_provider": true,
+    "can_be_replaced_by_prototype": false,
+    "placement": "safe-area corner candidate, compare top-left/top-right on preview; no invented definitive position"
+  },
+  "eye_earth_signature": {
+    "source_label": "D00-v6 approved-direction reference, not approved finished cinematic clip",
+    "original_filename": "a_crisp_ultra_detailed_high_contrast_digital_ill.png",
+    "original_sha256": "8d9a9d20f20fbf7757713b6f5eab06590f191166eb779865747f0f59683cfca2",
+    "original_dimensions": [
+      1086,
+      1448
+    ],
+    "original_binary_committed_to_github": false,
+    "approval": "NOT_YET_APPROVED_FINAL",
+    "requirements": {
+      "earth": "very large, detailed realistic 3D Earth, legible national borders especially Sahara, fewer clouds, no city lights",
+      "eyelids": "EXACTLY two non-circular wide open arcs, ends outside the camera frame, no other rings",
+      "eye_white": "#FFFFFF",
+      "atmosphere": "cyan-blue luminescent rim directly on Earth, more visibly luminous than eyelids",
+      "background": "deep navy, very few tiny stars, no artificial sun or cloud beds",
+      "camera": "perfect sphere-eyelid optical centre, no crop-caused distortion"
+    },
+    "production_gate": "Do not present Canvas/technical CGI D01 as artistic master; require human approval of actual animation before editorial use"
+  },
+  "mandatory_template_slots": [
+    {
+      "id": "brand_logo",
+      "required": true,
+      "asset_source": "APPROVED_G0"
+    },
+    {
+      "id": "earth_opening",
+      "required_for": "geographically_localized_stories",
+      "asset_source": "approved cinematic animation only",
+      "status": "BLOCKED_UNTIL_APPROVED"
+    },
+    {
+      "id": "country_or_region",
+      "required_for": "geographically_localized_stories",
+      "source": "verified ISO3 / GIS"
+    },
+    {
+      "id": "story_visuals",
+      "required": true,
+      "source": "actual licensed news footage or clearly labeled illustration"
+    },
+    {
+      "id": "headline",
+      "required": true,
+      "style": "readable, no decorative emoji"
+    },
+    {
+      "id": "verified_data",
+      "required": false,
+      "source": "citable primary + corroborating source"
+    },
+    {
+      "id": "voice_fr",
+      "required": true,
+      "status": "voice cast to be approved"
+    },
+    {
+      "id": "captions_fr",
+      "required": true,
+      "sync_tolerance_ms": 300
+    },
+    {
+      "id": "music_rights",
+      "required_if_used": true
+    },
+    {
+      "id": "outro",
+      "required": true,
+      "text": "World-Vision — Voir le monde, le comprendre."
+    }
+  ],
+  "file_formats": {
+    "orientation": "9:16",
+    "master_width": 1080,
+    "master_height": 1920,
+    "preferred_frame_rate": 30
+  },
+  "release_guards": [
+    "source corroboration",
+    "editorial approval",
+    "music and footage rights",
+    "logo integrity",
+    "geography accuracy",
+    "safe zones",
+    "voice intelligibility",
+    "captions aligned",
+    "full MP4 reviewed on mobile",
+    "explicit permission to publish"
+  ],
+  "tool_strategy": {
+    "orchestration": "n8n Cloud or self-hosted n8n",
+    "video_template": "Shotstack Studio template/Render Template, not a custom editor",
+    "voice": "approved licensed TTS provider; Google AI Pro application subscription alone is not an API key",
+    "ai_video": "Google Flow manual handoff until separate authorized API is selected",
+    "storage": "Google Drive originals, GitHub decisions and configuration",
+    "publication": "human approval only"
+  }
+}
