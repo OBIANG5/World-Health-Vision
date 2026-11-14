@@ -22,7 +22,9 @@
     "do_not_redraw_d00_image": true,
     "all_real_media_licensed": true,
     "voice_fr_approved_required_before_master": true,
-    "note": "The exact approved narration is in SCRIPT_V1.md; timing must be recut to the actual French voice before final assembly."
+    "note": "The exact approved narration is in SCRIPT_V1.md; timing must be recut to the actual French voice before final assembly.",
+    "no_production_labels_burnt_in": true,
+    "consistent_premium_typography_required": true
   },
   "master_target_seconds_provisional": 43,
   "segments": [
@@ -91,31 +93,43 @@
       "start_sec": 12.5,
       "duration_sec": 7.9,
       "visual": "Coded premium typography, New START information, no fictional nuclear explosions",
-      "status": "S04_V2_QA_PASSED_WAITING_ART_REVIEW",
-      "master_file": "segment04-new-start-v2-7p9s.mp4",
-      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.mp4",
-      "sha256": "5ae78d45850aa9eeb51c30f3f83e99a93cac244f327233fd04257c01906e97a1",
-      "bytes": 1109346,
+      "status": "S04_V3_CLEAN_PLATE_QA_PASSED_WAITING_ART_REVIEW",
+      "master_file": "segment04-new-start-v3-clean-7p9s.mp4",
+      "asset_url": "https://raw.githack.com/OBIANG5/World-Health-Vision/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v3-clean-7p9s.mp4",
+      "sha256": "4fa8aebec451f4edb0d8bd495655b619feaab0d9fb0d517c12e4bd9f88b33e69",
+      "bytes": 1097118,
       "fps": 30,
       "frames": 237,
       "resolution": "1080x1920",
-      "preview_manifest": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v2-7p9s.json",
-      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04-v2/contact-sheet.jpg",
-      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43586235979",
+      "preview_manifest": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/segment04-new-start-v3-clean-7p9s.json",
+      "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04-v3/contact-sheet.jpg",
+      "verified_run": "https://github.com/OBIANG5/World-Health-Vision/actions/runs/43587064217",
       "archive_photo": "Chuck Kennedy / White House, official signing of New START, Prague April 8, 2010, public domain",
       "archive_photo_sha256": "36789c11b8a4777dc432213fcd206b05a09feda7d1f1809f592b4904ccec43a1",
       "source": "services/media-renderer/scripts/worldvision_segment04_new_start.py",
       "publication_approved": false,
       "human_art_approved": false,
       "audio_present": false,
-      "notes": "V2: subtle alpha-composited grid, superior documentary visual hierarchy, genuine 2010 signing photo, official G0, date verified. QA passed 237 frames/7.9 seconds/1080x1920/30fps H264/silent, six distinct QA captures visually inspected, human approval still pending.",
+      "notes": "S04 V3: exact official logo & archived photo; Manrope variable 500/800 with pinned SHA and strict font fail-closed. No burnt-in preview/no voice, motion-design, S04 numbering, production credits, debug date or progress bar. Clip 7.9s 237 frames H264 vertical 1080x1920. Full Remotion assembly now requires this exact SHA; old V1/V2 cannot substitute. User artistic approval pending, no final voice.",
       "v1_archived": {
         "file": "segment04-new-start-7p9s.mp4",
         "sha256": "1e25443e40b4b9a867bcbd53f5f7ad4f977cb7577cf6277b348f3bf2e05ec6c9",
         "bytes": 1150810,
         "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04/contact-sheet.jpg",
         "reason_replaced": "Grid drawing alpha compositing bug: overly prominent grid distracted from archival photo; version preserved in Git history and preview branch."
-      }
+      },
+      "v2_archived": {
+        "file": "segment04-new-start-v2-7p9s.mp4",
+        "sha256": "5ae78d45850aa9eeb51c30f3f83e99a93cac244f327233fd04257c01906e97a1",
+        "bytes": 1109346,
+        "review_contact_sheet_url": "https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/summit-2026/review-s04-v2/contact-sheet.jpg",
+        "reason_replaced": "Inappropriate on-screen draft labels, technical metadata and fallback DejaVu typography. V1/V2 forbidden from master."
+      },
+      "font_family": "Manrope Variable OFL-1.1",
+      "font_sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6",
+      "clean_plate": true,
+      "technical_labels_in_video": false,
+      "embedded_production_credits": false
     },
     {
       "id": "S05",
@@ -158,7 +172,7 @@
     "S01": "Human artistic review required",
     "S02": "Human artistic review required",
     "master": "Blocked until voice, proper audio sync, all eight licensed scenes and video QA",
-    "S04": "V2 technical success on Actions #43586235979, 3 beat frames visually inspected; USER ART APPROVAL PENDING, no audio"
+    "S04": "V3 clean plate produced, source & metadata guard and CI successful on Actions #43587064217; user review pending."
   },
   "qa_for_S02": {
     "codec": "h264",
@@ -172,5 +186,5 @@
     "audio_present": false
   },
   "assembly_plan": "Use independently approved S01/S02/S03 scenes and EDL_V2_FAST_GLOBE.md. S02 retained original 3.1 seconds, but master may excerpt 0.9 seconds; S03 source 4.9 seconds, master may excerpt 4.4 seconds; edit timecodes only AFTER final voice recorded.",
-  "active_edition": "S03 July V2 and S04 improved V2 are technical candidates, not user-approved; S03B city shot and S05-S08 not produced; final voice not approved"
+  "active_edition": "S04 V3 clean Manrope and S03 July V2 technical candidates, neither artistically approved; S03B missing, S05-S08 not rendered, no 43s master/voice"
 }
