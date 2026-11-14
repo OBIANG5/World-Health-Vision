@@ -1,0 +1,3 @@
+/* Fonts are loaded using Remotion staticFile() and the FontFace API in index.tsx.
+   Do not use a CSS absolute url() here; webpack treats it as a source import. */
+* {box-sizing:border-box}
