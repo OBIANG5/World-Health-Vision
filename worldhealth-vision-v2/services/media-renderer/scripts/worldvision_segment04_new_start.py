@@ -39,12 +39,12 @@ def background():
  b=np.exp(-(((x-100)/670)**2+((y-1590)/790)**2))*.23
  ar=np.empty((H,W,3),dtype=np.uint8)
  for k in range(3):ar[:,:,k]=np.clip(NAVY[k]+[11,44,78][k]*a+[5,27,47][k]*b,0,255).astype('uint8')
- im=Image.fromarray(ar,'RGB').convert('RGBA');d=ImageDraw.Draw(im,'RGBA')
- for px in range(90,1030,90):d.line((px,346,px,1665),fill=(139,218,245,12))
- for py in range(348,1700,90):d.line((75,py,1015,py),fill=(139,218,245,10))
+ im=Image.fromarray(ar,'RGB');d=ImageDraw.Draw(im,'RGBA')
+ for px in range(90,1030,90):d.line((px,346,px,1665),fill=(139,218,245,17))
+ for py in range(348,1700,90):d.line((75,py,1015,py),fill=(139,218,245,14))
  d.line((78,315,1002,315),fill=(146,221,245,62),width=2)
  d.line((78,1741,1002,1741),fill=(146,221,245,62),width=2)
- return im
+ return im.convert('RGBA')
 BASE=background()
 def source_photo(path):
  im=Image.open(path).convert('RGB')
