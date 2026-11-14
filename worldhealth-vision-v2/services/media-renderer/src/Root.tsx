@@ -1,6 +1,7 @@
 import React from "react";
 import {Composition} from "remotion";
 import {WorldVisionShort} from "./WorldVisionShort";
+import {WorldVisionSummit2026,SUMMIT_FRAMES,SUMMIT_FPS} from "./WorldVisionSummit2026";
 import type {WorldVisionRenderProps} from "./types";
 
 const defaultProps: WorldVisionRenderProps = {
@@ -69,6 +70,16 @@ const defaultProps: WorldVisionRenderProps = {
 
 export const RemotionRoot: React.FC = () => {
   return (
+    <>
+    <Composition
+      id="WorldVisionSummit2026"
+      component={WorldVisionSummit2026}
+      width={1080}
+      height={1920}
+      fps={SUMMIT_FPS}
+      durationInFrames={SUMMIT_FRAMES}
+      defaultProps={{voiceFilename:null,previewWatermark:true}}
+    />
     <Composition
       id="WorldVisionShort"
       component={WorldVisionShort}
@@ -87,5 +98,6 @@ export const RemotionRoot: React.FC = () => {
         ),
       })}
     />
+    </>
   );
 };
