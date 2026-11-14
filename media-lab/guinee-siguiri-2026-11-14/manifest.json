@@ -15,14 +15,14 @@
     "Une enquête est ouverte pour établir les responsabilités."
   ],
   "voice": "fr-FR-VivienneMultilingualNeural",
-  "voice_rate": "slow split-prosody -35% to -40%",
-  "voice_words_per_minute": 113.64,
+  "voice_rate": "measured slow-to-natural split-prosody -28% to -32%",
+  "voice_words_per_minute": 126.28,
   "voice_no_time_stretch": true,
   "voice_commercial_license_verified": false,
   "publication_authorized": false,
-  "duration_seconds": 57.533,
-  "audio_duration_seconds": 57.55,
-  "video_sha256": "3e15250b8666b51965c9405006fd766b8a7f1aa507f4426580f824d35ae3fd97",
+  "duration_seconds": 51.833,
+  "audio_duration_seconds": 51.79,
+  "video_sha256": "9c7bac11da8f2e7c3b09e67683890566262c60cd6c15e4533892634d9662b815",
   "resolution": "1080x1920",
   "fps": 30,
   "video_codec": "h264",
@@ -46,43 +46,55 @@
     },
     {
       "visual": "gold",
-      "seconds": 5.533333333333333
+      "seconds": 4.8
     },
     {
       "visual": "location",
-      "seconds": 3.933333333333333
+      "seconds": 3.5
     },
     {
       "visual": "ban",
-      "seconds": 7.766666666666667
+      "seconds": 3.6333333333333333
+    },
+    {
+      "visual": "ban_context",
+      "seconds": 3.3333333333333335
     },
     {
       "visual": "confront",
-      "seconds": 5.166666666666667
+      "seconds": 4.833333333333333
     },
     {
       "visual": "foreign",
-      "seconds": 8.966666666666667
+      "seconds": 4.266666666666667
+    },
+    {
+      "visual": "foreign_context",
+      "seconds": 3.8
     },
     {
       "visual": "why",
-      "seconds": 2.033333333333333
+      "seconds": 1.8666666666666667
     },
     {
       "visual": "river",
-      "seconds": 6.2
+      "seconds": 3.0
+    },
+    {
+      "visual": "river_close",
+      "seconds": 2.433333333333333
     },
     {
       "visual": "families",
-      "seconds": 5.9
+      "seconds": 5.333333333333333
     },
     {
       "visual": "question",
-      "seconds": 4.666666666666667
+      "seconds": 4.133333333333334
     },
     {
       "visual": "justice",
-      "seconds": 4.366666666666666
+      "seconds": 3.9
     }
   ],
   "sources": [
