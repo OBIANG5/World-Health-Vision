@@ -102,6 +102,13 @@ jobs:
           git add media-lab/summit-2026/editorial-v2
           if ! git diff --cached --quiet; then
             git commit -m "preview(worldvision): V2 11.6s source-locked editorial pilot, no logo hold"
-            git push origin HEAD:whv-media-studio-browser-preview
+            pushed=0
+            for attempt in 1 2 3 4 5; do
+              git fetch origin whv-media-studio-browser-preview
+              git rebase origin/whv-media-studio-browser-preview
+              if git push origin HEAD:whv-media-studio-browser-preview; then pushed=1; break; fi
+              sleep 2
+            done
+            test "$pushed" = 1
           fi
           echo "View mobile: https://raw.githack.com/$GITHUB_REPOSITORY/whv-media-studio-browser-preview/media-lab/summit-2026/editorial-v2/opening-pilot-11p6s-v2.mp4"
