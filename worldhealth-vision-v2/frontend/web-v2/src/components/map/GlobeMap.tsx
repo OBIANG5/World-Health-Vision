@@ -199,7 +199,6 @@ function drawSphereAtmosphere(ctx:CanvasRenderingContext2D,cx:number,cy:number,r
 function render(
  ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,
  geo:FeatureCollection|null,selected:string,hover:string|null,
- countries:Map<string,CountrySummary>,
  texture:EarthVisualTexture|null,raster:EarthRasterSurface|null
 ){
  ctx.clearRect(0,0,w,h);
@@ -257,7 +256,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   if(el.width!==w||el.height!==h){el.width=w;el.height=h;}
   ctx.setTransform(dpr,0,0,dpr,0,0);
   render(ctx,rect.width,rect.height,pose.current,geo.current,
-    live.current.selectedCountryIso3,hovering.current,live.current.countriesMap,
+    live.current.selectedCountryIso3,hovering.current,
     earthAtlas.current,raster.current);
  },[]);
  const schedule=useCallback(()=>{
