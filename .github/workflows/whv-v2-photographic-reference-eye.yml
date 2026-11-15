@@ -1,0 +1,148 @@
+name: WHV V2 photographic reference eye — compile, visual QA and phone preview
+on:
+  push:
+    branches:
+      - design/v2-photographic-eye-globe-2026-11-15
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: whv-v2-photographic-reference-eye
+  cancel-in-progress: true
+
+jobs:
+  build-verify-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout the authentic V2 source branch
+        uses: actions/checkout@v4
+        with:
+          ref: design/v2-photographic-eye-globe-2026-11-15
+          path: source
+          persist-credentials: false
+
+      - name: Checkout an isolated browser preview, never production
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-reference-eye-browser-preview
+          path: preview
+          persist-credentials: true
+
+      - name: Node 22 with V2 dependency caching
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/worldhealth-vision-v2/frontend/web-v2/package-lock.json
+
+      - name: Install exact project dependencies
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+
+      - name: TypeScript strict check and build the actual V2
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        env:
+          VITE_WHV_PREVIEW_MODE: 'true'
+        run: |
+          npx tsc -b --pretty false
+          npx vite build --base=./
+
+      - name: Assemble honest V2 static preview retaining source snapshots
+        run: |
+          python3 - <<'PY'
+          import json,os,shutil
+          from pathlib import Path
+          from datetime import datetime,timezone
+          dist=Path("source/worldhealth-vision-v2/frontend/web-v2/dist")
+          preview=Path("preview")
+          essential=["preview-countries.js","preview-sources.js","preview-local-catalog.js","preview-bootstrap.js"]
+          for name in essential:
+              if not (preview/name).is_file():
+                  raise SystemExit("Missing genuine V2 static-preview dataset: "+name)
+          if not (dist/"index.html").is_file() or not (dist/"assets").is_dir():
+              raise SystemExit("Vite build incomplete")
+          for item in dist.iterdir():
+              destination=preview/item.name
+              if item.is_dir():
+                  if destination.exists():shutil.rmtree(destination)
+                  shutil.copytree(item,destination)
+              elif item.name!="index.html":shutil.copy2(item,destination)
+          html=(dist/"index.html").read_text(encoding="utf-8")
+          if "<head>" not in html:raise SystemExit("Unexpected Vite index")
+          injection='<meta name="robots" content="noindex,nofollow">\n'
+          injection+='\n'.join('<script src="./'+name+'"></script>' for name in essential)+'\n'
+          html=html.replace("<head>","<head>\n"+injection,1)
+          if '/assets/' in html and '="./assets/' not in html:
+              raise SystemExit("Absolute assets would break branch URL")
+          (preview/"index.html").write_text(html,encoding="utf-8")
+          (dist/"index.html").write_text(html,encoding="utf-8")
+          for name in essential:shutil.copy2(preview/name,dist/name)
+          metadata={
+            "sourceBranch":"design/v2-photographic-eye-globe-2026-11-15",
+            "sourceCommit":os.environ["GITHUB_SHA"],
+            "createdAtUtc":datetime.now(timezone.utc).isoformat(),
+            "previewMode":"STATIC_NO_PERSISTENT_BACKEND",
+            "countryGeometry":"Existing authentic GeoJSON unchanged",
+            "reference":"User-provided luminous eye and vivid satellite Earth",
+            "validated":False
+          }
+          (preview/"preview-build.json").write_text(json.dumps(metadata,indent=2)+"\n",encoding="utf-8")
+          PY
+
+      - name: Install Chromium for actual screen and interaction testing
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Verify original real country drilldown and Earth rotation
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: node globe-smoke.mjs
+
+      - name: Verify reference palette and iPhone/tablet/desktop touch QA
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: node reference-eye-smoke.mjs
+
+      - name: Save test screenshots even when a test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-reference-eye-iphone-tablet-desktop
+          path: |
+            source/worldhealth-vision-v2/frontend/web-v2/globe-artifacts/
+            source/worldhealth-vision-v2/frontend/web-v2/reference-eye-artifacts/
+          if-no-files-found: ignore
+
+      - name: Mark verified preview and copy full-size screen captures
+        run: |
+          cp source/worldhealth-vision-v2/frontend/web-v2/reference-eye-artifacts/iphone-390-eye-earth.png preview/preview-mobile-reference-eye.png
+          cp source/worldhealth-vision-v2/frontend/web-v2/reference-eye-artifacts/desktop-1440-eye-earth.png preview/preview-desktop-reference-eye.png
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("preview/preview-build.json")
+          o=json.loads(p.read_text())
+          o["validated"]=True
+          p.write_text(json.dumps(o,indent=2)+"\n")
+          PY
+
+      - name: Publish only to the isolated eye preview branch
+        working-directory: preview
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No preview delta"
+          else
+            git commit -m "preview(v2): interactive photographic reference eye — validated"
+            git push origin HEAD:whv-v2-reference-eye-browser-preview
+          fi
+
+      - name: Preview link after green build
+        run: |
+          echo 'https://raw.githack.com/OBIANG5/World-Health-Vision/whv-v2-reference-eye-browser-preview/index.html'
+          echo 'A tested static preview, not a persistent live-data backend.'
