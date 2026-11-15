@@ -33,6 +33,7 @@ const CurrencyPanel = lazy(() => import("./components/layout/CurrencyPanel"));
 import "./styles/mobile.css";
 import "./styles/world-editorial.css";
 import "./styles/world-electric.css";
+import "./styles/reference-eye.css";
 
 // ---------- Sélecteur de pays (popover) ----------
 
