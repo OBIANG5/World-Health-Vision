@@ -1,0 +1,18 @@
+{
+  "status": "AUDITION_ONLY_NOT_PUBLISHING_CLEARED",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "version": "Vivienne C5.2 Impact média",
+  "rate": "+8%",
+  "pitch": "+0Hz",
+  "duration_seconds": 28.68,
+  "script": "À Genève, une décision majeure se prépare sur les armes capables d'attaquer sans intervention humaine. Ce lundi seize novembre, des États réunis sous l'égide de l'ONU examinent l'ouverture de négociations internationales pour encadrer ces systèmes autonomes. Une majorité de pays soutient un accord, mais les États-Unis et la Russie s'opposent à des règles juridiquement contraignantes. Le Comité international de la Croix-Rouge alerte sur les risques d'erreurs et de pertes humaines. Les discussions pourraient se prolonger toute la semaine. Une question essentielle demeure : qui doit garder la décision de faire feu, une machine ou un être humain ?",
+  "date": "2026-11-16",
+  "sources": [
+    "https://www.reuters.com/world/us-russia-oppose-talks-limiting-autonomous-weapons-2026-11-16/",
+    "https://apnews.com/article/1ff519255c145105360b04961d136081"
+  ],
+  "one_uninterrupted_take": true,
+  "no_splices": true,
+  "publishing_authorized": false,
+  "commercial_rights_verified": false
+}
