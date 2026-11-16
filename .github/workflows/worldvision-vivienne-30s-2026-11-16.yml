@@ -1,0 +1,70 @@
+name: World-Vision — Vivienne C5.2, actualite 30 secondes (audition)
+on:
+  push:
+    branches:
+      - audition/worldvision-vivienne-30s-2026-11-16
+    paths:
+      - .github/workflows/worldvision-vivienne-30s-2026-11-16.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  synthesize-one-take:
+    name: Exact approved Vivienne voice, one uninterrupted take
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install audition synthesizer
+        run: python -m pip install --disable-pip-version-check 'edge-tts>=7.2,<8'
+      - name: Generate one-take original news audition, no collage
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import asyncio, json, subprocess
+          from pathlib import Path
+          import edge_tts
+          story = "À Genève, une décision majeure se prépare sur les armes capables d'attaquer sans intervention humaine. Ce lundi seize novembre, des États réunis sous l'égide de l'ONU examinent l'ouverture de négociations internationales pour encadrer ces systèmes autonomes. Une majorité de pays soutient un accord, mais les États-Unis et la Russie s'opposent à des règles juridiquement contraignantes. Le Comité international de la Croix-Rouge alerte sur les risques d'erreurs et de pertes humaines. Les discussions pourraient se prolonger toute la semaine. Une question essentielle demeure : qui doit garder la décision de faire feu, une machine ou un être humain ?"
+          voice = 'fr-FR-VivienneMultilingualNeural'
+          root = Path('worldhealth-vision-v2/services/media-renderer/public/voice')
+          root.mkdir(parents=True,exist_ok=True)
+          stem = 'worldvision-vivienne-c52-onu-armes-autonomes-2026-11-16'
+          raw = root / (stem + '-raw.mp3')
+          final = root / (stem + '-30s-audition.mp3')
+          async def synthesize():
+              for attempt in range(3):
+                  try:
+                      await edge_tts.Communicate(story,voice,rate='+8%',pitch='+0Hz').save(str(raw))
+                      if raw.stat().st_size < 10000: raise RuntimeError('Audio too small')
+                      return
+                  except Exception:
+                      raw.unlink(missing_ok=True)
+                      if attempt == 2: raise
+                      await asyncio.sleep(2*(attempt+1))
+          asyncio.run(synthesize())
+          subprocess.run(['ffmpeg','-y','-v','error','-i',str(raw),'-af','loudnorm=I=-16:TP=-2:LRA=9','-ar','48000','-ac','1','-c:a','libmp3lame','-b:a','160k',str(final)],check=True)
+          duration=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',str(final)],text=True))
+          report={'status':'AUDITION_ONLY_NOT_PUBLISHING_CLEARED','voice':voice,'version':'Vivienne C5.2 Impact média','rate':'+8%','pitch':'+0Hz','duration_seconds':round(duration,3),'script':story,'date':'2026-11-16','sources':['https://www.reuters.com/world/us-russia-oppose-talks-limiting-autonomous-weapons-2026-11-16/','https://apnews.com/article/1ff519255c145105360b04961d136081'],'one_uninterrupted_take':True,'no_splices':True,'publishing_authorized':False,'commercial_rights_verified':False}
+          (root/(stem+'-report.json')).write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
+          print(json.dumps({'voice':voice,'duration_seconds':round(duration,3),'bytes':final.stat().st_size},ensure_ascii=False))
+          PY
+      - name: Save only new audition assets to isolated branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add worldhealth-vision-v2/services/media-renderer/public/voice/worldvision-vivienne-c52-onu-armes-autonomes-2026-11-16-*
+          git commit -m 'audition(voice): Vivienne C5.2 narrates Nov 16 UN autonomous-weapons talks'
+          git push origin HEAD:audition/worldvision-vivienne-30s-2026-11-16
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-vivienne-c52-30sec-audition
+          path: |
+            worldhealth-vision-v2/services/media-renderer/public/voice/worldvision-vivienne-c52-onu-armes-autonomes-2026-11-16-30s-audition.mp3
+            worldhealth-vision-v2/services/media-renderer/public/voice/worldvision-vivienne-c52-onu-armes-autonomes-2026-11-16-report.json
+          retention-days: 14
