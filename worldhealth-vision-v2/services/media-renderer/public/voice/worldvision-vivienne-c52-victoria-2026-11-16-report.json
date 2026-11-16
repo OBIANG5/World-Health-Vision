@@ -1,0 +1,15 @@
+{
+  "status": "AUDITION_ONLY_NOT_PUBLISHING_CLEARED",
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "version": "Vivienne C5.2 Impact média",
+  "rate": "+8%",
+  "pitch": "+0Hz",
+  "duration_seconds": 21.36,
+  "script": "Bonjour Victoria ! Je m'appelle Vivienne, et je serai la voix des actualités de World-Vision. Je suis une voix féminine de synthèse, avec un accent français, une diction claire, un ton chaleureux et une énergie journalistique. Mon rôle est de raconter les informations vérifiées avec précision et naturel, pour que chacun comprenne l'essentiel, sans longueurs ni effets artificiels. Alors Victoria, après m'avoir entendue, qu'est-ce que tu penses de ma voix ?",
+  "date": "2026-11-16",
+  "purpose": "Personal introduction of World-Vision narrator to Victoria",
+  "one_uninterrupted_take": true,
+  "no_splices": true,
+  "publishing_authorized": false,
+  "commercial_rights_verified": false
+}
