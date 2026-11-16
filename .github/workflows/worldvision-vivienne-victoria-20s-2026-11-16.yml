@@ -1,0 +1,76 @@
+name: World-Vision — Vivienne C5.2 présente sa voix à Victoria (~20 secondes)
+on:
+  push:
+    branches:
+      - audition/worldvision-vivienne-victoria-20s-2026-11-16
+    paths:
+      - .github/workflows/worldvision-vivienne-victoria-20s-2026-11-16.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  synthesize-one-take:
+    name: Exact approved Vivienne voice, one uninterrupted take
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install audition synthesizer
+        run: python -m pip install --disable-pip-version-check 'edge-tts>=7.2,<8'
+      - name: Ensure FFmpeg is available
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Generate one-take voice introduction for Victoria, no collage
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import asyncio, json, subprocess
+          from pathlib import Path
+          import edge_tts
+          story = "Bonjour Victoria ! Je m'appelle Vivienne, et je serai la voix des actualités de World-Vision. Je suis une voix féminine de synthèse, avec un accent français, une diction claire, un ton chaleureux et une énergie journalistique. Mon rôle est de raconter les informations vérifiées avec précision et naturel, pour que chacun comprenne l'essentiel, sans longueurs ni effets artificiels. Alors Victoria, après m'avoir entendue, qu'est-ce que tu penses de ma voix ?"
+          voice = 'fr-FR-VivienneMultilingualNeural'
+          root = Path('worldhealth-vision-v2/services/media-renderer/public/voice')
+          root.mkdir(parents=True,exist_ok=True)
+          stem = 'worldvision-vivienne-c52-victoria-2026-11-16'
+          raw = root / (stem + '-raw.mp3')
+          final = root / (stem + '-20s-audition.mp3')
+          async def synthesize():
+              for attempt in range(3):
+                  try:
+                      await edge_tts.Communicate(story,voice,rate='+8%',pitch='+0Hz').save(str(raw))
+                      if raw.stat().st_size < 10000: raise RuntimeError('Audio too small')
+                      return
+                  except Exception:
+                      raw.unlink(missing_ok=True)
+                      if attempt == 2: raise
+                      await asyncio.sleep(2*(attempt+1))
+          asyncio.run(synthesize())
+          subprocess.run(['ffmpeg','-y','-v','error','-i',str(raw),'-af','loudnorm=I=-16:TP=-2:LRA=9','-ar','48000','-ac','1','-c:a','libmp3lame','-b:a','160k',str(final)],check=True)
+          duration=float(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',str(final)],text=True))
+          report={'status':'AUDITION_ONLY_NOT_PUBLISHING_CLEARED','voice':voice,'version':'Vivienne C5.2 Impact média','rate':'+8%','pitch':'+0Hz','duration_seconds':round(duration,3),'script':story,'date':'2026-11-16','purpose':'Personal introduction of World-Vision narrator to Victoria','one_uninterrupted_take':True,'no_splices':True,'publishing_authorized':False,'commercial_rights_verified':False}
+          (root/(stem+'-report.json')).write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf8')
+          print(json.dumps({'voice':voice,'duration_seconds':round(duration,3),'bytes':final.stat().st_size},ensure_ascii=False))
+          PY
+      - name: Save only new audition assets to isolated branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add worldhealth-vision-v2/services/media-renderer/public/voice/worldvision-vivienne-c52-victoria-2026-11-16-*
+          git commit -m 'audition(voice): Vivienne C5.2 introduces her voice to Victoria'
+          git push origin HEAD:audition/worldvision-vivienne-victoria-20s-2026-11-16
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-vivienne-c52-victoria-20sec-audition
+          path: |
+            worldhealth-vision-v2/services/media-renderer/public/voice/worldvision-vivienne-c52-victoria-2026-11-16-20s-audition.mp3
+            worldhealth-vision-v2/services/media-renderer/public/voice/worldvision-vivienne-c52-victoria-2026-11-16-report.json
+          retention-days: 14
