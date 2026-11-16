@@ -20,6 +20,12 @@ jobs:
           python-version: '3.12'
       - name: Install audition synthesizer
         run: python -m pip install --disable-pip-version-check 'edge-tts>=7.2,<8'
+      - name: Ensure FFmpeg is available
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
       - name: Generate one-take original news audition, no collage
         shell: bash
         run: |
