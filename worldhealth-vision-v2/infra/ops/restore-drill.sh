@@ -17,10 +17,18 @@ if [[ -n "$probe" && ! "$probe" =~ ^[a-z_][a-z0-9_]*$ ]]; then
   echo "Probe table must be a simple lowercase SQL identifier" >&2
   exit 2
 fi
-sha256sum --check --status "$backup.sha256" || {
-  echo "Backup SHA256 mismatch" >&2
+# The sidecar stores ONLY the digest. Never trust a referenced filename
+# inside an arbitrary checksum file (it could point at another backup).
+expected="$(cat "$backup.sha256")"
+[[ "$expected" =~ ^[a-f0-9]{64}$ ]] || {
+  echo "Invalid backup checksum sidecar" >&2
   exit 1
 }
+actual="$(sha256sum "$backup" | awk '{print $1}')"
+if [[ "$actual" != "$expected" ]]; then
+  echo "Backup SHA256 mismatch" >&2
+  exit 1
+fi
 infra_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 compose_file="$infra_dir/compose.secure-staging.yml"
 drill_db="whv_restore_drill_$(date -u +%Y%m%d%H%M%S)_$$"
