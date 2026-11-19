@@ -273,7 +273,7 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
       }}>{shot.eyebrow}</div>}
     </div>
     <div data-wv-document-card={shot.id} style={{
-      position:"absolute",top:353,left:92,width:896,height:1000,
+      position:"absolute",top:315,left:92,width:896,height:900,
       border:"1px solid rgba(155,194,208,.28)",
       borderRadius:26,
       overflow:"hidden",
