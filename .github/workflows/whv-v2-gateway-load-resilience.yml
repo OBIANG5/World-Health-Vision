@@ -60,6 +60,7 @@ jobs:
           chmod 0644 "$WHV_DB_PASSWORD_FILE"
           mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
           python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_gateway.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/report_upstream_metrics.py
 
       - name: Fail if CI overlay exposes databases or disables JWT
         run: |
@@ -154,6 +155,13 @@ jobs:
               print(f'OBSERVED {phase}: {avg}ms mean over {int(counts[0])} requests')
           print('PASS: fixed-cardinality private phase measurements were collected')
           PY
+
+      - name: Verify and archive fixed-cardinality outbound HTTP operation profile
+        run: |
+          python3 worldhealth-vision-v2/infra/tests/report_upstream_metrics.py \
+            --input worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-private-metrics.prom \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-dependency-http-summary.json \
+            --require-economic
 
       - name: Verify partial failure isolation and restoration
         run: |
