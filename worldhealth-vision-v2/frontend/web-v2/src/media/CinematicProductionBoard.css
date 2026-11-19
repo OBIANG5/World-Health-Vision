@@ -103,3 +103,25 @@
   .wvc-edit-head{align-items:flex-start}
   .wvc-edit-head button{font-size:11px}
 }
+
+
+/* Cinematic shot framing controls — distinct from the exact Remotion composite. */
+.wvc-focus-control{
+  display:flex;flex-direction:column;gap:12px;padding:15px 16px;
+  border:1px solid rgba(151,200,222,.18);border-radius:10px;
+  background:rgba(100,164,192,.065)
+}
+.wvc-focus-heading{display:flex;flex-direction:column;gap:5px}
+.wvc-focus-heading strong{font-size:11px;letter-spacing:.08em;color:#c0dfed}
+.wvc-focus-heading span{font-size:11px;color:#8eaebf}
+.wvc-focus-control label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:670;color:#adc6d4}
+.wvc-board input[type="range"]{
+  -webkit-appearance:auto;appearance:auto;min-height:24px;height:24px;
+  padding:0;background:transparent;border:0;accent-color:#94d4ed;cursor:pointer
+}
+.wvc-crop-toggle{
+  border:1px solid #547c93;background:#172f3e;color:#cde8f7;
+  padding:9px 12px;border-radius:8px;margin:0 0 12px;
+  font-size:11px;font-weight:760;cursor:pointer;
+}
+.wvc-crop-toggle:hover{background:#24485e}
