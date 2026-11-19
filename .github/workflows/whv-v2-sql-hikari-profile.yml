@@ -129,7 +129,7 @@ jobs:
         run: |
           set -euo pipefail
           compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
-            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \)
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
             -f worldhealth-vision-v2/infra/tests/compose.ci-private-timeseries-metrics.yml)
           ids="$("${compose[@]}" ps -q whv-timescaledb catalog-service timeseries-service analytics-service)"
           test -n "$ids"
