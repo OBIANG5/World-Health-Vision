@@ -109,3 +109,32 @@ test("cinematic focus reveal needs actual user media, enough frames and concise 
   project.shots[0].title="X".repeat(91);
   assert.ok(reasons(project).includes("shots[0].title"));
 });
+
+test("document focus only magnifies a selected passage in a provided still",()=>{
+  const project=clone(sample);
+  const shot=project.shots[0];
+  shot.template="document_focus";
+  shot.durationFrames=140;
+  shot.title="Inspect the supplied document";
+  shot.subtitle="A factual description from the human script";
+  shot.media={kind:"image",file:"docs/supplied-source.png"};
+  shot.documentRegion={x:.30,y:.40,width:.45,height:.20};
+  assert.equal(inspectProject(project).ok,true);
+
+  shot.media={kind:"video",file:"docs/source.mp4"};
+  assert.ok(reasons(project).includes("shots[0].media"));
+  shot.media={kind:"image",file:"docs/supplied-source.png"};
+  shot.documentRegion={x:.8,y:.35,width:.45,height:.20};
+  assert.ok(reasons(project).includes("shots[0].documentRegion"));
+  shot.documentRegion={x:.3,y:.35,width:.04,height:.2};
+  assert.ok(reasons(project).includes("shots[0].documentRegion"));
+  shot.documentRegion={x:.3,y:.35,width:.45,height:.2};
+  shot.durationFrames=68;
+  assert.ok(reasons(project).includes("shots[0].durationFrames"));
+  shot.durationFrames=140;
+  shot.title="A".repeat(91);
+  assert.ok(reasons(project).includes("shots[0].title"));
+  shot.title="A source, never retyped by renderer";
+  delete shot.documentRegion;
+  assert.ok(reasons(project).includes("shots[0].documentRegion"));
+});
