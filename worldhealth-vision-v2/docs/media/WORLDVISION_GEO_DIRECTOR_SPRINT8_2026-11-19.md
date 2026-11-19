@@ -121,3 +121,28 @@ Les mouvements qui partagent un objet (par exemple le globe 3D et ses frontière
 3. Corriger d'abord tout échec technique sur Sprint 8 ; revoir ensuite les vrais pixels et comparer au globe de référence. Ne rien déclarer final sans cette revue.
 4. Si Sprint 8 validé : GEO-2 country-focus avec échelles 50m/10m et cadrages réellement exploitables ; puis DATA + PHOTO multicouche, puis EDITORIAL/AUDIO.
 5. Après chaque incrément : commit isolé, PR en draft, preuves CI, captures datées, mise à jour de ce registre et de `CONTINUITE_WORLD_VISION.md`, et distinction stricte entre code/test/art/publié.
+
+## 7. Audit réel — Actions, MP4 et pixels inspectés le 19 novembre
+
+**Code testé après correction JSX : commit `f34ae7c065cfb6ee25a979cd149f13e944583b92`.**
+**GitHub Actions [#44615478166](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44615478166) : les deux jobs SUCCESS** (renderer + build véritable front V2).
+- 16 tests Node, **16 réussis, 0 échec** ; caméra sur anti-méridien, durée, maintien, source atlas / ID Gabon 266 vérifiés.
+- `geo-motion-intro.mp4` : **H.264, 1080×1920, 30 ips, 150 images / 5 s, 3 280 097 octets**. MP4 et rapport `ffprobe` examinés.
+- Artefact GitHub **14573009991** (`worldvision-creative-compositor-demo`) téléchargé ; le document d'audit a examiné les **vrais screenshots Chromium** `player-geo-frame-0/48/96/138.png` à 360×640 ainsi que les stills réellement extraites du master à frames 0/74/149. Rapport navigateur : **0 erreur JS**, 4 PNG de SHA distincts, caméra arrivée et tenue, globe 3D et D3 à échelle concordante. Texture NASA officielle au SHA précité.
+- Le premier CI Sprint 8 #44615289624 avait **échoué au parser TSX** en raison d'une fermeture `}` manquante après `spotlightPath`; le commit de correction `f34ae7c` a résolu le défaut. Conserver l'historique, ne pas supprimer cet échec de la chronologie.
+
+### Observations VISUELLES indépendantes (pas seulement CI verte)
+
+1. **Réussi sur la preuve de test** : Afrique, Europe, océans, Sahara et frontières Natural Earth sont visibles, couleur NASA plus riche que l'ancien globe cyan uniforme ; l'œil lumineux apparaît derrière la Terre ; l'arc, le marqueur, la photo synthétique, le nombre et les légendes se combinent effectivement dans une seule scène. Pas de frame noire dans les 4 captures navigateur consultées.
+2. **Caméra** : sur ces coordonnées de démonstration le déplacement est **modéré** : latitude 12° → −0,7°, longitude 10° → 11,6°, optique 1 → 1,10 ; l'effet n'est pas comparable au zoom impressionnant vers une région dans les références. À ne pas présenter comme équivalent de GEO-2.
+3. **Country spotlight** : la géométrie du Gabon est dessinée mais **reste trop discrète et presque absorbée par le marqueur** à taille iPhone. Un véritable plan pays isolé/agrandi à géométrie plus fine est indispensable. Le simple contrôle `countryPathLength > 15` ne constitue pas une évaluation artistique.
+4. **Habillage** : sur les captures, l'œil blanc très intense et les anneaux cyan dominent parfois les frontières. Le bandeau supérieur est clair et lisible en 1080, mais les microtextes sur 360px doivent encore être hiérarchisés pour une vraie vidéo publiée. La mise en scène est encore une *démo technique*, pas un film journaliste performant.
+5. **Référence** : cette démo ne contient ni véritable scène d'actualité, ni narration, ni photographie de presse sous licence, ni animation de données financière avancée. **Il reste impossible de valider « qualité mondiale » à partir de ces seules images**. La comparaison à l'image de globe fournie exige encore des itérations de lumière/atmosphère/frontières ; la comparaison aux vidéos finance/géopolitique exige des scènes multicouches de même complexité éditoriale et musicale.
+
+### Verdict actuel
+
+**Technique sur le code `f34ae7c` : CONFORME à son contrat de test.**
+**Direction artistique / publication : NON VALIDÉE** ; PR #72 reste **DRAFT** et aucune V2 publique n'est modifiée.
+**Lancement automatique des tests renforcé :** le commit `a149b225` ajoute les nouveaux fichiers `geo-motion-camera.mjs/.d.mts` aux filtres CI ; vérifier le workflow associé au nouveau HEAD avant de considérer cette modification d'infrastructure qualifiée.
+
+**Prochaine intervention créative à haute valeur :** ne pas allonger indéfiniment le travail sur un anneau blanc. Construire GEO-2 (vrai pays cadré, lisible et mis en valeur, carte 50m/10m + média authentique + texte/chiffres), puis une scène PHOTO multi-couches 3–6 mouvements indépendants et une scène DATA (courbe/heatmap/ranking). Ces éléments servent plus directement la comparaison aux vidéos originales que la retouche d'un effet isolé.
