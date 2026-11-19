@@ -1,4 +1,6 @@
 #
+# DEV/CI ONLY: intentionally known development credentials, now bound to loopback.
+# NEVER deploy this file on a public host; use compose.secure-staging.yml.
 # WorldHealth Vision V2 local infrastructure and service composition.
 # This file wires the shared platform services and the first V2
 # application services we are actively building:
@@ -25,7 +27,7 @@ services:
       WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
       WHV_ANALYTICS_BASE_URL: http://analytics-service:8000
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       catalog-service:
         condition: service_started
@@ -148,7 +150,7 @@ services:
       POSTGRES_PASSWORD: whv_password
       TZ: Europe/Paris
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - whv_timescaledb_data:/var/lib/postgresql/data
     healthcheck:
@@ -170,7 +172,7 @@ services:
       POSTGRES_PASSWORD: keycloak_password
       TZ: Europe/Paris
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - whv_keycloak_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -192,7 +194,7 @@ services:
       --save 60 1000
       --loglevel warning
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - whv_redis_data:/data
     healthcheck:
@@ -228,7 +230,7 @@ services:
     command:
       - start-dev
     ports:
-      - "8081:8080"
+      - "127.0.0.1:8081:8080"
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q 'UP'"]
       interval: 15s
@@ -249,7 +251,7 @@ services:
     environment:
       DATA_SOURCE_NAME: "postgresql://whv_user:whv_password@whv-timescaledb:5432/whv?sslmode=disable"
     ports:
-      - "9187:9187"
+      - "127.0.0.1:9187:9187"
     networks:
       - whv-private
       - whv-public
@@ -264,7 +266,7 @@ services:
     environment:
       REDIS_ADDR: "redis://redis:6379"
     ports:
-      - "9121:9121"
+      - "127.0.0.1:9121:9121"
     networks:
       - whv-private
       - whv-public
@@ -278,7 +280,7 @@ services:
       - --storage.tsdb.path=/prometheus
       - --web.enable-lifecycle
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - whv_prometheus_data:/prometheus
@@ -303,7 +305,7 @@ services:
     restart: unless-stopped
     command: -config.file=/etc/loki/loki-config.yml
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     volumes:
       - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
       - whv_loki_data:/loki
@@ -321,7 +323,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
       TZ: Europe/Paris
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - whv_grafana_data:/var/lib/grafana
       - ./grafana/provisioning/datasources/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro

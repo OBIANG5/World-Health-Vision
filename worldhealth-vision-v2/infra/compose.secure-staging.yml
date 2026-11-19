@@ -1,0 +1,220 @@
+# World-Vision V2: secure, ISOLATED staging stack.
+# Intentionally standalone: never combine this with the permissive local Docker Compose.
+# Nothing in this file deploys to Vercel or publishes public ports.
+# JWT-protected Gateway is reachable only on 127.0.0.1 for a trusted reverse proxy.
+#
+# Required host variables:
+#   WHV_DB_PASSWORD_FILE: absolute path to non-empty secret file (outside Git)
+#   WHV_OIDC_ISSUER_URI: reachable trusted OIDC issuer (no test/example issuer in use)
+#   WHV_TIMESCALE_IMAGE: approved TimescaleDB image pinned to an immutable digest
+name: whv-v2-secure-staging
+
+x-app-defaults: &app-defaults
+  restart: unless-stopped
+  init: true
+  read_only: true
+  user: "10001:10001"
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=64m
+  stop_grace_period: 40s
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  whv-timescaledb:
+    image: ${WHV_TIMESCALE_IMAGE:?Set WHV_TIMESCALE_IMAGE to a vetted immutable digest}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: whv
+      POSTGRES_USER: whv_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/whv_db_password
+      TZ: UTC
+    secrets:
+      - whv_db_password
+    volumes:
+      - whv_timescaledb_data:/var/lib/postgresql/data
+    # No ports: database is strictly container-network internal.
+    networks:
+      - core_private
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    stop_grace_period: 75s
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  catalog-service:
+    <<: *app-defaults
+    build:
+      context: ..
+      dockerfile: infra/docker/java-service.Dockerfile
+      args:
+        SERVICE_MODULE: services/catalog-service
+    environment:
+      WHV_CATALOG_PORT: "8080"
+      WHV_DB_URL: jdbc:postgresql://whv-timescaledb:5432/whv
+      WHV_DB_USERNAME: whv_user
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info
+    secrets:
+      - whv_db_password
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        test -s /run/secrets/whv_db_password || exit 1
+        export WHV_DB_PASSWORD="$(cat /run/secrets/whv_db_password)"
+        exec java -jar /app/app.jar
+    depends_on:
+      whv-timescaledb:
+        condition: service_healthy
+    networks:
+      - core_private
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 50s
+
+  timeseries-service:
+    <<: *app-defaults
+    build:
+      context: ..
+      dockerfile: infra/docker/java-service.Dockerfile
+      args:
+        SERVICE_MODULE: services/timeseries-service
+    environment:
+      WHV_TIMESERIES_PORT: "8080"
+      WHV_DB_URL: jdbc:postgresql://whv-timescaledb:5432/whv
+      WHV_DB_USERNAME: whv_user
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info
+    secrets:
+      - whv_db_password
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        test -s /run/secrets/whv_db_password || exit 1
+        export WHV_DB_PASSWORD="$(cat /run/secrets/whv_db_password)"
+        exec java -jar /app/app.jar
+    depends_on:
+      whv-timescaledb:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
+    networks:
+      - core_private
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 50s
+
+  analytics-service:
+    <<: *app-defaults
+    build:
+      context: ..
+      dockerfile: services/analytics-service/Dockerfile
+    environment:
+      WHV_ANALYTICS_SERVICE_PORT: "8000"
+      WHV_ANALYTICS_CATALOG_BASE_URL: http://catalog-service:8080
+      WHV_ANALYTICS_TIMESERIES_BASE_URL: http://timeseries-service:8080
+    depends_on:
+      catalog-service:
+        condition: service_healthy
+      timeseries-service:
+        condition: service_healthy
+    networks:
+      - core_private
+
+  ingestion-service:
+    <<: *app-defaults
+    build:
+      context: ..
+      dockerfile: services/ingestion-service/Dockerfile
+    environment:
+      WHV_INGEST_SERVICE_PORT: "8000"
+      WHV_INGEST_BRONZE_ROOT: /app/data/bronze
+      WHV_INGEST_PUBLISH_TO_TIMESERIES: "true"
+      WHV_INGEST_TIMESERIES_BASE_URL: http://timeseries-service:8080
+    volumes:
+      - whv_data_lake:/app/data:rw
+    depends_on:
+      timeseries-service:
+        condition: service_healthy
+    # Egress is needed for institutions' APIs. This bridge does NOT implement an
+    # outbound host firewall or domain allowlist; configure that separately.
+    # Never publish ingestion routes.
+    networks:
+      - core_private
+      - internet_egress
+
+  gateway-service:
+    <<: *app-defaults
+    build:
+      context: ..
+      dockerfile: infra/docker/java-service.Dockerfile
+      args:
+        SERVICE_MODULE: services/gateway-service
+    environment:
+      WHV_GATEWAY_PORT: "8080"
+      WHV_SECURITY_ENABLED: "true"
+      WHV_SECURITY_ISSUER_URI: ${WHV_OIDC_ISSUER_URI:?Configure a real trusted OIDC issuer first}
+      WHV_CATALOG_BASE_URL: http://catalog-service:8080
+      WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
+      WHV_ANALYTICS_BASE_URL: http://analytics-service:8000
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info
+    ports:
+      - "127.0.0.1:${WHV_GATEWAY_HOST_PORT:-18080}:8080"
+    depends_on:
+      catalog-service:
+        condition: service_healthy
+      timeseries-service:
+        condition: service_healthy
+      analytics-service:
+        condition: service_started
+    # OIDC issuer discovery needs egress; this is not a destination allowlist.
+    # The HTTP port remains loopback-only.
+    networks:
+      - core_private
+      - internet_egress
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 50s
+
+networks:
+  core_private:
+    driver: bridge
+    internal: true
+  internet_egress:
+    driver: bridge
+
+secrets:
+  whv_db_password:
+    file: ${WHV_DB_PASSWORD_FILE:?Set an absolute file path for the DB password outside Git}
+
+volumes:
+  whv_timescaledb_data:
+  whv_data_lake:

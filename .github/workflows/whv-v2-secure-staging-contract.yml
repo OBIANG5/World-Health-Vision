@@ -1,0 +1,185 @@
+name: WHV V2 - secure staging contract and restore proof
+
+on:
+  pull_request:
+    branches: [v2]
+    paths:
+      - 'worldhealth-vision-v2/infra/**'
+      - 'worldhealth-vision-v2/services/*/Dockerfile'
+      - '.github/workflows/whv-v2-secure-staging-contract.yml'
+  push:
+    branches:
+      - 'security/v2-secure-staging-*'
+    paths:
+      - 'worldhealth-vision-v2/infra/**'
+      - 'worldhealth-vision-v2/services/*/Dockerfile'
+      - '.github/workflows/whv-v2-secure-staging-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-secure-staging-${{ github.ref }}
+  cancel-in-progress: true
+
+# CI-only values. Never copy the sample image tag or issuer into a public release.
+env:
+  WHV_TIMESCALE_IMAGE: timescale/timescaledb:2.15.3-pg16
+  WHV_OIDC_ISSUER_URI: https://ci-only.invalid/realms/worldvision
+  WHV_DB_PASSWORD_FILE: /tmp/whv_ci_db_password
+  WHV_BACKUP_DIR: /tmp/whv_ci_backups
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create throwaway CI secret
+        run: |
+          openssl rand -hex 36 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0600 "$WHV_DB_PASSWORD_FILE"
+      - name: Parse and validate resolved secure staging Compose
+        run: |
+          docker compose version
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/verify_secure_staging.py
+          bash -n worldhealth-vision-v2/infra/ops/backup-db.sh
+          bash -n worldhealth-vision-v2/infra/ops/restore-drill.sh
+          bash -n worldhealth-vision-v2/infra/ops/preflight-host.sh
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml config --format json > "$RUNNER_TEMP/whv-secure-config.json"
+          python3 worldhealth-vision-v2/infra/tests/verify_secure_staging.py "$RUNNER_TEMP/whv-secure-config.json"
+      - name: Fail closed when critical variables are absent
+        run: |
+          set -eu
+          for name in WHV_DB_PASSWORD_FILE WHV_OIDC_ISSUER_URI WHV_TIMESCALE_IMAGE; do
+            if env -u "$name" docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml config --quiet >/dev/null 2>&1; then
+              echo "FAILED: $name is not mandatory" >&2
+              exit 1
+            fi
+          done
+          echo "PASS: all three required settings fail closed"
+      - name: Validate host preflight rejects mutable image tags and accepts guarded metadata
+        run: |
+          mkdir -p "$WHV_BACKUP_DIR"
+          host_secret="$RUNNER_TEMP/whv-host-preflight-secret"
+          cp "$WHV_DB_PASSWORD_FILE" "$host_secret"
+          sudo chown "$(id -u)":10001 "$host_secret"
+          chmod 0440 "$host_secret"
+          export WHV_DB_PASSWORD_FILE="$host_secret"
+          export WHV_OIDC_ISSUER_URI="https://ci-identity.internal.test/realms/worldvision"
+          if bash worldhealth-vision-v2/infra/ops/preflight-host.sh >/dev/null 2>&1; then
+            echo "FAILED: mutable TimescaleDB image passed host preflight" >&2
+            exit 1
+          fi
+          export WHV_TIMESCALE_IMAGE="timescale/timescaledb@sha256:$(printf 'a%.0s' {1..64})"
+          bash worldhealth-vision-v2/infra/ops/preflight-host.sh
+          echo "PASS: host policy requires a protected secret and immutable image reference"
+      - name: Verify local DEV stack cannot publish ports on LAN interfaces
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/docker-compose.yml config --format json > "$RUNNER_TEMP/whv-dev-config.json"
+          python3 - "$RUNNER_TEMP/whv-dev-config.json" <<'PY'
+          import json, sys
+          services = json.load(open(sys.argv[1]))['services']
+          ports = [(name, p) for name, service in services.items() for p in service.get('ports', [])]
+          assert len(ports) >= 8, ports
+          for name, port in ports:
+              assert port.get('host_ip') == '127.0.0.1', (name, port)
+          print(f'PASS: {len(ports)} local-only dev TCP port mappings')
+          PY
+
+  private-services-runtime:
+    runs-on: ubuntu-latest
+    needs: contract
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare disposable secret for private service tests
+        run: |
+          openssl rand -hex 36 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0644 "$WHV_DB_PASSWORD_FILE"
+      - name: Build and start DB, catalog, timeseries, analytics, ingestion as unprivileged apps
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            up -d --build --wait whv-timescaledb catalog-service timeseries-service analytics-service ingestion-service
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml ps
+          for service in catalog-service timeseries-service analytics-service ingestion-service; do
+            user_id="$(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T "$service" id -u | tr -d '\\r')"
+            test "$user_id" = 10001 || { echo "$service is running as UID $user_id" >&2; exit 1; }
+          done
+          echo "PASS: all four core applications execute as UID 10001"
+      - name: Verify real readiness and writable bronze data (without external ingestion)
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T ingestion-service \
+            python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=10).status)"
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T analytics-service \
+            python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/analytics/readiness', timeout=15).status)"
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T ingestion-service \
+            python -c "from pathlib import Path; p=Path('/app/data/bronze/.staging-ci-probe'); p.write_text('okay'); assert p.read_text()=='okay'; p.unlink(); print('PASS bronze persistence writes as nonroot')"
+      - name: Record baseline container resources for hosting estimates
+        run: |
+          ids="$(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml ps -q)"
+          test -n "$ids"
+          docker stats --no-stream --format '{{.Name}}: {{.MemUsage}}, CPU={{.CPUPerc}}' $ids
+      - name: Print relevant container logs on failure (no secrets)
+        if: failure()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml logs --tail=90 \
+            catalog-service timeseries-service analytics-service ingestion-service || true
+      - name: Remove ephemeral private stack and CI secret
+        if: always()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml down --volumes --remove-orphans || true
+          rm -f "$WHV_DB_PASSWORD_FILE"
+
+  backup-restore:
+    runs-on: ubuntu-latest
+    needs: contract
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare ephemeral database password and backup directory
+        run: |
+          openssl rand -hex 36 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0644 "$WHV_DB_PASSWORD_FILE"
+          mkdir -p "$WHV_BACKUP_DIR"
+          chmod 0700 "$WHV_BACKUP_DIR"
+      - name: Launch ONLY private TimescaleDB (no public ingress)
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml up -d --wait whv-timescaledb
+      - name: Seed a marker of known value
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T whv-timescaledb sh -eu -c '
+            export PGPASSWORD="$(cat "$POSTGRES_PASSWORD_FILE")"
+            psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "
+              CREATE TABLE public.whv_backup_canary(id integer primary key);
+              INSERT INTO public.whv_backup_canary(id) VALUES (1);
+            "
+          '
+      - name: Create, checksum, independently restore and verify logical backup
+        run: |
+          bash worldhealth-vision-v2/infra/ops/backup-db.sh
+          backup_file="$(find "$WHV_BACKUP_DIR" -maxdepth 1 -name '*.dump' -type f -print -quit)"
+          test -n "$backup_file"
+          bash worldhealth-vision-v2/infra/ops/restore-drill.sh "$backup_file" whv_backup_canary
+          cp "$backup_file" "$backup_file.damaged"
+          cp "$backup_file.sha256" "$backup_file.damaged.sha256"
+          printf 'CORRUPTED' >> "$backup_file.damaged"
+          if bash worldhealth-vision-v2/infra/ops/restore-drill.sh "$backup_file.damaged"; then
+            echo "FAILED: an altered archive passed checksum verification" >&2
+            exit 1
+          fi
+          echo "PASS: corrupted backup rejected before restore"
+      - name: Keep original database intact after recovery test
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T whv-timescaledb sh -eu -c '
+            export PGPASSWORD="$(cat "$POSTGRES_PASSWORD_FILE")"
+            psql -v ON_ERROR_STOP=1 -At -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+              -c "SELECT count(*) FROM public.whv_backup_canary" | grep -qx 1
+          '
+          echo "PASS: original and restore were independent"
+      - name: Delete all ephemeral CI data
+        if: always()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml down --volumes --remove-orphans || true
+          rm -rf "$WHV_BACKUP_DIR" "$WHV_DB_PASSWORD_FILE"
