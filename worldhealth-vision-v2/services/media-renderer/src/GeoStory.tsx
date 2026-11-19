@@ -301,8 +301,14 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
       position:"absolute",
       left:hasPhoto?114:undefined,
       right:hasPhoto?undefined:100,
-      top:hasPhoto?866:1017,
-      width:hasPhoto?414:375,
+      top:hasPhoto?866:870,
+      width:hasPhoto?414:410,
+      minHeight:hasPhoto?0:164,
+      padding:hasPhoto?0:"20px 24px 18px",
+      background:hasPhoto?"transparent":"rgba(3,17,34,.86)",
+      border:hasPhoto?"none":"1px solid rgba(125,224,248,.52)",
+      borderRadius:hasPhoto?0:18,
+      boxShadow:hasPhoto?"none":"0 15px 39px rgba(0,7,19,.48)",
       display:"flex",flexDirection:"column",
       alignItems:hasPhoto?"flex-start":"flex-end",
       opacity:metricIn*fadeOut
@@ -317,13 +323,18 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
     </div>}
     <div style={{
       position:"absolute",left:89,top:205,right:170,
+      padding:"12px 18px 16px",
+      background:"linear-gradient(90deg,rgba(2,14,28,.94),rgba(2,18,35,.80))",
+      borderLeft:"4px solid #61edff",
+      borderRadius:8,
+      boxShadow:"0 8px 27px rgba(0,7,21,.25)",
       opacity:easing(norm(local,6,26))*fadeOut
     }}>
       <div style={{display:"inline-block",height:5,width:72,
-        background:"#71f4ff",marginBottom:17}}/>
+        background:"#71f4ff",marginBottom:12}}/>
       {shot.eyebrow&&<div dir="auto" style={{
         fontSize:22,fontWeight:750,letterSpacing:".11em",
-        color:"#c4f9ff",textTransform:"uppercase"
+        color:"#eefaff",textTransform:"uppercase"
       }}>{shot.eyebrow}</div>}
     </div>
     {/* Level 8: headlines enter after cartographic context. */}
