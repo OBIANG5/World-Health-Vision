@@ -1,4 +1,8 @@
-import {useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
+import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
+import type {CreativeEditProps, CreativeMedia} from "../../../../services/media-renderer/src/CreativeEdit";
+
+// Lazy: do not load the sizeable motion runtime until a user requests preview.
+const RealCreativePreview = lazy(() => import("./CreativeCompositionPreview"));
 import "./CinematicProductionBoard.css";
 
 type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal";
@@ -48,10 +52,44 @@ export default function CinematicProductionBoard() {
   const [accent,setAccent]=useState("#8bbecf");
   const [feedback,setFeedback]=useState("");
   const [croppedPreview,setCroppedPreview]=useState(true);
+  const [showRealPreview,setShowRealPreview]=useState(false);
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
   const activeAsset=files.find(f=>f.name===active.mediaName);
+  const foregroundAsset=files.find(f=>f.name===active.foregroundName);
+  const needsRealMedia=["documentary","evidence","clean_video","focus_reveal"].includes(active.template);
+  const previewCanRender=(!needsRealMedia||Boolean(activeAsset&&activeAsset.kind!=="audio"))&&
+    (active.template!=="focus_reveal"||Boolean(active.title.trim()&&active.title.length<=90&&active.durationFrames>=90));
+  // Exact props type of the REAL server-rendered Remotion compositor; object
+  // URLs only exist in this browser session and never reach GitHub or an API.
+  const previewProps=useMemo<CreativeEditProps>(()=>{
+    const media:CreativeMedia|null=activeAsset&&activeAsset.kind!=="audio"
+      ? {kind:activeAsset.kind,src:activeAsset.url}:null;
+    return {
+      version:1,
+      title:projectName,
+      script,
+      shots:[{
+        id:active.id,
+        durationFrames:active.durationFrames,
+        template:active.template,
+        title:active.title,
+        subtitle:active.subtitle,
+        eyebrow:active.eyebrow,
+        media,
+        foreground:foregroundAsset?{src:foregroundAsset.url}:null,
+        motion:active.motion,
+        transitionAfter:"cut",
+        transitionFrames:0,
+        focus:{x:active.focusX,y:active.focusY}
+      }],
+      narration:null,
+      soundtrack:null,
+      brandOutro:null,
+      visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
+    };
+  },[active,activeAsset,foregroundAsset,projectName,script,accent]);
   const canExport=script.trim().length>0&&shots.every(shot=>{
     const requires=["documentary","evidence","clean_video","focus_reveal"].includes(shot.template);
     const hasMedia=!requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
@@ -232,16 +270,32 @@ export default function CinematicProductionBoard() {
         </div>
       </div>
       <aside className="wvc-preview">
-        <div className="wvc-preview-title">APERÇU DU MÉDIA SOURCE</div>
-        <button type="button" className="wvc-crop-toggle" onClick={()=>setCroppedPreview(x=>!x)}>
+        <div className="wvc-preview-title">VISIONNAGE DU PLAN · 9:16</div>
+        <div className="wvc-preview-switch" aria-label="Choisir le mode de visionnage">
+          <button type="button" className={showRealPreview?"selected":""} onClick={()=>setShowRealPreview(true)}>
+            <span aria-hidden="true">▶</span> Composition animée
+          </button>
+          <button type="button" className={!showRealPreview?"selected":""} onClick={()=>setShowRealPreview(false)}>
+            Média original
+          </button>
+        </div>
+        {!showRealPreview&&<button type="button" className="wvc-crop-toggle" onClick={()=>setCroppedPreview(x=>!x)}>
           {croppedPreview?"Afficher la source complète":"Visualiser le cadrage 9:16"}
-        </button>
+        </button>}
         <div className="wvc-device">
+          {showRealPreview ? (
+            previewCanRender ? <Suspense fallback={<div className="wvc-player-loading">Chargement du vrai moteur Remotion…</div>}>
+              <RealCreativePreview props={previewProps} shotId={active.id}/>
+            </Suspense> : <div className="wvc-player-loading">Ajoute un visuel et un titre conforme à ce plan avant de visionner sa véritable animation.</div>
+          ) : <>
           {activeAsset?.kind==="image"&&<img src={activeAsset.url} alt={"Média source : "+activeAsset.name} style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
           {activeAsset?.kind==="video"&&<video src={activeAsset.url} controls playsInline preload="metadata" style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
           {!activeAsset&&<div className="wvc-no-preview"><span>WORLD—VISION</span><strong>TON MÉDIA<br/>ICI</strong><small>L'image d'actualité doit être fournie ou choisie explicitement.</small></div>}
+          </>}
         </div>
-        <p>{croppedPreview?"Cadrage source 9:16 uniquement (sans les effets, titres ni animation).":"Fichier source complet sans recadrage."} Les animations finales sont calculées par Remotion, pas simulées ici.</p>
+        <p>{showRealPreview
+          ? "Même composition React/Remotion que l'export MP4, avec des fichiers locaux. Aperçu visuel du plan seul, sans la narration ni les raccords du film. Le codec de la vidéo et la fluidité peuvent différer selon le téléphone : toujours juger le master exporté."
+          : (croppedPreview?"Cadrage source 9:16 uniquement, sans titres ni animation.":"Fichier source complet, sans recadrage.")}</p>
         <label className="wvc-accent">ACCENT GRAPHIQUE <input type="color" value={accent} onChange={e=>setAccent(e.target.value)}/></label>
       </aside>
     </div>
