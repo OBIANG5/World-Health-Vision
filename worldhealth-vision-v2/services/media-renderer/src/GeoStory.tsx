@@ -1,5 +1,5 @@
 import React,{useMemo} from "react";
-import {AbsoluteFill,Img,interpolate,useCurrentFrame,useVideoConfig} from "remotion";
+import {AbsoluteFill,Img,OffthreadVideo,useCurrentFrame,useVideoConfig} from "remotion";
 import {fitTextOnNLines} from "@remotion/layout-utils";
 import {geoOrthographic,geoPath,geoGraticule10,geoInterpolate} from "d3-geo";
 import {feature,mesh} from "topojson-client";
@@ -221,13 +221,13 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
           width:"100%",height:"100%",objectFit:"cover",
           transform:"scale("+(1.015+.035*progress)+")"
         }}/>
-      : <div style={{height:"100%",background:"#0b2639"}}/>}
+      : <OffthreadVideo src={resolveCreativeSource(shot.media.src)} muted trimBefore={shot.media.trimBefore??0} style={{width:"100%",height:"100%",objectFit:"cover"}}/>}
       <div style={{position:"absolute",inset:0,
         background:"linear-gradient(0deg,rgba(2,12,22,.4),transparent 45%)"}}/>
     </div>}
     {/* Level 7: numerics are editorial values, NOT market data invented by AI. */}
     {m&&<div data-wv-geo-metric="true" style={{
-      position:"absolute",right:100,top:hasPhoto?1474:1168,
+      position:"absolute",right:100,top:hasPhoto?1230:1168,
       width:375,display:"flex",flexDirection:"column",alignItems:"flex-end",
       opacity:metricIn*fadeOut
     }}>
