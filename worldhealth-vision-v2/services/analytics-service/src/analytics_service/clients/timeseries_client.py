@@ -172,6 +172,49 @@ class TimeseriesClient:
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [SeriesAvailability.model_validate(item) for item in payload.items]
 
+    async def list_series_availability_batch(
+        self,
+        country_iso3: str,
+        indicator_codes: list[str],
+        source_code: str | None,
+        dataset_code: str | None,
+        period_granularity: str | None,
+        limit_per_indicator: int,
+    ) -> dict[str, list[SeriesAvailability]]:
+        if (not 1 <= len(indicator_codes) <= 128 or
+                len(set(indicator_codes)) != len(indicator_codes) or
+                not 1 <= limit_per_indicator <= 500 or
+                len(indicator_codes) * limit_per_indicator > 10000):
+            raise ValueError("Unbounded or duplicate availability batch.")
+        response = await self._post(
+            "availability_batch", "/internal/timeseries/series/availability/batch",
+            json={
+                "countryIso3": country_iso3,
+                "indicatorCodes": indicator_codes,
+                "sourceCode": source_code,
+                "datasetCode": dataset_code,
+                "periodGranularity": period_granularity,
+                "limitPerIndicator": limit_per_indicator,
+            },
+        )
+        data = response.json()
+        if (not isinstance(data, dict) or data.get("count") != len(indicator_codes) or
+                not isinstance(data.get("items"), list) or
+                len(data["items"]) != len(indicator_codes)):
+            raise httpx.RemoteProtocolError("Malformed per-indicator availability batch envelope.")
+        result: dict[str, list[SeriesAvailability]] = {}
+        for code, group in zip(indicator_codes, data["items"], strict=True):
+            if not isinstance(group, dict) or group.get("indicatorCode") != code:
+                raise httpx.RemoteProtocolError("Availability batch returned misplaced indicator.")
+            items = group.get("items")
+            if not isinstance(items, list) or type(group.get("count")) is not int or group["count"] != len(items):
+                raise httpx.RemoteProtocolError("Availability batch group count mismatch.")
+            models = [SeriesAvailability.model_validate(item) for item in items]
+            if any(row.indicatorCode != code for row in models):
+                raise httpx.RemoteProtocolError("Availability batch crossed indicator boundaries.")
+            result[code] = models
+        return result
+
     async def compare_countries_latest(
         self,
         country_iso3: list[str],
