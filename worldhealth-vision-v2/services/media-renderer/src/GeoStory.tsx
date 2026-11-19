@@ -198,10 +198,19 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
       <ellipse cx="540" cy="752" rx="614" ry="465"
         fill="none" stroke="#ceffff" strokeWidth="3" opacity={.48*enter}/>
       {/* Level 3: planet, real Natural Earth borders, projection-true rotation. */}
+      {/* Important photo-mode mask fix: the old VECTOR circles filled the
+          entire globe cyan and hid the real NASA satellite pixels. Only rims
+          may glow on top of a photographic planet, never opaque disks. */}
       <circle data-wv-geo-earth="true" cx="540" cy="747" r="418"
-        fill="#08ddff" opacity=".35" filter="url(#wv-geo-soft-glow)"
+        fill={isPhoto?"none":"#08ddff"}
+        stroke={isPhoto?"#04d2ff":"none"} strokeWidth={isPhoto?13:0}
+        opacity={isPhoto?.55:.35} filter="url(#wv-geo-soft-glow)"
         transform={"translate(540 747) scale("+atmosphere+") translate(-540 -747)"}/>
-      <circle cx="540" cy="747" r="405" fill="#11caff" opacity=".7"
+      <circle cx="540" cy="747" r="405"
+        fill={isPhoto?"none":"#11caff"}
+        stroke={isPhoto?"#12ceff":"none"}
+        strokeWidth={isPhoto?5:0}
+        opacity={isPhoto?.74:.7}
         filter="url(#wv-geo-neon-glow)"/>
       <circle cx="540" cy="747" r="399"
         fill={isPhoto?"transparent":"url(#wv-geo-water)"}
