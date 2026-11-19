@@ -1,5 +1,17 @@
 # World-Vision — registre canonique des décisions humaines
 
+## Décisions supplémentaires actives — 19 novembre 2026
+
+| ID | Date | Domaine | Décision | État | Preuve |
+|---|---|---|---|---|---|
+| D-MEDIA-20261119-01 | 2026-11-19 | Architecture | **BAOCOM indépendant** : aucun push GitHub de BAOCOM, aucun raccord technique. Inspirer seulement des idées d'interface et de montage. | ACTIVE | Confirmation du propriétaire ; [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) |
+| D-MEDIA-20261119-02 | 2026-11-19 | Périmètre | **Reporter Content OS/blog et couplage média avec GDELT** jusqu'à intégration GDELT dans la plateforme logicielle. Priorité immédiate à la qualité vidéo. | ACTIVE | Confirmation du propriétaire |
+| D-MEDIA-20261119-03 | 2026-11-19 | Production | **ChatGPT copilote IA**, Remotion/FFmpeg et code métier comme exécutants. Une scène à la fois, scripts et plans acceptés verrouillés, 11 portes, maquettes avant animations, voix Vivienne continue, revue humaine. | ACTIVE | [Plan cinéma v1](../media/WORLDVISION_CINEMATIC_DIRECTOR_PRODUCTION_V1_2026-11-19.md) |
+| D-MEDIA-20261119-04 | 2026-11-19 | Validations | Tests automatiques, scores et rapports ne suffisent jamais à affirmer que la vidéo est artistiquement excellente ou publiable. Aucune fusion/production sans preuve. | ACTIVE | [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) |
+
+---
+
+
 **Date d'ouverture : 13 novembre 2026.** Les décisions notées ici ont préséance sur les anciennes hypothèses des discussions, jamais sur les lois ou règles des plateformes.
 
 ## Décisions validées et preuves
