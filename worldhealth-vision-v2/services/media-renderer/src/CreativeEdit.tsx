@@ -301,7 +301,16 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
     {props.narration&&<Sequence durationInFrames={timelineFrames} name="Voix choisie / fournie">
       <Audio src={staticFile(props.narration.src)} volume={props.narration.volume??1}/>
     </Sequence>}
-    {props.soundtrack&&<Audio src={staticFile(props.soundtrack.src)} volume={props.soundtrack.volume??.1}/>}
+    {props.soundtrack&&<Sequence durationInFrames={timelineFrames} name="Ambiance avant signature">
+      <Audio src={staticFile(props.soundtrack.src)}
+        volume={(frame)=> {
+          const base=props.soundtrack?.volume??.1;
+          const fadeIn=Math.max(0,Math.min(1,frame/12));
+          const fadeOut=Math.max(0,Math.min(1,(timelineFrames-frame)/15));
+          return base*Math.min(fadeIn,fadeOut);
+        }}
+      />
+    </Sequence>}
     {props.brandOutro&&<Sequence from={timelineFrames} durationInFrames={props.brandOutro.durationFrames} name="G0 original ou signature fournie">
       <AbsoluteFill><OffthreadVideo src={staticFile(props.brandOutro.src)} muted style={{width:"100%",height:"100%",objectFit:"cover"}}/></AbsoluteFill>
     </Sequence>}
