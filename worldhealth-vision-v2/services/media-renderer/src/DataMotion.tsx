@@ -96,10 +96,10 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
       style={{position:"absolute",inset:0,pointerEvents:"none"}}>
       <defs>
         <clipPath id={"wv-data-graph-"+shot.id}>
-          <rect x="110" y="505" width="865" height="710" rx="20"/>
+          <rect x="110" y="505" width="865" height="670" rx="20"/>
         </clipPath>
       </defs>
-      <rect x="92" y="475" width="896" height="736" rx="22"
+      <rect data-wv-data-chart-boundary="true" x="92" y="475" width="896" height="700" rx="22"
         fill="rgba(4,21,36,.70)" stroke="#56b7cc" strokeOpacity=".36"
         strokeWidth="2" opacity={beat.grid}/>
       {mode==="line"&&<g data-wv-data-line="true" clipPath={"url(#wv-data-graph-"+shot.id+")"}>
@@ -155,7 +155,7 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
     </svg>
     {/* C: key number has an independent beat, not silently derived profit. */}
     <div data-wv-data-key-metric="true" style={{
-      position:"absolute",top:1215,left:100,right:100,height:115,
+      position:"absolute",top:1190,left:100,right:100,height:100,
       display:"flex",alignItems:"center",justifyContent:"space-between",
       opacity:showNumber*fadeOut
     }}>
@@ -169,7 +169,7 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
     </div>
     {/* D/E: interpretation and provenance are independent tracks. */}
     {summaryText&&<div data-wv-data-caption="true" dir="auto" style={{
-      position:"absolute",top:1361,left:100,right:100,
+      position:"absolute",top:1305,left:100,right:100,
       borderTop:"3px solid "+accent,paddingTop:16,maxHeight:91,
       fontSize:summarySize,lineHeight:1.27,fontWeight:510,
       opacity:beat.notes*fadeOut,overflow:"hidden"
