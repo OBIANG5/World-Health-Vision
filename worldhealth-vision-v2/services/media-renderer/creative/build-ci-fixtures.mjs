@@ -10,7 +10,7 @@ import {deflateSync} from "node:zlib";
  * This is NOT photojournalism, stock footage, or an image of any real location.
  * A synthetic image is used so CI never depends on an external media website.
  */
-function makeSyntheticLandscape(filepath,cutout=false){
+function makeSyntheticLandscape(filepath,cutout=false,document=false){
   const width=540,height=960;
   const pixels=Buffer.alloc((width*4+1)*height);
   const frac=x=>Math.max(0,Math.min(1,x));
@@ -33,6 +33,21 @@ function makeSyntheticLandscape(filepath,cutout=false){
       if(farMountain){r=12+glow*13;g=41+glow*17;b=54+glow*22;}
       if(foreground){r=5+horizonRipple*110;g=27+horizonRipple*130;b=39+horizonRipple*141;}
       if(cutout&&!foreground){r=0;g=0;b=0;}
+      if(document){
+        // Abstract geometric "paper", NOT a mocked real report or actual text.
+        r=236;g=243;b=244;
+        if(x>42&&x<500&&y>50&&y<93){r=17;g=48;b=62;}
+        if(x>52&&x<484&&y>108&&y<117){r=47;g=139;b=168;}
+        if(x>52&&x<484&&y>430&&y<540){r=219;g=238;b=241;}
+        const lines=(y>158&&y<885&&Math.floor((y-158)/38)%5!==4);
+        const rowIndex=Math.floor((y-158)/38);
+        const lineLen=185+((rowIndex*47)%263);
+        const textBlock=lines && x>59 && x<Math.min(485,59+lineLen) && (y-158)%38<9;
+        if(textBlock){r=80+(rowIndex%3)*8;g=100+(rowIndex%3)*5;b=108+(rowIndex%3)*4;}
+        if(x>58&&x<482&&y>420&&y<424){r=54;g=152;b=179;}
+        if(x>58&&x<482&&y>539&&y<543){r=54;g=152;b=179;}
+        if(x>58&&x<63&&y>424&&y<539){r=54;g=152;b=179;}
+      }
       const at=row+1+x*4;
       pixels[at]=Math.round(Math.min(255,r));
       pixels[at+1]=Math.round(Math.min(255,g));
@@ -74,6 +89,7 @@ const png="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/
 fs.writeFileSync(path.join(assetsDir,"synthetic-pixel.png"),Buffer.from(png,"base64"));
 makeSyntheticLandscape(path.join(assetsDir,"synthetic-landscape.png"));
 makeSyntheticLandscape(path.join(assetsDir,"synthetic-foreground.png"),true);
+makeSyntheticLandscape(path.join(assetsDir,"synthetic-document.png"),false,true);
 fs.copyFileSync(previousMaster,path.join(assetsDir,"synthetic-clip.mp4"));
 const sampleRate=48000,seconds=5.2,samples=Math.ceil(sampleRate*seconds),bits=16,channels=1;
 const pcmBytes=samples*channels*bits/8;
@@ -111,4 +127,25 @@ p.shots[1].template="clean_video";
 p.shots[1].media={kind:"video",file:"synthetic-clip.mp4"};
 p.voice={file:"synthetic-tone.wav",label:"TEST SINE TONE — NOT A VOICE",volume:1};
 fs.writeFileSync(outputJson,JSON.stringify(p,null,2)+"\n");
-console.log("Synthetic image/video/audio fixtures created; not authentic news assets.");
+// Dedicated journalistic-document-motion test. The "paper" contains only
+// generated rectangles/lines, never a falsely attributed source or quote.
+const documentProject=structuredClone(p);
+documentProject.id="wv-document-focus-synthetic-only";
+documentProject.title="DOCUMENT ABSTRAIT — TEST NON JOURNALISTIQUE";
+documentProject.shots=[{
+  id:"plan-document",
+  template:"document_focus",
+  durationFrames:140,
+  title:"EXAMINER LE DOCUMENT",
+  subtitle:"Une zone fournie, jamais réécrite par le logiciel.",
+  eyebrow:"DOCUMENT TEST — AUCUNE ACTUALITÉ",
+  media:{kind:"image",file:"synthetic-document.png",credit:"Generated abstract rectangles, no claims"},
+  documentRegion:{x:.3,y:.40,width:.45,height:.20},
+  motion:"locked",transitionAfter:"cut",transitionFrames:0
+}];
+documentProject.voice=null;
+documentProject.music=null;
+documentProject.outro=null;
+const documentPath=path.join(path.dirname(outputJson),"worldvision-document-project.json");
+fs.writeFileSync(documentPath,JSON.stringify(documentProject,null,2)+"\n");
+console.log("Synthetic image/video/audio/document fixtures created; not authentic news assets.");
