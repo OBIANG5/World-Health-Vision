@@ -618,7 +618,7 @@ function AppContent() {
   return (
     <EyeLayout headerActions={headerActions}>
       <EyeMapFrame
-        drawerOpen={drawerOpen || regionDrawerOpen}
+        drawerOpen={activeCountryDrawerOpen || regionDrawerOpen}
         countries={countries}
         selectedCountryIso3={selectedCountryIso3}
         onCountryClick={handleCountryClick}
@@ -717,18 +717,16 @@ function AppContent() {
       </aside>
 
       <Suspense fallback={null}>
-      {drawerOpen && <CountryDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        selectedCountryIso3={selectedCountryIso3}
-        onCountryChange={(iso3) => {
-          setSelectedCountryIso3(iso3);
-        }}
+      {activeCountryDrawerOpen && <CountryDrawer
+        open={activeCountryDrawerOpen}
+        onClose={() => { setDrawerOpen(false); if (route.kind === "country") navigate({ kind: "home" }); }}
+        selectedCountryIso3={activeIso3}
+        onCountryChange={handleCountryClick}
         countries={countries}
         countriesLoading={countriesLoading}
         countriesError={countriesError}
-        watched={isWatched(selectedCountryIso3)}
-        onToggleWatch={() => toggleWatch(selectedCountryIso3)}
+        watched={isWatched(activeIso3)}
+        onToggleWatch={() => toggleWatch(activeIso3)}
       />}
 
       {regionDrawerOpen && <RegionDrawer
@@ -738,8 +736,11 @@ function AppContent() {
         onOpenCountry={handleCountryClick}
       />}
 
-      {showSourcesModal && (
-        <SourceMethodologyModal onClose={() => setShowSourcesModal(false)} />
+      {(showSourcesModal || route.kind === "sources") && (
+        <SourceMethodologyModal onClose={() => {
+          setShowSourcesModal(false);
+          if (route.kind === "sources") navigate({ kind: "home" });
+        }} />
       )}
 
       {/* Bandeau hors-ligne */}
@@ -819,18 +820,49 @@ function AppContent() {
         />
       )}
 
-      {showTravelPanel && (
+      {(showTravelPanel || route.kind === "tourism") && (
         <TravelPanel
-          onClose={() => setShowTravelPanel(false)}
+          onClose={() => {
+            setShowTravelPanel(false);
+            if (route.kind === "tourism") navigate({ kind: "home" });
+          }}
         />
       )}
 
-      {showCurrencyPanel && (
-        <CurrencyPanel onClose={() => setShowCurrencyPanel(false)} />
+      {(showCurrencyPanel || route.kind === "money") && (
+        <CurrencyPanel onClose={() => {
+          setShowCurrencyPanel(false);
+          if (route.kind === "money") navigate({ kind: "home" });
+        }} />
       )}
 
       <VisionHub open={showVisionHub} language={lang}
+        selectedId={route.kind === "visions" ? route.product : "atlas"}
+        onSelectProduct={(product) => navigate({ kind: "visions", product })}
         onClose={closeVisionHub} onAction={handleVisionAction} />
+
+      {route.kind === "search" && (
+        <WorldDiscovery language={lang} countries={countries}
+          loading={countriesLoading} unavailable={isOffline}
+          onClose={closeWorldDiscovery}
+          onCountry={handleCountryClick}
+          onVision={(id) => openVisionHub(id)}
+          onSources={() => navigate({ kind: "sources" })}
+        />
+      )}
+
+      {(route.kind === "invalid" || routedCountryMissing ||
+        (route.kind === "country" && isOffline)) && (
+        <div className="whv-route-notice" role="status">
+          <WorldIcon name="info" size={18}/>
+          <span>{lang === "fr"
+            ? "Ce lien ne correspond pas à une page ou à un pays actuellement accessible dans le catalogue."
+            : "This link does not match an accessible page or country in the catalog."}</span>
+          <button type="button" onClick={openWorldDiscovery}>
+            {lang === "fr" ? "Rechercher" : "Search"}
+          </button>
+        </div>
+      )}
 
       {showWatchlist && (
         <WatchlistPanel
