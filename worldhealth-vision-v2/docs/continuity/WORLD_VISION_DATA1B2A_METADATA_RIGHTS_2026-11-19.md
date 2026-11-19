@@ -103,3 +103,8 @@ Suite produit stratégique : Watch persistant (WatchRule, Observation, Evaluatio
 - Conserver le globe original, la géographie internationale et le futur registre des sources comme navigation utile vers des preuves, pas comme écran décoratif.
 
 **World-Vision = une plateforme internationale de vérification, données institutionnelles, comparaisons, historiques, surveillance et produits utiles ; pas une liste de boutons 'bientôt'.**
+
+
+## Suite DATA-1B2B confirmée le 19 novembre 2026
+
+La suite annoncée a été **effectivement implémentée** sur la PR DRAFT #78, base PR #73 : journal indépendant pour chaque requête des trois endpoints officiels (même octet SHA256 répété ≠ même événement), ETag et Last-Modified uniquement si présents, erreurs et interruptions, audit firstSeen/lastSeen et contrôle de corruption, puis reçu composite privé réunissant population + métadonnées + périodes + empreinte du dossier de droits. Aucune comparaison avec World Bank ni publication automatique ici : elles relèvent de la **prochaine** DATA-1B3, issue #77, puis DATA-1C. Documentation de passation : docs/continuity/WORLD_VISION_DATA1B2B_ACQUISITION_COMPOSITE_2026-11-19.md sur branche #78 ; tests 70 ciblés et 113 ingestion, live 3 GET validés sur CI initiales. Les droits IBGE 4714/93 sont toujours en clarification. Le dépannage ponctuel de style iPhone PR #75 n'a plus priorité sur cette chaîne.
