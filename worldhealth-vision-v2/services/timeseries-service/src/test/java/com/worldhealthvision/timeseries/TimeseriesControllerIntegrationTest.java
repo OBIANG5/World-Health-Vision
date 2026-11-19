@@ -299,6 +299,55 @@ class TimeseriesControllerIntegrationTest {
                      mapper.readTree(newImfAvail).get("items").get(0).get("items"),
                      "IMF estimated provenance/period counts must match exactly.");
 
+
+        // Historical LIMIT is per indicator. Full JSON projection, provenance
+        // and DESC ordering must be exactly the same as original GET.
+        String oldSeries = mockMvc.perform(get("/api/timeseries/series")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", "NY.GDP.MKTP.CD")
+                        .param("sortDirection", "DESC")
+                        .param("limit", "2"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String newSeries = mockMvc.perform(post("/internal/timeseries/series/history/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"countryIso3":"FRA",
+                             "indicatorCodes":["SP.POP.TOTL","NY.GDP.MKTP.CD"],
+                             "sortDirection":"DESC","limitPerIndicator":2}
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(2))
+                .andExpect(jsonPath("$.items[0].indicatorCode").value("SP.POP.TOTL"))
+                .andExpect(jsonPath("$.items[0].count").value(0))
+                .andExpect(jsonPath("$.items[1].indicatorCode").value("NY.GDP.MKTP.CD"))
+                .andExpect(jsonPath("$.items[1].count").value(2))
+                .andReturn().getResponse().getContentAsString();
+        assertEquals(mapper.readTree(oldSeries).get("items"),
+                     mapper.readTree(newSeries).get("items").get(1).get("items"),
+                     "Historical per-indicator ranking and values/provenance must match.");
+
+        String oldFilteredSeries = mockMvc.perform(get("/api/timeseries/series")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", "NY.GDP.MKTP.CD")
+                        .param("sourceCode", "IMF")
+                        .param("fromPeriodStart", "2024-01-01")
+                        .param("toPeriodStart", "2024-12-31")
+                        .param("sortDirection", "ASC")
+                        .param("limit", "1"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String newFilteredSeries = mockMvc.perform(post("/internal/timeseries/series/history/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"countryIso3":"FRA","indicatorCodes":["NY.GDP.MKTP.CD"],
+                             "sourceCode":"IMF","fromPeriodStart":"2024-01-01",
+                             "toPeriodStart":"2024-12-31","sortDirection":"ASC",
+                             "limitPerIndicator":1}
+                            """))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(mapper.readTree(oldFilteredSeries).get("items"),
+                     mapper.readTree(newFilteredSeries).get("items").get(0).get("items"),
+                     "ASC, source filter and period bounds must preserve an estimated value.");
+
         mockMvc.perform(get("/api/timeseries/compare/countries/latest")
                         .param("countryIso3", "FRA", "DEU")
                         .param("indicatorCode", "NY.GDP.MKTP.CD")
@@ -362,6 +411,32 @@ class TimeseriesControllerIntegrationTest {
         oversized.append("]}");
         mockMvc.perform(post("/internal/timeseries/series/availability/batch")
                 .contentType(MediaType.APPLICATION_JSON).content(oversized.toString()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectInvalidBoundedHistoricalSeriesBatch() throws Exception {
+        for (String payload : new String[]{
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[],\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\",\"ny.gdp.mktp.cd\"],\"limitPerIndicator\":10}",
+                "{\"countryIso3\":\"FR\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"limitPerIndicator\":10}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"limitPerIndicator\":0}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"limitPerIndicator\":1001}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"sortDirection\":\"SIDEWAYS\",\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"fromPeriodStart\":\"2025-01-01\",\"toPeriodStart\":\"2024-01-01\",\"limitPerIndicator\":1}"
+        }) {
+            mockMvc.perform(post("/internal/timeseries/series/history/batch")
+                    .contentType(MediaType.APPLICATION_JSON).content(payload))
+                    .andExpect(status().isBadRequest());
+        }
+        StringBuilder overBudget = new StringBuilder("{\"countryIso3\":\"FRA\",\"limitPerIndicator\":100,\"indicatorCodes\":[");
+        for (int n = 0; n < 128; n++) {
+            if (n != 0) overBudget.append(",");
+            overBudget.append("\"BATCH.TEST.").append(n).append("\"");
+        }
+        overBudget.append("]}");
+        mockMvc.perform(post("/internal/timeseries/series/history/batch")
+                .contentType(MediaType.APPLICATION_JSON).content(overBudget.toString()))
                 .andExpect(status().isBadRequest());
     }
 
