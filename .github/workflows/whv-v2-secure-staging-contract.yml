@@ -46,6 +46,7 @@ jobs:
           python3 -m py_compile worldhealth-vision-v2/infra/tests/verify_secure_staging.py
           bash -n worldhealth-vision-v2/infra/ops/backup-db.sh
           bash -n worldhealth-vision-v2/infra/ops/restore-drill.sh
+          bash -n worldhealth-vision-v2/infra/ops/preflight-host.sh
           docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml config --format json > "$RUNNER_TEMP/whv-secure-config.json"
           python3 worldhealth-vision-v2/infra/tests/verify_secure_staging.py "$RUNNER_TEMP/whv-secure-config.json"
       - name: Fail closed when critical variables are absent
@@ -86,6 +87,11 @@ jobs:
           docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
             up -d --build --wait whv-timescaledb catalog-service timeseries-service analytics-service ingestion-service
           docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml ps
+          for service in catalog-service timeseries-service analytics-service ingestion-service; do
+            user_id="$(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T "$service" id -u | tr -d '\\r')"
+            test "$user_id" = 10001 || { echo "$service is running as UID $user_id" >&2; exit 1; }
+          done
+          echo "PASS: all four core applications execute as UID 10001"
       - name: Verify real readiness and writable bronze data (without external ingestion)
         run: |
           docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T ingestion-service \
