@@ -79,6 +79,66 @@ class TimeseriesClient:
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [TimeseriesObservation.model_validate(item) for item in payload.items]
 
+    async def list_series_history_batch(
+        self,
+        country_iso3: str,
+        indicator_codes: list[str],
+        source_code: str | None,
+        dataset_code: str | None,
+        period_granularity: str | None,
+        from_period_start: str | None,
+        to_period_start: str | None,
+        include_missing: bool,
+        sort_direction: str,
+        limit_per_indicator: int,
+    ) -> dict[str, list[TimeseriesObservation]]:
+        """Request-bounded per-indicator historical rows, not a global LIMIT.
+
+        Missing observations remain missing; a missing code has an empty list.
+        Wrong counts, code cross-contamination and response size fail closed.
+        """
+        if (not 1 <= len(indicator_codes) <= 128 or
+                len(set(indicator_codes)) != len(indicator_codes) or
+                not 1 <= limit_per_indicator <= 1000 or
+                len(indicator_codes) * limit_per_indicator > 40_000 or
+                sort_direction not in {"ASC", "DESC"}):
+            raise ValueError("Invalid or unbounded historical indicator batch.")
+        response = await self._post(
+            "series_batch", "/internal/timeseries/series/history/batch",
+            json={
+                "countryIso3": country_iso3,
+                "indicatorCodes": indicator_codes,
+                "sourceCode": source_code,
+                "datasetCode": dataset_code,
+                "periodGranularity": period_granularity,
+                "fromPeriodStart": from_period_start,
+                "toPeriodStart": to_period_start,
+                "includeMissing": include_missing,
+                "sortDirection": sort_direction,
+                "limitPerIndicator": limit_per_indicator,
+            },
+        )
+        payload = response.json()
+        if (not isinstance(payload, dict) or
+                type(payload.get("count")) is not int or
+                payload["count"] != len(indicator_codes) or
+                not isinstance(payload.get("items"), list) or
+                len(payload["items"]) != len(indicator_codes)):
+            raise httpx.RemoteProtocolError("Wrong historical batch response envelope.")
+        grouped: dict[str, list[TimeseriesObservation]] = {}
+        for code, group in zip(indicator_codes, payload["items"], strict=True):
+            if not isinstance(group, dict) or group.get("indicatorCode") != code:
+                raise httpx.RemoteProtocolError("Misordered historical series group.")
+            raw = group.get("items")
+            if (not isinstance(raw, list) or type(group.get("count")) is not int or
+                    group["count"] != len(raw) or len(raw) > limit_per_indicator):
+                raise httpx.RemoteProtocolError("Over-limit or incomplete historical series group.")
+            models = [TimeseriesObservation.model_validate(item) for item in raw]
+            if any(row.indicatorCode != code for row in models):
+                raise httpx.RemoteProtocolError("Cross-indicator historical series contamination.")
+            grouped[code] = models
+        return grouped
+
     async def list_latest_by_source(
         self,
         country_iso3: str,
