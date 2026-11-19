@@ -18,7 +18,7 @@ export type CreativeMedia = {
 export type CreativeShot = {
   id:string;
   durationFrames:number;
-  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video";
+  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal";
   title?:string;
   subtitle?:string;
   eyebrow?:string;
@@ -69,6 +69,88 @@ function MediaPlate({shot}:{shot:CreativeShot}) {
   </AbsoluteFill>;
 }
 
+/**
+ * FOCUS REVEAL — motion art direction based on an AUTHENTIC supplied image/video.
+ * Framed evidence expands to full-bleed; title enters on a separate semantic beat.
+ *
+ * No AI-generated background, no fabricated news image, no arbitrary "Ken Burns".
+ * Everything is frame-derived so stills, previews and full renders match.
+ */
+function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>}) {
+  const frame=useCurrentFrame();
+  const {fps}=useVideoConfig();
+  const beat=(start:number,end:number)=>interpolate(frame,[start,end],[0,1],clamp);
+  const ease=(x:number)=>1-Math.pow(1-x,3);
+  const expand=ease(beat(8,48));
+  const insetX=interpolate(expand,[0,1],[8,0]);
+  const insetTop=interpolate(expand,[0,1],[13,0]);
+  const insetBottom=interpolate(expand,[0,1],[18,0]);
+  const corner=interpolate(expand,[0,1],[23,0]);
+  const shadowOpacity=interpolate(expand,[0,1],[.6,0]);
+  const titleSpring=spring({frame:frame-29,fps,config:{mass:1,damping:25,stiffness:96}});
+  const textIn=Math.max(0,Math.min(1,titleSpring));
+  const lineIn=ease(beat(31,57));
+  const overlineIn=ease(beat(32,50));
+  const textMask=Math.max(0,Math.min(1,titleSpring));
+  const titleSize=(shot.title?.length??0)>62?62:(shot.title?.length??0)>38?75:90;
+  const subtitleSize=(shot.subtitle?.length??0)>115?27:33;
+  return <AbsoluteFill style={{
+    background:globalStyle.background,
+    fontFamily:globalStyle.editorialFont,
+    color:globalStyle.ink,
+    overflow:"hidden"
+  }}>
+    {/* Full-screen optical underlay is subtle and intentionally non-documentary. */}
+    <AbsoluteFill style={{opacity:.36}}>
+      <MediaPlate shot={{...shot,motion:"locked"}}/>
+    </AbsoluteFill>
+    <AbsoluteFill style={{background:"linear-gradient(180deg,rgba(6,16,25,.25),rgba(6,16,25,.5))"}}/>
+    <AbsoluteFill style={{
+      clipPath:"inset("+insetTop+"% "+insetX+"% "+insetBottom+"% "+insetX+"% round "+corner+"px)",
+      filter:"drop-shadow(0 16px 38px rgba(1,9,18,"+shadowOpacity+"))",
+    }}>
+      <MediaPlate shot={shot}/>
+    </AbsoluteFill>
+    <AbsoluteFill style={{
+      background:"linear-gradient(180deg,rgba(4,13,22,.28) 0%,transparent 31%,rgba(4,10,18,.11) 42%,rgba(4,10,18,.58) 68%,rgba(4,10,18,.92) 100%)",
+      opacity:ease(beat(32,65))
+    }}/>
+    <div style={{
+      position:"absolute",top:108,left:87,right:87,display:"flex",
+      alignItems:"center",justifyContent:"space-between",
+      opacity:overlineIn,transform:"translateY("+Math.round((1-overlineIn)*-18)+"px)"
+    }}>
+      <span style={{fontSize:26,fontWeight:780,letterSpacing:".14em",color:"#f6fcff"}}>WORLD—VISION</span>
+      {shot.eyebrow&&<span style={{fontSize:22,fontWeight:620,letterSpacing:".1em",color:globalStyle.accent,textAlign:"right",maxWidth:500}}>{shot.eyebrow}</span>}
+    </div>
+    <div style={{
+      position:"absolute",left:88,right:90,bottom:310,
+      display:"flex",flexDirection:"column",alignItems:"flex-start"
+    }}>
+      <div style={{
+        background:shot.accent??globalStyle.accent,width:Math.round(lineIn*90),height:5,
+        marginBottom:29,opacity:lineIn
+      }}/>
+      {shot.title&&<div style={{
+        fontSize:titleSize,fontWeight:815,letterSpacing:"-.047em",lineHeight:1.07,
+        whiteSpace:"pre-line",overflowWrap:"break-word",
+        maxWidth:880,
+        clipPath:"inset(0 0 "+(1-textMask)*100+"% 0)",
+        transform:"translateY("+Math.round((1-textIn)*42)+"px)",
+        textShadow:"0 3px 34px rgba(0,0,0,.5)"
+      }}>{shot.title}</div>}
+      {shot.subtitle&&<div style={{
+        fontSize:subtitleSize,fontWeight:480,lineHeight:1.29,color:"#e7f0f5",
+        marginTop:24,maxWidth:800,
+        opacity:ease(beat(54,75)),
+        transform:"translateY("+Math.round((1-ease(beat(54,75)))*23)+"px)",
+        textShadow:"0 3px 30px rgba(0,0,0,.65)"
+      }}>{shot.subtitle}</div>}
+    </div>
+    {/* Artboards stay clean; timestamps, SHA, QA are NOT burned into public pixels. */}
+  </AbsoluteFill>;
+}
+
 function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>}) {
   const frame=useCurrentFrame();
   const {fps}=useVideoConfig();
@@ -77,6 +159,7 @@ function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Require
   const numeric=shot.template==="number";
   const evidence=shot.template==="evidence";
   const clean=shot.template==="clean_video";
+  if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle}/>;
   const move=spring({frame,fps,config:{mass:1,damping:24,stiffness:90}});
   const opacity=reveal(frame,0,17);
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
