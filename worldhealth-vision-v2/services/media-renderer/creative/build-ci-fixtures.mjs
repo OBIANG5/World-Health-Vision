@@ -173,4 +173,30 @@ countryProject.shots=[{
 countryProject.voice=null;countryProject.music=null;countryProject.outro=null;
 const countryPath=path.join(path.dirname(outputJson),"worldvision-country-focus-project.json");
 fs.writeFileSync(countryPath,JSON.stringify(countryProject,null,2)+"\n");
+// PHOTO-1: exactly ONE generated abstract still + independent transparent
+// foreground cutout. Every overlay and metric is explicitly fictional.
+const photoProject=structuredClone(p);
+photoProject.id="wv-photo-multilayer-synthetic";
+photoProject.title="UNE PHOTO / SIX PISTES — TEST TECHNIQUE";
+photoProject.script="Image artificielle, mouvements simultanés et nombre fictif. Aucune actualité réelle.";
+photoProject.shots=[{
+  id:"photo-six-tracks",template:"photo_story",durationFrames:165,
+  title:"UNE IMAGE. SIX MOUVEMENTS.",
+  subtitle:"Même source photographique, plusieurs animations autonomes.",
+  eyebrow:"PHOTO MOTION · TEST NON JOURNALISTIQUE",
+  media:{kind:"image",file:"synthetic-landscape.png",credit:"CI abstract synthetic landscape, not documentary evidence"},
+  foreground:{file:"synthetic-foreground.png",credit:"CI alpha-synthetic cutout, no actual person"},
+  focus:{x:.5,y:.46},motion:"locked",transitionAfter:"cut",transitionFrames:0,
+  photo:{
+    camera:{zoomFrom:1.05,zoomTo:1.13,panX:18,panY:-14,startFrame:0,endFrame:132},
+    subject:{dx:-12,dy:-17,scale:.055,startFrame:12,endFrame:125},
+    mask:{axis:"horizontal",startFrame:18,endFrame:68},
+    focus:{x:.5,y:.48,radius:83,startFrame:48,endFrame:91},
+    metric:{label:"VALEUR FICTIVE",value:42,unit:" TEST",precision:0,
+      sourceLabel:"Source : fixture synthétique CI",startFrame:71,endFrame:122}
+  }
+}];
+photoProject.voice=null;photoProject.music=null;photoProject.outro=null;
+const photoPath=path.join(path.dirname(outputJson),"worldvision-photo-multilayer-project.json");
+fs.writeFileSync(photoPath,JSON.stringify(photoProject,null,2)+"\\n");
 console.log("Synthetic image/video/audio/document fixtures created; not authentic news assets.");
