@@ -54,7 +54,7 @@ public class GatewaySecurityConfiguration {
 
                     // Advisor requests are not public anonymous operations. Add a
                     // real per-user quota and rate limiting before Internet launch.
-                    exchanges.pathMatchers(POST, "/api/analytics/advisor/chat").authenticated();
+                    exchanges.pathMatchers(POST, "/api/analytics/advisor/chat").hasAuthority("SCOPE_advisor:invoke");
 
                     // No ingestion mutation, source-run metadata, future personal
                     // endpoints, arbitrary POST, WebSocket or unspecified routes.
