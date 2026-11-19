@@ -17,7 +17,7 @@ declare global{
   interface Window{
     __wvSmokeSeek?:(frame:number)=>void;
     __wvSmokeReady?:boolean;
-    __wvSmokeMode?:"shot"|"film"|"clip";
+    __wvSmokeMode?:"shot"|"film"|"clip"|"document";
     __wvSmokeFrames?:number;
     __wvSmokeHasVoice?:boolean;
   }
@@ -26,6 +26,7 @@ type SmokeAssets={photo:string;voice:string|null;clip:string|null};
 const mode=new URLSearchParams(window.location.search).get("mode");
 const isFilm=mode==="film";
 const isClip=mode==="clip";
+const isDocument=mode==="document";
 function Smoke(){
   const playerRef=useRef<PlayerRef>(null);
   const [assets,setAssets]=useState<SmokeAssets|null>(null);
@@ -34,7 +35,7 @@ function Smoke(){
     let disposed=false;
     const urls:string[]=[];
     (async()=>{
-      const routes=isFilm?["/smoke/synthetic-landscape.png","/smoke/synthetic-tone.wav"]:isClip?["/smoke/synthetic-clip.mp4"]:["/smoke/synthetic-landscape.png"];
+      const routes=isFilm?["/smoke/synthetic-landscape.png","/smoke/synthetic-tone.wav"]:isClip?["/smoke/synthetic-clip.mp4"]:isDocument?["/smoke/synthetic-document.png"]:["/smoke/synthetic-landscape.png"];
       const blobs=await Promise.all(routes.map(async route=>{
         const response=await fetch(route,{cache:"no-store"});
         if(!response.ok)throw Error("Missing synthetic fixture "+route+" ("+response.status+")");
@@ -48,14 +49,15 @@ function Smoke(){
   const props=useMemo<CreativeEditProps|null>(()=>{
     if(!assets)return null;
     const opener:CreativeShot={
-      id:"plan-synthetique",durationFrames:105,template:isClip?"clean_video":"focus_reveal",
+      id:"plan-synthetique",durationFrames:isDocument?140:105,template:isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
       media:assets.clip?{kind:"video",src:assets.clip}:{kind:"image",src:assets.photo},
-      title:"UN PLAN. UNE HISTOIRE.",
-      subtitle:"Test technique de composition — aucune actualité",
-      eyebrow:"STUDIO / RENDU RÉEL",
+      title:isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
+      subtitle:isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
+      eyebrow:isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
       motion:"dolly",transitionAfter:isFilm?"dissolve":"cut",
       transitionFrames:isFilm?10:0,
-      focus:{x:.5,y:.46}
+      focus:{x:.5,y:.46},
+      ...(isDocument?{documentRegion:{x:.30,y:.40,width:.45,height:.20}}:{})
     };
     const continuation:CreativeShot={
       id:"contexte-synthetique",durationFrames:70,template:"kinetic",
@@ -78,7 +80,7 @@ function Smoke(){
     if(!props)return;
     window.__wvSmokeSeek=(n:number)=>playerRef.current?.seekTo(n);
     window.__wvSmokeReady=true;
-    window.__wvSmokeMode=isFilm?"film":isClip?"clip":"shot";
+    window.__wvSmokeMode=isFilm?"film":isClip?"clip":isDocument?"document":"shot";
     window.__wvSmokeFrames=creativeDuration(props);
     window.__wvSmokeHasVoice=Boolean(props.narration);
     return ()=>{
