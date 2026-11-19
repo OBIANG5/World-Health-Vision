@@ -1,6 +1,7 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import type {CreativeEditProps, CreativeMedia, CreativeShot} from "../../../../services/media-renderer/src/CreativeEdit";
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
+import type {DataMotion} from "../../../../services/media-renderer/src/data-motion-core.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
 // Lazy: do not load the sizeable motion runtime until a user requests preview.
@@ -8,7 +9,7 @@ const RealCreativePreview = lazy(() => import("./CreativeCompositionPreview"));
 const CountrySelector10m = lazy(() => import("./CountrySelector10m"));
 import "./CinematicProductionBoard.css";
 
-type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_story";
+type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_story"|"data_story";
 type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
@@ -27,6 +28,19 @@ type PhotoSettings={
   focus:NonNullable<PhotoMotion["focus"]>;
   metric:NonNullable<PhotoMotion["metric"]>;
 };
+type DataDraft={
+  kind:DataMotion["kind"];
+  unit:string;precision:number;xMode:"category"|"date";synthetic:boolean;
+  points:{label:string;valueText:string}[];
+  matrix:{columns:string[];rows:{label:string;values:string[]}[];min:string;max:string};
+  source:{publisher:string;dataset:string;asOf:string;methodology:string;url:string};
+};
+const initialDataDraft=():DataDraft=>({
+  kind:"trend",unit:"",precision:0,xMode:"category",synthetic:false,
+  points:[{label:"",valueText:""},{label:"",valueText:""},{label:"",valueText:""}],
+  matrix:{columns:["",""],rows:[{label:"",values:["",""]},{label:"",values:["",""]}],min:"",max:""},
+  source:{publisher:"",dataset:"",asOf:"",methodology:"",url:""}
+});
 const initialPhotoSettings=():PhotoSettings=>({
   camera:{zoomFrom:1.05,zoomTo:1.13,panX:18,panY:-14,startFrame:0,endFrame:132},
   subject:{dx:-12,dy:-17,scale:.055,startFrame:12,endFrame:125},
@@ -48,10 +62,11 @@ type Shot = {
   geoShowRoute:boolean;geoFromLon:number;geoFromLat:number;
   geoShowMetric:boolean;geoMetricLabel:string;geoMetricValue:string;geoMetricUnit:string;
   photoSettings:PhotoSettings;photoUseSubject:boolean;photoUseMask:boolean;photoUseFocus:boolean;photoUseMetric:boolean;
+  dataDraft:DataDraft;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
   documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
-  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",country_focus:"Pays en détail · carte 1:10m / média / données",photo_story:"PHOTO · six pistes de motion sur une image",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
+  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",country_focus:"Pays en détail · carte 1:10m / média / données",photo_story:"PHOTO · six pistes de motion sur une image",data_story:"DATA · courbes, comparaisons, classements et heatmap",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
 };
 const MOTION_LABELS:Record<Motion,string>={
   locked:"Cadre fixe",dolly:"Approche de caméra",drift:"Mouvement latéral",push:"Révélation progressive"
@@ -77,7 +92,8 @@ const initialShot=():Shot=>({
   geoShowTarget:false,geoTargetLon:0,geoTargetLat:0,geoTargetLabel:"",
   geoShowRoute:false,geoFromLon:0,geoFromLat:0,
   geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:"",
-  photoSettings:initialPhotoSettings(),photoUseSubject:false,photoUseMask:true,photoUseFocus:false,photoUseMetric:false
+  photoSettings:initialPhotoSettings(),photoUseSubject:false,photoUseMask:true,photoUseFocus:false,photoUseMetric:false,
+  dataDraft:initialDataDraft()
 });
 /** No geography or numeric fact is inferred from text here. The user chooses
  * every coordinate and figure explicitly. Never insert synthetic values. */
@@ -137,6 +153,64 @@ const validPhoto=(s:Shot)=>{
       Number.isInteger(m.precision)&&m.precision>=0&&m.precision<=2))
   );
 };
+const buildData=(s:Shot):DataMotion=>{
+  const d=s.dataDraft;
+  return {
+    kind:d.kind,unit:d.unit,precision:d.precision,
+    ...(d.kind==="trend"?{xMode:d.xMode}:{}),
+    ...(d.kind==="heatmap"?{matrix:{
+      columns:d.matrix.columns,rows:d.matrix.rows.map(r=>({
+        label:r.label,values:r.values.map(Number)
+      })),min:Number(d.matrix.min),max:Number(d.matrix.max)
+    }}:{points:d.points.map(p=>({label:p.label,value:Number(p.valueText)}))}),
+    source:{publisher:d.source.publisher,dataset:d.source.dataset,
+      asOf:d.source.asOf,methodology:d.source.methodology,
+      ...(d.source.url.trim()?{url:d.source.url.trim()}:{})},
+    synthetic:d.synthetic
+  };
+};
+const validData=(s:Shot)=>{
+  if(s.template!=="data_story")return true;
+  const d=s.dataDraft;
+  const dateOK=(x:string)=>/^\\d{4}-\\d{2}-\\d{2}$/.test(x)&&
+    !Number.isNaN(Date.parse(x+"T00:00:00Z"))&&
+    new Date(x+"T00:00:00Z").toISOString().slice(0,10)===x;
+  const numeric=(x:string)=>x.trim()!==""&&Number.isFinite(Number(x))&&Math.abs(Number(x))<=1e12;
+  const src=d.source;
+  if(s.durationFrames<150||s.durationFrames>3600||
+     !s.title.trim()||s.title.length>90||s.subtitle.length>180||
+     !d.unit.trim()||d.unit.length>12||
+     !Number.isInteger(d.precision)||d.precision<0||d.precision>2||
+     !src.publisher.trim()||src.publisher.length>55||
+     !src.dataset.trim()||src.dataset.length>70||
+     !src.methodology.trim()||src.methodology.length>130||
+     !dateOK(src.asOf)||(src.url.trim()&&!/^https:\/\//.test(src.url.trim())))
+    return false;
+  if(d.kind==="heatmap"){
+    const m=d.matrix;
+    if(m.columns.length<2||m.columns.length>6||
+      m.columns.some(x=>!x.trim()||x.length>14)||
+      new Set(m.columns).size!==m.columns.length||
+      m.rows.length<2||m.rows.length>5||
+      m.rows.some(row=>!row.label.trim()||row.label.length>14||
+        row.values.length!==m.columns.length||
+        row.values.some(x=>!numeric(x)))||
+      new Set(m.rows.map(x=>x.label)).size!==m.rows.length||
+      !numeric(m.min)||!numeric(m.max)||Number(m.max)<=Number(m.min))
+      return false;
+    return m.rows.every(row=>row.values.every(x=>Number(x)>=Number(m.min)&&Number(x)<=Number(m.max)));
+  }
+  const p=d.points;
+  const min=d.kind==="trend"||d.kind==="ranking"?3:2;
+  const max=d.kind==="trend"?10:6;
+  if(p.length<min||p.length>max||
+    p.some(x=>!x.label.trim()||x.label.length>16||!numeric(x.valueText))||
+    new Set(p.map(x=>x.label)).size!==p.length)return false;
+  if(d.kind==="trend"&&d.xMode==="date"&&
+    p.some((x,i)=>!dateOK(x.label)||(i>0&&x.label<=p[i-1].label)))return false;
+  if(d.kind==="ranking"&&p.some((x,i)=>i>0&&Number(x.valueText)>Number(p[i-1].valueText)))return false;
+  return true;
+};
 const inLon=(v:number)=>Number.isFinite(v)&&v>=-180&&v<=180;
 const inLat=(v:number)=>Number.isFinite(v)&&v>=-85&&v<=85;
 const validGeo=(s:Shot)=>{
@@ -192,7 +266,7 @@ export default function CinematicProductionBoard() {
   const previewCanRender=(!needsRealMedia||Boolean(activeAsset&&activeAsset.kind!=="audio"))&&
     (active.template!=="focus_reveal"||Boolean(active.title.trim()&&active.title.length<=90&&active.durationFrames>=90))&&
     (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115))&&
-    (active.template!=="photo_story"||activeAsset?.kind==="image")&&validPhoto(active)&&validGeo(active);
+    (active.template!=="photo_story"||activeAsset?.kind==="image")&&validPhoto(active)&&validGeo(active)&&validData(active);
   // Exact props type of the REAL server-rendered Remotion compositor; object
   // URLs only exist in this browser session and never reach GitHub or an API.
   const previewProps=useMemo<CreativeEditProps>(()=>{
@@ -217,6 +291,7 @@ export default function CinematicProductionBoard() {
         focus:{x:active.focusX,y:active.focusY},
         ...(active.template==="document_focus"?{documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH}}:{}),
         ...(active.template==="photo_story"?{photo:buildPhoto(active)}:{}),
+        ...(active.template==="data_story"?{data:buildData(active)}:{}),
         ...((active.template==="geo_story"||active.template==="country_focus")?{geo:buildGeo(active)}:{})
       }],
       narration:null,
@@ -237,7 +312,7 @@ export default function CinematicProductionBoard() {
       shot.documentX+shot.documentW<=1.0000001&&shot.documentY+shot.documentH<=1.0000001
     );
     const validForeground=!shot.foregroundName||Boolean(shot.mediaName&&files.some(f=>f.name===shot.foregroundName&&f.kind==="image"));
-    return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot)&&validPhoto(shot)&&
+    return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot)&&validPhoto(shot)&&validData(shot)&&
       (shot.template!=="photo_story"||files.some(f=>f.name===shot.mediaName&&f.kind==="image"));
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
@@ -274,6 +349,7 @@ export default function CinematicProductionBoard() {
         focus:{x:shot.focusX,y:shot.focusY},
         ...(shot.template==="document_focus"?{documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH}}:{}),
         ...(shot.template==="photo_story"?{photo:buildPhoto(shot)}:{}),
+        ...(shot.template==="data_story"?{data:buildData(shot)}:{}),
         ...((shot.template==="geo_story"||shot.template==="country_focus")?{geo:buildGeo(shot)}:{})
       };
     }),
@@ -337,6 +413,7 @@ export default function CinematicProductionBoard() {
         focus:{x:s.focusX,y:s.focusY},
         ...(s.template==="document_focus"?{documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH}}:{}),
         ...(s.template==="photo_story"?{photo:buildPhoto(s)}:{}),
+        ...(s.template==="data_story"?{data:buildData(s)}:{}),
         ...((s.template==="geo_story"||s.template==="country_focus")?{geo:buildGeo(s)}:{}),
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
@@ -422,7 +499,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
           <div className="wvc-two-col">
-            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus"||e.target.value==="photo_story")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
+            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus"||e.target.value==="photo_story"||e.target.value==="data_story")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
