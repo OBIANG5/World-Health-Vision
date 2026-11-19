@@ -1,0 +1,72 @@
+name: WHV V2 - international API gateway access contract
+
+on:
+  pull_request:
+    branches:
+      - security/v2-secure-staging-2026-11-19
+      - v2
+    paths:
+      - 'worldhealth-vision-v2/services/gateway-service/**'
+      - 'worldhealth-vision-v2/infra/compose.secure-staging.yml'
+      - 'worldhealth-vision-v2/infra/docker-compose.yml'
+      - '.github/workflows/whv-v2-gateway-access-contract.yml'
+  push:
+    branches:
+      - 'feature/v2-gateway-public-private-contract-*'
+    paths:
+      - 'worldhealth-vision-v2/services/gateway-service/**'
+      - 'worldhealth-vision-v2/infra/compose.secure-staging.yml'
+      - 'worldhealth-vision-v2/infra/docker-compose.yml'
+      - '.github/workflows/whv-v2-gateway-access-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-gateway-contract-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-integration:
+    name: Java 21 security, routing and negative-access tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact PR candidate (never branch v2 instead)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Compile and run Gateway plus all required module tests
+        working-directory: worldhealth-vision-v2
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp -pl services/gateway-service -am test
+      - name: Verify production is secure by default and local dev explicitly opts out
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          config = Path('worldhealth-vision-v2/services/gateway-service/src/main/resources/application.yml').read_text()
+          local = Path('worldhealth-vision-v2/infra/docker-compose.yml').read_text()
+          staged = Path('worldhealth-vision-v2/infra/compose.secure-staging.yml').read_text()
+          assert 'enabled: ${WHV_SECURITY_ENABLED:true}' in config
+          assert 'public-read-enabled: ${WHV_PUBLIC_READ_ENABLED:false}' in config
+          assert 'WHV_SECURITY_ENABLED: "false"' in local
+          assert 'WHV_SECURITY_ENABLED: "true"' in staged
+          assert 'WHV_PUBLIC_READ_ENABLED: "false"' in staged
+          print('PASS: security default secure, public-read opt-in and staging closed')
+          PY
+      - name: Upload JUnit evidence even when a test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-gateway-junit
+          path: worldhealth-vision-v2/services/gateway-service/target/surefire-reports/
+          if-no-files-found: ignore
