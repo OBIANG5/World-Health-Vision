@@ -59,6 +59,22 @@ jobs:
             fi
           done
           echo "PASS: all three required settings fail closed"
+      - name: Validate host preflight rejects mutable image tags and accepts guarded metadata
+        run: |
+          mkdir -p "$WHV_BACKUP_DIR"
+          host_secret="$RUNNER_TEMP/whv-host-preflight-secret"
+          cp "$WHV_DB_PASSWORD_FILE" "$host_secret"
+          sudo chown "$(id -u)":10001 "$host_secret"
+          chmod 0440 "$host_secret"
+          export WHV_DB_PASSWORD_FILE="$host_secret"
+          export WHV_OIDC_ISSUER_URI="https://ci-identity.internal.test/realms/worldvision"
+          if bash worldhealth-vision-v2/infra/ops/preflight-host.sh >/dev/null 2>&1; then
+            echo "FAILED: mutable TimescaleDB image passed host preflight" >&2
+            exit 1
+          fi
+          export WHV_TIMESCALE_IMAGE="timescale/timescaledb@sha256:$(printf 'a%.0s' {1..64})"
+          bash worldhealth-vision-v2/infra/ops/preflight-host.sh
+          echo "PASS: host policy requires a protected secret and immutable image reference"
       - name: Verify local DEV stack cannot publish ports on LAN interfaces
         run: |
           docker compose -f worldhealth-vision-v2/infra/docker-compose.yml config --format json > "$RUNNER_TEMP/whv-dev-config.json"
