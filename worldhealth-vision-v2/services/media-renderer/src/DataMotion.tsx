@@ -3,7 +3,7 @@ import {AbsoluteFill,Img,useCurrentFrame} from "remotion";
 import {fitTextOnNLines} from "@remotion/layout-utils";
 import type {CreativeShot,CreativeEditProps} from "./CreativeEdit";
 import {resolveCreativeSource} from "./CreativeEdit";
-import {dataPose,valueLabel,dataPointGeometry,rankedData,heatmapCells} from "./data-motion-engine.mjs";
+import {dataPose,valueLabel,dataPointGeometry,rankedData,heatmapCells,dataStagger} from "./data-motion-engine.mjs";
 
 /**
  * World-Vision DATA / multi-visualization Remotion scene. All measurements
