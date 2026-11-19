@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from time import perf_counter
 
+import httpx
 from prometheus_client import Counter, Histogram
 
 
@@ -53,3 +54,56 @@ def timed_economic_phase(phase: str):
         yield
     finally:
         observe_economic_phase(phase, perf_counter() - start)
+
+# F1.2b.2c-2: bounded cardinality, HTTP-only dependency timings.
+# Never use dynamic URLs, country codes, source names or users as metric labels.
+_DEPENDENCY_OPERATIONS = {
+    "timeseries": frozenset({
+        "readiness", "series", "latest_by_source", "availability",
+        "country_comparison", "source_runs",
+    }),
+    "catalog": frozenset({
+        "readiness", "country", "local_context", "countries", "region",
+        "indicator", "indicators", "source", "dataset",
+    }),
+}
+
+UPSTREAM_HTTP_REQUESTS = Counter(
+    "whv_analytics_upstream_http_requests_total",
+    "Outbound HTTP calls by bounded service, operation and outcome.",
+    labelnames=("dependency", "operation", "outcome"),
+)
+
+UPSTREAM_HTTP_LATENCY_SECONDS = Histogram(
+    "whv_analytics_upstream_http_latency_seconds",
+    "Outbound HTTP round-trip and status validation time; excludes JSON model parsing.",
+    labelnames=("dependency", "operation"),
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 15, 30),
+)
+
+
+@contextmanager
+def timed_dependency_http(dependency: str, operation: str):
+    """Instrument only reviewed HTTP operations; invalid labels fail closed."""
+    if operation not in _DEPENDENCY_OPERATIONS.get(dependency, frozenset()):
+        raise ValueError("Unknown dependency operation")
+    start = perf_counter()
+    outcome = "success"
+    try:
+        yield
+    except httpx.HTTPStatusError:
+        outcome = "http_error"
+        raise
+    except httpx.HTTPError:
+        outcome = "transport_error"
+        raise
+    except Exception:
+        outcome = "client_error"
+        raise
+    finally:
+        UPSTREAM_HTTP_REQUESTS.labels(
+            dependency=dependency, operation=operation, outcome=outcome
+        ).inc()
+        UPSTREAM_HTTP_LATENCY_SECONDS.labels(
+            dependency=dependency, operation=operation
+        ).observe(perf_counter() - start)
