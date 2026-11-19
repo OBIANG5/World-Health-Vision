@@ -35,7 +35,7 @@ Mode local explicitement autorisé : `WHV_SECURITY_ENABLED=false` dans `infra/do
 Mode de staging : `WHV_SECURITY_ENABLED=true`, `WHV_PUBLIC_READ_ENABLED=false`; toutes les lectures listées sont privées tant que le flag n'est pas ouvert.
 Mode public proposé : `WHV_SECURITY_ENABLED=true`, `WHV_PUBLIC_READ_ENABLED=true` **uniquement après** OIDC, HTTPS, quota, CORS, licences et audit.
 
-Implémentation : `GatewaySecurityConfiguration.java` et `PublicReadRoutes.java`. Les 56 patrons GET sont explicites, pas de wildcard général `/api/**`. Une nouvelle fonction Money-Vision/Trading-Vision devra disposer de sa propre revue de sensibilité/licence.
+Implémentation : `GatewaySecurityConfiguration.java` et `PublicReadRoutes.java`. Les 57 patrons GET sont explicites, pas de wildcard général `/api/**`. Une nouvelle fonction Money-Vision/Trading-Vision devra disposer de sa propre revue de sensibilité/licence.
 
 ## 3. Le contrat de sécurité est indépendant des licences
 
