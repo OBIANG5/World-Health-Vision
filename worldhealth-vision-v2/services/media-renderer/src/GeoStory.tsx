@@ -211,12 +211,12 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
       {/* Important photo-mode mask fix: the old VECTOR circles filled the
           entire globe cyan and hid the real NASA satellite pixels. Only rims
           may glow on top of a photographic planet, never opaque disks. */}
-      <circle data-wv-geo-earth="true" cx="540" cy="690" r="483"
+      <circle data-wv-geo-earth="true" data-wv-geo-rim="true" cx="540" cy="690" r="483"
         fill={isPhoto?"none":"#08ddff"}
         stroke={isPhoto?"#04d2ff":"none"} strokeWidth={isPhoto?13:0}
         opacity={isPhoto?.55:.35} filter="url(#wv-geo-soft-glow)"
-        transform={"translate(540 690) scale("+atmosphere+") translate(-540 -747)"}/>
-      <circle cx="540" cy="690" r="471"
+        transform={"translate(540 690) scale("+atmosphere+") translate(-540 -690)"}/>
+      <circle data-wv-geo-neon-rim="true" cx="540" cy="690" r="471"
         fill={isPhoto?"none":"#11caff"}
         stroke={isPhoto?"#12ceff":"none"}
         strokeWidth={isPhoto?5:0}
