@@ -471,6 +471,125 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
     }
 
     @Override
+    /** SQL derived from listSeriesAvailability, with LIMIT per indicator (never global). */
+        public List<SeriesAvailabilityResponse> listSeriesAvailabilityBatch(
+            String countryIso3,
+            List<String> indicatorCodes,
+            String sourceCode,
+            String datasetCode,
+            String periodGranularity,
+            int limitPerIndicator
+    ) {
+        String sql = """
+                with filtered as (
+                    select
+                        lo.source_code,
+                        lo.dataset_code,
+                        lo.country_iso3,
+                        lo.indicator_code,
+                        lo.period_granularity,
+                        lo.period_start,
+                        lo.period_end,
+                        lo.period_label,
+                        lo.numeric_value,
+                        lo.text_value,
+                        lo.value_status,
+                        lo.fetched_at_utc
+                    from timeseries.latest_observation lo
+                    where lo.country_iso3 = :countryIso3
+                      and lo.indicator_code in (:indicatorCodes)
+                      and (cast(:sourceCode as varchar) is null or lo.source_code = :sourceCode)
+                      and (cast(:datasetCode as varchar) is null or lo.dataset_code = :datasetCode)
+                      and (cast(:periodGranularity as varchar) is null or lo.period_granularity = :periodGranularity)
+                ),
+                aggregated as (
+                    select
+                        source_code,
+                        dataset_code,
+                        country_iso3,
+                        indicator_code,
+                        period_granularity,
+                        count(*) filter (where value_status <> 'MISSING') as available_observation_count,
+                        count(*) filter (where value_status = 'OBSERVED') as observed_observation_count,
+                        count(*) filter (where value_status = 'ESTIMATED') as estimated_observation_count,
+                        count(*) filter (where value_status = 'SUPPRESSED') as suppressed_observation_count,
+                        count(*) filter (where value_status = 'MISSING') as missing_observation_count,
+                        min(period_start) as first_period_start
+                    from filtered
+                    group by source_code, dataset_code, country_iso3, indicator_code, period_granularity
+                ),
+                latest_ranked as (
+                    select
+                        filtered.*,
+                        row_number() over (
+                            partition by filtered.source_code, filtered.dataset_code, filtered.country_iso3, filtered.indicator_code, filtered.period_granularity
+                            order by filtered.period_start desc, filtered.fetched_at_utc desc
+                        ) as rn
+                    from filtered
+                ),
+                unordered as (
+                    select
+                        aggregated.source_code,
+                    coalesce(s.display_name, aggregated.source_code) as source_display_name,
+                    aggregated.dataset_code,
+                    coalesce(sd.display_name, aggregated.dataset_code) as dataset_display_name,
+                    aggregated.country_iso3,
+                    coalesce(c.display_name, aggregated.country_iso3) as country_display_name,
+                    aggregated.indicator_code,
+                    coalesce(i.display_name, aggregated.indicator_code) as indicator_display_name,
+                    aggregated.period_granularity,
+                    aggregated.available_observation_count,
+                    aggregated.observed_observation_count,
+                    aggregated.estimated_observation_count,
+                    aggregated.suppressed_observation_count,
+                    aggregated.missing_observation_count,
+                    aggregated.first_period_start,
+                    latest_ranked.period_start as latest_period_start,
+                    latest_ranked.period_end as latest_period_end,
+                    latest_ranked.period_label as latest_period_label,
+                    latest_ranked.numeric_value as latest_numeric_value,
+                    latest_ranked.text_value as latest_text_value,
+                    latest_ranked.value_status as latest_value_status,
+                    latest_ranked.fetched_at_utc as latest_fetched_at_utc
+                from aggregated
+                join latest_ranked on latest_ranked.source_code = aggregated.source_code
+                  and latest_ranked.dataset_code = aggregated.dataset_code
+                  and latest_ranked.country_iso3 = aggregated.country_iso3
+                  and latest_ranked.indicator_code = aggregated.indicator_code
+                  and latest_ranked.period_granularity = aggregated.period_granularity
+                  and latest_ranked.rn = 1
+                left join catalog.source s on s.code = aggregated.source_code
+                left join catalog.source_dataset sd on sd.code = aggregated.dataset_code and sd.source_id = s.id
+                left join catalog.country c on c.iso3 = aggregated.country_iso3
+                left join catalog.indicator i on i.code = aggregated.indicator_code
+                ),
+                ranked_per_indicator as (
+                    select
+                        unordered.*,
+                        row_number() over (
+                            partition by unordered.indicator_code
+                            order by unordered.source_code, unordered.dataset_code,
+                                     unordered.period_granularity
+                        ) as group_rank
+                    from unordered
+                )
+                select * from ranked_per_indicator
+                where group_rank <= :limit
+                order by indicator_code, source_code, dataset_code, period_granularity
+                """;
+
+        return jdbcClient.sql(sql)
+                .param("countryIso3", countryIso3)
+                .param("indicatorCodes", indicatorCodes)
+                .param("sourceCode", sourceCode)
+                .param("datasetCode", datasetCode)
+                .param("periodGranularity", periodGranularity)
+                .param("limit", limitPerIndicator)
+                .query((rs, rowNum) -> mapSeriesAvailability(rs))
+                .list();
+    }
+
+    @Override
     public List<CountryLatestComparisonResponse> listLatestCountryComparison(
             String countryIso3Csv,
             String indicatorCode,

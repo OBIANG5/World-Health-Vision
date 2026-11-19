@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import com.worldhealthvision.timeseries.api.dto.LatestSourceBatchResponse;
+import com.worldhealthvision.timeseries.api.dto.AvailabilityBatchResponse;
+import com.worldhealthvision.timeseries.api.dto.AvailabilityBatchItem;
 import com.worldhealthvision.timeseries.api.dto.LatestSourceBatchItem;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -151,6 +153,51 @@ public class TimeseriesQueryService {
                 limit
         );
         return new TimeseriesListResponse<>(items.size(), items);
+    }
+
+    public AvailabilityBatchResponse listSeriesAvailabilityBatch(
+            String countryIso3, List<String> indicatorCodes, String sourceCode,
+            String datasetCode, String periodGranularity, int limitPerIndicator
+    ) {
+        if (countryIso3 == null || !countryIso3.trim().toUpperCase(Locale.ROOT).matches("[A-Z]{3}")) {
+            throw new IllegalArgumentException("Country must be an ISO3 code.");
+        }
+        if (indicatorCodes == null || indicatorCodes.isEmpty() || indicatorCodes.size() > 128) {
+            throw new IllegalArgumentException("Availability batch requires 1 to 128 indicators.");
+        }
+        if (limitPerIndicator < 1 || limitPerIndicator > 500
+                || (long) indicatorCodes.size() * limitPerIndicator > 10_000L) {
+            throw new IllegalArgumentException("Availability batch exceeds bounded output budget.");
+        }
+        Set<String> codes = new LinkedHashSet<>();
+        for (String raw : indicatorCodes) {
+            if (raw == null) {
+                throw new IllegalArgumentException("Null indicator code.");
+            }
+            String code = raw.trim().toUpperCase(Locale.ROOT);
+            if (!BATCH_CODE.matcher(code).matches() || !codes.add(code)) {
+                throw new IllegalArgumentException("Malformed or duplicate indicator.");
+            }
+        }
+        List<String> requested = new ArrayList<>(codes);
+        List<SeriesAvailabilityResponse> rows = timeseriesRepository.listSeriesAvailabilityBatch(
+                countryIso3.trim().toUpperCase(Locale.ROOT), requested,
+                normalizeOptionalCode(sourceCode), normalizeOptionalCode(datasetCode),
+                normalizeOptionalCode(periodGranularity), limitPerIndicator
+        );
+        Map<String, List<SeriesAvailabilityResponse>> grouped = new LinkedHashMap<>();
+        for (String code : requested) grouped.put(code, new ArrayList<>());
+        for (SeriesAvailabilityResponse row : rows) {
+            List<SeriesAvailabilityResponse> bucket = grouped.get(row.indicatorCode());
+            if (bucket == null) {
+                throw new IllegalStateException("Unexpected indicator returned by SQL.");
+            }
+            bucket.add(row);
+        }
+        List<AvailabilityBatchItem> groups = requested.stream()
+                .map(code -> new AvailabilityBatchItem(code, grouped.get(code).size(), grouped.get(code)))
+                .toList();
+        return new AvailabilityBatchResponse(groups.size(), groups);
     }
 
     public TimeseriesListResponse<CountryLatestComparisonResponse> listLatestCountryComparison(

@@ -18,6 +18,7 @@ on:
       - 'perf/v2-provenance-singleflight-*'
       - 'perf/v2-batch-catalog-indicators-*'
       - 'perf/v2-batch-timeseries-latest-*'
+      - 'perf/v2-batch-timeseries-availability-*'
   workflow_dispatch:
 
 permissions:

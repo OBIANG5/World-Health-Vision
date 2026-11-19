@@ -255,6 +255,50 @@ class TimeseriesControllerIntegrationTest {
                 .andExpect(jsonPath("$.items[0].countryDisplayName").value("France"))
                 .andExpect(jsonPath("$.items[0].availableObservationCount").value(greaterThanOrEqualTo(1)));
 
+
+        String oldAvailability = mockMvc.perform(get("/api/timeseries/series/availability")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", "NY.GDP.MKTP.CD")
+                        .param("limit", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1))
+                .andReturn().getResponse().getContentAsString();
+        String batchedAvailability = mockMvc.perform(
+                        post("/internal/timeseries/series/availability/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"countryIso3":"FRA",
+                             "indicatorCodes":["SP.POP.TOTL","NY.GDP.MKTP.CD"],
+                             "limitPerIndicator":1}
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(2))
+                .andExpect(jsonPath("$.items[0].indicatorCode").value("SP.POP.TOTL"))
+                .andExpect(jsonPath("$.items[0].count").value(0))
+                .andExpect(jsonPath("$.items[1].indicatorCode").value("NY.GDP.MKTP.CD"))
+                .andExpect(jsonPath("$.items[1].count").value(1))
+                .andReturn().getResponse().getContentAsString();
+        var jsonOldAvail = mapper.readTree(oldAvailability);
+        var jsonNewAvail = mapper.readTree(batchedAvailability);
+        assertEquals(jsonOldAvail.get("items"), jsonNewAvail.get("items").get(1).get("items"),
+                "Availability batch must preserve status counts, dates, latest values and per-indicator limit.");
+
+        String oldImfAvail = mockMvc.perform(get("/api/timeseries/series/availability")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", "NY.GDP.MKTP.CD")
+                        .param("sourceCode", "IMF"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String newImfAvail = mockMvc.perform(post("/internal/timeseries/series/availability/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"countryIso3":"FRA","indicatorCodes":["NY.GDP.MKTP.CD"],
+                             "sourceCode":"IMF","limitPerIndicator":100}
+                            """))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        assertEquals(mapper.readTree(oldImfAvail).get("items"),
+                     mapper.readTree(newImfAvail).get("items").get(0).get("items"),
+                     "IMF estimated provenance/period counts must match exactly.");
+
         mockMvc.perform(get("/api/timeseries/compare/countries/latest")
                         .param("countryIso3", "FRA", "DEU")
                         .param("indicatorCode", "NY.GDP.MKTP.CD")
@@ -292,6 +336,32 @@ class TimeseriesControllerIntegrationTest {
         overLimit.append("]}");
         mockMvc.perform(post("/internal/timeseries/series/latest/batch")
                 .contentType(MediaType.APPLICATION_JSON).content(overLimit.toString()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectMalformedDuplicateAndUnboundedAvailabilityBatch() throws Exception {
+        for (String bad : new String[] {
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[],\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\",\"ny.gdp.mktp.cd\"],\"limitPerIndicator\":10}",
+                "{\"countryIso3\":\"FR\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"limitPerIndicator\":10}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"limitPerIndicator\":0}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"limitPerIndicator\":501}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"INVALID;DROP\"],\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[null],\"limitPerIndicator\":1}"
+        }) {
+            mockMvc.perform(post("/internal/timeseries/series/availability/batch")
+                    .contentType(MediaType.APPLICATION_JSON).content(bad))
+                    .andExpect(status().isBadRequest());
+        }
+        StringBuilder oversized = new StringBuilder("{\"countryIso3\":\"FRA\",\"limitPerIndicator\":100,\"indicatorCodes\":[");
+        for (int i = 0; i < 128; i++) {
+            if (i != 0) oversized.append(",");
+            oversized.append("\"TEST.CODE.").append(i).append("\"");
+        }
+        oversized.append("]}");
+        mockMvc.perform(post("/internal/timeseries/series/availability/batch")
+                .contentType(MediaType.APPLICATION_JSON).content(oversized.toString()))
                 .andExpect(status().isBadRequest());
     }
 
