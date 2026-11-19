@@ -141,7 +141,7 @@ function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<
         background:shot.accent??globalStyle.accent,width:Math.round(lineIn*90),height:5,
         marginBottom:29,opacity:lineIn
       }}/>
-      {shot.title&&<div style={{
+      {shot.title&&<div dir="auto" style={{
         fontSize:titleSize,fontWeight:815,letterSpacing:"-.047em",lineHeight:1.07,
         whiteSpace:"pre-line",overflowWrap:"break-word",
         maxWidth:880,
@@ -175,6 +175,21 @@ function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Require
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
   const subtitleFade=reveal(frame,15,18);
   const glow=shot.media?"0 5px 38px rgba(0,0,0,.48)":"none";
+  const textSize=shot.title
+    ? fitTextOnNLines({
+        text:shot.title,maxBoxWidth:865,maxLines:3,
+        fontFamily:globalStyle.editorialFont,fontWeight:790,
+        maxFontSize:numeric?166:kinetic?104:76,
+      }).fontSize
+    : 76;
+  const bodySize=shot.subtitle
+    ? fitTextOnNLines({
+        text:shot.subtitle,maxBoxWidth:830,maxLines:2,
+        fontFamily:globalStyle.editorialFont,fontWeight:460,
+        maxFontSize:kinetic?39:33,
+      }).fontSize
+    : 33;
+
   return <AbsoluteFill style={{background:globalStyle.background,overflow:"hidden",fontFamily:globalStyle.editorialFont}}>
     <MediaPlate shot={shot}/>
     {!clean&&<>
@@ -200,7 +215,7 @@ function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Require
           }}>{shot.eyebrow}</div>}
           {shot.title&&<div style={{overflow:"hidden"}}>
             <div style={{
-              fontSize:numeric?166:kinetic?104:76,
+              fontSize:textSize,
               lineHeight:numeric?.94:kinetic?1.04:1.09,
               fontWeight:numeric?850:790,
               letterSpacing:numeric?"-0.065em":"-0.04em",
@@ -210,7 +225,7 @@ function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Require
             }}>{shot.title}</div>
           </div>}
           {shot.subtitle&&<div style={{
-            fontSize:kinetic?39:33,fontWeight:460,lineHeight:1.34,
+            fontSize:bodySize,fontWeight:460,lineHeight:1.34,
             color:"#f3f6f8",marginTop:kinetic?38:27,
             opacity:subtitleFade,
             transform:"translateY("+Math.round((1-subtitleFade)*23)+"px)",
