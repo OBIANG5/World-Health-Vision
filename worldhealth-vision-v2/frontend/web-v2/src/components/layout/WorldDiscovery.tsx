@@ -2,12 +2,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CountrySummary } from "../../api/types";
 import { VISION_PRODUCTS, type VisionId } from "../../product/visionProducts";
-import { WorldIcon } from "../ui/WorldIcon";
+import { WorldIcon, type WorldIconName } from "../ui/WorldIcon";
 
 type Language = "fr" | "en";
 
+const discoveryIcons: Record<VisionId, WorldIconName> = {
+  atlas: "globe", watch: "alert", money: "currency",
+  transport: "travel", tourism: "compass", price: "markets",
+  basket: "scale", trading: "markets", brvm: "markets",
+  radar: "search", media: "book",
+};
+
 interface Props {
   language: Language;
+  onToggleLanguage: () => void;
   countries: readonly CountrySummary[];
   loading: boolean;
   unavailable: boolean;
@@ -23,7 +31,7 @@ function normalize(value: string) {
 }
 
 export default function WorldDiscovery({
-  language, countries, loading, unavailable, onClose, onCountry, onVision, onSources,
+  language, onToggleLanguage, countries, loading, unavailable, onClose, onCountry, onVision, onSources,
 }: Props) {
   const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLElement>(null);
@@ -120,10 +128,17 @@ export default function WorldDiscovery({
               ? "Recherchez un pays ou découvrez les Visions. Les données réellement disponibles restent identifiées."
               : "Find a country or discover a Vision. Actual data availability is always made clear."}</p>
           </div>
-          <button type="button" onClick={onClose} className="world-discovery-close"
-            aria-label={language === "fr" ? "Fermer la recherche" : "Close search"}>
-            <WorldIcon name="close" size={19}/>
-          </button>
+          <div className="world-discovery-header-actions">
+            <button type="button" className="world-discovery-language"
+              onClick={onToggleLanguage}
+              aria-label={language === "fr" ? "Switch World-Vision to English" : "Passer World-Vision en français"}>
+              <WorldIcon name="globe" size={16}/> {language === "fr" ? "EN" : "FR"}
+            </button>
+            <button type="button" onClick={onClose} className="world-discovery-close"
+              aria-label={language === "fr" ? "Fermer la recherche" : "Close search"}>
+              <WorldIcon name="close" size={19}/>
+            </button>
+          </div>
         </div>
 
         <label className="world-discovery-input">
@@ -189,11 +204,13 @@ export default function WorldDiscovery({
               {matches.products.map((product) => (
                 <button type="button" className="world-discovery-result" key={product.id}
                   onClick={() => onVision(product.id)}>
-                  <span className="world-discovery-result-icon"><WorldIcon name="layers" size={18}/></span>
+                  <span className="world-discovery-result-icon"><WorldIcon name={discoveryIcons[product.id]} size={18}/></span>
                   <span><strong>{product.name}</strong>
                     <small>{product.tagline[language]} · {product.stage === "planned"
                       ? (language === "fr" ? "prévu" : "planned")
-                      : (language === "fr" ? "outil existant ou partiel" : "existing or partial")}</small>
+                      : product.stage === "partial"
+                        ? (language === "fr" ? "partiellement disponible" : "partially available")
+                        : (language === "fr" ? "explorable, couverture variable" : "explorable, varying coverage")}</small>
                   </span>
                   <WorldIcon name="arrow" size={16}/>
                 </button>
