@@ -177,7 +177,7 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
       opacity:beat.notes*fadeOut,overflow:"hidden"
     }}>{summaryText}</div>}
     <div data-wv-data-provenance="true" style={{
-      position:"absolute",top:1459,left:101,right:102,maxHeight:76,
+      position:"absolute",top:1438,left:101,right:102,maxHeight:76,
       fontSize:27,lineHeight:1.2,color:"#bfdde6",
       opacity:beat.source*fadeOut
     }}>
