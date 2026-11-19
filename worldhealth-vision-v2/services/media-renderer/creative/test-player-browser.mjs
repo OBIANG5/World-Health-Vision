@@ -279,6 +279,11 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           const line=document.querySelector('[data-wv-data-line]');
           const bars=document.querySelectorAll('[data-wv-data-bar]');
           const cells=document.querySelectorAll('[data-wv-data-cell]');
+          const negativeBar=document.querySelector('[data-wv-data-bar="1"] rect');
+          const zero=Number(chart?.getAttribute('data-wv-data-zero'));
+          const negativeBarEnd=negativeBar
+            ?Number(negativeBar.getAttribute('x'))+Number(negativeBar.getAttribute('width'))
+            :null;
           const prov=document.querySelector('[data-wv-data-provenance]');
           const source=document.querySelector('[data-wv-data-source]');
           const caption=document.querySelector('[data-wv-data-caption]');
@@ -289,7 +294,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             headingOpacity:heading?Number(getComputedStyle(heading).opacity):0,
             chart:chart?.getAttribute('data-wv-data-graph')??null,
             lineOffset:line?Number(line.getAttribute('stroke-dashoffset')):null,
-            barCount:bars.length,cellCount:cells.length,
+            barCount:bars.length,cellCount:cells.length,zero,negativeBarEnd,
             source:prov?.textContent??'',
             sourceOpacity:source?Number(getComputedStyle(source).opacity):0,
             sourceBottom:source?.getBoundingClientRect().bottom??null,
@@ -307,7 +312,9 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
         if(frame===70&&(
           (kind==="trend"&&!(graphic.lineOffset!==null&&graphic.lineOffset>0&&graphic.lineOffset<1))||
           (["ranking","comparison"].includes(kind)&&graphic.barCount<2)||
-          (kind==="heatmap"&&graphic.cellCount<4)
+          (kind==="heatmap"&&graphic.cellCount<4)||
+          (kind==="comparison"&&(!Number.isFinite(graphic.zero)||!Number.isFinite(graphic.negativeBarEnd)||
+            Math.abs(graphic.negativeBarEnd-graphic.zero)>.01))
         ))throw Error("Data chart did not animate authentic editorial values: "+JSON.stringify(graphic));
         if(frame===140&&(
           graphic.sourceOpacity<.98||!graphic.sourceBottom||!graphic.captionTop||
