@@ -179,6 +179,9 @@ services:
       WHV_SECURITY_ENABLED: "true"
       WHV_PUBLIC_READ_ENABLED: "false" # Private staging API
       WHV_SECURITY_ISSUER_URI: ${WHV_OIDC_ISSUER_URI:?Configure a real trusted OIDC issuer first}
+      WHV_SECURITY_JWK_SET_URI: ${WHV_OIDC_JWKS_URI:?Configure HTTPS public-key endpoint for identity provider}
+      WHV_SECURITY_AUDIENCE: ${WHV_SECURITY_AUDIENCE:?Specify intended API audience, e.g. worldvision-api}
+      WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS: "false"
       WHV_CATALOG_BASE_URL: http://catalog-service:8080
       WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
       WHV_ANALYTICS_BASE_URL: http://analytics-service:8000
