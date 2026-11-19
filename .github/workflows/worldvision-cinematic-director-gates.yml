@@ -167,7 +167,7 @@ jobs:
               --shot "data-${kind}" \
               --output "output/creative/data-${kind}-synthetic.mp4"
           done
-          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';for(const kind of ['trend','heatmap']){const name='output/creative/data-'+kind+'-synthetic.mp4';const m=await getVideoMetadata(name);const r=JSON.parse(fs.readFileSync(name+'.report.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==165||r.media.length!==0||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('DATA H264 source-only',kind,'passed')}}"
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';for(const kind of ['trend','heatmap']){const name='output/creative/data-'+kind+'-synthetic.mp4';const m=await getVideoMetadata(name);const r=JSON.parse(fs.readFileSync(name+'.report.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==165||r.media.length!==0||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('DATA H264 source-only',kind,'passed')}"
       - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Analyze supplied audio without modifying or regenerating it
