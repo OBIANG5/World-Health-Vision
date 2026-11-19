@@ -1,5 +1,6 @@
 """Internal Catalog batch contract, error propagation and exact order."""
 import asyncio
+import json
 
 import httpx
 import pytest
@@ -47,7 +48,7 @@ def test_exact_order_and_all_metadata_are_preserved():
     assert all(x.methodologyNotes == "Reviewed methodology" for x in result)
     assert len(received) == 1
     assert received[0][0:2] == ("POST", "/internal/catalog/indicators/batch")
-    assert b'"codes":["FIRST.A","SECOND.B"]' in received[0][2]
+    assert json.loads(received[0][2]) == {"codes": codes}
     assert (REGISTRY.get_sample_value(
         "whv_analytics_upstream_http_requests_total",
         {"dependency": "catalog", "operation": "indicators_batch", "outcome": "success"},
