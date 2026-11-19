@@ -1,7 +1,6 @@
 import {AbsoluteFill,useCurrentFrame} from "remotion";
 import {fitTextOnNLines} from "@remotion/layout-utils";
 import type {CreativeEditProps,CreativeShot} from "./CreativeEdit";
-import type {DataMotion} from "./data-motion-core.mjs";
 import {dataMotionPose,seriesCoordinates,valueDomain,valueCoordinate,cellIntensity,formatMetric} from "./data-motion-core.mjs";
 
 type Style=Required<NonNullable<CreativeEditProps["visualStyle"]>>;
