@@ -1,7 +1,7 @@
 import {useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import "./CinematicProductionBoard.css";
 
-type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video";
+type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal";
 type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
@@ -12,7 +12,7 @@ type Shot = {
   mediaName:string;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
-  documentary:"Photographie / reportage",kinetic:"Typographie cinématique",
+  documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
   evidence:"Focus sur un document",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
 };
 const MOTION_LABELS:Record<Motion,string>={
@@ -51,7 +51,7 @@ export default function CinematicProductionBoard() {
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const canExport=script.trim().length>0&&shots.every(shot=>{
-    const requires=["documentary","evidence","clean_video"].includes(shot.template);
+    const requires=["documentary","evidence","clean_video","focus_reveal"].includes(shot.template);
     return !requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
