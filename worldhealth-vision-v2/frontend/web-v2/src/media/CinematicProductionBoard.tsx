@@ -581,6 +581,76 @@ export default function CinematicProductionBoard() {
             </div>}
             <p className="wvc-hint">Ces réglages sont des pistes de montage, pas une preuve des faits. Le masque et le focus utilisent les pixels de l'image importée. Vérifie cadrage et sujet après mouvement ; seuls les assets aux droits connus peuvent être diffusés.</p>
           </div>}
+          {active.template==="data_story"&&<div className="wvc-focus-control" aria-label="Data Motion — graphiques et sources éditoriales">
+            <div className="wvc-focus-heading">
+              <strong>DATA MOTION — GRAPHIQUES ANIMÉS ET SOURCE VÉRIFIABLE</strong>
+              <span>Le chiffre, son échelle, sa date et sa provenance viennent uniquement de tes données. Le moteur n'invente ni cours de Bourse, ni classement, ni série financière.</span>
+            </div>
+            <label>TYPE DE GRAPHIQUE
+              <select value={active.dataMode} onChange={e=>updateShot({dataMode:e.target.value as Shot["dataMode"]})}>
+                <option value="line">Évolution · courbe temporelle</option>
+                <option value="ranking">Classement · barres horizontales</option>
+                <option value="heatmap">Heatmap · intensité relative et valeurs</option>
+              </select>
+            </label>
+            <label>SÉRIE DE DONNÉES FOURNIE
+              <textarea rows={8} value={active.dataRaw} maxLength={3200}
+                placeholder={active.dataMode==="line"
+                  ?"2026-01-01|Janvier|15.5\n2026-02-01|Février|16.1\n2026-03-01|Mars|17.0"
+                  :"Catégorie A|15.5\nCatégorie B|12.0\nCatégorie C|7.2"}
+                onChange={e=>updateShot({dataRaw:e.target.value})}/>
+              <span className="wvc-hint">Séparer les colonnes par le caractère |. Courbe : DATE ISO | LIBELLÉ | VALEUR. Classement/heatmap : LIBELLÉ | VALEUR. Utiliser le point pour les décimales. Les nombres affichés dans l'exemple de saisie sont fictifs : ne pas les utiliser comme actualité.</span>
+            </label>
+            <div className="wvc-two-col">
+              <label>MINIMUM VISIBLE DE L'AXE
+                <input inputMode="decimal" value={active.dataMin} placeholder="0"
+                  onChange={e=>updateShot({dataMin:e.target.value})}/>
+              </label>
+              <label>MAXIMUM VISIBLE DE L'AXE
+                <input inputMode="decimal" value={active.dataMax} placeholder="100"
+                  onChange={e=>updateShot({dataMax:e.target.value})}/>
+              </label>
+              <label>UNITÉ DE LA SÉRIE
+                <input maxLength={12} value={active.dataUnit} placeholder="%, $, €, personnes..."
+                  onChange={e=>updateShot({dataUnit:e.target.value})}/>
+              </label>
+              <label>PRÉCISION
+                <select value={active.dataPrecision} onChange={e=>updateShot({dataPrecision:Number(e.target.value)})}>
+                  <option value={0}>0 décimale</option>
+                  <option value={1}>1 décimale</option>
+                  <option value={2}>2 décimales</option>
+                </select>
+              </label>
+              <label>FORMAT DES NOMBRES
+                <select value={active.dataLocale} onChange={e=>updateShot({dataLocale:e.target.value as "fr-FR"|"en-US"})}>
+                  <option value="fr-FR">Français</option>
+                  <option value="en-US">English (US)</option>
+                </select>
+              </label>
+            </div>
+            <div className="wvc-two-col">
+              <label>ÉMETTEUR / INSTITUTION
+                <input maxLength={80} value={active.dataPublisher} placeholder="Organisme à vérifier"
+                  onChange={e=>updateShot({dataPublisher:e.target.value})}/>
+              </label>
+              <label>INDICATEUR / JEU DE DONNÉES
+                <input maxLength={120} value={active.dataDataset} placeholder="Nom exact de la série"
+                  onChange={e=>updateShot({dataDataset:e.target.value})}/>
+              </label>
+              <label>DATE DE SITUATION (ISO)
+                <input type="date" value={active.dataAsOf}
+                  onChange={e=>updateShot({dataAsOf:e.target.value})}/>
+              </label>
+              <label>LIEN HTTPS VERS LA SOURCE (FACULTATIF)
+                <input type="url" value={active.dataUrl} placeholder="https://…"
+                  onChange={e=>updateShot({dataUrl:e.target.value})}/>
+              </label>
+            </div>
+            <p className="wvc-hint">Les classements et heatmaps exigent un axe qui commence à zéro. Les courbes peuvent choisir une autre échelle, mais l'intervalle sera explicitement affiché dans la vidéo. Un lien ou une institution saisi ne remplace pas la vérification journalistique humaine.</p>
+            <p className="wvc-hint">{validData(active)
+              ?"Format, données, échelle et source cohérents pour une prévisualisation technique. Vérifie toujours les faits."
+              :"À compléter : données (3–16 lignes suivant le graphique), source, date, bornes et unités cohérentes."}</p>
+          </div>}
           {active.template==="geo_story"&&<div className="wvc-focus-control" aria-label="Direction du plan géographique">
             <div className="wvc-focus-heading">
               <strong>CARTE DU MONDE — DIRECTION GÉOGRAPHIQUE</strong>
