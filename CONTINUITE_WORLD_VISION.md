@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — SPRINT 8 / GEO DIRECTOR + BIBLIOTHÈQUE DE MOTIONS (19 NOV. 2026)
+
+**Reprise à partir des références utilisateurs** : deux vidéos verticales (finance/graphes, géopolitique/cartes) + image de l'œil/globe ; objectif **plusieurs animations sophistiquées simultanées sur la même image** et véritable motion design international, et non multiplication de maquettes simples. La direction est le pack GEO puis DATA, PHOTO 2,5D multi-couches, EDITORIAL, documentaire et AUDIO.
+
+**Branche indépendante (non fusionnée / non déployée)** : `feature/worldvision-geo-camera-country-spotlight-2026-11-19`, empilée sur PR #44 (branche `feature/worldvision-cinematic-director-gates-2026-11-19`, toujours DRAFT). Rapport détaillé : [WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md). Implémentation : `geo-motion-camera.mjs`, pose géodésique déterministe D3 et Three, zoom optique contrôlé ≤15 %, surlignage de pays depuis véritables géométries Natural Earth 110m, commandes dans Studio, validation et tests Node/Chromium. **Vérifier la CI de la PR Sprint 8 et inspecter ses vrais MP4/PNG avant toute certification.** Les fichiers d'essai ne représentent aucune actualité.
+
+**Règles maintenues** : scripts/recherches dans ChatGPT pour le moment, voix libre (Vivienne possible, non imposée), véritable montage média, BAOCOM totalement séparé, GDELT/blog global différés. Aucune auto-publication, pas de licences supposées. Bien distinguer test technique et qualité artistique. **Prochaine priorité** : lecture des preuves CI, alignement NASA/frontières/camera dans les images, puis country-focus à échelle 50m/10m dans un plan dédié, puis photo multicouche + data motion, QA iPhone/TikTok et voix/mix.
+
+---
+
 ## WORLD‑VISION MEDIA — GLOBE NASA 3D / SPRINT 7 (19 NOV. 2026)
 
 **PR #44 DRAFT, non fusionnée/non déployée.** Fichier canonique à lire immédiatement : [WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md). Ne jamais oublier la continuité des Sprints 1–6 (ingestion script/médias, plan isolé, film entier, documentaire, voix libre/FFmpeg, QA des transitions, motion 2,5D, geo/D3). BAOCOM indépendant et NON connecté, GDELT/blog global différés, scripts/recherche préparés ici avec ChatGPT.
