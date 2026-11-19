@@ -17,7 +17,7 @@ declare global{
   interface Window{
     __wvSmokeSeek?:(frame:number)=>void;
     __wvSmokeReady?:boolean;
-    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo";
+    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo"|"data-trend"|"data-comparison"|"data-ranking"|"data-heatmap";
     __wvSmokeFrames?:number;
     __wvSmokeHasVoice?:boolean;
   }
@@ -30,6 +30,27 @@ const isDocument=mode==="document";
 const isGeo=mode==="geo";
 const isCountry=mode==="country";
 const isPhoto=mode==="photo";
+const isData=Boolean(mode?.startsWith("data-"));
+const dataKind=mode?.replace("data-","")??"trend";
+const fakeSource={
+  publisher:"DEMONSTRATION FICTIVE",dataset:"Mesures de simulation",
+  asOf:"2026-11-19",methodology:"Exemple synthétique sans statistique réelle"
+};
+const fakePoints=[
+  {label:"2026-11-01",value:14},{label:"2026-11-03",value:9},
+  {label:"2026-11-07",value:28},{label:"2026-11-10",value:18}
+];
+const sampleData:Record<string,NonNullable<CreativeShot["data"]>>={
+  trend:{kind:"trend",unit:"TEST",precision:0,xMode:"date",synthetic:true,source:fakeSource,points:fakePoints},
+  comparison:{kind:"comparison",unit:"TEST",precision:0,synthetic:true,source:fakeSource,
+    points:[{label:"ZONE A",value:45},{label:"ZONE B",value:-25},{label:"ZONE C",value:60}]},
+  ranking:{kind:"ranking",unit:"TEST",precision:0,synthetic:true,source:fakeSource,
+    points:[{label:"A",value:72},{label:"B",value:72},{label:"C",value:24}]},
+  heatmap:{kind:"heatmap",unit:"TEST",precision:0,synthetic:true,source:fakeSource,
+    matrix:{min:0,max:100,columns:["S1","S2","S3"],rows:[
+      {label:"R1",values:[25,40,85]},{label:"R2",values:[10,67,72]},{label:"R3",values:[50,5,93]}]}}
+};
+
 function Smoke(){
   const playerRef=useRef<PlayerRef>(null);
   const [assets,setAssets]=useState<SmokeAssets|null>(null);
@@ -52,14 +73,15 @@ function Smoke(){
   const props=useMemo<CreativeEditProps|null>(()=>{
     if(!assets)return null;
     const opener:CreativeShot={
-      id:"plan-synthetique",durationFrames:isPhoto?165:isCountry?165:isGeo?150:isDocument?140:105,template:isPhoto?"photo_story":isCountry?"country_focus":isGeo?"geo_story":isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
+      id:"plan-synthetique",durationFrames:isData?165:isPhoto?165:isCountry?165:isGeo?150:isDocument?140:105,template:isData?"data_story":isPhoto?"photo_story":isCountry?"country_focus":isGeo?"geo_story":isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
       media:assets.clip?{kind:"video",src:assets.clip}:{kind:"image",src:assets.photo},
-      title:isPhoto?"UNE IMAGE · SIX MOUVEMENTS":isCountry?"GABON · FOCUS CARTOGRAPHIQUE":isGeo?"LE MONDE EN MOUVEMENT":isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
-      subtitle:isPhoto?"Six animations indépendantes sur une seule source synthétique.":isCountry?"Source géographique réelle, paysage artificiel de test : aucune actualité.":isGeo?"Cartographie et animations simultanées, test synthétique.":isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
-      eyebrow:isPhoto?"PHOTO MOTION · NON JOURNALISTIQUE":isCountry?"ATELIER 1:10m · NON JOURNALISTIQUE":isGeo?"GEO MOTION · AUCUNE ACTUALITÉ":isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
+      title:isData?"LE MONDE EN DONNÉES":isPhoto?"UNE IMAGE · SIX MOUVEMENTS":isCountry?"GABON · FOCUS CARTOGRAPHIQUE":isGeo?"LE MONDE EN MOUVEMENT":isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
+      subtitle:isData?"Chiffres fictifs, méthodologie déclarée et animations sourcées.":isPhoto?"Six animations indépendantes sur une seule source synthétique.":isCountry?"Source géographique réelle, paysage artificiel de test : aucune actualité.":isGeo?"Cartographie et animations simultanées, test synthétique.":isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
+      eyebrow:isData?"DATA MOTION · AUCUNE ACTUALITÉ":isPhoto?"PHOTO MOTION · NON JOURNALISTIQUE":isCountry?"ATELIER 1:10m · NON JOURNALISTIQUE":isGeo?"GEO MOTION · AUCUNE ACTUALITÉ":isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
       motion:"dolly",transitionAfter:isFilm?"dissolve":"cut",
       transitionFrames:isFilm?10:0,
       focus:{x:.5,y:.46},
+      ...(isData?{data:sampleData[dataKind]}:{}),
       ...(isPhoto&&assets.foreground?{foreground:{src:assets.foreground}}:{}),
       ...(isPhoto?{photo:{
         camera:{zoomFrom:1.05,zoomTo:1.13,panX:18,panY:-14,startFrame:0,endFrame:132},
@@ -105,7 +127,7 @@ function Smoke(){
     if(!props)return;
     window.__wvSmokeSeek=(n:number)=>playerRef.current?.seekTo(n);
     window.__wvSmokeReady=true;
-    window.__wvSmokeMode=isFilm?"film":isClip?"clip":isDocument?"document":isPhoto?"photo":isCountry?"country":isGeo?"geo":"shot";
+    window.__wvSmokeMode=isData?(mode as "data-trend"|"data-comparison"|"data-ranking"|"data-heatmap"):isFilm?"film":isClip?"clip":isDocument?"document":isPhoto?"photo":isCountry?"country":isGeo?"geo":"shot";
     window.__wvSmokeFrames=creativeDuration(props);
     window.__wvSmokeHasVoice=Boolean(props.narration);
     return ()=>{

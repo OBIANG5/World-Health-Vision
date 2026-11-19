@@ -18,7 +18,7 @@ const DETAILED_IDS=new Set(DETAIL_COUNTRIES.map(g=>String(g.id).padStart(3,"0"))
 const COUNTRY_IDS=new Set(countryGeometry.map(g=>String(g.id).padStart(3,"0")));
 
 export const FORMAT = "worldvision-creative-project-v1";
-const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus","photo_story"]);
+const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus","photo_story","data_story"]);
 const TRANSITIONS = new Set(["cut","dissolve","slide"]);
 const MOTIONS = new Set(["locked","dolly","drift","push"]);
 const IMAGE_EXT = new Set([".png",".jpg",".jpeg",".webp"]);
@@ -106,6 +106,71 @@ export function inspectProject(project) {
          region.x+region.width>1.0000001||region.y+region.height>1.0000001)
         bad(errors,p+".documentRegion",
           "Select a visible 0-1 document region x/y/width/height; width 12%-85%, height 8%-80%, fully inside the unmodified document viewport.");
+    }
+    if(scene.template==="data_story"){
+      const d=scene.data;
+      if(!boundedInteger(scene.durationFrames,150,3600))
+        bad(errors,p+".durationFrames","DATA charts need 150-3600 frames for legible independently animated beats.");
+      if(!isText(scene.title,90)||!scene.title?.trim()||
+        (scene.subtitle!==undefined&&!isText(scene.subtitle,180)))
+        bad(errors,p+".title","Chart requires an authored short headline and at most 180 subtitle characters.");
+      if(!d||typeof d!=="object"||Array.isArray(d)){
+        bad(errors,p+".data","Source-linked numerical data required; never infer numbers from a title or photo.");
+      }else{
+        const isFiniteBound=v=>typeof v==="number"&&Number.isFinite(v)&&Math.abs(v)<=1e12;
+        const isoDate=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&
+          !Number.isNaN(Date.parse(v+"T00:00:00Z"))&&new Date(v+"T00:00:00Z").toISOString().slice(0,10)===v;
+        if(!["trend","comparison","ranking","heatmap"].includes(d.kind))
+          bad(errors,p+".data.kind","Select trend, comparison, ranking or heatmap.");
+        if(!isText(d.unit,12)||!d.unit?.trim()||!boundedInteger(d.precision,0,2))
+          bad(errors,p+".data.unit","Use a concrete unit no longer than 12 characters and a decimal precision 0-2.");
+        if(d.synthetic!==undefined&&typeof d.synthetic!=="boolean")
+          bad(errors,p+".data.synthetic","Synthetic flag must be explicit boolean, not a claimed authenticity verdict.");
+        const s=d.source;
+        if(!s||!isText(s.publisher,55)||!s.publisher?.trim()||
+           !isText(s.dataset,70)||!s.dataset?.trim()||
+           !isText(s.methodology,130)||!s.methodology?.trim()||
+           !isoDate(s.asOf)||
+           (s.url!==undefined&&(!isText(s.url,500)||!/^https:\/\//.test(s.url))))
+          bad(errors,p+".data.source","Provide author/publisher, dataset, method, exact ISO publication date and optional HTTPS reference.");
+        if(d.kind!=="heatmap"){
+          const values=d.points;
+          const max=d.kind==="trend"?10:6;
+          const min=d.kind==="ranking"?3:d.kind==="trend"?3:2;
+          if(!Array.isArray(values)||values.length<min||values.length>max||
+            values.some(point=>!point||!isText(point.label,16)||!point.label?.trim()||
+              !isFiniteBound(point.value))||
+            new Set(values.map(x=>x?.label)).size!==values.length)
+            bad(errors,p+".data.points","Expected distinct labeled, finite author-approved measurements within the selected chart size.");
+          if(d.kind==="trend"){
+            if(!["category","date"].includes(d.xMode))
+              bad(errors,p+".data.xMode","Specify categorical vs actual date-spaced x-axis; do not imply equal time spacing.");
+            else if(Array.isArray(values)&&d.xMode==="date"&&
+              (values.some(x=>!isoDate(x.label))||
+               values.some((x,i)=>i>0&&x.label<=values[i-1]?.label)))
+              bad(errors,p+".data.points","Real time series must use strictly increasing, valid ISO calendar dates.");
+          }
+          if(d.kind==="ranking"&&Array.isArray(values)&&
+            values.some((x,i)=>i>0&&x.value>values[i-1]?.value))
+            bad(errors,p+".data.points","Ranking must already be sorted descending; the renderer never changes the editorial order.");
+          if(d.matrix!==undefined)
+            bad(errors,p+".data.matrix","Matrix only belongs to heatmap layout.");
+        }else{
+          const m=d.matrix;
+          if(!m||!Array.isArray(m.columns)||m.columns.length<2||m.columns.length>6||
+            m.columns.some(x=>!isText(x,14)||!x.trim())||
+            new Set(m.columns).size!==m.columns.length||
+            !Array.isArray(m.rows)||m.rows.length<2||m.rows.length>5||
+            m.rows.some(row=>!isText(row.label,14)||!row.label?.trim()||
+              !Array.isArray(row.values)||row.values.length!==m.columns.length||
+              row.values.some(x=>!isFiniteBound(x)||x<m.min||x>m.max))||
+            new Set(m.rows.map(row=>row.label)).size!==m.rows.length||
+            !isFiniteBound(m.min)||!isFiniteBound(m.max)||m.max<=m.min)
+            bad(errors,p+".data.matrix","Heatmap needs labeled 2-6 columns, 2-5 rows, finite values and an explicit accurate color legend min/max.");
+          if(d.points!==undefined)
+            bad(errors,p+".data.points","A heatmap must use matrix values, not a hidden scalar point series.");
+        }
+      }
     }
     if(scene.template==="photo_story"){
       if(!boundedInteger(scene.durationFrames,150,3600))

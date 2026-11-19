@@ -199,4 +199,40 @@ photoProject.shots=[{
 photoProject.voice=null;photoProject.music=null;photoProject.outro=null;
 const photoPath=path.join(path.dirname(outputJson),"worldvision-photo-multilayer-project.json");
 fs.writeFileSync(photoPath,JSON.stringify(photoProject,null,2)+String.fromCharCode(10));
+// DATA Motion: exact synthetic values with source clearly labelled FICTION.
+// The video renderer must never claim these values were measured anywhere.
+const dataSource={publisher:"DEMONSTRATION FICTIVE",dataset:"Mesures de simulation",
+  asOf:"2026-11-19",methodology:"Valeurs artificielles inventées pour valider les animations uniquement"};
+const examples={
+  trend:{kind:"trend",unit:"TEST",precision:0,xMode:"date",synthetic:true,
+    points:[{label:"2026-11-01",value:14},{label:"2026-11-03",value:9},
+      {label:"2026-11-07",value:28},{label:"2026-11-10",value:18}],
+    source:dataSource},
+  comparison:{kind:"comparison",unit:"TEST",precision:0,synthetic:true,
+    points:[{label:"ZONE A",value:45},{label:"ZONE B",value:-25},
+      {label:"ZONE C",value:60}],source:dataSource},
+  ranking:{kind:"ranking",unit:"TEST",precision:0,synthetic:true,
+    points:[{label:"GROUPE A",value:72},{label:"GROUPE B",value:51},
+      {label:"GROUPE C",value:24}],source:dataSource},
+  heatmap:{kind:"heatmap",unit:"TEST",precision:0,synthetic:true,
+    matrix:{min:0,max:100,columns:["S1","S2","S3"],rows:[
+      {label:"R1",values:[25,40,85]},{label:"R2",values:[10,67,72]},
+      {label:"R3",values:[50,5,93]}]},source:dataSource}
+};
+for(const [kind,data] of Object.entries(examples)){
+  const proj=structuredClone(p);
+  proj.id="wv-data-"+kind+"-synthetic";
+  proj.title="DATA Motion / "+kind.toUpperCase()+" — TEST FICTIF";
+  proj.script="Illustration d'un jeu de nombres artificiels. Aucune statistique mondiale authentique.";
+  proj.shots=[{
+    id:"data-"+kind,template:"data_story",durationFrames:165,
+    title:"LE MONDE EN DONNÉES",
+    subtitle:"Des mesures d'essai, une source déclarée et quatre visualisations.",
+    eyebrow:"TEST DATA / PAS UNE ACTUALITÉ",
+    data,transitionAfter:"cut",transitionFrames:0,motion:"locked"
+  }];
+  proj.voice=null;proj.music=null;proj.outro=null;
+  fs.writeFileSync(path.join(path.dirname(outputJson),"worldvision-data-"+kind+".json"),
+    JSON.stringify(proj,null,2)+String.fromCharCode(10));
+}
 console.log("Synthetic image/video/audio/document fixtures created; not authentic news assets.");

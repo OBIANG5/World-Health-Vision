@@ -7,6 +7,7 @@ import {fileURLToPath} from "node:url";
 import {FORMAT,inspectProject,durationFrames,resolveLocalFile} from "./validate-project.mjs";
 import {geoCameraPose} from "../src/geo-motion-camera.mjs";
 import {photoTrackPose,motionProgress} from "../src/photo-motion-tracks.mjs";
+import {dataMotionPose,seriesCoordinates,cellIntensity,valueDomain} from "../src/data-motion-core.mjs";
 import {countryFocusGeometry} from "../src/country-focus-geometry.mjs";
 import {createRequire} from "node:module";
 import {geoContains} from "d3-geo";
@@ -375,4 +376,70 @@ test("photo STORY validates imported original, safe crop, foreground, timing and
   assert.equal(inspectProject(p).ok,true);
   delete s.photo;
   assert.ok(reasons(p).includes("shots[0].photo"));
+});
+
+const syntheticDataSource={publisher:"ÉDITEUR FICTIF CI",dataset:"Série d'essai NON JOURNALISTIQUE",
+  asOf:"2026-11-19",methodology:"Valeurs mathématiques produites uniquement pour tester des graphiques"};
+const syntheticData={
+  kind:"trend",unit:"TEST",precision:0,xMode:"date",synthetic:true,
+  source:syntheticDataSource,
+  points:[{label:"2026-11-01",value:10},{label:"2026-11-03",value:-5},{label:"2026-11-07",value:25}]
+};
+
+test("data motion dates are geographically/time-accurate as supplied, not evenly invented",()=>{
+  const curve=seriesCoordinates(syntheticData.points,{left:100,top:200,width:600,height:400},"date");
+  assert.equal(curve.coords[0].x,100);
+  assert.equal(curve.coords[1].x,300); // 2 of 6 elapsed days
+  assert.equal(curve.coords[2].x,700);
+  assert.equal(curve.domain.min,-5);
+  assert.equal(curve.domain.max,25);
+  const category=seriesCoordinates(syntheticData.points,{left:100,top:200,width:600,height:400},"category");
+  assert.equal(category.coords[1].x,400);
+  assert.notEqual(category.coords[1].x,curve.coords[1].x);
+  const vals=valueDomain([7,12]);assert.equal(vals.min,0);
+  assert.equal(cellIntensity(10,0,20),.5);
+  assert.throws(()=>cellIntensity(30,0,20));
+  assert.throws(()=>seriesCoordinates([...syntheticData.points].reverse(),
+    {left:0,top:0,width:100,height:100},"date"));
+  const pose=dataMotionPose(70,165,3);
+  assert.ok(pose.chart>0&&pose.chart<1);
+  assert.ok(pose.bars[0]>pose.bars[2]);
+  assert.equal(dataMotionPose(165,165,3).source,1);
+});
+
+test("data story source protection: no missing claim, deceptive chronology, ranking or heatmap legend",()=>{
+  const p=clone(sample),s=p.shots[0];
+  s.template="data_story";s.durationFrames=165;
+  s.title="DONNÉES · TEST FICTIF";s.subtitle="Aucune statistique d'actualité.";
+  s.data=structuredClone(syntheticData);
+  s.media=undefined;s.foreground=undefined;
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  s.data.source.publisher="";
+  assert.ok(reasons(p).includes("shots[0].data.source"));
+  s.data.source.publisher=syntheticDataSource.publisher;
+  s.data.points[1].label="2026-11-02";
+  assert.equal(inspectProject(p).ok,true);
+  s.data.points[1].label="2026-02-31";
+  assert.ok(reasons(p).includes("shots[0].data.points"));
+  s.data.points[1].label="2026-11-03";
+  s.data.points[1].value=Infinity;
+  assert.ok(reasons(p).includes("shots[0].data.points"));
+  s.data.points[1].value=-5;
+  s.data.kind="ranking";delete s.data.xMode;
+  s.data.points=[{label:"A",value:2},{label:"B",value:8},{label:"C",value:1}];
+  assert.ok(reasons(p).includes("shots[0].data.points"));
+  s.data.points=[{label:"A",value:8},{label:"B",value:2},{label:"C",value:1}];
+  // Tied observations are legal; rendering must show equal competition ranks.
+  assert.equal(inspectProject(p).ok,true);
+  assert.equal(inspectProject(p).ok,true);
+  s.data.kind="heatmap";delete s.data.points;
+  s.data.matrix={columns:["X","Y"],rows:[
+    {label:"A",values:[3,8]},{label:"B",values:[6,1]}
+  ],min:0,max:10};
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  s.data.matrix.max=5;
+  assert.ok(reasons(p).includes("shots[0].data.matrix"));
+  s.data.matrix.max=10;
+  s.data.matrix.rows[0].values=[3];
+  assert.ok(reasons(p).includes("shots[0].data.matrix"));
 });
