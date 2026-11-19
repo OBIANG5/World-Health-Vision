@@ -53,7 +53,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${WHV_SECURITY_ISSUER_URI:http://localhost:8081/realms/worldhealth-vision}
+          issuer-uri: ${WHV_SECURITY_ISSUER_URI:}
 
   cloud:
     gateway:
