@@ -57,6 +57,18 @@ jobs:
           node --input-type=module -e "import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/example.mp4');console.log(JSON.stringify(m));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||Math.abs(m.durationInSeconds-151/30)>.15)process.exit(1);"
           test -s output/creative/example.mp4
           test -s output/creative/example.mp4.report.json
+      - name: Test real import of externally supplied images, video and audio
+        run: |
+          mkdir -p /tmp/worldvision-fixture-assets
+          node creative/build-ci-fixtures.mjs /tmp/worldvision-fixture-assets output/creative/example.mp4 /tmp/worldvision-external-project.json
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-external-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --output output/creative/with-imported-media.mp4
+      - name: Verify imported media, scene rendering and arbitrary audio
+        run: |
+          node --input-type=module -e "import {getVideoMetadata} from '@remotion/renderer';import fs from 'node:fs';const m=await getVideoMetadata('output/creative/with-imported-media.mp4');const r=JSON.parse(fs.readFileSync('output/creative/with-imported-media.mp4.report.json','utf8'));console.log(JSON.stringify({video:m,report:r.media}));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.media.length!==3||r.track_voice!=='TEST SINE TONE — NOT A VOICE')process.exit(1);"
+          test -s output/creative/with-imported-media.mp4
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
         with:
@@ -64,6 +76,8 @@ jobs:
           path: |
             worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4
             worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/with-imported-media.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/with-imported-media.mp4.report.json
           retention-days: 7
           if-no-files-found: error
 
