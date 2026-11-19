@@ -6,6 +6,8 @@ on:
       - 'feature/worldvision-cinematic-*'
     paths:
       - 'worldhealth-vision-v2/services/media-renderer/cinematic/**'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
       - '.github/workflows/worldvision-cinematic-director-gates.yml'
   pull_request:
     paths:
@@ -32,3 +34,21 @@ jobs:
       - name: Run director gate regression tests
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: python -m unittest discover -s cinematic -p 'test_*.py' -v
+
+  cinematic-director-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install exact frontend dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify the real V2 production journey build
+        run: npm run build
