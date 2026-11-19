@@ -148,6 +148,25 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
            final.center!=="11.6000,-0.7000")
           throw Error("GEO camera failed to reach/hold editor-approved focus: "+JSON.stringify(final));
       }
+      if(mode==="country"&&(frame===0||frame===115)){
+        const scene=await page.evaluate(()=>{
+          const fill=document.querySelector('[data-wv-country-fill="10m"]');
+          const map=document.querySelector('[data-wv-country-map-boundary]');
+          const media=document.querySelector('[data-wv-country-media]');
+          const copy=document.querySelector('[data-wv-title]');
+          if(!fill||!map||!media||!copy)return null;
+          return {
+            mapBottom:map.getBoundingClientRect().bottom,
+            mediaTop:media.getBoundingClientRect().top,
+            countryOpacity:Number(fill.getAttribute("opacity")),
+            headline:copy.textContent??""
+          };
+        });
+        if(!scene||scene.mapBottom>scene.mediaTop-5||
+          scene.countryOpacity<.19||!scene.headline)
+          throw Error("Country is cropped under media or opening frame is blank: "+JSON.stringify(scene));
+        console.log("[player-smoke] country visible on entry and map separated from photo",scene);
+      }
       if(mode==="country"&&frame===60){
         const scene=await page.evaluate(()=>{
           const focused=document.querySelector('[data-wv-country-focus]');
