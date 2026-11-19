@@ -82,8 +82,8 @@ jobs:
           node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const r=JSON.parse(fs.readFileSync('output/creative/focus-reveal-only.mp4.report.json','utf8'));const m=await getVideoMetadata('output/creative/focus-reveal-only.mp4');if(r.mode!=='single_shot_preview'||r.shot_id!=='plan-01'||r.track_voice!=='no_narration'||r.duration_frames!==105||m.width!==1080||m.height!==1920||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size<2)process.exit(1);console.log('focus-reveal preview validated',r.duration_frames);"
       - name: Analyze supplied audio without modifying or regenerating it
         run: |
-          node creative/audit-voice.mjs /tmp/worldvision-fixture-assets/synthetic-tone.wav 5.2 > output/creative/audit-voice.json
-          node --input-type=module -e "import fs from 'node:fs';import crypto from 'node:crypto';const r=JSON.parse(fs.readFileSync('output/creative/audit-voice.json','utf8'));const sha=crypto.createHash('sha256').update(fs.readFileSync('/tmp/worldvision-fixture-assets/synthetic-tone.wav')).digest('hex');if(r.original_audio_sha256!==sha||r.input_unmodified!==true||Math.abs(r.duration_seconds-5.2)>.1)process.exit(1);console.log(r);"
+          node creative/audit-voice.mjs "$(pwd)/output/creative/with-imported-media.mp4" 6.033333 > output/creative/audit-voice.json
+          node --input-type=module -e "import fs from 'node:fs';import crypto from 'node:crypto';const r=JSON.parse(fs.readFileSync('output/creative/audit-voice.json','utf8'));const sha=crypto.createHash('sha256').update(fs.readFileSync('output/creative/with-imported-media.mp4')).digest('hex');if(r.original_audio_sha256!==sha||r.input_unmodified!==true||Math.abs(r.duration_seconds-181/30)>.15)process.exit(1);console.log(r);"
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
         with:
