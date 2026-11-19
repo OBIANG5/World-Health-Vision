@@ -91,7 +91,7 @@ const validGeo=(s:Shot)=>{
   if(s.template==="country_focus")return Boolean(
     s.durationFrames>=150&&s.durationFrames<=3600&&
     s.title.trim()&&s.title.length<=90&&s.subtitle.length<=180&&
-    /^\\d{3}$/.test(s.geoCountryId)&&
+    /^\d{3}$/.test(s.geoCountryId)&&
     (!s.geoShowTarget||(inLon(s.geoTargetLon)&&inLat(s.geoTargetLat)&&s.geoTargetLabel.length<=80))&&
     (!s.geoShowMetric||(s.geoMetricLabel.trim()&&s.geoMetricLabel.length<=55&&
       s.geoMetricValue.trim()!==""&&Number.isFinite(Number(s.geoMetricValue))&&
