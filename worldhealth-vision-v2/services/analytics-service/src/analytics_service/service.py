@@ -7,7 +7,7 @@ from statistics import median
 import httpx
 
 from analytics_service.clients.catalog_client import CatalogClient
-from analytics_service.metrics import timed_economic_phase
+from analytics_service.metrics import timed_economic_phase, observe_economic_batch_wait
 from analytics_service.national_comparisons import (
     CountryNationalComparisons,
     compare_national_release,
@@ -207,6 +207,13 @@ class AnalyticsService:
         # et renvoient des 500/502. On plafonne donc la concurrence côté analytics
         # sous la taille du pool, ce qui garde le débit élevé sans saturer la base.
         self._region_scan_semaphore = asyncio.Semaphore(16)
+        # Per-Analytics-process experimental ceiling on the THREE expensive
+        # 54-indicator batch HTTP calls, shared across simultaneous snapshots.
+        # It does NOT globally limit replicas, retries or all Timeseries traffic.
+        configured = self._settings.economic_timeseries_batch_max_inflight
+        self._economic_batch_semaphore = (
+            asyncio.Semaphore(configured) if configured > 0 else None
+        )
 
     async def aclose(self) -> None:
         await asyncio.gather(
@@ -429,7 +436,8 @@ class AnalyticsService:
                 if self._settings.timeseries_latest_batch_enabled:
                     # Preserve original latest includeMissing=False, regardless
                     # of the independent historical-preview option.
-                    batch_tasks["latest"] = self._call_timeseries(
+                    batch_tasks["latest"] = self._run_economic_timeseries_batch(
+                        "latest",
                         lambda: self._timeseries_client.list_latest_by_source_batch(
                             country_iso3=country.iso3,
                             indicator_codes=[item.code for item in indicator_details],
@@ -441,7 +449,8 @@ class AnalyticsService:
                     )
                 if self._settings.timeseries_availability_batch_enabled:
                     # Exactly the original availability limit PER indicator.
-                    batch_tasks["availability"] = self._call_timeseries(
+                    batch_tasks["availability"] = self._run_economic_timeseries_batch(
+                        "availability",
                         lambda: self._timeseries_client.list_series_availability_batch(
                             country_iso3=country.iso3,
                             indicator_codes=[item.code for item in indicator_details],
@@ -458,7 +467,8 @@ class AnalyticsService:
                         600,
                         max(96, (series_limit or self._settings.default_country_overview_series_limit) * 10),
                     )
-                    batch_tasks["history"] = self._call_timeseries(
+                    batch_tasks["history"] = self._run_economic_timeseries_batch(
+                        "history",
                         lambda: self._timeseries_client.list_series_history_batch(
                             country_iso3=country.iso3,
                             indicator_codes=[item.code for item in indicator_details],
@@ -2551,6 +2561,21 @@ class AnalyticsService:
             raise AnalyticsDependencyError("catalog-service request failed.") from exception
         except httpx.HTTPError as exception:
             raise AnalyticsDependencyError("catalog-service is unavailable.") from exception
+
+    async def _run_economic_timeseries_batch(self, name: str, operation):
+        """Optional bounded in-flight 54-indicator batch calls across snapshots.
+
+        Disabled by default. A queue never changes SQL filters, limits,
+        per-source periods, statistics or provenance. asyncio cancellation
+        releases the semaphore automatically, including during HTTP failures.
+        """
+        if self._economic_batch_semaphore is None:
+            observe_economic_batch_wait(name, 0.0)
+            return await self._call_timeseries(operation)
+        started = time.perf_counter()
+        async with self._economic_batch_semaphore:
+            observe_economic_batch_wait(name, time.perf_counter() - started)
+            return await self._call_timeseries(operation)
 
     async def _call_timeseries(self, operation):
         try:

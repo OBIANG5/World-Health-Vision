@@ -55,6 +55,22 @@ def timed_economic_phase(phase: str):
     finally:
         observe_economic_phase(phase, perf_counter() - start)
 
+# Private, fixed-cardinality economic batching wait; NOT a request rate limit.
+# Records how long each of the three batched requests queued in Analytics.
+ECONOMIC_BATCH_WAIT_SECONDS = Histogram(
+    "whv_analytics_economic_timeseries_batch_wait_seconds",
+    "Time queued before issuing an economic Timeseries batch upstream HTTP request.",
+    labelnames=("operation",),
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 15, 30),
+)
+
+
+def observe_economic_batch_wait(operation: str, seconds: float) -> None:
+    if operation not in {"latest", "availability", "history"}:
+        raise ValueError("Non-reviewed batch wait metric operation")
+    ECONOMIC_BATCH_WAIT_SECONDS.labels(operation=operation).observe(max(0.0, seconds))
+
+
 # F1.2b.2c-2: bounded cardinality, HTTP-only dependency timings.
 # Never use dynamic URLs, country codes, source names or users as metric labels.
 _DEPENDENCY_OPERATIONS = {
