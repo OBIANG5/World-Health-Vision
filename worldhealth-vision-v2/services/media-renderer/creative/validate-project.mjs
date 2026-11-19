@@ -112,6 +112,8 @@ export function inspectProject(project) {
       if(!isText(scene.title,90)||!scene.title?.trim())
         bad(errors,p+".title","Geo story requires a concise human-authored title, max 90 characters.");
       if(geo){
+        if(geo.look!==undefined&&!["photo","vector"].includes(geo.look))
+          bad(errors,p+".geo.look","Use photo (NASA Blue Marble) or explicit vector cartography.");
         if(geo.spinDegrees!==undefined&&(!Number.isFinite(geo.spinDegrees)||Math.abs(geo.spinDegrees)>360))
           bad(errors,p+".geo.spinDegrees","Spin must be a finite degree angle between -360 and 360.");
         if(geo.target!==undefined){
