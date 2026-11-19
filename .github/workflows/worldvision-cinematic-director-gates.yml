@@ -1,17 +1,25 @@
-name: World-Vision cinematic director — structured quality gates
+name: World-Vision — creative video edit from supplied material
 
 on:
   push:
     branches:
       - 'feature/worldvision-cinematic-*'
     paths:
-      - 'worldhealth-vision-v2/services/media-renderer/cinematic/**'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/**'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/Root.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/package.json'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
       - '.github/workflows/worldvision-cinematic-director-gates.yml'
   pull_request:
     paths:
-      - 'worldhealth-vision-v2/services/media-renderer/cinematic/**'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/**'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/Root.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/package.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
       - '.github/workflows/worldvision-cinematic-director-gates.yml'
   workflow_dispatch:
 
@@ -19,23 +27,50 @@ permissions:
   contents: read
 
 jobs:
-  cinematic-director-contract:
+  render-creative-example:
+    name: Actual Remotion MP4 and user-project validation
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Compile Python sources
-        run: python -m compileall -q worldhealth-vision-v2/services/media-renderer/cinematic
-      - name: Run director gate regression tests
+    timeout-minutes: 18
+    defaults:
+      run:
         working-directory: worldhealth-vision-v2/services/media-renderer
-        run: python -m unittest discover -s cinematic -p 'test_*.py' -v
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing Remotion renderer and official transitions
+        run: npm install --no-audit --no-fund
+      - name: Typecheck video compositions
+        run: npm run typecheck
+      - name: Test project import, arbitrary voice and file safety
+        run: node --test creative/validate-project.test.mjs
+      - name: Install a Chromium renderer
+        run: npx remotion browser ensure
+      - name: Render a synthetic media-free motion graphics test
+        run: |
+          mkdir -p /tmp/worldvision-assets
+          node creative/render-project.mjs \
+            --project creative/project.example.json \
+            --assets /tmp/worldvision-assets \
+            --output output/creative/example.mp4
+      - name: Inspect actual output
+        run: |
+          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate -show_entries format=duration,size -of json output/creative/example.mp4
+          test -s output/creative/example.mp4
+          test -s output/creative/example.mp4.report.json
+      - name: Preserve real demo render for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-creative-compositor-demo
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4.report.json
+          retention-days: 7
+          if-no-files-found: error
 
-  cinematic-director-ui:
+  frontend-workbench:
+    name: Real V2 mobile content workbench build
     runs-on: ubuntu-latest
     timeout-minutes: 12
     defaults:
@@ -48,7 +83,5 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
-      - name: Install exact frontend dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Verify the real V2 production journey build
-        run: npm run build
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
