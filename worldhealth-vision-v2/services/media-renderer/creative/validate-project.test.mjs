@@ -7,7 +7,7 @@ import {fileURLToPath} from "node:url";
 import {FORMAT,inspectProject,durationFrames,resolveLocalFile} from "./validate-project.mjs";
 import {geoCameraPose} from "../src/geo-motion-camera.mjs";
 import {photoTrackPose,motionProgress} from "../src/photo-motion-tracks.mjs";
-import {dataPose,dataPointGeometry,rankedData,heatmapCells} from "../src/data-motion-engine.mjs";
+import {dataPose,dataPointGeometry,rankedData,heatmapCells,dataStagger} from "../src/data-motion-engine.mjs";
 import {countryFocusGeometry} from "../src/country-focus-geometry.mjs";
 import {createRequire} from "node:module";
 import {geoContains} from "d3-geo";
@@ -466,4 +466,14 @@ test("DATA rankings and heatmaps reject deceptive baselines and missing attribut
   assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
   shot.data.source.asOf="2026-02-30";
   assert.ok(reasons(p).includes("shots[0].data.source"),"Reject impossible publication date");
+});
+
+test("DATA stagger never silently shortens a final ranked bar or heatmap cell",()=>{
+  for(const count of [3,4,8,12,16]){
+    const starts=Array.from({length:count},(_,i)=>dataStagger(0,i,count));
+    const finals=Array.from({length:count},(_,i)=>dataStagger(1,i,count));
+    assert.ok(starts.every(v=>v===0));
+    assert.ok(finals.every(v=>v===1), "Every category must show 100% of its stated value");
+    assert.ok(dataStagger(.50,0,count)>dataStagger(.50,count-1,count));
+  }
 });
