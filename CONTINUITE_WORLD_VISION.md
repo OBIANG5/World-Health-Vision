@@ -1,5 +1,17 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## REPRISE MÉDIA — SPRINT 4 / FILM ENTIER (19 NOVEMBRE 2026)
+
+**PR #44** : [World‑Vision MEDIA — montage et prévisualisation du film entier](https://github.com/OBIANG5/World-Health-Vision/pull/44), DRAFT sans fusion ni déploiement. **Source de vérité à lire d'abord** : [WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md).
+
+Le Studio V2 reçoit un script et des médias fournis ; il ne recherche/rédige pas les nouvelles par IA pour le moment. Nouveaux **trois modes de visionnage** : média original, plan animé, **film entier avec plans successifs, transitions officielles Remotion, narration et musique sélectionnées**. Le Player utilise le **même CreativeEdit.tsx** que le renderer MP4. Pas de voix obligatoire ; Vivienne facultative ; BAOCOM séparé ; blog/Content OS global/GDELT toujours différés.
+
+**Preuves** : [Actions #44540102940 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540102940) : 11 tests Node, build frontend, vrai Chromium, film synthétique 165 frames, captures 0/100/145 prouvant fondu et deuxième plan, piste WAV synthétique incluse dans les props. Les images ont été inspectées ; l'esthétique reste trop simple pour être qualifiée de niveau mondial. La correction complémentaire des dimensions d'aperçu **jusqu'à 360 px de largeur** suit le [run #44540638541](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540638541) à vérifier.
+
+**Prochaines priorités** : contrôle iPhone/Safari réel ; scripts + médias réels autorisés pour produire une vraie ouverture remarquable et la comparer à des références ; historique/cache de plans, médias privés et droits, piste voix avec mastering/alignement, puis Content OS audiovisuel seulement. N'annoncer aucune publication ni connexion BAOCOM.
+
+---
+
 ## MEDIA WORLD‑VISION — SPRINT 3 : VRAIE PRÉVISUALISATION REMOTION (19 NOV 2026)
 
 Le nouveau document [Sprint 3 — Creative Player](worldhealth-vision-v2/docs/media/WORLDVISION_CREATIVE_PLAYER_SPRINT3_2026-11-19.md) explique le travail réel, les limites et le prochain chantier. **PR #44 en brouillon, non fusionnée, non déployée.**
