@@ -257,4 +257,5 @@ info:
 
 whv:
   security:
-    enabled: ${WHV_SECURITY_ENABLED:false}
+    enabled: ${WHV_SECURITY_ENABLED:true}
+    public-read-enabled: ${WHV_PUBLIC_READ_ENABLED:false}
