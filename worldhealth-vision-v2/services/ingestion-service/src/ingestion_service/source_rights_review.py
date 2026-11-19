@@ -172,7 +172,14 @@ def ibge_census_4714_initial_review(*, observed_at: datetime | None = None) -> R
                 document_title="IBGE Plano de Dados Abertos 2024-2025",
                 applicability=EvidenceApplicability.GENERAL_CONTEXT_ONLY,
                 observed_at_utc=now,
-                caveat="Plan and definition of open licenses do not prove actual conditions for table 4714/variable 93.",
+                caveat="Historical 2024-2025 plan. Open-license definitions do not establish the exact 2026 reuse terms for table 4714/variable 93.",
+            ),
+            RightsEvidence(
+                reference_url="https://brasilparticipativo.presidencia.gov.br/processes/IBGE-Prioridade-de-divulgacao-nos-temas-das-pesquisas-e-resultados-2026",
+                document_title="IBGE new Open Data Plan public consultation (Nov-Dec 2026)",
+                applicability=EvidenceApplicability.GENERAL_CONTEXT_ONLY,
+                observed_at_utc=now,
+                caveat="Public consultation scheduled Nov 4–Dec 4, 2026; not a finalized grant for this exact census table.",
             ),
             RightsEvidence(
                 reference_url="https://servicodados.ibge.gov.br/api/docs/agregados?versao=3",
