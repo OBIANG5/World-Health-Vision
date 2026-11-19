@@ -94,6 +94,14 @@ jobs:
             --shot plan-01 \
             --output output/creative/focus-reveal-only.mp4
           node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const r=JSON.parse(fs.readFileSync('output/creative/focus-reveal-only.mp4.report.json','utf8'));const m=await getVideoMetadata('output/creative/focus-reveal-only.mp4');if(r.mode!=='single_shot_preview'||r.shot_id!=='plan-01'||r.track_voice!=='no_narration'||r.duration_frames!==105||m.width!==1080||m.height!==1920||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size<2)process.exit(1);console.log('focus-reveal preview validated',r.duration_frames);"
+      - name: Render genuine-pixel document spotlight with abstract CI source
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-document-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --shot plan-document \
+            --output output/creative/document-focus-only.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const r=JSON.parse(fs.readFileSync('output/creative/document-focus-only.mp4.report.json','utf8'));const m=await getVideoMetadata('output/creative/document-focus-only.mp4');if(r.mode!=='single_shot_preview'||r.shot_id!=='plan-document'||r.duration_frames!==140||r.media.length!==1||m.width!==1080||m.height!==1920||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('Document focus original-image render verified:',r.duration_frames);"
       - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Analyze supplied audio without modifying or regenerating it
@@ -109,6 +117,7 @@ jobs:
         run: |
           mkdir -p ../../frontend/web-v2/public/smoke
           cp /tmp/worldvision-fixture-assets/synthetic-landscape.png ../../frontend/web-v2/public/smoke/synthetic-landscape.png
+          cp /tmp/worldvision-fixture-assets/synthetic-document.png ../../frontend/web-v2/public/smoke/synthetic-document.png
           cp /tmp/worldvision-fixture-assets/synthetic-tone.wav ../../frontend/web-v2/public/smoke/synthetic-tone.wav
           cp /tmp/worldvision-fixture-assets/synthetic-clip.mp4 ../../frontend/web-v2/public/smoke/synthetic-clip.mp4
           npm --prefix ../../frontend/web-v2 run dev -- --host 127.0.0.1 --port 5173 --strictPort > /tmp/wv-player-vite.log 2>&1 &
@@ -130,6 +139,11 @@ jobs:
           test -s output/creative/player-clip-frame-0.png
           test -s output/creative/player-clip-frame-74.png
           test -s output/creative/player-clip-smoke.report.json
+          test -s output/creative/player-document-frame-0.png
+          test -s output/creative/player-document-frame-40.png
+          test -s output/creative/player-document-frame-102.png
+          test -s output/creative/player-document-frame-130.png
+          test -s output/creative/player-document-smoke.report.json
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
         with:
@@ -153,6 +167,14 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-frame-0.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-frame-74.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/document-focus-only.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/document-focus-only.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/document-focus-only.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-40.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-102.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-130.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
