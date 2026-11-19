@@ -7,7 +7,7 @@ import path from "node:path";
 import fs from "node:fs";
 
 export const FORMAT = "worldvision-creative-project-v1";
-const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus"]);
+const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story"]);
 const TRANSITIONS = new Set(["cut","dissolve","slide"]);
 const MOTIONS = new Set(["locked","dolly","drift","push"]);
 const IMAGE_EXT = new Set([".png",".jpg",".jpeg",".webp"]);
@@ -95,6 +95,45 @@ export function inspectProject(project) {
          region.x+region.width>1.0000001||region.y+region.height>1.0000001)
         bad(errors,p+".documentRegion",
           "Select a visible 0-1 document region x/y/width/height; width 12%-85%, height 8%-80%, fully inside the unmodified document viewport.");
+    }
+    // Geo storytelling is cartography, not geocoding. ALL coordinates, routes
+    // and statistics must have been explicitly approved by the human editor.
+    // No IP location, language inference or script-to-country guess is allowed.
+    if(scene.template==="geo_story"){
+      const geo=scene.geo;
+      const point=(p)=>p&&typeof p==="object"&&
+        typeof p.lon==="number"&&typeof p.lat==="number"&&
+        Number.isFinite(p.lon)&&Number.isFinite(p.lat)&&
+        p.lon>=-180&&p.lon<=180&&p.lat>=-85&&p.lat<=85;
+      if(!geo||typeof geo!=="object"||!point(geo.center))
+        bad(errors,p+".geo.center","Select actual longitude -180..180 and latitude -85..85; a valid center is required.");
+      if(!boundedInteger(scene.durationFrames,120,3600))
+        bad(errors,p+".durationFrames","Geo story needs 120-3600 frames for separate map, route, data and text beats.");
+      if(!isText(scene.title,90)||!scene.title?.trim())
+        bad(errors,p+".title","Geo story requires a concise human-authored title, max 90 characters.");
+      if(geo){
+        if(geo.spinDegrees!==undefined&&(!Number.isFinite(geo.spinDegrees)||Math.abs(geo.spinDegrees)>360))
+          bad(errors,p+".geo.spinDegrees","Spin must be a finite degree angle between -360 and 360.");
+        if(geo.target!==undefined){
+          if(!point(geo.target)||geo.target.label!==undefined&&!isText(geo.target.label,80))
+            bad(errors,p+".geo.target","Target requires genuine numeric coordinates and optional label <=80 chars.");
+        }
+        if(geo.route!==undefined){
+          if(!geo.route||!point(geo.route.from)||!point(geo.route.to)||
+            (geo.route.label!==undefined&&!isText(geo.route.label,80)))
+            bad(errors,p+".geo.route","Great-circle path must have valid editor-approved start/end lon-lat pairs.");
+          else if(geo.route.from.lon===geo.route.to.lon&&geo.route.from.lat===geo.route.to.lat)
+            bad(errors,p+".geo.route","Origin and destination must differ.");
+        }
+        if(geo.metric!==undefined){
+          const m=geo.metric;
+          if(!m||!isText(m.label,55)||!m.label?.trim()||
+            typeof m.value!=="number"||!Number.isFinite(m.value)||Math.abs(m.value)>1e12||
+            (m.unit!==undefined&&!isText(m.unit,12))||
+            (m.precision!==undefined&&!boundedInteger(m.precision,0,2)))
+            bad(errors,p+".geo.metric","Only a finite editor-supplied value, a label <=55 and 0-2 decimal places are accepted.");
+        }
+      }
     }
     const needsMedia=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(scene.template);
     if(needsMedia&&!scene.media)bad(errors,p+".media","This composition requires your real source image/clip; no fake fallback.");
