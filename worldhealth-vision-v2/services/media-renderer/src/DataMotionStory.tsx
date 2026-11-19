@@ -84,7 +84,7 @@ export function DataMotionStory({shot,globalStyle,enterOverlapFrames}:{
           return <g key={i} data-wv-data-bar={i} opacity={.28+.72*pose.bars[i]}>
             <text x="112" y={top+38} fontSize={data.kind==="ranking"?34:31} fill={colors.white}
               fontWeight={data.kind==="ranking"?780:620}>
-              {data.kind==="ranking"?String(i+1).padStart(2,"0")+"  ":""}{v.label}
+              {data.kind==="ranking"?String(values.findIndex(x=>x.value===v.value)+1).padStart(2,"0")+"  ":""}{v.label}
             </text>
             <rect x={barX} y={top+7} width={barW} height={44} rx={7}
               fill={v.value<0?colors.orange:colors.aqua}/>
