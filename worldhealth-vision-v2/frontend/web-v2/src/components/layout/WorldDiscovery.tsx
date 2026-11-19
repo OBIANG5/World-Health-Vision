@@ -44,6 +44,21 @@ export default function WorldDiscovery({
           && [country.displayName, country.iso2 ?? "", country.iso3,
             country.regionName ?? "", country.capitalCity ?? ""]
             .some((value) => normalize(value).includes(term)))
+        .sort((left, right) => {
+          // ISO3 exact must win over a capital substring: GAB = Gabon, not
+          // Botswana/Gaborone. Never privilege a country for commercial reasons.
+          const relevance = (country: CountrySummary) => {
+            if (country.iso3.toLowerCase() === term) return 0;
+            if (country.iso2?.toLowerCase() === term) return 1;
+            if (normalize(country.displayName) === term) return 2;
+            if (normalize(country.displayName).startsWith(term)) return 3;
+            if (normalize(country.capitalCity ?? "").startsWith(term)) return 4;
+            if (normalize(country.displayName).includes(term)) return 5;
+            if (normalize(country.capitalCity ?? "").includes(term)) return 6;
+            return 7;
+          };
+          return relevance(left) - relevance(right) || left.displayName.localeCompare(right.displayName, language);
+        })
       : [];
     return {
       products,
