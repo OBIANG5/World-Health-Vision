@@ -10,7 +10,7 @@ import {geoAzimuthalEqualArea,geoCentroid,geoPath,geoDistance,geoContains} from 
 import {feature} from "topojson-client";
 
 const padId=id=>String(id).padStart(3,"0");
-export const mapBox=[[143,390],[937,1040]];
+export const mapBox=[[145,356],[935,838]];
 
 /** Entire context is sourced from 50m, foreground country from 10m. */
 export function countryFocusGeometry(detailAtlas,contextAtlas,countryId){
