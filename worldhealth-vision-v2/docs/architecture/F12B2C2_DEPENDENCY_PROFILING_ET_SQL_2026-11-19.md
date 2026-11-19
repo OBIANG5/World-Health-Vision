@@ -75,3 +75,31 @@ Le passage aux recettes Pub/Affiliation/Premium/B2B exige une vraie fonctionnali
 ## 7. Critère de validation de CE lot
 
 Ne passer l'instrumentation en « validée CI » que si les tests Python, la CI canonique et la CI six conteneurs sont **verts sur le SHA final de la PR**, que le rapport d'appels est archivé et que la panne Analytics renvoie encore HTTP 503. Même dans ce cas, **l'issue #42 SQL/performance reste OUVERTE** tant que les étapes B/C ne sont pas prouvées ; aucun nouveau gain de latence ne peut être annoncé.
+
+## 8. Première mesure HTTP vérifiée et interprétation (19/11/2026)
+
+**SHA réellement testé : `842a9fb78eaa69443cbf722adf2441b252ce85cf`.**
+- CI canonique (SUCCESS) : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44517342567 .
+- CI six conteneurs (SUCCESS) : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44517344444 .
+- Artefact `whv-v2-fullstack-load-and-resilience` : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44517344444/artifacts/14526058478 ; JSON `analytics-dependency-http-summary.json` et autres métriques/benchmarks.
+- Le test de non-divulgation a d'abord fait échouer le workflow à cause d'un parseur de labels n'acceptant pas les chiffres dans un nom tel que `country_iso3` ; correction par fullmatch strict et tests : 4/4, puis CI complète verte.
+
+### Lecture effective des métriques du même run
+
+| Opération HTTP | Nombre | Moyenne HTTP avec attente/transport, ms | Résultats |
+| --- | ---: | ---: | --- |
+| `catalog.country` | 43 | 54,085 | 43 succès |
+| `catalog.indicator` | 2322 | 143,089 | 2322 succès |
+| `timeseries.latest_by_source` | 2322 | 537,724 | 2322 succès |
+| `timeseries.availability` | 2322 | 518,842 | 2322 succès |
+| `timeseries.series` | 2322 | 545,522 | 2322 succès |
+
+Il s'agit de **43 × 54 = 2 322 lectures de chaque type par run**, soit **6 966 GET Timeseries** + **2 322 GET Catalog indicators**, avant toute lecture de provenance additionnelle. Les métriques ne montrent pas d'appels source/dataset/run pendant ce parcours sur la fixture peu alimentée : **cela ne prouve aucun comportement sur une base réellement dense**.
+
+Profilage des phases : country 54,14 ms ; indicators 353,65 ms ; series/provenance 1 014,43 ms ; total Analytics 1 422,69 ms (moyennes, 43 requêtes).
+Benchmark Gateway du même run (40 GET/route × 3, 4 workers) : catalogue p50 25,86 ms ; sources coverage 19,36 ms ; synthèse FRA **1 559,75 ms p50**, 1 841,09 ms p95, 1 857,53 ms p99 ; 120/120 GET OK. **Ne pas attribuer cette variation par rapport à #41 à un gain prouvé : différents runners, charge, caches, et instrumentation seulement.**
+Arrêt Analytics : catalogue HTTP 200, snapshot HTTP 503 structuré, récupération après redémarrage : PASS.
+
+### Interprétation prudente
+
+Même quand la DB ne contient pratiquement aucune observation, **le fan-out 54×3 s'exécute en totalité** et l'attente HTTP moyenne est de plusieurs centaines de millisecondes en forte concurrence. Le coût réseau/ordonnancement/pool mérite la prochaine expérience. Cette mesure **n'isole pas** le temps SQL, et les durées moyennes de tâches simultanées **ne s'additionnent pas** pour donner la durée d'une requête de bout en bout. La découverte oriente l'ordre du travail : profiler côté Java/Hikari/SQL avec fixture dense ; comparer l'effet du batch et des limites par indicateur ; puis envisager optimisation. Sans données denses, on ignore encore le surcoût des révisions et de la provenance.
