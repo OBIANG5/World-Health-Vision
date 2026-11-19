@@ -34,7 +34,7 @@ async function serverReady(){
   throw Error("Local Vite smoke page not reachable: "+url);
 }
 async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
-  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":mode==="photo"?"player-photo-frame-":"player-browser-frame-";
+  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":mode==="photo"?"player-photo-frame-":mode.startsWith("data-")?"player-"+mode+"-frame-":"player-browser-frame-";
   const page=await browser.newPage();
   const errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
@@ -271,6 +271,51 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           throw Error("Photo final reveal and mobile-safe caption failed: "+JSON.stringify(state));
         console.log("[player-smoke] genuine photo multilayer optics and mobile content",state);
       }
+      if(mode.startsWith("data-")&&(frame===0||frame===70||frame===140)){
+        const graphic=await page.evaluate(()=>{
+          const root=document.querySelector('[data-wv-data-story]');
+          const heading=document.querySelector('[data-wv-data-heading]');
+          const chart=document.querySelector('[data-wv-data-graph]');
+          const line=document.querySelector('[data-wv-data-line]');
+          const bars=document.querySelectorAll('[data-wv-data-bar]');
+          const cells=document.querySelectorAll('[data-wv-data-cell]');
+          const prov=document.querySelector('[data-wv-data-provenance]');
+          const source=document.querySelector('[data-wv-data-source]');
+          const caption=document.querySelector('[data-wv-data-caption]');
+          const viewport=document.querySelector('#smoke-preview');
+          return {
+            kind:root?.getAttribute('data-wv-data-story')??null,
+            heading:heading?.textContent??'',
+            headingOpacity:heading?Number(getComputedStyle(heading).opacity):0,
+            chart:chart?.getAttribute('data-wv-data-graph')??null,
+            lineOffset:line?Number(line.getAttribute('stroke-dashoffset')):null,
+            barCount:bars.length,cellCount:cells.length,
+            source:prov?.textContent??'',
+            sourceOpacity:source?Number(getComputedStyle(source).opacity):0,
+            sourceBottom:source?.getBoundingClientRect().bottom??null,
+            captionTop:caption?.getBoundingClientRect().top??null,
+            captionBottom:caption?.getBoundingClientRect().bottom??null,
+            maxBottom:viewport?viewport.getBoundingClientRect().top+viewport.getBoundingClientRect().height*.79:null
+          };
+        });
+        const kind=mode.slice(5);
+        if(graphic.kind!==kind||graphic.chart!==kind||!graphic.heading.includes("LE MONDE")||
+          !graphic.source.includes("DEMONSTRATION FICTIVE"))
+          throw Error("Data layer is missing its exact source or intended chart: "+JSON.stringify(graphic));
+        if(frame===0&&graphic.headingOpacity<.75)
+          throw Error("Data opening headline not readable from first frame: "+JSON.stringify(graphic));
+        if(frame===70&&(
+          (kind==="trend"&&!(graphic.lineOffset!==null&&graphic.lineOffset>0&&graphic.lineOffset<1))||
+          (["ranking","comparison"].includes(kind)&&graphic.barCount<2)||
+          (kind==="heatmap"&&graphic.cellCount<4)
+        ))throw Error("Data chart did not animate authentic editorial values: "+JSON.stringify(graphic));
+        if(frame===140&&(
+          graphic.sourceOpacity<.98||!graphic.sourceBottom||!graphic.captionTop||
+          graphic.sourceBottom>=graphic.captionTop-5||
+          !graphic.captionBottom||!graphic.maxBottom||graphic.captionBottom>graphic.maxBottom
+        ))throw Error("Data source credits hidden/overlap or TikTok caption unsafe: "+JSON.stringify(graphic));
+        console.log("[player-smoke] source-locked DATA chart / mobile QA",graphic);
+      }
       if(mode==="document"&&frame===0){
         const entrance=await page.evaluate(()=>{
           const card=document.querySelector('[data-wv-document-card="plan-synthetique"]');
@@ -347,7 +392,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     }
     const report={
       test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
-      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":mode==="photo"?"One original synthetic image and alpha PNG, independent mask/camera/focus/data/type; not journalism":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":mode==="photo"?"One original synthetic image and alpha PNG, independent mask/camera/focus/data/type; not journalism":mode.startsWith("data-")?"Editor-authored synthetic values, explicit dates/unit/method and provable source label; not facts":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
       composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
       screen:{width:390,height:844},
       frames_in_composition:expectedDuration,
@@ -355,7 +400,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       screenshots,
       warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":mode==="photo"?"player-photo-smoke.report.json":"player-browser-smoke.report.json");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":mode==="photo"?"player-photo-smoke.report.json":mode.startsWith("data-")?"player-"+mode+"-smoke.report.json":"player-browser-smoke.report.json");
     fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
@@ -386,7 +431,10 @@ async function main(){
     await testCase(browser,{mode:"country",frames:[0,60,115,155],expectedDuration:165,expectVoice:false});
     console.log("[player-smoke] verifying 2.5D photo still with six concurrent authored motion tracks");
     await testCase(browser,{mode:"photo",frames:[0,40,85,145],expectedDuration:165,expectVoice:false});
-    console.log("[player-smoke] all seven real Player paths passed");
+    console.log("[player-smoke] verify four independently animated source-bound DATA chart families");
+    for(const kind of ["trend","comparison","ranking","heatmap"])
+      await testCase(browser,{mode:"data-"+kind,frames:[0,70,140],expectedDuration:165,expectVoice:false});
+    console.log("[player-smoke] all eleven real Player paths passed");
   }finally{
     await browser.close();
   }
