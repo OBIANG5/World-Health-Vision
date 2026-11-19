@@ -158,6 +158,12 @@ def test_transport_failure_before_archive(tmp_path, status, ctype, encoding):
     assert not list(tmp_path.rglob("manifest.json"))
 
 
+def test_default_rights_snapshot_is_historical_not_silently_refreshed():
+    dossier = ibge_census_4714_initial_review()
+    assert dossier.evaluated_at_utc.date().isoformat() == "2026-11-19"
+    assert dossier.review_status is ReviewStatus.NEEDS_PROVIDER_CLARIFICATION
+
+
 def test_rights_general_policy_and_api_docs_never_approve_table():
     at = datetime(2026, 11, 19, tzinfo=UTC)
     review = ibge_census_4714_initial_review(observed_at=at)
