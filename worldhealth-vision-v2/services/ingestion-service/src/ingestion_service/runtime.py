@@ -1,6 +1,8 @@
 from importlib.resources import files
 
 from ingestion_service.bronze_store import BronzeStore
+from ingestion_service.connectors.worldbank_population_2022_research import WdiPopulation2022ResearchClient
+from ingestion_service.pipelines.worldbank_population_2022_research import WdiPopulation2022ResearchPilot
 from ingestion_service.connectors.ibge_national_census_client import IbgeNationalCensusClient
 from ingestion_service.pipelines.ibge_national_census import IbgeNationalCensusPilot
 from ingestion_service.connectors.ibge_census_metadata_client import IbgeCensusMetadataClient
@@ -46,6 +48,17 @@ from ingestion_service.pipelines.unodc import UnodcIngestionService
 from ingestion_service.pipelines.unsd_sdg import UnsdSdgIngestionService
 from ingestion_service.pipelines.who_gho import WhoGhoIngestionService
 from ingestion_service.pipelines.worldbank import WorldBankIngestionService
+
+
+def build_wdi_population_2022_research_pilot() -> WdiPopulation2022ResearchPilot:
+    """Strict private WDI comparison pilot; no ZIP fallback, public routes or publication."""
+    settings = get_settings()
+    return WdiPopulation2022ResearchPilot(
+        client=WdiPopulation2022ResearchClient(
+            timeout_seconds=min(max(settings.request_timeout_seconds, 1), 60),
+        ),
+        bronze_store=BronzeStore(settings.bronze_root),
+    )
 
 
 def build_ibge_census_metadata_pilot() -> IbgeCensusMetadataPilot:
