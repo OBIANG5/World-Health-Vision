@@ -14,6 +14,9 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/CountryFocus.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/PhotoMultilayer.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/DataMotion.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/data-motion-engine.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/data-motion-engine.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.mjs'
@@ -41,6 +44,9 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/CountryFocus.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/PhotoMultilayer.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/DataMotion.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/data-motion-engine.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/data-motion-engine.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.mjs'
@@ -151,6 +157,13 @@ jobs:
             --shot photo-six-tracks \
             --output output/creative/photo-multilayer-six-tracks.mp4
           node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/photo-multilayer-six-tracks.mp4');const r=JSON.parse(fs.readFileSync('output/creative/photo-multilayer-six-tracks.mp4.report.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==165||r.media.length!==2||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('PHOTO six-track true synthetic-media render verified');"
+      - name: Render real DATA Motion film covering line ranking and heatmap from explicit fictional series
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-data-motion-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --output output/creative/data-motion-three-charts.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/data-motion-three-charts.mp4');const r=JSON.parse(fs.readFileSync('output/creative/data-motion-three-charts.mp4.report.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==495||r.media.length!==0||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size!==3)process.exit(1);console.log('DATA motion three-chart actual film verified');"
       - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Analyze supplied audio without modifying or regenerating it
@@ -201,6 +214,18 @@ jobs:
           test -s output/creative/player-photo-frame-85.png
           test -s output/creative/player-photo-frame-145.png
           test -s output/creative/player-photo-smoke.report.json
+          test -s output/creative/player-data-line-frame-0.png
+          test -s output/creative/player-data-line-frame-80.png
+          test -s output/creative/player-data-line-frame-145.png
+          test -s output/creative/player-data-line-smoke.report.json
+          test -s output/creative/player-data-ranking-frame-0.png
+          test -s output/creative/player-data-ranking-frame-80.png
+          test -s output/creative/player-data-ranking-frame-145.png
+          test -s output/creative/player-data-ranking-smoke.report.json
+          test -s output/creative/player-data-heatmap-frame-0.png
+          test -s output/creative/player-data-heatmap-frame-80.png
+          test -s output/creative/player-data-heatmap-frame-145.png
+          test -s output/creative/player-data-heatmap-smoke.report.json
           test -s output/creative/player-document-frame-102.png
           test -s output/creative/player-document-frame-68.png
           test -s output/creative/player-document-smoke.report.json
@@ -265,6 +290,21 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-photo-frame-85.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-photo-frame-145.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-photo-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/data-motion-three-charts.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/data-motion-three-charts.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/data-motion-three-charts.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-line-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-line-frame-80.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-line-frame-145.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-line-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-ranking-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-ranking-frame-80.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-ranking-frame-145.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-ranking-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-heatmap-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-heatmap-frame-80.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-heatmap-frame-145.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-data-heatmap-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
