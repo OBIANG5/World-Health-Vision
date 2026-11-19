@@ -198,5 +198,5 @@ photoProject.shots=[{
 }];
 photoProject.voice=null;photoProject.music=null;photoProject.outro=null;
 const photoPath=path.join(path.dirname(outputJson),"worldvision-photo-multilayer-project.json");
-fs.writeFileSync(photoPath,JSON.stringify(photoProject,null,2)+"\\n");
+fs.writeFileSync(photoPath,JSON.stringify(photoProject,null,2)+String.fromCharCode(10));
 console.log("Synthetic image/video/audio/document fixtures created; not authentic news assets.");
