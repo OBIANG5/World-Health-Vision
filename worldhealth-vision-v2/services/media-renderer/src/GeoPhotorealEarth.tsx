@@ -37,7 +37,7 @@ const earthColorGrade=[
 "float earthLuma=dot(earthColor,vec3(0.2126,0.7152,0.0722));",
 "earthColor=clamp(mix(vec3(earthLuma),earthColor,1.42),0.0,1.0);",
 "diffuseColor.rgb=earthColor;"
-].join("\\n");
+].join("\n");
 const atmosphereFragment=[
 "varying vec3 vNorm;",
 "varying vec3 vEye;",
@@ -74,7 +74,7 @@ function EarthMesh({longitude,latitude}:{longitude:number;latitude:number}){
             if(!shader.fragmentShader.includes(marker))
               throw new Error("Cannot grade NASA texture; Three.js map shader changed.");
             shader.fragmentShader=shader.fragmentShader.replace(
-              marker,marker+"\\n"+earthColorGrade
+              marker,marker+"\n"+earthColorGrade
             );
           }}/>
       </mesh>
