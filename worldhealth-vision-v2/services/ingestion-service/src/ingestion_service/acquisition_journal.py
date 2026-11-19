@@ -39,6 +39,16 @@ _ENDPOINTS = {
     "CENSO2022_4714_PERIODS": "/api/v3/agregados/4714/periodos",
 }
 _CANONICAL_HOST = "servicodados.ibge.gov.br"
+# Only ONE audited second-source research endpoint is authorized in DATA-1B3.
+# Each dataset remains a separate identity; do not make the API URL arbitrary.
+_WDI_DATASET_CODE = "WDI_POP_TOTAL_BRA_2022"
+_WDI_PATH = "/v2/country/BRA/indicator/SP.POP.TOTL"
+_WDI_QUERY = "date=2022&format=json&source=2"
+_WDI_HOST = "api.worldbank.org"
+_ALLOWED_PAIRS = frozenset(
+    {("IBGE", dataset) for dataset in _ENDPOINTS}
+    | {("WORLD_BANK", _WDI_DATASET_CODE)}
+)
 
 
 def _utc() -> str:
@@ -83,21 +93,23 @@ def _safe_header(value: str | None) -> str | None:
     return value
 
 
-def _check_url(dataset_code: str, url: str) -> str:
+def _check_url(source_code: str, dataset_code: str, url: str) -> str:
+    if (source_code, dataset_code) not in _ALLOWED_PAIRS:
+        raise EvidenceIntegrityError("Unreviewed acquisition source/dataset pair")
     if not isinstance(url, str) or not (1 <= len(url) <= 380):
         raise EvidenceIntegrityError("Invalid official source URL")
     parts = urlsplit(url)
-    if (parts.scheme != "https" or parts.hostname != _CANONICAL_HOST
-        or parts.username or parts.password or parts.fragment or parts.port
-        or parts.path != _ENDPOINTS.get(dataset_code)):
-        raise EvidenceIntegrityError("Acquisition URL does not match pinned official IBGE source")
-    if dataset_code == "CENSO2022_4714":
-        if parts.query != "localidades=N1%5Ball%5D":
-            raise EvidenceIntegrityError("National source query is not the reviewed scope")
-    elif parts.query:
-        raise EvidenceIntegrityError("Metadata acquisition URL cannot carry query parameters")
+    host, path, query = (
+        (_CANONICAL_HOST, _ENDPOINTS[dataset_code],
+         "localidades=N1%5Ball%5D" if dataset_code == "CENSO2022_4714" else "")
+        if source_code == "IBGE"
+        else (_WDI_HOST, _WDI_PATH, _WDI_QUERY)
+    )
+    if (parts.scheme != "https" or parts.netloc != host or
+        parts.username or parts.password or parts.fragment or parts.port or
+        parts.path != path or parts.query != query):
+        raise EvidenceIntegrityError("Acquisition URL differs from pinned official resource")
     return url
-
 
 def _read_json(path: Path) -> dict[str, Any]:
     if not path.is_file() or path.is_symlink() or not 1 <= path.stat().st_size <= _MAX_EVENT_BYTES:
@@ -148,8 +160,8 @@ class AcquisitionJournal:
     def _events(self, source_code: str, dataset_code: str) -> Path:
         source = _code(source_code)
         dataset = _code(dataset_code)
-        if source != "ibge" or dataset_code not in _ENDPOINTS:
-            raise EvidenceIntegrityError("Acquisition journal only supports reviewed IBGE pilot")
+        if (source_code, dataset_code) not in _ALLOWED_PAIRS:
+            raise EvidenceIntegrityError("Only pinned IBGE/WDI research datasets allowed")
         current = self._root
         for component in (source, dataset, "_acquisitions"):
             if current.is_symlink():
@@ -160,7 +172,7 @@ class AcquisitionJournal:
         return current
 
     def begin(self, *, source_code: str, dataset_code: str, source_url: str) -> AcquisitionHandle:
-        _check_url(dataset_code, source_url)
+        _check_url(source_code, dataset_code, source_url)
         root = self._events(source_code, dataset_code)
         root.mkdir(parents=True, mode=0o700, exist_ok=True)
         os.chmod(root, 0o700)
@@ -272,7 +284,7 @@ class AcquisitionJournal:
                 or start.get("publicationStatus") != "BRONZE_ONLY_UNREVIEWED"
                 or start.get("timeseriesPublication") != "NOT_ATTEMPTED"):
                 raise EvidenceIntegrityError("Acquisition START identity or quarantine changed")
-            _check_url(dataset_code, start.get("sourceUrl"))
+            _check_url(source_code, dataset_code, start.get("sourceUrl"))
             timestamp = _parse_utc(start.get("startedAtUtc"))
             end = path / "outcome.json"
             if not end.exists() and not end.is_symlink():
