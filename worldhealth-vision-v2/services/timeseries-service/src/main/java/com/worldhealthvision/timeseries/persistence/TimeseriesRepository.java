@@ -32,6 +32,14 @@ public interface TimeseriesRepository {
             int limit
     );
 
+    /** One bounded query returning independent, correctly ordered histories per indicator. */
+    List<TimeseriesObservationResponse> listSeriesBatch(
+            String countryIso3, List<String> indicatorCodes,
+            String sourceCode, String datasetCode, String periodGranularity,
+            LocalDate fromPeriodStart, LocalDate toPeriodStart, boolean includeMissing,
+            boolean sortDescending, int limitPerIndicator
+    );
+
     List<LatestSourceObservationResponse> listLatestBySource(
             String countryIso3,
             String indicatorCode,

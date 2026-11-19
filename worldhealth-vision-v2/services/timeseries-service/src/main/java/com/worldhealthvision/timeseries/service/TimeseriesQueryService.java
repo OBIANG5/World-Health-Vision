@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
 import com.worldhealthvision.timeseries.api.dto.LatestSourceBatchResponse;
 import com.worldhealthvision.timeseries.api.dto.AvailabilityBatchResponse;
 import com.worldhealthvision.timeseries.api.dto.AvailabilityBatchItem;
+import com.worldhealthvision.timeseries.api.dto.SeriesHistoryBatchItem;
+import com.worldhealthvision.timeseries.api.dto.SeriesHistoryBatchResponse;
 import com.worldhealthvision.timeseries.api.dto.LatestSourceBatchItem;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -69,6 +71,58 @@ public class TimeseriesQueryService {
                 limit
         );
         return new TimeseriesListResponse<>(items.size(), items);
+    }
+
+    public SeriesHistoryBatchResponse listSeriesBatch(
+            String countryIso3, List<String> indicatorCodes,
+            String sourceCode, String datasetCode, String periodGranularity,
+            LocalDate fromPeriodStart, LocalDate toPeriodStart,
+            boolean includeMissing, String sortDirection, int limitPerIndicator
+    ) {
+        validatePeriodBounds(fromPeriodStart, toPeriodStart);
+        if (countryIso3 == null || !countryIso3.trim().toUpperCase(Locale.ROOT).matches("[A-Z]{3}")) {
+            throw new IllegalArgumentException("Historical batch needs ISO3 country.");
+        }
+        if (indicatorCodes == null || indicatorCodes.isEmpty() || indicatorCodes.size() > 128) {
+            throw new IllegalArgumentException("Historical batch needs 1 to 128 indicators.");
+        }
+        if (limitPerIndicator < 1 || limitPerIndicator > 1000
+                || (long) indicatorCodes.size() * limitPerIndicator > 40_000L) {
+            throw new IllegalArgumentException("Historical batch exceeds bounded response budget.");
+        }
+        Set<String> unique = new LinkedHashSet<>();
+        for (String raw : indicatorCodes) {
+            if (raw == null) {
+                throw new IllegalArgumentException("Null indicator code.");
+            }
+            String code = raw.trim().toUpperCase(Locale.ROOT);
+            if (!BATCH_CODE.matcher(code).matches() || !unique.add(code)) {
+                throw new IllegalArgumentException("Malformed or duplicated historical indicator.");
+            }
+        }
+        List<String> requested = new ArrayList<>(unique);
+        List<TimeseriesObservationResponse> rows = timeseriesRepository.listSeriesBatch(
+                countryIso3.trim().toUpperCase(Locale.ROOT), requested,
+                normalizeOptionalCode(sourceCode), normalizeOptionalCode(datasetCode),
+                normalizeOptionalCode(periodGranularity),
+                fromPeriodStart, toPeriodStart, includeMissing,
+                isDescendingSort(sortDirection), limitPerIndicator
+        );
+        Map<String, List<TimeseriesObservationResponse>> grouped = new LinkedHashMap<>();
+        for (String code : requested) {
+            grouped.put(code, new ArrayList<>());
+        }
+        for (TimeseriesObservationResponse row : rows) {
+            List<TimeseriesObservationResponse> group = grouped.get(row.indicatorCode());
+            if (group == null || group.size() >= limitPerIndicator) {
+                throw new IllegalStateException("SQL returned invalid indicator or exceeded its limit.");
+            }
+            group.add(row);
+        }
+        List<SeriesHistoryBatchItem> items = requested.stream()
+                .map(code -> new SeriesHistoryBatchItem(code, grouped.get(code).size(), grouped.get(code)))
+                .toList();
+        return new SeriesHistoryBatchResponse(items.size(), items);
     }
 
     public TimeseriesListResponse<LatestSourceObservationResponse> listLatestBySource(
