@@ -1,0 +1,78 @@
+name: World-Vision DATA-1B2B — acquisition events and composite receipts
+
+on:
+  push:
+    branches:
+      - 'data/v2-ibge-acquisition-journal-composite-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data1b2b-${{ github.ref }}
+  cancel-in-progress: true
+
+# Synthetic offline official-source response shapes only. NO public data,
+# no Timeseries writes, no publication, no backend, no rights approval.
+jobs:
+  immutable-private-acquisition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout exact candidate without persistent credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: worldhealth-vision-v2/services/ingestion-service/pyproject.toml
+      - name: Static prohibitions — no public IBGE route or Timeseries bypass
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          base=Path('worldhealth-vision-v2/services/ingestion-service/src/ingestion_service')
+          api=(base/'api.py').read_text()
+          a=(base/'acquisition_journal.py').read_text()
+          c=(base/'source_composite_receipt.py').read_text()
+          pipeline=(base/'pipelines/ibge_national_census.py').read_text()+(base/'pipelines/ibge_census_metadata.py').read_text()
+          assert '/runs/ibge' not in api
+          assert 'TimeseriesClient' not in pipeline
+          assert 'BRONZE_ONLY_UNREVIEWED' in pipeline
+          assert 'publicDisplayAuthorised' in c and '"BLOCKED"' in c
+          assert '_acquisitions' in a and 'started.json' in a and 'outcome.json' in a
+          print('PASS no public routes or Timeseries publication')
+          PY
+      - name: Install existing service package and verify Python compilation
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pip install --disable-pip-version-check -e '.[dev]'
+          python -m compileall -q src/ingestion_service
+      - name: Adversarial acquisition, immutable Bronze, metadata and rights tests
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pytest -q tests/test_ibge_acquisition_composite.py tests/test_ibge_national_census.py tests/test_ibge_metadata_rights.py tests/test_source_evidence_revisions.py
+      - name: Full ingestion regressions except explicitly network-only World Bank
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m pytest -q tests --ignore=tests/test_worldbank_live_scope.py
+      - name: CLI exposes private event audit and explicit three-way receipt only
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m ingestion_service.cli ibge --help > /tmp/wv-cli-help
+          grep -F 'audit-private-acquisitions' /tmp/wv-cli-help
+          grep -F 'assemble-private-evidence-receipt' /tmp/wv-cli-help
+          grep -F 'verify-private-evidence-receipt' /tmp/wv-cli-help
+          python -m ingestion_service.cli ibge audit-private-acquisitions > /tmp/wv-acquisition-audit.json
+          python - <<'PY'
+          import json
+          r=json.load(open('/tmp/wv-acquisition-audit.json'))
+          assert r['publicationStatus']=='BLOCKED_PENDING_RIGHTS_REVIEW'
+          assert r['timeseriesPublication']=='NOT_ATTEMPTED'
+          assert len(r['datasets'])==3
+          assert all(x['eventCount']==0 for x in r['datasets'].values())
+          print('PASS private CLI audit empty-root state, no false fetches')
+          PY
+          rm -f /tmp/wv-cli-help /tmp/wv-acquisition-audit.json
