@@ -6,6 +6,19 @@
     "module": "esnext",
     "types": ["vite/client"],
     "skipLibCheck": true,
+    // Shared CreativeEdit lives outside this Vite app. TypeScript normally
+    // walks upwards from the original file and misses web-v2/node_modules.
+    // Explicit paths keep one set of player types; Vite resolve.dedupe keeps
+    // one React/runtime at execution time.
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+      "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"],
+      "remotion": ["./node_modules/remotion"],
+      "@remotion/transitions": ["./node_modules/@remotion/transitions"],
+      "@remotion/transitions/*": ["./node_modules/@remotion/transitions/*"],
+      "@remotion/layout-utils": ["./node_modules/@remotion/layout-utils"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
