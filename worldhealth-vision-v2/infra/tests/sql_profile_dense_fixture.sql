@@ -2,6 +2,7 @@
 -- SYNTHETIC PERFORMANCE FIXTURE ONLY. NEVER APPLY TO A REAL DATASET.
 -- CI uses disposable TimescaleDB with no host DB port. All observations below
 -- contain an explicit synthetic marker; none are real country statistics.
+-- This template must be rendered by sql_profile_build_fixture.py before psql.
 -- Deterministic size: 12 countries x 54 indicators x 4 sources x 24 years
 -- x 2 source-run revisions = 124,416 raw observations, 62,208 latest views.
 \set ON_ERROR_STOP on
@@ -16,8 +17,9 @@ BEGIN
      OR (SELECT count(*) FROM timeseries.source_run) <> 0 THEN
     RAISE EXCEPTION 'Refuse to seed nonempty timeseries tables';
   END IF;
-  IF (SELECT count(*) FROM catalog.indicator) < 54 THEN
-    RAISE EXCEPTION 'Too few registered indicators for 54-indicator fixture';
+  IF (SELECT count(*) FROM catalog.indicator
+      WHERE code IN (__WHV_ECONOMIC_INDICATOR_CODES__)) <> 54 THEN
+    RAISE EXCEPTION 'One or more of the canonical economic profiles is missing from Catalog';
   END IF;
   IF (SELECT count(*) FROM catalog.source_dataset sd
        JOIN catalog.source s ON s.id=sd.source_id
@@ -75,15 +77,8 @@ WITH
  ),
  indicators AS (
     SELECT code, row_number() OVER (ORDER BY code)::integer AS ordinal
-    FROM (
-       SELECT code FROM catalog.indicator WHERE code='NY.GDP.MKTP.CD'
-       UNION ALL
-       SELECT code FROM (
-         SELECT code FROM catalog.indicator
-         WHERE code <> 'NY.GDP.MKTP.CD'
-         ORDER BY code LIMIT 53
-       ) remaining
-    ) t
+    FROM (SELECT code FROM catalog.indicator
+          WHERE code IN (__WHV_ECONOMIC_INDICATOR_CODES__)) t
  ),
  years AS (SELECT generate_series(2000,2023)::integer AS yr),
  revisions AS (SELECT generate_series(1,2)::integer AS rev),
