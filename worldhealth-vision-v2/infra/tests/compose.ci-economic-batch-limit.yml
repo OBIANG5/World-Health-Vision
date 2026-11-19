@@ -1,0 +1,7 @@
+# DISPOSABLE CI ONLY: analytic per-process in-flight economic batch cap.
+# 0 = original three-parallel-batches behavior. Never enable in production
+# without throughput/evidence/timeout, multi-worker and cross-region review.
+services:
+  analytics-service:
+    environment:
+      WHV_ANALYTICS_ECONOMIC_TIMESERIES_BATCH_MAX_INFLIGHT: "${WHV_ECONOMIC_BATCH_LIMIT:-0}"

@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +15,8 @@ class Settings(BaseSettings):
     timeseries_availability_batch_enabled: bool = False
     # Must remain OFF until full semantic and load A/B; budget per request enforced.
     timeseries_history_batch_enabled: bool = False
+    # 0 preserves fully parallel legacy behavior; nonzero is a CI-only A/B knob.
+    economic_timeseries_batch_max_inflight: int = Field(default=0, ge=0, le=64)
     catalog_base_url: str = "http://localhost:8082"
     timeseries_base_url: str = "http://localhost:8083"
     default_country_overview_indicator_limit: int = 5
