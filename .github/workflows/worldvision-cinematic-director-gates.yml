@@ -11,6 +11,13 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/package.json'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CreativeCompositionPreview.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/creative-player-smoke.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/creative-player-smoke.html'
+      - 'worldhealth-vision-v2/frontend/web-v2/package.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/package-lock.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/tsconfig.app.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/vite.config.ts'
       - '.github/workflows/worldvision-cinematic-director-gates.yml'
   pull_request:
     paths:
@@ -20,6 +27,13 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/package.json'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CreativeCompositionPreview.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/creative-player-smoke.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/creative-player-smoke.html'
+      - 'worldhealth-vision-v2/frontend/web-v2/package.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/package-lock.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/tsconfig.app.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/vite.config.ts'
       - '.github/workflows/worldvision-cinematic-director-gates.yml'
   workflow_dispatch:
 
@@ -89,6 +103,20 @@ jobs:
           # Negative-control fixture: verify that a deliberately inserted 1.3s silence is not missed.
           node creative/audit-voice.mjs /tmp/worldvision-fixture-assets/synthetic-tone-with-gap.wav 5.2 > output/creative/audit-with-gap.json
           node --input-type=module -e "import fs from 'node:fs';const r=JSON.parse(fs.readFileSync('output/creative/audit-with-gap.json','utf8'));if(!r.flags.some(f=>f.code==='long_pause_for_listening_review'&&f.length_seconds>=1))process.exit(1);console.log('Confirmed real, flagged silence',r.flags);"
+      - name: Install locked frontend for browser Player smoke test
+        run: npm ci --prefix ../../frontend/web-v2 --no-audit --no-fund
+      - name: Start private test page with explicitly synthetic source media
+        run: |
+          mkdir -p ../../frontend/web-v2/public/smoke
+          cp /tmp/worldvision-fixture-assets/synthetic-landscape.png ../../frontend/web-v2/public/smoke/synthetic-landscape.png
+          npm --prefix ../../frontend/web-v2 run dev -- --host 127.0.0.1 --port 5173 --strictPort > /tmp/wv-player-vite.log 2>&1 &
+          echo $! > /tmp/wv-player-vite.pid
+      - name: Inspect real Remotion Player pixels in Chromium browser
+        run: |
+          node creative/test-player-browser.mjs
+          test -s output/creative/player-browser-frame-0.png
+          test -s output/creative/player-browser-frame-74.png
+          test -s output/creative/player-browser-smoke.report.json
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
         with:
@@ -102,6 +130,9 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/audit-voice.json
             worldhealth-vision-v2/services/media-renderer/output/creative/audit-with-gap.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-browser-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-browser-frame-74.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-browser-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
