@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
+import java.net.UnknownHostException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -58,6 +59,19 @@ class UpstreamUnavailableHandlerTest {
         assertThat(mapper.readTree(body).get("error").asText())
                 .isEqualTo("UPSTREAM_UNAVAILABLE");
         assertThat(body).doesNotContain("analytics-service");
+    }
+
+    @Test
+    void dockerDnsFailureIsARealUpstreamOutageAndReturns503() throws Exception {
+        var exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/api/product/countries/JPN/economic-snapshot")
+        );
+        exchange.getAttributes().put(GATEWAY_ROUTE_ATTR, new Object());
+        handler.handle(exchange, new UnknownHostException("analytics-service.internal")).block();
+        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        String body = exchange.getResponse().getBodyAsString().block();
+        assertThat(mapper.readTree(body).get("error").asText()).isEqualTo("UPSTREAM_UNAVAILABLE");
+        assertThat(body).doesNotContain("analytics-service", ".internal");
     }
 
     @Test
