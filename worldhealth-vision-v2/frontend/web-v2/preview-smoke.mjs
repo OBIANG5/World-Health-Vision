@@ -113,8 +113,13 @@ try {
         throw new Error(device.name + ": missing interactive tool " + label);
       }
     }
-    if (await items.count() !== 9) {
-      throw new Error(device.name + ": not all 9 menu tools are reachable");
+    // Nine core business tools remain available, while the CURRENT V2
+    // navigation also exposes geographic entry points (12 menu buttons total).
+    // Check real groups and minimum actions, not the obsolete exact-nine count.
+    const groups = page.locator(".whv-tools-menu .whv-domain-group");
+    if (await groups.count() !== 4 || await items.count() < 12) {
+      throw new Error(device.name + ": navigation categories/actions missing (" +
+        await groups.count() + " groups, " + await items.count() + " actions)");
     }
     await items.filter({ hasText: "Favoris" }).click();
     if (await page.locator(".whv-tools-menu").isVisible()) {
@@ -122,7 +127,7 @@ try {
     }
     await page.screenshot({ path: "preview-artifacts/" + device.name + "-tools.png", fullPage: true });
     if (pageErrors.length) throw new Error(device.name + " runtime errors: " + pageErrors.join("; "));
-    console.log("PASS", device.name, "catalog", catalogSize, "single globe, country drill-down, 9 tools, preview honesty");
+    console.log("PASS", device.name, "catalog", catalogSize, "single globe, country drill-down, 9 core tools, 4 navigation groups, preview honesty");
     await page.close();
   }
   console.log("PASS real V2 static preview iPhone and desktop acceptance");
