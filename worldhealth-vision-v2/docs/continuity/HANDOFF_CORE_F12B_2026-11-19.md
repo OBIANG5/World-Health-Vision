@@ -486,3 +486,42 @@ Ce sera la partie la plus risquée, car la limite de préchargement historique `
 - Préserver les documents maîtres `docs/product/STRATEGIE_INTERNATIONALE_WORLD_VISION_MASTER_2026-11-19.md` et `REGISTRE_PRODUITS_SOURCES_REVENUS_PRIORITES_2026-11-19.md` : World-Vision Core + Atlas, Watch, Money, Price/Panier, Tourisme/Transport, Trading, BRVM, Radar/GDELT et média éditorial. Revenus Pub/Affiliation/Premium/B2B ne sont que des hypothèses, pas du chiffre d'affaires réalisé.
 - **Interdits toujours en vigueur** : toucher V0/V1, fusionner les branches média/voix, déployer Vercel/site public sans accord, acheter données/VPS, annoncer backend international en production, supprimer ou masquer absence/estimations/statuts.
 - **Si le présent ajout documentaire modifie le SHA de #55, vérifier à nouveau la CI sur le NOUVEAU SHA**, pas seulement sur le SHA `72cd8753` démontré précédemment.
+
+
+---
+
+## 18. F1.2b.2d-1 — vraie concurrence sur 12 pays / base dense, coût mémoire, PR #57
+
+**Date : 19 novembre 2026.** La PR #55 a d'abord démontré les 4 batchs ON dans le vrai Gateway (et HTTP 503 pour panne Analytics, HTTP 502 pour panne Timeseries). SHA après mise à jour documentaire de #55 : `80e25d27b888437938df95b8e438c20d28d73e22`, nouveau run GitHub `44535058808` **SUCCESS**. La branche `v2` et le site public restent inchangés.
+
+**Nouvelle PR #57** : https://github.com/OBIANG5/World-Health-Vision/pull/57 ; branche `test/v2-optimized-dense-concurrency-2026-11-19`, base directe #55, **DRAFT et NON fusionnée**. Les deux exécutions du SHA de référence `e8bd5b174384e09de19189d31ef11cb1378f8a9e` ont conclu SUCCESS :
+- https://github.com/OBIANG5/World-Health-Vision/actions/runs/44535824959 et artefact `14536631372`
+- https://github.com/OBIANG5/World-Health-Vision/actions/runs/44536007880 et artefact `14535358789`.
+
+### Preuves expérimentales
+
+Fixture strictement **SYNTHÉTIQUE**, réutilisant le script SQL de #46 : 12 pays (FRA,GAB,CIV,DEU,USA,BRA,IND,CHN,JPN,ZAF,AUS,CAN), 54 profils économiques réels du code (non des chiffres officiels), quatre sources, 24 années, deux versions = **124 416 observations brutes et 62 208 latest**. Quatre batch flags ON dans vrai FastAPI ; aucune DB/service interne exposé sur le host. **60 snapshots par run** : les 12 pays chacun à 1,2,4,8,12 requêtes simultanées. Total **120/120 HTTP 200 sur les deux runs**. Pour chaque pays, empreinte SHA256 du JSON complet hors generatedAtUtc invariable entre charges ; 54 indicateurs/200 comparaisons/270 preuves maintenus sur cette fixture.
+
+| Simultané | Wall 12 pays run 44535824959 | Wall run 44536007880 | p50 individuel run 1 / run 2 |
+| ---: | ---: | ---: | ---: |
+| 1 | 3536,127 ms | 4136,893 ms | 286,699 / 312,868 ms |
+| 2 | 2789,512 | 3284,259 | 458,709 / 537,527 |
+| 4 | 2640,095 | 3075,782 | 833,637 / 918,503 |
+| 8 | 2636,088 | 3015,370 | 1675,106 / 1667,071 |
+| 12 | 2668,125 | 3092,240 | 2426,658 / 2811,259 |
+
+**Interprétation importante :** sous ces contraintes, le débit de 12 snapshots plafonne vers 4–8 tâches concurrentes et les latences individuelles augmentent. Les p95 sur 12 échantillons par palier ne sont **pas des SLO/p95 de production** et les deux runners montrent une variabilité notable. Ne pas prétendre « la DB seule est cause » : instrumenter Hikari, SQL, attentes HTTP, CPU et parsing avant de fixer les limites.
+
+- Taille moyenne JSON par snapshot : **174 440,5 octets**, maximum **174 766 octets** sur chaque run ; sans compression observée, taille réseau et capacité de parsing devront être testées avec 4→10→50 sources.
+- Compteurs privés run 1 : `catalog.indicators_batch=61`, `timeseries.latest_batch=61`, `availability_batch=61`, `series_batch=61` ; `catalog.source=244`, `catalog.dataset=244`, `timeseries.source_runs=244`, `catalog.country=61` ; **61×17=1037 opérations** liées au parcours 60+warmup. Les anciens appels N+1 ne passent pas le contrôle.
+- Échantillons **docker stats non exhaustifs** (6 instantanés par service run 1 ; 7 run 2), maximum observé CPU/RAM : Analytics **69,1 % / 174,5 MiB** (run 1), **95,8 % / 184,3 MiB** (run 2) ; Catalog **31,8 % / 294,6 MiB**, **62,3 % / 320,6 MiB** ; Timeseries **226,2 % / 347,7 MiB**, **239,1 % / 392,0 MiB** ; Timescale/PostgreSQL **241,7 % / 350,9 MiB**, **224,0 % / 344,6 MiB**. CPU peut dépasser 100 % sur plusieurs cœurs ; ces quelques relevés ne sont **pas un pic certifié, une réservation mémoire ni un diagnostic de goulet causal**.
+
+### Priorité critique et reprise prochaine
+
+1. **Issue #56** : https://github.com/OBIANG5/World-Health-Vision/issues/56 . Commencer par instrumenter JDBC/Hikari **dans les trois batchs Timeseries** (pool active/idle/pending/acquire, DB query only + mapping SQL/JSON) avec labels bornés, et comparer les paliers sur même fixture et même runner. Dans l'attente, ne pas hausser le parallélisme.
+2. Introduire une fixture hétérogène (des sources locales mono-pays, révisions non alignées, OBSERVED/ESTIMATED/MISSING/SUPPRESSED, annuel/mensuel/journalier, calendriers différents), d'abord **50 pays au plus** sous coûts CPU/RAM maîtrisés, puis dimensionner 217 pays sans prétendre ingérer leurs valeurs officielles.
+3. Mesurer payloads max 54×600 et effets sous concurrence ; batch de 40 000 lignes est un budget de lignes mais **pas de bytes**. Prévoir limites du nombre d'octets et de coût CPU, pagination/réponse chunkée selon preuves. Maintenir les périodes communes et la provenance.
+4. Audit sécurité avant tout staging réel : authentification service à service, ACL/egress, quotas, anti-abus, sauvegarde et restauration, échec et reprise 502/503, contrôle PII, coût par pays et source. Adapter aux RGPD/juridictions.
+5. Privilégier la première ingestion institutionnelle locale/source internationale licenciée et traçable puis Watch; respecter les deux docs maîtres GDELT/EarlyForge/produits/revenus. Ne pas toucher V0/V1, branches média/voix ni site Vercel.
+
+**NOTE GitHub :** le présent ajout de documentation fait changer le SHA de #57 ; les deux runs verts mentionnés ci-dessus portent sur `e8bd5b1`. Il faut revalider le workflow sur le **dernier SHA** avant de déclarer la PR #57 elle-même validée et prête à revue.
