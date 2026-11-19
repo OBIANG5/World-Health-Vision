@@ -8,6 +8,7 @@ on:
       - 'perf/v2-batch-catalog-indicators-*'
       - 'perf/v2-batch-timeseries-latest-*'
       - 'perf/v2-batch-timeseries-availability-*'
+      - 'perf/v2-batch-timeseries-historical-*'
   pull_request:
     branches:
       - 'improve/v2-analytics-perf-and-global-vision-sql-profiling-*'
@@ -57,6 +58,7 @@ jobs:
           python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_catalog_indicator_batch_ab.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_timeseries_latest_batch_ab.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_timeseries_availability_batch_ab.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_timeseries_history_batch_ab.py
 
       - name: Generate EXPLAIN from actual Timeseries JDBC repository
         run: |
@@ -169,6 +171,16 @@ jobs:
             > worldhealth-vision-v2/infra/benchmarks/artifacts/timeseries-availability-batch-ab.json
           python3 -m json.tool worldhealth-vision-v2/infra/benchmarks/artifacts/timeseries-availability-batch-ab.json > /dev/null
           echo 'PASS: availability group per indicator: exact FRA/GAB JSON, 123 to 70 HTTP calls'
+
+      - name: Same-DB full economic A/B for historical Timeseries with per-indicator limits
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            exec -T analytics-service python - \
+            < worldhealth-vision-v2/infra/tests/benchmark_timeseries_history_batch_ab.py \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/timeseries-history-batch-ab.json
+          python3 -m json.tool worldhealth-vision-v2/infra/benchmarks/artifacts/timeseries-history-batch-ab.json > /dev/null
+          echo 'PASS: 12 same-fixture FRA/GAB full economic semantic A/B for history per-indicator SQL batch'
 
       - name: Capture bounded resource cost after the synthetic experiment
         if: success()

@@ -19,12 +19,13 @@ SAMPLE_RE = re.compile(
 LABEL_RE = re.compile(r'([a-z_][a-z0-9_]*)="([^"]*)"')
 OPERATIONS = {
     "timeseries": {
-        "readiness", "series", "latest_by_source", "availability",
+        "readiness", "series", "series_batch", "latest_by_source",
+        "latest_batch", "availability", "availability_batch",
         "country_comparison", "source_runs",
     },
     "catalog": {
         "readiness", "country", "local_context", "countries",
-        "region", "indicator", "indicators", "source", "dataset",
+        "region", "indicator", "indicators", "indicators_batch", "source", "dataset",
     },
 }
 OUTCOMES = {"success", "http_error", "transport_error", "client_error"}

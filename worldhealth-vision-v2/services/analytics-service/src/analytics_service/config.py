@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     timeseries_latest_batch_enabled: bool = False
     # Independent, disabled-by-default pilot for per-indicator availability aggregation.
     timeseries_availability_batch_enabled: bool = False
+    # Must remain OFF until full semantic and load A/B; budget per request enforced.
+    timeseries_history_batch_enabled: bool = False
     catalog_base_url: str = "http://localhost:8082"
     timeseries_base_url: str = "http://localhost:8083"
     default_country_overview_indicator_limit: int = 5

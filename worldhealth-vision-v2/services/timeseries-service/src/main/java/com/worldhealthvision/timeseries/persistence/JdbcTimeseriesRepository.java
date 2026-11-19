@@ -212,6 +212,83 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
     }
 
     @Override
+    public List<TimeseriesObservationResponse> listSeriesBatch(
+            String countryIso3, List<String> indicatorCodes, String sourceCode,
+            String datasetCode, String periodGranularity, LocalDate fromPeriodStart,
+            LocalDate toPeriodStart, boolean includeMissing, boolean sortDescending,
+            int limitPerIndicator
+    ) {
+        // The legacy listSeries orders a SINGLE indicator by period, source and
+        // dataset. A batch must preserve that order AND apply the limit within
+        // EACH indicator, or old aligned years/sources may disappear.
+        // Direction is a fixed server-side choice; no client SQL is interpolated.
+        String direction = sortDescending ? "desc" : "asc";
+        String orderColumns = """
+                period_start %s, source_code asc, dataset_code asc,
+                period_granularity asc, period_end asc, run_key asc
+                """.formatted(direction);
+        String sql = """
+                with matching as (
+                    select
+                        lo.source_code,
+                        coalesce(s.display_name, lo.source_code) as source_display_name,
+                        lo.dataset_code,
+                        coalesce(sd.display_name, lo.dataset_code) as dataset_display_name,
+                        lo.run_key,
+                        lo.country_iso3,
+                        coalesce(c.display_name, lo.country_iso3) as country_display_name,
+                        lo.indicator_code,
+                        coalesce(i.display_name, lo.indicator_code) as indicator_display_name,
+                        lo.period_granularity,
+                        lo.period_start,
+                        lo.period_end,
+                        lo.period_label,
+                        lo.numeric_value,
+                        lo.text_value,
+                        lo.value_status,
+                        lo.source_published_at,
+                        lo.fetched_at_utc
+                    from timeseries.latest_observation lo
+                    left join catalog.source s on s.code = lo.source_code
+                    left join catalog.source_dataset sd on sd.code = lo.dataset_code
+                      and sd.source_id = s.id
+                    left join catalog.country c on c.iso3 = lo.country_iso3
+                    left join catalog.indicator i on i.code = lo.indicator_code
+                    where lo.country_iso3 = :countryIso3
+                      and lo.indicator_code in (:indicatorCodes)
+                      and (cast(:sourceCode as varchar) is null or lo.source_code = :sourceCode)
+                      and (cast(:datasetCode as varchar) is null or lo.dataset_code = :datasetCode)
+                      and (cast(:periodGranularity as varchar) is null or lo.period_granularity = :periodGranularity)
+                      and (cast(:fromPeriodStart as date) is null or lo.period_start >= :fromPeriodStart)
+                      and (cast(:toPeriodStart as date) is null or lo.period_start <= :toPeriodStart)
+                      and (cast(:includeMissing as boolean) = true or lo.value_status <> 'MISSING')
+                ),
+                ranked_per_indicator as (
+                    select matching.*, row_number() over (
+                        partition by indicator_code
+                        order by %s
+                    ) as per_indicator_rank
+                    from matching
+                )
+                select * from ranked_per_indicator
+                where per_indicator_rank <= :limitPerIndicator
+                order by indicator_code asc, %s
+                """.formatted(orderColumns, orderColumns);
+        return jdbcClient.sql(sql)
+                .param("countryIso3", countryIso3)
+                .param("indicatorCodes", indicatorCodes)
+                .param("sourceCode", sourceCode)
+                .param("datasetCode", datasetCode)
+                .param("periodGranularity", periodGranularity)
+                .param("fromPeriodStart", fromPeriodStart)
+                .param("toPeriodStart", toPeriodStart)
+                .param("includeMissing", includeMissing)
+                .param("limitPerIndicator", limitPerIndicator)
+                .query((rs, rowNum) -> mapObservation(rs))
+                .list();
+    }
+
+    @Override
     public List<LatestSourceObservationResponse> listLatestBySource(
             String countryIso3,
             String indicatorCode,
@@ -1007,11 +1084,13 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
     private String seriesOrderBy(boolean sortDescending) {
         if (sortDescending) {
             return """
-                    order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc
+                    order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc,
+                             lo.period_granularity asc, lo.period_end asc, lo.run_key asc
                     """;
         }
         return """
-                order by lo.period_start asc, lo.source_code asc, lo.dataset_code asc
+                order by lo.period_start asc, lo.source_code asc, lo.dataset_code asc,
+                         lo.period_granularity asc, lo.period_end asc, lo.run_key asc
                 """;
     }
 
