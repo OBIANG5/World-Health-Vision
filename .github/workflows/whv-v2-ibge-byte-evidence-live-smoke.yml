@@ -1,0 +1,85 @@
+name: World-Vision DATA-1B1 — LIVE IBGE byte-evidence to ephemeral private quarantine
+
+on:
+  push:
+    branches:
+      - 'data/v2-ibge-byte-evidence-revision-ledger-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-data1b1-live-${{ github.ref }}
+  cancel-in-progress: true
+
+# ONLY ONE real public official HTTP GET, BRA/N1/Census 2022 table 4714 variable 93.
+# Capture is destroyed immediately with its temporary directory. Nothing uploaded.
+# A transient upstream outage is explicitly a failed LIVE test, not a code bug.
+jobs:
+  one-off-live-official-byte-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Checkout exact commit, no retained credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install only bounded API client's runtime dependencies
+        run: python -m pip install --disable-pip-version-check 'httpx==0.27.2' 'pydantic>=2.8,<3'
+
+      - name: Retrieve one official response, confirm original-byte hash and immutable private replay
+        env:
+          PYTHONPATH: worldhealth-vision-v2/services/ingestion-service/src
+        run: |
+          python - <<'PY'
+          from hashlib import sha256
+          import json
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+
+          from ingestion_service.bronze_store import BronzeStore
+          from ingestion_service.connectors.ibge_national_census_client import (
+              IbgeNationalCensusClient, IBGE_POPULATION_INDICATOR,
+          )
+          from ingestion_service.pipelines.ibge_national_census import IbgeNationalCensusPilot
+          from ingestion_service.source_evidence_store import QuarantinedJsonEvidenceStore
+
+          with TemporaryDirectory(prefix="whv-ibge-live-private-data1b1-") as tmp:
+              root = Path(tmp)
+              receipt = IbgeNationalCensusPilot(
+                  client=IbgeNationalCensusClient(timeout_seconds=25),
+                  bronze_store=BronzeStore(root),
+              ).capture_population_2022()
+              assert receipt.source_code == "IBGE"
+              assert receipt.dataset_code == "CENSO2022_4714"
+              assert receipt.record_count == 1
+              assert receipt.notes["publicationStatus"] == "BRONZE_ONLY_UNREVIEWED"
+              assert receipt.notes["licenseReviewStatus"] == "REVIEW_REQUIRED"
+              assert receipt.notes["timeseriesPublication"] == "NOT_ATTEMPTED"
+              original_bytes = receipt.raw_payload_path.read_bytes()
+              assert sha256(original_bytes).hexdigest() == receipt.notes["httpBodySha256"]
+              records = [json.loads(line) for line in receipt.normalized_payload_path.read_text().splitlines()]
+              assert len(records) == 1
+              assert records[0]["country_iso3"] == "BRA"
+              assert records[0]["period_label"] == "2022"
+              assert records[0]["indicator_code"] == IBGE_POPULATION_INDICATOR
+              assert records[0]["value_status"] == "OBSERVED"
+              verified = QuarantinedJsonEvidenceStore(root).verify(
+                  "IBGE", "CENSO2022_4714", receipt.notes["httpBodySha256"]
+              )
+              assert verified.run_id == receipt.run_id
+              assert len(QuarantinedJsonEvidenceStore(root).list_verified_revisions("IBGE", "CENSO2022_4714")) == 1
+              print("PASS: official IBGE HTTPS to original-body byte archive and verified local receipt")
+              print("HTTP entity SHA256:", receipt.notes["httpBodySha256"])
+              print("Canonical JSON SHA256:", receipt.notes["rawSha256"])
+              print("Normalization SHA256:", receipt.notes["normalizedNdjsonSha256"])
+              print("No raw figures logged, no uploads, no Timeseries or Atlas publication")
+          print("PASS: private live evidence and all normalized data removed from CI runner")
+          PY

@@ -60,6 +60,29 @@ class BronzeStore:
 
         return manifest
 
+    def persist_quarantined_json_evidence(
+        self,
+        *,
+        source_code: str,
+        dataset_code: str,
+        raw_response_bytes: bytes,
+        normalized_records: Iterable[dict[str, Any]],
+        notes: dict[str, Any],
+    ) -> RunManifest:
+        """Opt-in atomic, revisioned, original-byte evidence for reviewed pilots.
+
+        Existing ingest pipelines continue using persist_dataset unchanged.
+        Never exports to Timeseries or public APIs.
+        """
+        from ingestion_service.source_evidence_store import QuarantinedJsonEvidenceStore
+        return QuarantinedJsonEvidenceStore(self._bronze_root).capture(
+            source_code=source_code,
+            dataset_code=dataset_code,
+            raw_response_bytes=raw_response_bytes,
+            normalized_records=normalized_records,
+            notes=notes,
+        )
+
     def save_manifest(self, manifest: RunManifest) -> None:
         manifest.manifest_path.write_text(
             manifest.model_dump_json(indent=2),

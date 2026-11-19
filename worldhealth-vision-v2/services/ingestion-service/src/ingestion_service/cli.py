@@ -36,6 +36,28 @@ def capture_ibge_census_2022_population():
     typer.echo(manifest.model_dump_json(indent=2))
 
 
+@ibge_app.command("audit-private-evidence")
+def audit_ibge_private_evidence():
+    """Verify every quarantined IBGE revision without fetching or publishing."""
+    from ingestion_service.source_evidence_store import QuarantinedJsonEvidenceStore
+
+    store = QuarantinedJsonEvidenceStore(get_settings().bronze_root)
+    revisions = store.list_verified_revisions("IBGE", "CENSO2022_4714")
+    typer.echo(json.dumps({
+        "source": "IBGE",
+        "dataset": "CENSO2022_4714",
+        "revisionCount": len(revisions),
+        "publicationStatus": "BLOCKED_PENDING_RIGHTS_REVIEW",
+        "timeseriesPublication": "NOT_ATTEMPTED",
+        "revisions": [{
+            "responseSha256": receipt.notes["httpBodySha256"],
+            "normalizedSha256": receipt.notes["normalizedNdjsonSha256"],
+            "firstCapturedAtUtc": receipt.fetched_at_utc.isoformat(),
+            "recordCount": receipt.record_count,
+        } for receipt in revisions],
+    }, indent=2))
+
+
 @worldbank_app.command("fetch-countries")
 def fetch_countries():
     manifest = build_worldbank_service().fetch_country_registry()

@@ -1,0 +1,67 @@
+name: World-Vision DATA-1B1 — immutable national source evidence and integrity (PRIVATE)
+
+on:
+  push:
+    branches:
+      - 'data/v2-ibge-byte-evidence-revision-ledger-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-v2-data1b1-${{ github.ref }}
+  cancel-in-progress: true
+
+# Offline, SYNTHETIC test data only. No provider publication, no Timeseries,
+# no public Atlas changes, no upload of official source payloads.
+jobs:
+  immutable-evidence-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact candidate SHA, no retained Git token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: worldhealth-vision-v2/services/ingestion-service/pyproject.toml
+
+      - name: Check source-to-Bronze quarantine contract without faking live coverage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path("worldhealth-vision-v2/services/ingestion-service/src/ingestion_service")
+          pipeline = (src / "pipelines" / "ibge_national_census.py").read_text()
+          api = (src / "api.py").read_text()
+          store = (src / "source_evidence_store.py").read_text()
+          assert "persist_quarantined_json_evidence" in pipeline
+          assert "TimeseriesClient" not in pipeline
+          assert "BRONZE_ONLY_UNREVIEWED" in store
+          assert "REVIEW_REQUIRED" in store
+          assert "/runs/ibge" not in api
+          assert "iter_raw()" in (src/"connectors"/"ibge_national_census_client.py").read_text()
+          print("PASS: response-byte capture is private and fail-closed, with no public route")
+          PY
+
+      - name: Python compile, deterministic original-byte and corruption tests
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pip install --disable-pip-version-check -e '.[dev]'
+          python -m compileall -q src/ingestion_service
+          python -m pytest -q tests/test_ibge_national_census.py tests/test_source_evidence_revisions.py
+
+      - name: Existing ingestion regression suite, excluding network-only World Bank live scope
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m pytest -q tests --ignore=tests/test_worldbank_live_scope.py
+
+      - name: Confirm pilot CLI still available
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m ingestion_service.cli ibge --help
+          echo 'OFFLINE TEST ONLY. No real values, no data rights granted, no durable cloud volume.'
