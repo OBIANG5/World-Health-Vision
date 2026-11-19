@@ -18,7 +18,7 @@ const DETAILED_IDS=new Set(DETAIL_COUNTRIES.map(g=>String(g.id).padStart(3,"0"))
 const COUNTRY_IDS=new Set(countryGeometry.map(g=>String(g.id).padStart(3,"0")));
 
 export const FORMAT = "worldvision-creative-project-v1";
-const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus"]);
+const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus","photo_layers"]);
 const TRANSITIONS = new Set(["cut","dissolve","slide"]);
 const MOTIONS = new Set(["locked","dolly","drift","push"]);
 const IMAGE_EXT = new Set([".png",".jpg",".jpeg",".webp"]);
@@ -110,6 +110,47 @@ export function inspectProject(project) {
     // Geo storytelling is cartography, not geocoding. ALL coordinates, routes
     // and statistics must have been explicitly approved by the human editor.
     // No IP location, language inference or script-to-country guess is allowed.
+    if(scene.template==="photo_layers"){
+      const pd=scene.photo,cam=pd?.camera,reveal=pd?.reveal;
+      const finite=(n)=>typeof n==="number"&&Number.isFinite(n);
+      const beat=(s,e)=>Number.isInteger(s)&&Number.isInteger(e)&&
+        s>=0&&e>s+11&&e<=scene.durationFrames-10;
+      if(!boundedInteger(scene.durationFrames,150,3600))
+        bad(errors,p+".durationFrames","Photo multilayer needs at least 150 frames to compose readable independent beats.");
+      if(scene.media?.kind!=="image")
+        bad(errors,p+".media","One authentic supplied photograph is mandatory; no generated placeholder or video substitution.");
+      if(!isText(scene.title,90)||!scene.title?.trim())
+        bad(errors,p+".title","Short authored editorial headline is required (<=90).");
+      if(scene.subtitle!==undefined&&!isText(scene.subtitle,180))
+        bad(errors,p+".subtitle","Only concise authored subtitle, <=180 characters.");
+      if(!pd||!cam||!finite(cam.scaleStart)||!finite(cam.scaleEnd)||
+         cam.scaleStart<1||cam.scaleStart>1.2||cam.scaleEnd<1||cam.scaleEnd>1.4||
+         !finite(cam.panX)||Math.abs(cam.panX)>120||
+         !finite(cam.panY)||Math.abs(cam.panY)>120||
+         !beat(cam.startFrame,cam.endFrame))
+        bad(errors,p+".photo.camera","Camera needs finite scales 1..1.2/1..1.4, pan up to 120px and valid frame interval.");
+      if(!reveal||!["left","right","up"].includes(reveal.direction)||
+         !beat(reveal.startFrame,reveal.endFrame))
+        bad(errors,p+".photo.reveal","Reveal needs clear direction and valid frame interval.");
+      if(pd?.highlight!==undefined){
+        const h=pd.highlight;
+        if(!h||![h.x,h.y,h.radius].every(finite)||h.x<0||h.x>1||
+           h.y<0||h.y>1||h.radius<.06||h.radius>.65||
+           !beat(h.startFrame,h.endFrame))
+          bad(errors,p+".photo.highlight","Spotlight must be inside source photo; radius 0.06..0.65, staged independently.");
+      }
+      if(pd?.metric!==undefined){
+        const m=pd.metric;
+        if(!m||!isText(m.label,55)||!m.label?.trim()||
+           !finite(m.value)||Math.abs(m.value)>1e12||
+           (m.unit!==undefined&&!isText(m.unit,12))||
+           (m.precision!==undefined&&!boundedInteger(m.precision,0,2))||
+           !beat(m.startFrame,m.endFrame))
+          bad(errors,p+".photo.metric","A supplied finite metric needs a short label/unit and independent frame beat.");
+      }
+      if(scene.foreground!==undefined&&scene.foreground!==null&&scene.media?.kind!=="image")
+        bad(errors,p+".foreground","Photo cutout must belong to a supplied original image.");
+    }
     if(scene.template==="country_focus"){
       const geo=scene.geo;
       const id=geo?.spotlight?.countryId;
@@ -198,7 +239,7 @@ export function inspectProject(project) {
         }
       }
     }
-    const needsMedia=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(scene.template);
+    const needsMedia=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_layers"].includes(scene.template);
     if(needsMedia&&!scene.media)bad(errors,p+".media","This composition requires your real source image/clip; no fake fallback.");
     if(scene.foreground!==undefined&&scene.foreground!==null){
       if(!scene.media)
