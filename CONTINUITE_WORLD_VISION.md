@@ -1,5 +1,14 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## VALIDATION SPRINT 2 — 19 NOVEMBRE 2026 — LIRE AVANT DE REPRENDRE
+
+[**Actions GitHub #44530170278 : les 2 jobs ont réussi**](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278) pour l'atelier vidéo de la PR #44. Les vrais MP4 avec image/MP4/alpha/audio synthétiques sont produits et vérifiés. `--shot` rend un seul plan et trois frames de contrôle. La **voix est libre**, avec audition A/B. Le contrôle de silences repose sur **FFmpeg/FFprobe existants** (le premier essai Remotion avait échoué et a été retiré), le WAV avec un silence artificiel **1,301 s** est correctement détecté, et le WAV original reste identique. Les musiques ne doivent pas dépasser l'outro G0 silencieux.
+
+Toutes les explications et prochaines étapes dans **[WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md)**. Ce résultat est un **succès technique**, PAS la qualité visuelle mondiale recherchée. Priorité suivante : prévisualisation réellement rendue dans l'interface, tests avec vrais matériaux autorisés, mouvement/typo/masques de qualité, cache des scènes acceptées, voice/sound design. **Ne pas confondre “continue” avec autoriser merge, mise en ligne, voix obligatoire ou toute publication.**
+
+---
+
+
 ## POINT DE REPRISE TECHNIQUE — MOTION DIRECTOR SPRINT 2 — 19 NOVEMBRE 2026
 
 La PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44) continue **sans merge**. Lire maintenant **[World‑Vision Motion Director Sprint 2](worldhealth-vision-v2/docs/media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md)** pour les changements de code exacts, les tests, la revue des rendus, les limites et le backlog P1–P7.
