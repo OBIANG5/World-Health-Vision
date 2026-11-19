@@ -9,6 +9,7 @@ type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus
 type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
+type PreviewMode = "source"|"shot"|"film";
 type Asset = {name:string;size:number;kind:MediaType;url:string};
 type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
@@ -52,7 +53,7 @@ export default function CinematicProductionBoard() {
   const [accent,setAccent]=useState("#8bbecf");
   const [feedback,setFeedback]=useState("");
   const [croppedPreview,setCroppedPreview]=useState(true);
-  const [showRealPreview,setShowRealPreview]=useState(false);
+  const [previewMode,setPreviewMode]=useState<PreviewMode>("source");
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
@@ -94,11 +95,54 @@ export default function CinematicProductionBoard() {
     const requires=["documentary","evidence","clean_video","focus_reveal"].includes(shot.template);
     const hasMedia=!requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
     const validFocus=shot.template!=="focus_reveal"||Boolean(shot.title.trim()&&shot.title.length<=90&&shot.durationFrames>=90);
-    return hasMedia&&validFocus;
+    const validForeground=!shot.foregroundName||Boolean(shot.mediaName&&files.some(f=>f.name===shot.foregroundName&&f.kind==="image"));
+    return hasMedia&&validFocus&&validForeground;
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
   const duration=shotsDuration+(outroFile?90:0);
+  const fullFilmCanRender=canExport&&duration>0&&duration<=18000;
+
+  /**
+   * Complete local timeline for editorial review — EXACT Remotion composition
+   * used by the renderer. This is only instantiated when previewMode='film'.
+   * Voice and music are the currently selected real file blobs, never AI
+   * speech synthesized or generated without user approval.
+   */
+  const fullFilmProps=useMemo<CreativeEditProps>(()=>({
+    version:1,
+    title:projectName,
+    script,
+    shots:shots.map((shot,i)=>{
+      const clip=files.find(f=>f.name===shot.mediaName);
+      const cutout=files.find(f=>f.name===shot.foregroundName);
+      const media:CreativeMedia|null=clip&&clip.kind!=="audio"?{kind:clip.kind,src:clip.url}:null;
+      return {
+        id:shot.id,
+        durationFrames:shot.durationFrames,
+        template:shot.template,
+        title:shot.title,
+        subtitle:shot.subtitle,
+        eyebrow:shot.eyebrow,
+        media,
+        foreground:cutout?{src:cutout.url}:null,
+        motion:shot.motion,
+        transitionAfter:i===shots.length-1?"cut":shot.transitionAfter,
+        transitionFrames:i===shots.length-1||shot.transitionAfter==="cut"?0:shot.transitionFrames,
+        focus:{x:shot.focusX,y:shot.focusY}
+      };
+    }),
+    narration:voiceFile&&files.find(f=>f.name===voiceFile)
+      ? {src:files.find(f=>f.name===voiceFile)!.url,volume:1,label:"Narration sélectionnée"}
+      :null,
+    soundtrack:musicFile&&files.find(f=>f.name===musicFile)
+      ? {src:files.find(f=>f.name===musicFile)!.url,volume:0.10,label:"Bande-son fournie"}
+      :null,
+    brandOutro:outroFile&&files.find(f=>f.name===outroFile)
+      ? {src:files.find(f=>f.name===outroFile)!.url,durationFrames:90}
+      :null,
+    visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
+  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent]);
   const addFiles=(e:ChangeEvent<HTMLInputElement>)=>{
     const items=Array.from(e.currentTarget.files??[]);
     const known=new Set(files.map(x=>x.name));
@@ -270,31 +314,40 @@ export default function CinematicProductionBoard() {
         </div>
       </div>
       <aside className="wvc-preview">
-        <div className="wvc-preview-title">VISIONNAGE DU PLAN · 9:16</div>
+        <div className="wvc-preview-title">APERÇU DE PRODUCTION · 9:16</div>
         <div className="wvc-preview-switch" aria-label="Choisir le mode de visionnage">
-          <button type="button" className={showRealPreview?"selected":""} onClick={()=>setShowRealPreview(true)}>
-            <span aria-hidden="true">▶</span> Composition animée
+          <button type="button" className={previewMode==="shot"?"selected":""} onClick={()=>setPreviewMode("shot")}>
+            <span aria-hidden="true">▶</span> Plan animé
           </button>
-          <button type="button" className={!showRealPreview?"selected":""} onClick={()=>setShowRealPreview(false)}>
+          <button type="button" className={previewMode==="film"?"selected":""} onClick={()=>setPreviewMode("film")}>
+            <span aria-hidden="true">▶</span> Film entier
+          </button>
+          <button type="button" className={previewMode==="source"?"selected":""} onClick={()=>setPreviewMode("source")}>
             Média original
           </button>
         </div>
-        {!showRealPreview&&<button type="button" className="wvc-crop-toggle" onClick={()=>setCroppedPreview(x=>!x)}>
+        {previewMode==="source"&&<button type="button" className="wvc-crop-toggle" onClick={()=>setCroppedPreview(x=>!x)}>
           {croppedPreview?"Afficher la source complète":"Visualiser le cadrage 9:16"}
         </button>}
         <div className="wvc-device">
-          {showRealPreview ? (
+          {previewMode==="shot" ? (
             previewCanRender ? <Suspense fallback={<div className="wvc-player-loading">Chargement du vrai moteur Remotion…</div>}>
-              <RealCreativePreview props={previewProps} shotId={active.id}/>
+              <RealCreativePreview props={previewProps} previewId={active.id} label={"Composition du "+active.id}/>
             </Suspense> : <div className="wvc-player-loading">Ajoute un visuel et un titre conforme à ce plan avant de visionner sa véritable animation.</div>
+          ) : previewMode==="film" ? (
+            fullFilmCanRender ? <Suspense fallback={<div className="wvc-player-loading">Préparation de la timeline Remotion complète…</div>}>
+              <RealCreativePreview props={fullFilmProps} previewId="film-complet" label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"/>
+            </Suspense> : <div className="wvc-player-loading">Le film complet exige un script, des plans valides et leurs médias. Maximum 10 minutes dans ce profil.</div>
           ) : <>
           {activeAsset?.kind==="image"&&<img src={activeAsset.url} alt={"Média source : "+activeAsset.name} style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
           {activeAsset?.kind==="video"&&<video src={activeAsset.url} controls playsInline preload="metadata" style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
           {!activeAsset&&<div className="wvc-no-preview"><span>WORLD—VISION</span><strong>TON MÉDIA<br/>ICI</strong><small>L'image d'actualité doit être fournie ou choisie explicitement.</small></div>}
           </>}
         </div>
-        <p>{showRealPreview
-          ? "Même composition React/Remotion que l'export MP4, avec des fichiers locaux. Aperçu visuel du plan seul, sans la narration ni les raccords du film. Le codec de la vidéo et la fluidité peuvent différer selon le téléphone : toujours juger le master exporté."
+        <p>{previewMode==="film"
+          ? "Timeline Remotion réelle : plans, raccords, narration et musique importées. Ce n'est pas encore un export MP4 ; la lecture des codecs et la fluidité dépendent du téléphone. Vérifie toujours le master avant diffusion."
+          : previewMode==="shot"
+          ? "Même composition que le moteur de rendu, sur le plan seul. La narration et les raccords des autres plans ne sont pas inclus dans ce mode."
           : (croppedPreview?"Cadrage source 9:16 uniquement, sans titres ni animation.":"Fichier source complet, sans recadrage.")}</p>
         <label className="wvc-accent">ACCENT GRAPHIQUE <input type="color" value={accent} onChange={e=>setAccent(e.target.value)}/></label>
       </aside>
