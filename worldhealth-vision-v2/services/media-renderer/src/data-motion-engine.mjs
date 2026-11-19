@@ -7,6 +7,13 @@ export const DATA_MODES=Object.freeze(["line","ranking","heatmap"]);
 export const dataClamp=(n)=>Math.max(0,Math.min(1,n));
 export const dataEase=(n)=>{const x=dataClamp(n);return x*x*(3-2*x)};
 export const dataBeat=(f,start,end)=>dataEase((f-start)/Math.max(1,end-start));
+/** Every item becomes FULLY visible by the final graph frame, never 88% of a
+ *  reported value. This is essential for accurate ranks and heat intensities. */
+export function dataStagger(progress,index,total,window=.30){
+  const safeWindow=Math.max(.05,Math.min(.9,window));
+  const start=total<=1?0:(index/Math.max(1,total-1))*(1-safeWindow);
+  return dataEase((progress-start)/safeWindow);
+}
 export function dataPose(frame,durationFrames){
   const f=Math.max(0,Math.min(durationFrames,frame));
   return {
