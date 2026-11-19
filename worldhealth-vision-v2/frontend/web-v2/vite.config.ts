@@ -1,9 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'node:path'
+import { searchForWorkspaceRoot } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // The interactive Player imports the EXACT same CreativeEdit.tsx as the
+  // server-side renderer. Both trees must use one React/Remotion runtime.
+  resolve: {
+    // Shared GeoStory.tsx is outside the frontend folder. This explicit alias
+    // is necessary for Vite/Rolldown to find the installed Natural Earth atlas
+    // from a shared renderer source file. Atlas stays a build-time dependency.
+    alias: {
+      'world-atlas/countries-110m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-110m.json'),
+    },
+    dedupe: ['react', 'react-dom', 'remotion', '@remotion/transitions', '@remotion/layout-utils', '@remotion/three', '@react-three/fiber', 'three', 'd3-geo', 'topojson-client'],
+  },
   build: {
     // Découpe les grosses libs en chunks séparés : le navigateur les met en cache
     // indépendamment du code applicatif et ne re-télécharge que ce qui change.
@@ -23,6 +36,14 @@ export default defineConfig({
     chunkSizeWarningLimit: 1200,
   },
   server: {
+    fs: {
+      // Allow only the shared renderer source and the existing workspace root;
+      // do not expose staging folders, media or private job files.
+      allow: [
+        searchForWorkspaceRoot(process.cwd()),
+        resolve(process.cwd(), '../../services/media-renderer/src'),
+      ],
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

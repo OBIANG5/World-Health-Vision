@@ -3,6 +3,8 @@ import {Composition} from "remotion";
 import {WorldVisionShort} from "./WorldVisionShort";
 import {WorldVisionSummit2026,SUMMIT_FRAMES,SUMMIT_FPS} from "./WorldVisionSummit2026";
 import type {WorldVisionRenderProps} from "./types";
+import {CreativeEdit, creativeDuration} from "./CreativeEdit";
+import type {CreativeEditProps} from "./CreativeEdit";
 
 const defaultProps: WorldVisionRenderProps = {
   render_profile: "canonical_newsroom_v1",
@@ -68,6 +70,25 @@ const defaultProps: WorldVisionRenderProps = {
   }
 };
 
+const defaultCreativeProps: CreativeEditProps = {
+  version: 1,
+  title: "DÉMONSTRATION TECHNIQUE — aucun fait d'actualité",
+  script: "Texte fourni par l'utilisateur, jamais écrit par le moteur vidéo.",
+  visualStyle: {background:"#0c1822", ink:"#f8fafb", accent:"#8ebcce"},
+  shots: [
+    {id:"demo-opening",durationFrames:90,template:"kinetic",
+      eyebrow:"WORLD-VISION / ESSAI TECHNIQUE", title:"RACONTER.\nMONTRER.\nCOMPRENDRE.",
+      subtitle:"Une composition créée à partir de tes propres matériaux.",
+      motion:"locked",transitionAfter:"dissolve",transitionFrames:8},
+    {id:"demo-end",durationFrames:96,template:"number",
+      eyebrow:"ATELIER DE MONTAGE",title:"01",subtitle:"Un plan soigné à la fois.",
+      footnote:"Aucune image d'actualité simulée.",motion:"locked"}
+  ],
+  narration: null,
+  soundtrack: null,
+  brandOutro: null,
+};
+
 export const RemotionRoot: React.FC = () => {
   return (
     <>
@@ -79,6 +100,16 @@ export const RemotionRoot: React.FC = () => {
       fps={SUMMIT_FPS}
       durationInFrames={SUMMIT_FRAMES}
       defaultProps={{voiceFilename:null}}
+    />
+    <Composition
+      id="WorldVisionCreativeEdit"
+      component={CreativeEdit}
+      width={1080}
+      height={1920}
+      fps={30}
+      durationInFrames={creativeDuration(defaultCreativeProps)}
+      defaultProps={defaultCreativeProps}
+      calculateMetadata={({props})=>({durationInFrames:creativeDuration(props)})}
     />
     <Composition
       id="WorldVisionShort"

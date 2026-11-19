@@ -1,0 +1,63 @@
+name: World-Vision — isolated premium globe visual review
+
+on:
+  push:
+    branches:
+      - 'feature/worldvision-cinematic-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/src/GeoStory.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/prepare-earth-texture.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/geo-story.synthetic.example.json'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/render-project.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/package.json'
+      - '.github/workflows/worldvision-geo-art-review.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  geo-art-real:
+    name: NASA Three.js globe — isolated 150-frame art review
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install official Remotion, Three and geographic libraries
+        run: npm install --no-audit --no-fund
+      - name: Prepare and verify NASA Earth bytes without any stock-image fallback
+        run: |
+          node creative/prepare-earth-texture.mjs
+          node --input-type=module -e "import fs from 'node:fs';const j=JSON.parse(fs.readFileSync('public/geo/nasa-blue-marble-june.jpg.source.json','utf8'));if(j.sha256!=='dc059529b8ed1cfcdd59747a7c3f259c93c1322bf88ca1ec8bab1dd71fcc57f5'||j.width!==5400||j.height!==2700)process.exit(1);console.log('NASA source pinned:',j.sha256)"
+      - name: Typecheck the same global Remotion artboard used in V2
+        run: npm run typecheck
+      - name: Render the actual photo-globe movie and stills, not a CSS mockup
+        run: |
+          mkdir -p /tmp/worldvision-geo-originals
+          node creative/render-project.mjs \
+            --project creative/geo-story.synthetic.example.json \
+            --assets /tmp/worldvision-geo-originals \
+            --shot geo-intro \
+            --output output/creative/geo-nasa-premium-review.mp4
+      - name: Verify real encoded H.264, input exactness and visual changes
+        run: |
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const p='output/creative/geo-nasa-premium-review.mp4';const m=await getVideoMetadata(p);const r=JSON.parse(fs.readFileSync(p+'.report.json','utf8'));const ss=r.actual_rendered_stills;if(m.codec!=='h264'||m.width!==1080||m.height!==1920||r.duration_frames!==150||r.media.length!==0||new Set(ss.map(x=>x.sha256)).size!==ss.length)process.exit(1);console.log('Geo Art H.264 valid',m,ss)"
+      - name: Archive actual artwork and provenance for independent pixel review
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-nasa-globe-art-review
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/creative/geo-nasa-premium-review.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/geo-nasa-premium-review.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/geo-nasa-premium-review.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/public/geo/nasa-blue-marble-june.jpg.source.json
+          retention-days: 14
+          if-no-files-found: error

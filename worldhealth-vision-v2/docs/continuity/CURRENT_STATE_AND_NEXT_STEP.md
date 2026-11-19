@@ -1,5 +1,99 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## WORLD‑VISION MEDIA — SPRINT 7, PROBLÈME GLOBAL PHOTO IDENTIFIÉ (19 NOV. 2026)
+
+Reprendre depuis [WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md](../media/WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md) et [PR #44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). **Pas de fusion, pas de déploiement.** Les scripts et la recherche restent ChatGPT ici ; le code monte les meilleurs éléments (motion design image/photo/carte/chiffres/textes, audio/voix interchangeable, QA). BAOCOM séparé, GDELT/blog différés.
+
+**Nouveau moteur 3D** : `GeoPhotorealEarth.tsx`, NASA Blue Marble 2004 à source SHA pin, `@remotion/three`/Three.js/R3F, double rendu Remotion Player et MP4, projection D3 conservée pour frontières et trajets. `geo.look="photo"` ou vectoriel choisi explicitement. Le premier rendu NASA [#44567135931](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44567135931) avait réussi les CI (14 tests) mais était **artistiquement mauvais** : deux anciens remplissages cyan SVG masquaient la photo. Bug corrigé, nouveau cadrage r463/[540,690] et véritable aperture blanche, QA du marqueur au dos de la Terre. **Action immédiate : inspecter le nouveau run HEAD et quatre PNG/MP4, corriger encore jusqu'à qualité réellement visuelle.**
+
+**Pipeline pré-GEO intact** : films et plans, voice A/B, script non modifié, transition et document_focus, FFmpeg et preuve de rendu. Prochaine phase après globe : vrais plans d'actualité/script et média autorisés, plusieurs motions simultanées, data motion, voix et sound design professionnels, corrections non destructives, studio Content OS média seulement.
+
+---
+
+## WORLD‑VISION MEDIA — REPRISE AVANCÉE SPRINT 6 GEO (19 NOV. 2026)
+
+**Lire d'abord** : [WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md](../media/WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md) puis PR [#44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). **Aucune fusion ni mise à jour publique.** À partir des deux vidéos utilisateurs finance (~94,57s) et géopolitique (~59,49s) + image de globe-œil turquoise, un nouveau **moteur de composition multi-layer** est codé : Terre cartographique réelle Natural Earth 110m animée par D3 Geo, frontières, rotation, œil cyan, route géodésique, point, image/video importée, nombre, titres dans **la même scène**. Pas de donnée géographique ou chiffre inventé dans un reportage : entrées éditoriales manuelles, validées par `validate-project`, même props pour Player + MP4.
+
+**Preuve render** : MP4 H.264 1080×1920, 150 frames, 4 captures Chromium analysées (artefact GitHub `14544782973`, run #44555931776 renderer succès, frontend échec de résolution de l'atlas). La résolution TS/Vite corrigée puis V2 build vert sur run #44556536807. L'aspect reste vectoriel, en deçà du globe-photographie référence ; une itération de disposition a regroupé photo/compteur sur la carte et avancé le titre vers les premières secondes. **Vérifier le run complet du HEAD** avant certification de cette dernière version.
+
+**NEXT :** réussir CI, revoir 4 captures géométriques et vidéo ; puis vrai globe 3D texturé NASA avec rendu professionnel, suivi pays/regions, data motion inspiré Bourse Express, templates photo multi-animation, vraie production à partir d'un script + rushes authentiques, performance mobile/iOS, qualité de la voix et mix, cache de plans et Content OS exclusivement audiovisuel. Recherche/script restent ChatGPT ; aucune voix Vivienne imposée ; BAOCOM indépendant, GDELT/blog différés.
+
+---
+
+## REPRISE RÉELLEMENT VÉRIFIÉE : MEDIA SPRINT 5 (19 NOV. 2026)
+
+**PR #44 en brouillon ; pas de merge ni Vercel modifié.** [Rapport canonique Sprint 5 §9](../media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md). [Actions #44546198363 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363) ; **12 tests Node, 0 échec**, build frontend, H.264 et Chromium Player du document en 4 temps. Artefact `14540488994` inspecté : la page est visible au frame0, rectangle au frame40, zoom au frame68, légende au frame102. **Espace page/cartouche ≈ 9,86 px et marge en bas ≈ 15,87 px sur 360×640**. L'échec précédent de 13,5 px de recouvrement a été résolu.
+
+**Chantier suivant** : ne plus multiplier des maquettes synthétiques. Utiliser **un vrai script préparé ici, une photographie/document ou vidéo authentique avec droits, et la voix réellement choisie** pour réaliser un premier reportage remarquable. Produire/réviser plusieurs versions à partir des mêmes sources et comparer les vidéos à une référence audiovisuelle excellente ; tester les vrais iPhone/TikTok overlays. Ensuite versions/cache des scènes, mastering/voix et workflow Content OS audiovisuel seulement. L'outil reçoit le script ; il n'écrit pas l'actualité. BAOCOM indépendant, Vivienne optionnelle, GDELT et blog différés.
+
+---
+
+## MEDIA SPRINT 5 — DERNIER ÉTAT AVEC QA GÉOMÉTRIQUE (19 NOV. 2026)
+
+[Source canonique : WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md](../media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md). [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) DRAFT, aucun merge ni déploiement.
+
+**Nouveau code** : `document_focus` dans le véritable Remotion partagé, fondé sur une **image documentaire réellement fournie** et une **zone cible choisie par x/y/largeur/hauteur** en session V2. Pas de transcription, d'OCR ou de preuve reconstituée. Export sécurisé, JSON, validations d'image et coordonnées, quatre captures Chromium pour le début, surlignage, zoom et titre. **Le premier test a réussi** [#44544197428](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44544197428) (12 tests, H.264, Player). Mais revue humaine : premier frame noir et texte recouvrant le document. Un contrôle plus strict a ensuite **échoué à juste titre** [#44545458500](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44545458500) car le cadre dépassait le cartouche de **13,5 px** au format 360×640. Correctifs : page visible immédiatement, cartouche remonté, cadre raccourci à 830px, aperçu source V2 synchronisé.
+
+**PROCHAINE ACTION IMMÉDIATE** : [examiner la CI #44546198363](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363), surtout le test Chromium `document` à frame102, et inspecter le MP4 corrigé. Si vert : enregistrer le run final et photos dans ce registre. Ne jamais confondre un test sur document artificiel avec une vidéo journalistique publiable. Ensuite, produire une ouverture haut de gamme avec **script et vraie photographie/vidéo fournis et autorisés** et analyser le rendu iPhone. Recherche/écriture ici ; voix totalement libre ; BAOCOM séparé ; pas de raccord blog/GDELT/Content OS global.
+
+---
+
+## POINT DE REPRISE : MEDIA SPRINT 4 TERMINÉ CÔTÉ TECHNIQUE (19 NOVEMBRE 2026)
+
+[PR #44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). Le détail est dans [le rapport Sprint 4 §7–9](../media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md). [Actions #44541690295 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44541690295) et [#44540638541 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540638541). Le frontend V2 compile, la vraie prévisualisation du film entier existe (2 scènes de CI, fondu, piste audio importée), 11 tests Node passent, et les titres ne se chevauchent plus en transition (opacité entrante contrôlée à frame 100). Les captures ont été ouvertes et examinées.
+
+**À ne jamais confondre** : fonctionnement technique ≠ meilleur montage artistique du monde. Les médias tests sont synthétiques et non journalistiques. Le site Vercel n'a pas été modifié. **Prochain chantier prioritaire** : réalisation audiovisuelle haut de gamme avec script fourni dans ChatGPT et photo/vidéo authentique sous droits, vraie comparaison de versions MP4, audition voix et mixage, tests sur iPhone/Android, puis préservation/cache des plans approuvés. Aucun « 11 portes » imposé, Vivienne pas obligatoire, BAOCOM pas connecté, pas de blog/GDELT global à ce stade.
+
+---
+
+## MEDIAS WORLD‑VISION — ÉTAT DE CONTINUITÉ SPRINT 4 (19 NOVEMBRE 2026)
+
+Lire [le rapport complet du Sprint 4](../media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md). PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44) reste en brouillon, non fusionnée et non déployée. Dans `frontend/web-v2`, `CreativeCompositionPreview.tsx` et `CinematicProductionBoard.tsx` offrent désormais **source / plan animé / film entier**, avec le même composant React/Remotion que le rendu H.264. Le mode film inclut raccords, piste voix A choisie, musique et signature vidéo fournies. Les médias restent des URL locales et ne sont ni téléchargés dans le cloud ni poussés sur GitHub.
+
+**CI confirmé** [#44540102940 : SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540102940), 11 tests, build V2, 2 plans synthétiques et fondu sur 165 frames, contrôles Chromium 0/100/145, audio synthétique, SHA/captures. Correction de mise en page téléphone (max 360 px, aspect réel 9:16) : contrôler la CI [#44540638541](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540638541).
+
+**Ne pas repartir sur les anciennes 11 portes, Vivienne imposée, BAOCOM connecté ou blog/GDELT tant que non décidés.** Recherche et script aujourd'hui via ChatGPT. **Prochaine tâche artistique** : obtenir une ouverture de reportage haute qualité sur des fichiers authentiques, puis regarder les vrais MP4 et améliorer direction artistique, son et transitions. Validation iOS Safari réelle en parallèle ; pas de garantie « niveau mondial » donnée par un test synthétique.
+
+---
+
+## MEDIA — SPRINT 3 / SOURCE DE VÉRITÉ (19 NOVEMBRE 2026)
+
+Voir [WORLDVISION_CREATIVE_PLAYER_SPRINT3_2026-11-19.md](../media/WORLDVISION_CREATIVE_PLAYER_SPRINT3_2026-11-19.md). PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44), toujours DRAFT, aucun merge/deploy. Le vrai Player Remotion du plan a été branché à l'atelier V2 par un composant partagé avec le renderer H.264, avec object URLs locales, fichiers fournis, cadrage, titre, mouvement, source d'origine commutable et chargement différé. Dépendances exactes/lockfile prêts, frontend CI compilé.
+
+**CONDITION** : contrôler le job `Inspect real Remotion Player pixels in Chromium browser` sur [Actions #44534781424](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44534781424) pour vérifier que le lecteur s'exécute visuellement, au-delà du build. Il est actuellement un test de conformité qui ne garantit pas iOS. En cas d'échec, corriger avant de clore le sprint. **Suivant** : test iPhone/Safari, vraie composition de film entier/voix/sous-titres, fichiers privés authentifiés, cache/versions et première séquence artistique remarquable avec médias réels autorisés. Recherche/scripts via ChatGPT, voix interchangeable, BAOCOM distinct.
+
+---
+
+## POINT VÉRIFIÉ — LE CONTRÔLE AUDIO EST TERMINÉ (19 NOV 2026)
+
+[PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) en brouillon. La reprise après le blocage s'est achevée par une vérification complète : [Actions #44530170278 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278) pour le code `04399843d2af6106d7158b7ffa33652dd960a693`. 11 tests Node réussis, build V2 réussi, vidéos Remotion 9:16 et plans individuels rendus, couche alpha testée ; **silence intentionnel de 1,3 s détecté** par FFmpeg sur WAV synthétique, sans altérer l'empreinte de la piste. Documentation complète : [Motion Director Sprint 2 §7](../media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md).
+
+**PROCHAINE PRIORITÉ** : aperçu de la véritable animation à l'intérieur du Studio, puis **une scène art-dirigée à partir de fichiers authentiques approuvés**. Ne pas confondre un test de montage synthétique avec une vidéo journalistique publiable. Scripts/recherche dans ChatGPT, voix interchangeable, aucun lien BAOCOM, Content OS audiovisuel seulement, pas de GDELT/blog avant intégration décidée. Aucun merge sur `v2` ni mise à jour du site.
+
+---
+
+## SUITE MEDIA — MOTION DIRECTOR SPRINT 2 — 19 NOVEMBRE 2026
+
+Le nouveau [cahier de reprise précis](../media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md) fait autorité sur le chantier artistique courant. Il décrit les vrais fichiers `CreativeEdit.tsx`, `creative/render-project.mjs`, `creative/validate-project.mjs`, `CinematicProductionBoard.tsx/.css`, les tests Remotion, l'authenticité des sources et la prochaine tranche technique.
+
+**Rappel : scripts/recherche ici dans ChatGPT ; montage/motion/son/cadrage/voix libre dans World‑Vision.** Aucune voix imposée, aucune résurrection des anciennes 11 portes, pas de connecteur BAOCOM, pas de Content OS global/blog/GDELT avant décision nouvelle. La PR #44 est toujours en brouillon, aucun déploiement. Nouveau `focus_reveal`, premier plan 2,5D, typographie mesurée, point focal, écoute A/B, `--shot` et trois captures de vrai rendu. La qualité de clip de test n'est pas une validation esthétique. **Ouvrir le run CI du HEAD le plus récent, lire les artefacts et corriger tout échec.**
+
+---
+
+
+## CORRECTION PRIORITAIRE DU PROPRIÉTAIRE — 19 NOV. 2026 (PREND PRÉSÉANCE)
+
+La première décision du 19/11 imposant 11 « portes » éditoriales et Vivienne au pipeline a été explicitement **refusée et remplacée**. Les modules Python rigides ont été supprimés. **On fournit des scripts et des médias à World-Vision ; ChatGPT travaille la recherche/le récit dans cette conversation. Le logiciel excelle dans la direction artistique, les animations, le montage, la voix libre et la finition en réutilisant les meilleurs moteurs existants.** BAOCOM n'est ni connecté ni poussé, blog/GDELT attendent. Consulter le [nouveau cahier des charges](../media/WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md) (lien relatif depuis la racine) et la [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44).
+
+---
+
+### Archive de la première interprétation du 19/11 — ANNULÉE
+
+Les anciennes contraintes de onze portes, script/recherche dans le code et voix Vivienne imposée ont été explicitement retirées. Voir la correction prioritaire ci-dessus.
+
+---
+
+
 ## 14 NOV 2026 — REPORTAGE WORLD-VISION #001 / MONTAGE 43 S AVEC VOIX, MUSIQUE ET SOUS-TITRES
 
 **Reprise du travail sur l'épisode Trump–Poutine–Xi, sommet ANNONCÉ à Shenzhen pour le 19 novembre 2026.** Ne pas parler d'une réunion déjà tenue et vérifier à nouveau les déclarations officielles avant toute diffusion. Le script accepté par l'utilisateur reste inchangé (voir `SCRIPT_V1.md`). La police actuelle est **provisoirement conservée pour ce reportage conformément au choix de l'utilisateur**, la nouvelle charte typographique sera étudiée pour un autre reportage.

@@ -6,6 +6,26 @@
     "module": "esnext",
     "types": ["vite/client"],
     "skipLibCheck": true,
+    // Shared CreativeEdit lives outside this Vite app. TypeScript normally
+    // walks upwards from the original file and misses web-v2/node_modules.
+    // Explicit paths keep one set of player types; Vite resolve.dedupe keeps
+    // one React/runtime at execution time.
+    "paths": {
+      "react": ["./node_modules/@types/react"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+      "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"],
+      "remotion": ["./node_modules/remotion"],
+      "@remotion/transitions": ["./node_modules/@remotion/transitions"],
+      "@remotion/transitions/fade": ["./node_modules/@remotion/transitions/dist/presentations/fade.d.ts"],
+      "@remotion/transitions/slide": ["./node_modules/@remotion/transitions/dist/presentations/slide.d.ts"],
+      "@remotion/layout-utils": ["./node_modules/@remotion/layout-utils"],
+      "@remotion/three": ["./node_modules/@remotion/three"],
+      "@react-three/fiber": ["./node_modules/@react-three/fiber"],
+      "three": ["./node_modules/@types/three"],
+      "d3-geo": ["./node_modules/@types/d3-geo"],
+      "topojson-client": ["./node_modules/@types/topojson-client"],
+      "world-atlas/*": ["./node_modules/world-atlas/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

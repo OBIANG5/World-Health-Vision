@@ -1,0 +1,237 @@
+name: World-Vision — creative video edit from supplied material
+
+on:
+  push:
+    branches:
+      - 'feature/worldvision-cinematic-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/**'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/GeoStory.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/Root.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/package.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CreativeCompositionPreview.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/creative-player-smoke.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/creative-player-smoke.html'
+      - 'worldhealth-vision-v2/frontend/web-v2/package.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/package-lock.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/tsconfig.app.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/vite.config.ts'
+      - '.github/workflows/worldvision-cinematic-director-gates.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/**'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/GeoStory.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/Root.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/package.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CreativeCompositionPreview.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/creative-player-smoke.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/creative-player-smoke.html'
+      - 'worldhealth-vision-v2/frontend/web-v2/package.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/package-lock.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/tsconfig.app.json'
+      - 'worldhealth-vision-v2/frontend/web-v2/vite.config.ts'
+      - '.github/workflows/worldvision-cinematic-director-gates.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render-creative-example:
+    name: Actual Remotion MP4 and user-project validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing Remotion renderer and official Three.js canvas and geography
+        run: npm install --no-audit --no-fund
+      - name: Prepare real NASA Blue Marble texture for both Remotion and V2
+        run: node creative/prepare-earth-texture.mjs
+      - name: Typecheck video compositions
+        run: npm run typecheck
+      - name: Test project import, arbitrary voice and file safety
+        run: node --test creative/validate-project.test.mjs
+      - name: Render a synthetic media-free motion graphics test
+        run: |
+          mkdir -p /tmp/worldvision-assets
+          node creative/render-project.mjs \
+            --project creative/project.example.json \
+            --assets /tmp/worldvision-assets \
+            --output output/creative/example.mp4
+      - name: Independently inspect the real encoded output using Remotion's existing metadata reader
+        run: |
+          node --input-type=module -e "import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/example.mp4');console.log(JSON.stringify(m));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||Math.abs(m.durationInSeconds-151/30)>.15)process.exit(1);"
+          test -s output/creative/example.mp4
+          test -s output/creative/example.mp4.report.json
+      - name: Test real import of externally supplied images, video and audio
+        run: |
+          mkdir -p /tmp/worldvision-fixture-assets
+          node creative/build-ci-fixtures.mjs /tmp/worldvision-fixture-assets output/creative/example.mp4 /tmp/worldvision-external-project.json
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-external-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --output output/creative/with-imported-media.mp4
+      - name: Verify imported media, scene rendering and arbitrary audio
+        run: |
+          node --input-type=module -e "import {getVideoMetadata} from '@remotion/renderer';import fs from 'node:fs';const m=await getVideoMetadata('output/creative/with-imported-media.mp4');const r=JSON.parse(fs.readFileSync('output/creative/with-imported-media.mp4.report.json','utf8'));console.log(JSON.stringify({video:m,report:r.media}));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.media.length!==4||r.track_voice!=='TEST SINE TONE — NOT A VOICE')process.exit(1);"
+          test -s output/creative/with-imported-media.mp4
+      - name: Inspect exact screenshots from the rendered external-media film
+        run: |
+          node --input-type=module -e "import fs from 'node:fs';const r=JSON.parse(fs.readFileSync('output/creative/with-imported-media.mp4.report.json','utf8'));if(r.actual_rendered_stills.length<3||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size<2)process.exit(1);console.log(r.actual_rendered_stills);"
+      - name: Render only the new focus-reveal shot without changing the source film
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-external-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --shot plan-01 \
+            --output output/creative/focus-reveal-only.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const r=JSON.parse(fs.readFileSync('output/creative/focus-reveal-only.mp4.report.json','utf8'));const m=await getVideoMetadata('output/creative/focus-reveal-only.mp4');if(r.mode!=='single_shot_preview'||r.shot_id!=='plan-01'||r.track_voice!=='no_narration'||r.duration_frames!==105||m.width!==1080||m.height!==1920||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size<2)process.exit(1);console.log('focus-reveal preview validated',r.duration_frames);"
+      - name: Render genuine-pixel document spotlight with abstract CI source
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-document-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --shot plan-document \
+            --output output/creative/document-focus-only.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const r=JSON.parse(fs.readFileSync('output/creative/document-focus-only.mp4.report.json','utf8'));const m=await getVideoMetadata('output/creative/document-focus-only.mp4');if(r.mode!=='single_shot_preview'||r.shot_id!=='plan-document'||r.duration_frames!==140||r.media.length!==1||m.width!==1080||m.height!==1920||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('Document focus original-image render verified:',r.duration_frames);"
+      - name: Render genuine Natural Earth globe with six independent motion layers
+        run: |
+          node creative/render-project.mjs \
+            --project creative/geo-story.synthetic.example.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --shot geo-intro \
+            --output output/creative/geo-motion-intro.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/geo-motion-intro.mp4');const r=JSON.parse(fs.readFileSync('output/creative/geo-motion-intro.mp4.report.json','utf8'));if(m.width!==1080||m.height!==1920||r.duration_frames!==150||r.shot_id!=='geo-intro'||r.media.length!==0||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('Real atlas globe motion, metadata and stills verified');"
+      - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Analyze supplied audio without modifying or regenerating it
+        run: |
+          node creative/audit-voice.mjs /tmp/worldvision-fixture-assets/synthetic-tone.wav 5.2 > output/creative/audit-voice.json
+          node --input-type=module -e "import fs from 'node:fs';import crypto from 'node:crypto';const r=JSON.parse(fs.readFileSync('output/creative/audit-voice.json','utf8'));const sha=crypto.createHash('sha256').update(fs.readFileSync('/tmp/worldvision-fixture-assets/synthetic-tone.wav')).digest('hex');if(r.original_sha256!==sha||r.input_unmodified!==true||Math.abs(r.duration_seconds-5.2)>.1)process.exit(1);console.log(r);"
+          # Negative-control fixture: verify that a deliberately inserted 1.3s silence is not missed.
+          node creative/audit-voice.mjs /tmp/worldvision-fixture-assets/synthetic-tone-with-gap.wav 5.2 > output/creative/audit-with-gap.json
+          node --input-type=module -e "import fs from 'node:fs';const r=JSON.parse(fs.readFileSync('output/creative/audit-with-gap.json','utf8'));if(!r.flags.some(f=>f.code==='long_pause_for_listening_review'&&f.length_seconds>=1))process.exit(1);console.log('Confirmed real, flagged silence',r.flags);"
+      - name: Install locked ThreeCanvas V2 player dependencies for browser QA
+        run: npm ci --prefix ../../frontend/web-v2 --no-audit --no-fund
+      - name: Start private test page with explicitly synthetic source media
+        run: |
+          mkdir -p ../../frontend/web-v2/public/smoke
+          cp /tmp/worldvision-fixture-assets/synthetic-landscape.png ../../frontend/web-v2/public/smoke/synthetic-landscape.png
+          cp /tmp/worldvision-fixture-assets/synthetic-document.png ../../frontend/web-v2/public/smoke/synthetic-document.png
+          cp /tmp/worldvision-fixture-assets/synthetic-tone.wav ../../frontend/web-v2/public/smoke/synthetic-tone.wav
+          cp /tmp/worldvision-fixture-assets/synthetic-clip.mp4 ../../frontend/web-v2/public/smoke/synthetic-clip.mp4
+          npm --prefix ../../frontend/web-v2 run dev -- --host 127.0.0.1 --port 5173 --strictPort > /tmp/wv-player-vite.log 2>&1 &
+          echo $! > /tmp/wv-player-vite.pid
+      - name: Inspect real Remotion Player pixels in Chromium browser
+        run: |
+          timeout --kill-after=10s 150s node creative/test-player-browser.mjs || {
+            echo "Player/browser smoke failed; Vite diagnostics:"
+            tail -n 100 /tmp/wv-player-vite.log || true
+            exit 1
+          }
+          test -s output/creative/player-browser-frame-0.png
+          test -s output/creative/player-browser-frame-74.png
+          test -s output/creative/player-browser-smoke.report.json
+          test -s output/creative/player-film-frame-0.png
+          test -s output/creative/player-film-frame-100.png
+          test -s output/creative/player-film-frame-145.png
+          test -s output/creative/player-film-smoke.report.json
+          test -s output/creative/player-clip-frame-0.png
+          test -s output/creative/player-clip-frame-74.png
+          test -s output/creative/player-clip-smoke.report.json
+          test -s output/creative/player-document-frame-0.png
+          test -s output/creative/player-document-frame-40.png
+          test -s output/creative/player-document-frame-102.png
+          test -s output/creative/player-document-frame-68.png
+          test -s output/creative/player-document-smoke.report.json
+          test -s output/creative/player-geo-frame-0.png
+          test -s output/creative/player-geo-frame-48.png
+          test -s output/creative/player-geo-frame-96.png
+          test -s output/creative/player-geo-frame-138.png
+          test -s output/creative/player-geo-smoke.report.json
+      - name: Preserve real demo render for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-creative-compositor-demo
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/with-imported-media.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/with-imported-media.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/audit-voice.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/audit-with-gap.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-browser-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-browser-frame-74.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-browser-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-film-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-film-frame-100.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-film-frame-145.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-film-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-frame-74.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/document-focus-only.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/document-focus-only.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/document-focus-only.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-40.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-102.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-68.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/geo-motion-intro.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/geo-motion-intro.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/public/geo/nasa-blue-marble-june.jpg.source.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/geo-motion-intro.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-frame-48.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-frame-96.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-frame-138.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
+          retention-days: 7
+          if-no-files-found: error
+
+  frontend-workbench:
+    name: Real V2 mobile content workbench build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install exact committed Three.js/Remotion dependency tree
+        run: npm ci --no-audit --no-fund
+      - name: Prepare official NASA texture for V2 test and document provenance
+        run: node ../../services/media-renderer/creative/prepare-earth-texture.mjs
+
+
+      - name: Verify one coherent Remotion/React runtime and compile actual shared composition
+        run: |
+          npm ls @remotion/player remotion @remotion/layout-utils @remotion/transitions react react-dom --depth=0
+          npm run build
+      - name: Verify a dedicated lazy Player bundle exists
+        run: |
+          find dist/assets -maxdepth 1 -name '*CreativeCompositionPreview*' -print
+          test -n "$(find dist/assets -maxdepth 1 -name '*CreativeCompositionPreview*' -print -quit)"
