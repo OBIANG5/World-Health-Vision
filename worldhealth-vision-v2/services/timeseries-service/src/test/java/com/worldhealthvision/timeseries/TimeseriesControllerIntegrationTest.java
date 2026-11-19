@@ -7,6 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -199,6 +202,51 @@ class TimeseriesControllerIntegrationTest {
                 .andExpect(jsonPath("$.count").value(2))
                 .andExpect(jsonPath("$.items[0].countryDisplayName").value("France"));
 
+
+        // Batch has independent rank partitions. GDP retains World Bank and IMF
+        // while the second code has no observations and returns a true empty list.
+        String baselineLatest = mockMvc.perform(get("/api/timeseries/series/latest")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", "NY.GDP.MKTP.CD"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String batchLatest = mockMvc.perform(post("/internal/timeseries/series/latest/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"countryIso3":"fra",
+                             "indicatorCodes":["SP.POP.TOTL","NY.GDP.MKTP.CD"],
+                             "includeMissing":false}
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(2))
+                .andExpect(jsonPath("$.items[0].indicatorCode").value("SP.POP.TOTL"))
+                .andExpect(jsonPath("$.items[0].count").value(0))
+                .andExpect(jsonPath("$.items[1].indicatorCode").value("NY.GDP.MKTP.CD"))
+                .andExpect(jsonPath("$.items[1].count").value(2))
+                .andReturn().getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        var oldNodes = mapper.readTree(baselineLatest).get("items");
+        var batchNodes = mapper.readTree(batchLatest).get("items").get(1).get("items");
+        assertEquals(oldNodes, batchNodes,
+                "Every field, source-run, period, estimated flag and per-source sorting must match.");
+
+        String filteredLegacy = mockMvc.perform(get("/api/timeseries/series/latest")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", "NY.GDP.MKTP.CD")
+                        .param("sourceCode", "IMF")
+                        .param("periodGranularity", "ANNUAL"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String filteredBatch = mockMvc.perform(post("/internal/timeseries/series/latest/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {"countryIso3":"FRA","indicatorCodes":["NY.GDP.MKTP.CD"],
+                             "sourceCode":"IMF","periodGranularity":"ANNUAL","includeMissing":false}
+                            """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertEquals(mapper.readTree(filteredLegacy).get("items"),
+                     mapper.readTree(filteredBatch).get("items").get(0).get("items"),
+                     "Filtered estimated-source projection and provenance must be unchanged.");
+
         mockMvc.perform(get("/api/timeseries/series/availability")
                         .param("countryIso3", "FRA")
                         .param("indicatorCode", "NY.GDP.MKTP.CD"))
@@ -221,4 +269,30 @@ class TimeseriesControllerIntegrationTest {
                 .andExpect(jsonPath("$.items[0].sourceDisplayName").exists())
                 .andExpect(jsonPath("$.items[0].datasetDisplayName").exists());
     }
+    @Test
+    void shouldRejectMalformedDuplicateAndOversizedInternalLatestBatch() throws Exception {
+        for (String payload : new String[]{
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[]}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\",\"ny.gdp.mktp.cd\"]}",
+                "{\"countryIso3\":\"FR\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"]}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"INVALID;DROP\"]}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[null]}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":null}",
+                "{\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"]}"
+        }) {
+            mockMvc.perform(post("/internal/timeseries/series/latest/batch")
+                    .contentType(MediaType.APPLICATION_JSON).content(payload))
+                    .andExpect(status().isBadRequest());
+        }
+        StringBuilder overLimit = new StringBuilder("{\"countryIso3\":\"FRA\",\"indicatorCodes\":[");
+        for (int i = 0; i < 129; i++) {
+            if (i > 0) overLimit.append(",");
+            overLimit.append("\"TEST.CODE.").append(i).append("\"");
+        }
+        overLimit.append("]}");
+        mockMvc.perform(post("/internal/timeseries/series/latest/batch")
+                .contentType(MediaType.APPLICATION_JSON).content(overLimit.toString()))
+                .andExpect(status().isBadRequest());
+    }
+
 }
