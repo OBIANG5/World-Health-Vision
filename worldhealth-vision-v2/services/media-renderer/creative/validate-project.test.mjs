@@ -429,6 +429,8 @@ test("data story source protection: no missing claim, deceptive chronology, rank
   s.data.points=[{label:"A",value:2},{label:"B",value:8},{label:"C",value:1}];
   assert.ok(reasons(p).includes("shots[0].data.points"));
   s.data.points=[{label:"A",value:8},{label:"B",value:2},{label:"C",value:1}];
+  // Tied observations are legal; rendering must show equal competition ranks.
+  assert.equal(inspectProject(p).ok,true);
   assert.equal(inspectProject(p).ok,true);
   s.data.kind="heatmap";delete s.data.points;
   s.data.matrix={columns:["X","Y"],rows:[
