@@ -130,7 +130,7 @@ Le rendu de qualité mondiale demandera **un vrai cas** apporté par le proprié
 
 **P3 — Assets et versions de production.** Upload authentifié et stockage durable des médias (éventuellement objets externes), ledger de provenance/rights, groupes projet/plan, meilleure gestion des très gros médias (pas tous en mémoire iOS). Calcul d'un fingerprint du plan `SHA(script + shotProps + assetHashes + versionRenderer)`, cache de previews/diff de scène, concat de plans gelés, approbations explicites.
 
-**P4 — Voix et son pro.** Comparateur de deux à trois interprétations sur la même phrase complète (notamment Vivienne si souhaitée), choix indépendant du fournisseur ; vérifier licences, prononciation, intelligibilité, silences, sous-titres temporisés sur l'audio réel. Réutiliser `getSilentParts`, FFmpeg, loudnorm, `sidechaincompress`/outils DAW ou mixeur du media renderer, pas écrire un DSP naïf. Les réglages de diffusion ne doivent pas empêcher de conserver la source audio.
+**P4 — Voix et son pro.** Comparateur de deux à trois interprétations sur la même phrase complète (notamment Vivienne si souhaitée), choix indépendant du fournisseur ; vérifier licences, prononciation, intelligibilité, silences, sous-titres temporisés sur l'audio réel. Réutiliser FFmpeg/FFprobe `silencedetect`, `loudnorm`, `sidechaincompress`/outils DAW ou mixeur du media renderer, pas écrire un DSP naïf. Les réglages de diffusion ne doivent pas empêcher de conserver la source audio.
 
 **P5 — Un vrai kit motion design évolutif, pas 50 templates pauvres.** Prototypes art-dirigés `focus_reveal`, `document_evidence`, `data_scale`, et `human_context`. Visuels créés ailleurs possibles par MP4/WebM avec transparence selon provenance. Tester After Effects/Fusion/Blender/Runway/ElevenLabs selon budget, droit, API, accès et gains réels. N'écrire du code maison que pour les compositions éditoriales reproductibles.
 
@@ -149,3 +149,26 @@ Le rendu de qualité mondiale demandera **un vrai cas** apporté par le proprié
 - **Ne jamais faire une fusion ou un déploiement public au motif que les tests sont verts.** Les validations artistiques sont humaines.
 - BAOCOM : aucun push, aucun connecteur ; voix Vivienne non obligatoire ; pas de script auto; pas de GDELT/blog à ce stade.
 - Les artefacts et images d'archives dans GitHub sont les références, **pas les appréciations vagues d'un ancien chat**.
+
+## 7. Contrôle final repris après interruption — VALIDÉ
+
+**Date : 19 novembre 2026 ; dernière preuve CI sur code : [GitHub Actions #44530170278](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278), commit `04399843d2af6106d7158b7ffa33652dd960a693`.**
+
+- Job `Actual Remotion MP4 and user-project validation` : **SUCCESS**. **11 tests Node réussis, 0 échec** ; rendu H.264 1080×1920, images et MP4 de scène isolée, composition 2,5D depuis détourage synthétique, audio externe importé, rapports SHA et captures de vrais pixels.
+- Job `Real V2 mobile content workbench build` : **SUCCESS**. L'interface V2 compile.
+- **Contrôle positif voix** : audio WAV de 5,2 s contrôlé par `ffprobe` et `ffmpeg silencedetect` ; empreinte SHA du fichier source identique avant/après.
+- **Contrôle négatif voix** : WAV de synthèse avec **1,3 seconde de silence introduit volontairement** ; le test a confirmé `long_pause_for_listening_review` d'une durée supérieure ou égale à une seconde. La sortie prouve que le détecteur peut réellement signaler un défaut, et pas seulement accepter n'importe quelle piste.
+- **Cause et correction** : premier essai d'analyse `getSilentParts()` : `Compositor error: Invalid argument` sur WAV. Remplacé par l'outil éprouvé FFmpeg existant. Le remplacement est implémenté, testé et documenté ; aucun DSP de substitution maison.
+- **Limites** : audio d'essai synthétique, pas un jugement sur la diction/expressivité d'une vraie narration. Rendu cinématographique techniquement valide, mais démonstration graphique abstraite encore très loin d'une publication artistique de référence. Pas de source réelle, de droits licenciés, de voix humaine professionnelle ni d'export mobile à partir de l'interface web. Aucune publicité ni diffusion.
+- **État GitHub** : [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) encore **DRAFT**, base `feature/world-vision-media-studio` ; **aucune fusion dans `v2`**, aucun déploiement Vercel, aucun push ni connexion BAOCOM.
+
+### Prochain travail prioritaire au prochain chat
+
+1. **Véritable prévisualisation de composition dans le Studio** : ne plus se limiter au fichier source ; relier le frontend au rendu Remotion de la scène en gardant son identité et un protocole d'upload sécurisé. Vérifier l'existence et les licences de `@remotion/player` avant d'installer quoi que ce soit. Protéger les ressources des utilisateurs.
+2. **Art direction réelle** : demander au propriétaire un script + 1–2 images/vidéos authentiques ou autorisées ; construire **une** ouverture de qualité supérieure et comparer A/B les compositions. Un test noir/abstrait n'est pas la cible esthétique.
+3. **Correction non destructive** : empreintes stables par scène, réemploi/cache des plans déjà approuvés, rendu ciblé et capacité à remplacer seulement un fragment sans redégrader l'ensemble.
+4. **Voix et sound design** : audition de prises A/B, alignement parole/image et mix sur l'audio réellement reçu, avec outil existant ; aucun fournisseur obligatoire.
+5. **Content OS de production audiovisuelle seulement** : dossiers / médias / plans / versions / commentaires / exports ; pas de raccord GDELT ou blog global. BAOCOM complètement indépendant.
+
+**NE PAS déclarer le projet « terminé »** : ce jalon technique est terminé, mais la qualité visuelle de classe internationale exige encore les étapes ci-dessus, la revue humaine des véritables médias et la comparaison avec les meilleurs reportages.
+
