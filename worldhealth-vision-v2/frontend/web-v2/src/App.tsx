@@ -7,6 +7,7 @@ import type { CountrySummary } from "./api/types";
 import EyeLayout from "./components/layout/EyeLayout";
 import EyeMapFrame from "./components/layout/EyeMapFrame";
 import {WorldIcon} from "./components/ui/WorldIcon";
+import { VISION_PRODUCTS, type VisionAction } from "./product/visionProducts";
 import { LanguageProvider, useLang, useToggleLang } from "./context/LanguageContext";
 import { UserProfileProvider, useUserProfile } from "./context/UserProfileContext";
 import { useCountryCatalog } from "./hooks/useCountryCatalog";
@@ -17,6 +18,7 @@ import { t } from "./i18n/labels";
 // au démarrage. On les charge quand ils s'ouvrent → bundle initial plus léger et
 // carte affichée plus vite (Recharts/jsPDF ne sont plus dans le bundle de départ).
 const CountryDrawer = lazy(() => import("./components/country/CountryDrawer"));
+const VisionHub = lazy(() => import("./components/layout/VisionHub"));
 const RegionDrawer = lazy(() => import("./components/region/RegionDrawer"));
 const SourceMethodologyModal = lazy(() => import("./components/layout/SourceMethodologyModal"));
 const WatchlistPanel = lazy(() => import("./components/layout/WatchlistPanel"));
@@ -33,6 +35,7 @@ const CurrencyPanel = lazy(() => import("./components/layout/CurrencyPanel"));
 import "./styles/mobile.css";
 import "./styles/world-editorial.css";
 import "./styles/world-electric.css";
+import "./styles/vision-hub.css";
 
 // ---------- Sélecteur de pays (popover) ----------
 
@@ -127,8 +130,10 @@ function AppContent() {
   const [showAdvisor, setShowAdvisor] = useState(false);
   const [showCurrencyPanel, setShowCurrencyPanel] = useState(false);
   const [showToolsMenu, setShowToolsMenu] = useState(false);
+  const [showVisionHub, setShowVisionHub] = useState(false);
   const [navDomain, setNavDomain] = useState<NavDomain>("all");
   const toolsButtonRef = useRef<HTMLButtonElement>(null);
+  const closeVisionHub = useCallback(() => setShowVisionHub(false), []);
   const [toolsAnchor, setToolsAnchor] = useState({ top: 80, left: 16 });
   const [countryAnchor, setCountryAnchor] = useState({ top: 80, left: 16 });
   const [selectedCountryIso3, setSelectedCountryIso3] = useState("FRA");
@@ -297,6 +302,36 @@ function AppContent() {
     setShowToolsMenu(false);
   }
 
+  function openVisionHub() {
+    setShowVisionHub(true);
+    setShowToolsMenu(false);
+    setShowCountrySelector(false);
+    setShowSourcesModal(false);
+  }
+
+  function handleVisionAction(action: VisionAction) {
+    setShowVisionHub(false);
+    setShowToolsMenu(false);
+    switch (action) {
+      case "country":
+        openCountrySearch();
+        return;
+      case "favorites":
+        if (!showWatchlist) openFavorites();
+        return;
+      case "currency":
+        if (!showCurrencyPanel) handleToggleCurrencyPanel();
+        return;
+      case "travel":
+        if (!showTravelPanel) handleToggleTravel();
+        return;
+      case "sources":
+        setShowSourcesModal(true);
+        setShowCountrySelector(false);
+        return;
+    }
+  }
+
   function openFavorites() {
     setShowWatchlist((v) => !v);
     setShowCountrySelector(false);
@@ -334,6 +369,10 @@ function AppContent() {
           setShowSourcesModal(false); setShowCountrySelector(false);
         }}>
         {lang === "fr" ? "Accueil" : "Home"}
+      </button>
+      <button type="button" className="whv-nav-btn whv-vision-nav"
+        aria-expanded={showVisionHub} onClick={openVisionHub}>
+        {lang === "fr" ? "Les Visions" : "All Visions"}
       </button>
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--explore" + (showToolsMenu && navDomain === "explore" ? " active" : "")}
@@ -527,42 +566,47 @@ function AppContent() {
       />
 
       <section className="whv-desktop-story" aria-label={lang === "fr" ? "Présentation de la plateforme" : "Platform overview"}>
-        <span className="whv-story-eyebrow"><span className="whv-story-dot" /> {lang === "fr" ? "VOTRE ATLAS DU MONDE" : "YOUR WORLD ATLAS"}</span>
-        <h2>{lang === "fr" ? <>Voir le monde.<br/><em>Le comprendre.</em></> : <>See the world.<br/><em>Understand it.</em></>}</h2>
+        <span className="whv-story-eyebrow"><span className="whv-story-dot" /> {lang === "fr" ? "WORLD-VISION · ÉCOSYSTÈME MONDIAL" : "WORLD-VISION · GLOBAL ECOSYSTEM"}</span>
+        <h2>{lang === "fr" ? <>Un monde.<br/><em>Plusieurs Visions.</em></> : <>One world.<br/><em>Many Visions.</em></>}</h2>
         <p>{lang === "fr"
-          ? "Un même endroit pour explorer les pays, les économies, les destinations et les grands enjeux du monde."
-          : "One place to explore countries, economies, destinations and the world's key challenges."}</p>
+          ? "Atlas, veille, devises, voyages, prix et marchés : un écosystème pour comprendre les faits et prendre des décisions mieux documentées."
+          : "Atlas, monitoring, currencies, travel, prices and markets: one ecosystem for understanding facts and making better-informed decisions."}</p>
         <div className="whv-story-actions">
-          <button type="button" className="whv-story-primary" onClick={() => openNavDomain("explore")}>
-            {lang === "fr" ? "Explorer les pays" : "Explore countries"} <span aria-hidden="true"><WorldIcon name="arrow" size={17}/></span>
+          <button type="button" className="whv-story-primary" onClick={openVisionHub}>
+            {lang === "fr" ? "Découvrir les Visions" : "Explore the Visions"} <span aria-hidden="true"><WorldIcon name="arrow" size={17}/></span>
           </button>
-          <button type="button" className="whv-story-secondary" onClick={() => openNavDomain("all")}>
-            {lang === "fr" ? "Découvrir les outils" : "Discover the tools"}
+          <button type="button" className="whv-story-secondary" onClick={() => openNavDomain("explore")}>
+            {lang === "fr" ? "Explorer l'Atlas" : "Explore the Atlas"}
           </button>
         </div>
         <div className="whv-story-metrics" aria-label={lang === "fr" ? "Aperçu du catalogue" : "Catalog overview"}>
           <div><strong>{countries.length || "—"}</strong><span>{lang === "fr" ? "pays & territoires" : "countries & territories"}</span></div>
-          <div><strong>04</strong><span>{lang === "fr" ? "univers à explorer" : "areas to explore"}</span></div>
+          <div><strong>{VISION_PRODUCTS.length}</strong><span>{lang === "fr" ? "Visions sur la feuille de route" : "Visions on the roadmap"}</span></div>
         </div>
         <div className="whv-story-topics">
-          <span>{lang === "fr" ? "Géographie" : "Geography"}</span>
-          <span>{lang === "fr" ? "Économie" : "Economy"}</span>
-          <span>{lang === "fr" ? "Voyage" : "Travel"}</span>
-          <span>{lang === "fr" ? "Sécurité" : "Safety"}</span>
+          <span>Atlas Vision</span>
+          <span>Watch Vision</span>
+          <span>Money Vision</span>
+          <span>Global Radar</span>
         </div>
       </section>
 
 
 <aside className="whv-mobile-overview" aria-label={lang === "fr" ? "Explorer les pays" : "Explore countries"}>
         <div>
-          <span className="whv-mobile-eyebrow">{lang === "fr" ? "L'EXPLORATEUR MONDIAL" : "WORLD EXPLORER"}</span>
+          <span className="whv-mobile-eyebrow">{lang === "fr" ? "WORLD-VISION · UN ÉCOSYSTÈME" : "WORLD-VISION · AN ECOSYSTEM"}</span>
           <h2>{lang === "fr" ? "Voir le monde, le comprendre." : "See the world, understand it."}</h2>
           <p className="whv-mobile-overview-description">
             {lang === "fr"
-              ? "Pays, économie, voyages et sécurité : explorez les multiples facettes du monde."
-              : "Countries, markets, travel and safety: discover the world from every angle."}
+              ? "Atlas, Watch, Money, Tourisme, Prix, Trading, BRVM et Global Radar : découvrez les outils actuels et ceux à construire."
+              : "Atlas, Watch, Money, Travel, Price, Trading, BRVM and Global Radar: see current and planned tools."}
           </p>
         </div>
+        <button type="button" className="whv-mobile-vision-entry" onClick={openVisionHub}>
+          <span><strong>{lang === "fr" ? "Explorer les Visions World-Vision" : "Explore World-Vision products"}</strong>
+            <small>{lang === "fr" ? "Catalogue, usages, maturité et prochaines étapes" : "Catalog, use cases, readiness and next steps"}</small></span>
+          <WorldIcon name="arrow" size={21}/>
+        </button>
         <button className="whv-mobile-featured" type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
           <span className="whv-mobile-featured-text">
             <span className="whv-mobile-featured-label">{lang === "fr" ? "PAYS SÉLECTIONNÉ" : "SELECTED COUNTRY"}</span>
@@ -595,9 +639,9 @@ function AppContent() {
             <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="shield" size={23}/></span>
             <span>{lang === "fr" ? "Sécurité" : "Safety"}</span>
           </button>
-          <button type="button" className="whv-mobile-shortcut" onClick={() => openNavDomain("all")}>
+          <button type="button" className="whv-mobile-shortcut" onClick={openVisionHub}>
             <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="layers" size={23}/></span>
-            <span>{lang === "fr" ? "Tous les outils" : "All tools"}</span>
+            <span>{lang === "fr" ? "Les Visions" : "All Visions"}</span>
           </button>
         </div>
         <p className="whv-mobile-note">
@@ -725,6 +769,9 @@ function AppContent() {
       {showCurrencyPanel && (
         <CurrencyPanel onClose={() => setShowCurrencyPanel(false)} />
       )}
+
+      <VisionHub open={showVisionHub} language={lang}
+        onClose={closeVisionHub} onAction={handleVisionAction} />
 
       {showWatchlist && (
         <WatchlistPanel
