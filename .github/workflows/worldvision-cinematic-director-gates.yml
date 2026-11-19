@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'feature/worldvision-cinematic-*'
+      - 'feature/worldvision-photo-*'
     paths:
       - 'worldhealth-vision-v2/services/media-renderer/creative/**'
       - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
