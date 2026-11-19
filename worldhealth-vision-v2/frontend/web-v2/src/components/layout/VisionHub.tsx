@@ -18,6 +18,8 @@ interface Props {
   language: Locale;
   onClose: () => void;
   onAction: (action: VisionAction) => void;
+  selectedId: VisionId;
+  onSelectProduct: (id: VisionId) => void;
 }
 
 const icons: Record<VisionId, WorldIconName> = {
@@ -48,10 +50,9 @@ function statusLabel(product: VisionProduct, language: Locale) {
  * A real, navigable international product directory—not a collection of
  * dead links. Non-connected products open an honest capability detail.
  */
-export default function VisionHub({ open, language, onClose, onAction }: Props) {
+export default function VisionHub({ open, language, onClose, onAction, selectedId, onSelectProduct }: Props) {
   const [family, setFamily] = useState<FamilyFilter>("all");
   const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState<VisionId>("atlas");
   const panelRef = useRef<HTMLElement>(null);
   const detailRef = useRef<HTMLElement>(null);
 
@@ -73,7 +74,7 @@ export default function VisionHub({ open, language, onClose, onAction }: Props) 
     ?? VISION_PRODUCTS[0];
 
   function chooseProduct(id: VisionId) {
-    setSelectedId(id);
+    onSelectProduct(id);
     if (window.matchMedia("(max-width: 760px)").matches) {
       window.requestAnimationFrame(() => detailRef.current?.scrollIntoView({
         behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
@@ -161,7 +162,7 @@ export default function VisionHub({ open, language, onClose, onAction }: Props) 
               <button key={id} type="button" onClick={() => {
                 setFamily(id);
                 const next = VISION_PRODUCTS.find((product) => id === "all" || product.family === id);
-                if (next) setSelectedId(next.id);
+                if (next) onSelectProduct(next.id);
               }}
                 aria-pressed={family === id}
                 className={family === id ? "vision-filter active" : "vision-filter"}>
