@@ -30,10 +30,9 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
   const accent=shot.accent??"#49e7f3";
   const format=(v:number)=>valueLabel(v,d.precision,d.locale??"fr-FR");
   const mode=d.mode;
-  const ordered=mode==="ranking"?rankedData(series):series;
-  const featured=mode==="ranking"?ordered[0]:mode==="heatmap"
+  const ranking=rankedData(series);
+  const featured=mode==="ranking"?ranking[0]:mode==="heatmap"
     ?series.reduce((a,b)=>b.value>a.value?b:a):series[series.length-1];
-  const formattedValue=format(featured.value);
   const titleSize=fitTextOnNLines({
     text:shot.title??"",maxBoxWidth:852,maxLines:2,
     fontFamily:globalStyle.editorialFont,fontWeight:820,maxFontSize:81
@@ -49,7 +48,6 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
   const linePath=serial.map((p,i)=>(i===0?"M ":" L ")+n(p.x)+" "+n(p.y)).join("");
   const heat=mode==="heatmap"?heatmapCells(series,d.domain):[];
   const valueWidth=(value:number)=>Math.max(0,Math.min(1,value/d.domain.max));
-  const altColor="rgba(126,232,249,.25)";
   const chartModeLabel=mode==="line"?"ÉVOLUTION TEMPORELLE":mode==="ranking"
     ?"CLASSEMENT PAR VALEUR":"CARTE DE CHALEUR · INTENSITÉ";
   const showNumber=beat.number;
@@ -124,9 +122,9 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
         </g>)}
       </g>}
       {mode==="ranking"&&<g data-wv-data-ranking="true">
-        {ordered.map((point,i)=>{
+        {ranking.map((point,i)=>{
           const y=537+i*81;
-          const progress=pct((beat.plot*ordered.length-i)*.88);
+          const progress=pct((beat.plot*ranking.length-i)*.88);
           return <g key={point.label+"-"+i} opacity={beat.grid}>
             <text x="126" y={y+37} style={labelClass}>
               {String(point.rank).padStart(2,"0")} · {point.label.slice(0,18)}
