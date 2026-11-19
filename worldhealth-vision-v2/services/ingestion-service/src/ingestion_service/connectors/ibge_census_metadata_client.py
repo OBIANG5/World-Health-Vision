@@ -27,6 +27,17 @@ class SourceJsonEvidence:
     canonical_json_sha256: str
     http_body_sha256: str
     payload: Any
+    http_status: int = 200
+    etag: str | None = None
+    last_modified: str | None = None
+
+
+class IbgeProviderHttpError(ValueError):
+    """Sanitized HTTP failure; retain code, never source body in exception."""
+
+    def __init__(self, http_status: int):
+        self.http_status = http_status
+        super().__init__("IBGE metadata HTTP response was not 200")
 
 
 @dataclass(frozen=True)
@@ -125,11 +136,13 @@ class IbgeCensusMetadataClient:
         ) as client:
             with client.stream("GET", path) as response:
                 if response.status_code != 200:
-                    raise ValueError("IBGE metadata HTTP status was not 200")
+                    raise IbgeProviderHttpError(response.status_code)
                 if "application/json" not in response.headers.get("content-type", "").lower():
                     raise ValueError("IBGE metadata is not JSON")
                 if response.headers.get("content-encoding", "identity").lower() not in ("", "identity"):
                     raise ValueError("Compressed provider metadata rejected")
+                etag = response.headers.get("etag")
+                last_modified = response.headers.get("last-modified")
                 content = bytearray()
                 chunks = (response.content,) if response.is_stream_consumed else response.iter_raw()
                 for chunk in chunks:
@@ -149,14 +162,24 @@ class IbgeCensusMetadataClient:
             canonical_json_sha256=_canonical_hash(parsed),
             http_body_sha256=sha256(exact).hexdigest(),
             payload=parsed,
+            http_status=200,
+            etag=etag,
+            last_modified=last_modified,
         )
 
-    def fetch_census2022_contract(self) -> IbgeCensusMetadata:
-        # Each call is separate: the aggregate metadata endpoint does not
-        # carry the 'periodos' array. Never synthesize it.
-        aggregate = self._get(_METADATA_PATH)
+    def fetch_aggregate_metadata(self) -> SourceJsonEvidence:
+        evidence = self._get(_METADATA_PATH)
+        validate_aggregate_metadata(evidence.payload)
+        return evidence
+
+    def fetch_official_periods(self) -> SourceJsonEvidence:
+        evidence = self._get(_PERIODS_PATH)
+        validate_aggregate_periods(evidence.payload)
+        return evidence
+
+    @staticmethod
+    def combine_contract(aggregate: SourceJsonEvidence, periods: SourceJsonEvidence) -> IbgeCensusMetadata:
         variable = validate_aggregate_metadata(aggregate.payload)
-        periods = self._get(_PERIODS_PATH)
         period_2022 = validate_aggregate_periods(periods.payload)
         return IbgeCensusMetadata(
             aggregate=aggregate,
@@ -168,4 +191,10 @@ class IbgeCensusMetadataClient:
             geographic_level="N1",
             source_unit=variable["unidade"],
             provider_modification_field=period_2022.get("modificacao"),
+        )
+
+    def fetch_census2022_contract(self) -> IbgeCensusMetadata:
+        # Preserve the original public method for existing tests/callers.
+        return self.combine_contract(
+            self.fetch_aggregate_metadata(), self.fetch_official_periods()
         )
