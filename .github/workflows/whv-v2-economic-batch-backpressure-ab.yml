@@ -1,0 +1,161 @@
+name: WHV V2 - economic Timeseries backpressure 0-8-0 A/B/A on dense fixture
+
+on:
+  push:
+    branches:
+      - 'perf/v2-economy-batch-backpressure-ab-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-v2-economy-backpressure-${{ github.ref }}
+  cancel-in-progress: true
+
+# CI-only, no exposed API, OIDC provider or external provider requests.
+env:
+  WHV_TIMESCALE_IMAGE: timescale/timescaledb:2.15.3-pg16
+  WHV_OIDC_ISSUER_URI: https://ci-only.invalid/realms/worldvision
+  WHV_OIDC_JWKS_URI: https://ci-only.invalid/realms/worldvision/jwks
+  WHV_SECURITY_AUDIENCE: worldvision-ci-backpressure-aba
+  WHV_DB_PASSWORD_FILE: /tmp/whv_ci_optimized_dense_secret
+  WHV_GATEWAY_HOST_PORT: "18080"
+  WHV_ECONOMIC_BATCH_LIMIT: "0"
+
+jobs:
+  optimized-dense:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Validate bounded code and generate exact synthetic fixture
+        run: |
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_optimized_dense_concurrency.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/report_upstream_metrics.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/sql_profile_build_fixture.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/generate_batch_jdbc_explain.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/analyze_batch_jdbc_plans.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/compare_economic_batch_backpressure_ab.py
+          bash -n worldhealth-vision-v2/infra/tests/run_economic_backpressure_ab.sh
+          mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
+          python3 worldhealth-vision-v2/infra/tests/sql_profile_build_fixture.py \
+            --profiles worldhealth-vision-v2/services/analytics-service/src/analytics_service/product_profiles.py \
+            --template worldhealth-vision-v2/infra/tests/sql_profile_dense_fixture.sql \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/generated-12-country-fixture.sql \
+            --ci-fixture-only
+
+      - name: Prepare disposable credentials and verify absolutely no public ports
+        run: |
+          openssl rand -hex 40 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0644 "$WHV_DB_PASSWORD_FILE"
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-private-timeseries-metrics.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            config --format json > "$RUNNER_TEMP/whv-dense-compose.json"
+          python3 - "$RUNNER_TEMP/whv-dense-compose.json" <<'PY'
+          import json,sys
+          services=json.load(open(sys.argv[1]))['services']
+          for name in ('whv-timescaledb','catalog-service','timeseries-service','analytics-service'):
+              assert not services[name].get('ports'), f'{name} exposed a host port'
+          required=(
+              'WHV_ANALYTICS_CATALOG_INDICATOR_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_LATEST_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_AVAILABILITY_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_HISTORY_BATCH_ENABLED',
+          )
+          env=services['analytics-service']['environment']
+          assert all(env.get(k)=='true' for k in required)
+          protected=services['timeseries-service']
+          assert protected['environment'].get('MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE')=='health,info,prometheus'
+          assert not protected.get('ports'), 'Internal Hikari metrics exposed on host'
+          print('PASS: isolated DB, four real optimized flags on, no public service ports')
+          PY
+
+      - name: Build private Postgres, Catalog, Timeseries and Analytics
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-private-timeseries-metrics.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            up -d --build --wait whv-timescaledb catalog-service timeseries-service analytics-service
+
+      - name: Seed 124416 correctly labeled synthetic observations only
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-private-timeseries-metrics.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            exec -T whv-timescaledb sh -ec \
+              'test -s /run/secrets/whv_db_password; PGPASSWORD="$(cat /run/secrets/whv_db_password)" exec psql -X -v ON_ERROR_STOP=1 -U whv_user -d whv' \
+            < worldhealth-vision-v2/infra/benchmarks/artifacts/generated-12-country-fixture.sql
+
+      - name: Generate read-only SQL from actual Java batch methods and EXPLAIN on synthetic DB
+        run: |
+          python3 worldhealth-vision-v2/infra/tests/generate_batch_jdbc_explain.py \
+            --source worldhealth-vision-v2/services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/persistence/JdbcTimeseriesRepository.java \
+            --profiles worldhealth-vision-v2/services/analytics-service/src/analytics_service/product_profiles.py \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/actual-jdbc-batch-explain.sql \
+            --ci-fixture-only
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-private-timeseries-metrics.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            exec -T whv-timescaledb sh -ec \
+              'test -s /run/secrets/whv_db_password; PGPASSWORD="$(cat /run/secrets/whv_db_password)" exec psql -X -q -t -A -v ON_ERROR_STOP=1 -U whv_user -d whv' \
+            < worldhealth-vision-v2/infra/benchmarks/artifacts/actual-jdbc-batch-explain.sql \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/jdbc-batch-explain-output.txt
+          python3 worldhealth-vision-v2/infra/tests/analyze_batch_jdbc_plans.py \
+            --input worldhealth-vision-v2/infra/benchmarks/artifacts/jdbc-batch-explain-output.txt \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/jdbc-batch-explain-summary.json
+
+      - name: Probe internal Hikari Prometheus endpoint only from private Analytics container
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-private-timeseries-metrics.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            exec -T analytics-service python -c \
+              "import urllib.request; u='http://timeseries-service:8080/actuator/prometheus'; d=urllib.request.urlopen(u,timeout=10).read().decode(); assert 'hikaricp_connections_active' in d; print('PASS: Hikari metrics only inside private Docker network')"
+
+      - name: Run three complete synthetic 60-snapshot loads with 0->8->0 batch cap
+        run: |
+          bash worldhealth-vision-v2/infra/tests/run_economic_backpressure_ab.sh
+
+      - name: Prove no legacy N+1 calls under real concurrent optimized FastAPI
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-private-timeseries-metrics.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            exec -T analytics-service python -c \
+              "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/metrics',timeout=15).read().decode())" \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/optimized-dense-private-metrics.prom
+          python3 worldhealth-vision-v2/infra/tests/report_upstream_metrics.py \
+            --input worldhealth-vision-v2/infra/benchmarks/artifacts/optimized-dense-private-metrics.prom \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/optimized-dense-dependencies.json \
+            --require-optimized-economic
+
+      - name: Archive bounded synthetic load, response sizes and resource samples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-economic-batch-backpressure-aba
+          path: worldhealth-vision-v2/infra/benchmarks/artifacts/
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Destroy all synthetic volumes, containers and one-off secrets
+        if: always()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-private-timeseries-metrics.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            down -v --remove-orphans || true
+          rm -f "$WHV_DB_PASSWORD_FILE"
