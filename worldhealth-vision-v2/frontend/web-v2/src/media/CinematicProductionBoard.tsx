@@ -101,7 +101,7 @@ export default function CinematicProductionBoard() {
   const needsRealMedia=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(active.template);
   const previewCanRender=(!needsRealMedia||Boolean(activeAsset&&activeAsset.kind!=="audio"))&&
     (active.template!=="focus_reveal"||Boolean(active.title.trim()&&active.title.length<=90&&active.durationFrames>=90))&&
-    (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115));
+    (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115))&&validGeo(active);
   // Exact props type of the REAL server-rendered Remotion compositor; object
   // URLs only exist in this browser session and never reach GitHub or an API.
   const previewProps=useMemo<CreativeEditProps>(()=>{
@@ -463,7 +463,7 @@ export default function CinematicProductionBoard() {
           {previewMode==="shot" ? (
             previewCanRender ? <Suspense fallback={<div className="wvc-player-loading">Chargement du vrai moteur Remotion…</div>}>
               <RealCreativePreview props={previewProps} previewId={active.id} label={"Composition du "+active.id}/>
-            </Suspense> : <div className="wvc-player-loading">Ajoute un visuel et un titre conforme à ce plan avant de visionner sa véritable animation.</div>
+            </Suspense> : <div className="wvc-player-loading">{active.template==="geo_story"?"Valide le titre, le centre géographique et les éventuels points, trajets ou chiffres avant de prévisualiser.":"Ajoute un visuel et un titre conforme à ce plan avant de visionner sa véritable animation."}</div>
           ) : previewMode==="film" ? (
             fullFilmCanRender ? <Suspense fallback={<div className="wvc-player-loading">Préparation de la timeline Remotion complète…</div>}>
               <RealCreativePreview props={fullFilmProps} previewId="film-complet" label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"/>
