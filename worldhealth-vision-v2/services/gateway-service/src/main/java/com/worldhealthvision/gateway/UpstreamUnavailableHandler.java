@@ -10,11 +10,12 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
-import org.springframework.cloud.gateway.route.Route;
 import org.springframework.core.Ordered;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebExceptionHandler;
@@ -31,6 +32,7 @@ import reactor.core.publisher.Mono;
  */
 @Component
 public final class UpstreamUnavailableHandler implements WebExceptionHandler, Ordered {
+    private static final Logger LOG = LoggerFactory.getLogger(UpstreamUnavailableHandler.class);
     private final ObjectMapper mapper;
 
     public UpstreamUnavailableHandler(ObjectMapper mapper) {
@@ -44,9 +46,14 @@ public final class UpstreamUnavailableHandler implements WebExceptionHandler, Or
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable failure) {
-        if (exchange.getResponse().isCommitted()
-                || exchange.getAttribute(GATEWAY_ROUTE_ATTR) == null
-                || !isNetworkAvailabilityFailure(failure)) {
+        boolean routed = exchange.getAttribute(GATEWAY_ROUTE_ATTR) != null;
+        boolean networkFailure = isNetworkAvailabilityFailure(failure);
+        if (routed && !networkFailure) {
+            // Debug the CLASS chain only; never log full messages, tokens, body,
+            // URL, country, user or secret. Helps catch new Netty wrapper types.
+            LOG.warn("Unmapped routed gateway exception classes: {}", exceptionClasses(failure));
+        }
+        if (exchange.getResponse().isCommitted() || !routed || !networkFailure) {
             return Mono.error(failure);
         }
 
@@ -69,6 +76,16 @@ public final class UpstreamUnavailableHandler implements WebExceptionHandler, Or
         } catch (JsonProcessingException exception) {
             return Mono.error(exception);
         }
+    }
+
+    private static String exceptionClasses(Throwable error) {
+        StringBuilder result = new StringBuilder();
+        Throwable current = error;
+        for (int i = 0; i < 8 && current != null; i++, current = current.getCause()) {
+            if (i > 0) result.append(" > ");
+            result.append(current.getClass().getSimpleName());
+        }
+        return result.toString();
     }
 
     private static boolean isNetworkAvailabilityFailure(Throwable error) {
