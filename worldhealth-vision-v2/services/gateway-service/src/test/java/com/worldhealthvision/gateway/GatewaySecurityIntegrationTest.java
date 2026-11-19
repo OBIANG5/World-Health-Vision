@@ -16,18 +16,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "whv.security.enabled=true"
+        properties = {
+                "whv.security.enabled=true",
+                "whv.security.issuer-uri=https://ci-identity.invalid/issuer",
+                "whv.security.jwk-set-uri=https://ci-identity.invalid/keys",
+                "whv.security.audience=worldvision-ci"
+        }
 )
 @AutoConfigureWebTestClient
 class GatewaySecurityIntegrationTest {
@@ -106,18 +106,4 @@ class GatewaySecurityIntegrationTest {
         }
     }
 
-    @TestConfiguration
-    static class SecurityTestConfiguration {
-
-        @Bean
-        ReactiveJwtDecoder reactiveJwtDecoder() {
-            return token -> Mono.just(
-                    Jwt.withTokenValue(token)
-                            .header("alg", "none")
-                            .subject("test-user")
-                            .claim("scope", "read")
-                            .build()
-            );
-        }
-    }
 }

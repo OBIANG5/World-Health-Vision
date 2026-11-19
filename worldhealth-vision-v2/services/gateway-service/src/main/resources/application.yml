@@ -53,7 +53,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${WHV_SECURITY_ISSUER_URI:http://localhost:8081/realms/worldhealth-vision}
+          issuer-uri: ${WHV_SECURITY_ISSUER_URI:}
 
   cloud:
     gateway:
@@ -262,3 +262,9 @@ whv:
   security:
     enabled: ${WHV_SECURITY_ENABLED:true}
     public-read-enabled: ${WHV_PUBLIC_READ_ENABLED:false}
+    # Mandatory when JWT is enabled; no default issuer or audience in production.
+    issuer-uri: ${WHV_SECURITY_ISSUER_URI:}
+    jwk-set-uri: ${WHV_SECURITY_JWK_SET_URI:}
+    audience: ${WHV_SECURITY_AUDIENCE:}
+    # Local cryptographic integration tests only. Never enable on a real host.
+    allow-insecure-loopback-jwks-for-tests: ${WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS:false}

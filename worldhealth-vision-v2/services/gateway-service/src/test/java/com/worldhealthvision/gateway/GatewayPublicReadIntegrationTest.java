@@ -15,14 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
 
 /**
  * Public international facts remain anonymous, operator/personal APIs do not.
@@ -33,7 +28,10 @@ import reactor.core.publisher.Mono;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
                 "whv.security.enabled=true",
-                "whv.security.public-read-enabled=true"
+                "whv.security.public-read-enabled=true",
+                "whv.security.issuer-uri=https://ci-identity.invalid/issuer",
+                "whv.security.jwk-set-uri=https://ci-identity.invalid/keys",
+                "whv.security.audience=worldvision-ci"
         }
 )
 @AutoConfigureWebTestClient
@@ -134,7 +132,8 @@ class GatewayPublicReadIntegrationTest {
                 .exchange().expectStatus().isUnauthorized();
         assertThat(requests.get()).isZero();
 
-        client.mutateWith(mockJwt())
+        client.mutateWith(mockJwt().authorities(
+                        new org.springframework.security.core.authority.SimpleGrantedAuthority("SCOPE_advisor:invoke")))
                 .post().uri("/api/analytics/advisor/chat")
                 .header("Content-Type", "application/json")
                 .bodyValue("{\"question\":\"What is the inflation in Gabon?\",\"iso3\":\"GAB\"}")
@@ -191,15 +190,4 @@ class GatewayPublicReadIntegrationTest {
         }
     }
 
-    @TestConfiguration
-    static class StubIdentityConfig {
-        @Bean
-        ReactiveJwtDecoder reactiveJwtDecoder() {
-            return value -> Mono.just(Jwt.withTokenValue(value)
-                    .header("alg", "none")
-                    .subject("ci-only-user")
-                    .claim("scope", "read")
-                    .build());
-        }
-    }
 }

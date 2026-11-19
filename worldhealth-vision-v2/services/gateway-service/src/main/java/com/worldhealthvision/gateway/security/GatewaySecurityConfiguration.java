@@ -41,7 +41,7 @@ public class GatewaySecurityConfiguration {
                 .authorizeExchange(exchanges -> {
                     // Only readiness is public: never expose info/prometheus/details
                     // through the public edge. Scrape metrics privately.
-                    exchanges.pathMatchers(GET, "/actuator/health", "/actuator/health/**").permitAll();
+                    exchanges.pathMatchers(GET, "/actuator/health").permitAll();
                     exchanges.pathMatchers("/actuator/**").denyAll();
 
                     // Same reviewed list in both modes. No accidental new endpoints
@@ -54,7 +54,7 @@ public class GatewaySecurityConfiguration {
 
                     // Advisor requests are not public anonymous operations. Add a
                     // real per-user quota and rate limiting before Internet launch.
-                    exchanges.pathMatchers(POST, "/api/analytics/advisor/chat").authenticated();
+                    exchanges.pathMatchers(POST, "/api/analytics/advisor/chat").hasAuthority("SCOPE_advisor:invoke");
 
                     // No ingestion mutation, source-run metadata, future personal
                     // endpoints, arbitrary POST, WebSocket or unspecified routes.
