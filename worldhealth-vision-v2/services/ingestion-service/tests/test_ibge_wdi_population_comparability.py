@@ -332,3 +332,74 @@ def test_comparison_detects_corrupted_wdi_version_or_removed_journal(tmp_path):
     wdi.raw_payload_path.write_bytes(b"CHANGED")
     with pytest.raises(EvidenceIntegrityError):
         PrivatePopulationReviewStore(tmp_path).verify(report["reviewReceiptSha256"])
+
+
+
+def test_population_comparison_survives_verified_private_restore_and_rejects_corruption(tmp_path):
+    import shutil
+    original = tmp_path / "original"
+    restored = tmp_path / "restored"
+    ibge, wdi = full_pair(original)
+    first = PrivatePopulationReviewStore(original).evaluate(
+        ibge_composite_sha256=ibge["receiptSha256"],
+        wdi_response_sha256=wdi.notes["httpBodySha256"],
+    )
+    shutil.copytree(original, restored)
+    assert PrivatePopulationReviewStore(restored).verify(first["reviewReceiptSha256"])["sourceCount"] == 2
+    body = next((restored/"world_bank"/WDI_DATASET.lower()/"revisions").glob("*/original.http.json"))
+    body.write_bytes(body.read_bytes() + b"tampered")
+    with pytest.raises(EvidenceIntegrityError):
+        PrivatePopulationReviewStore(restored).verify(first["reviewReceiptSha256"])
+
+
+@pytest.mark.parametrize("forged_change", [
+    {"assessment": {"status": "METHOD_REVIEW_REQUIRED"}},
+    {"assessment": {"numeric_delta_persons": 99, "numeric_difference_percent": 0.0001}},
+    {"sourceDependence": "PROVEN_INDEPENDENT"},
+    {"worldBankReUse": "APPROVED"},
+    {"ibgeDatasetRights": "APPROVED"},
+    {"publicDisplayAuthorised": True},
+])
+def test_forged_self_consistent_sha_still_cannot_bypass_method_or_rights(tmp_path, forged_change):
+    from hashlib import sha256
+    ibge, wdi = full_pair(tmp_path)
+    review = PrivatePopulationReviewStore(tmp_path)
+    clean = review.evaluate(
+        ibge_composite_sha256=ibge["receiptSha256"],
+        wdi_response_sha256=wdi.notes["httpBodySha256"],
+    )
+    original = json.loads((tmp_path / clean["relativePath"]).read_text())
+    forged = original.copy()
+    if "assessment" in forged_change:
+        forged["assessment"] = {**original["assessment"], **forged_change["assessment"]}
+    else:
+        forged.update(forged_change)
+    packed = (json.dumps(forged, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    digest = sha256(packed).hexdigest()
+    target = tmp_path / "ibge" / "_population_reviews" / (digest + ".json")
+    target.write_bytes(packed)
+    # Even a digest-valid forged object cannot turn a model discrepancy into
+    # an observed difference, commercial publication or two independent facts.
+    with pytest.raises(EvidenceIntegrityError):
+        review.verify(digest)
+
+
+def test_new_wdi_response_keeps_prior_crosssource_receipt_intact(tmp_path):
+    ibge, first_wdi = full_pair(tmp_path)
+    reader = PrivatePopulationReviewStore(tmp_path)
+    old = reader.evaluate(
+        ibge_composite_sha256=ibge["receiptSha256"],
+        wdi_response_sha256=first_wdi.notes["httpBodySha256"],
+    )
+    revised = wdi_payload(value=FAKE_WDI + 1)
+    second_wdi = capture_wdi(tmp_path, transport=make_transport(payload=revised))
+    assert first_wdi.run_id != second_wdi.run_id
+    new = reader.evaluate(
+        ibge_composite_sha256=ibge["receiptSha256"],
+        wdi_response_sha256=second_wdi.notes["httpBodySha256"],
+    )
+    assert new["reviewReceiptSha256"] != old["reviewReceiptSha256"]
+    assert reader.verify(old["reviewReceiptSha256"])["sourceCount"] == 2
+    assert reader.verify(new["reviewReceiptSha256"])["sourceCount"] == 2
+    assert AcquisitionJournal(tmp_path).audit("WORLD_BANK", WDI_DATASET)["versionCount"] == 2
+    assert old["numericComparison"] == new["numericComparison"] == "NOT_COMPUTED"
