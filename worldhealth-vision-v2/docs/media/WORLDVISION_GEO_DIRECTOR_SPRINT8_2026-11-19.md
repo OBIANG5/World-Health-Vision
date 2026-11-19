@@ -143,6 +143,6 @@ Les mouvements qui partagent un objet (par exemple le globe 3D et ses frontière
 
 **Technique sur le code `f34ae7c` : CONFORME à son contrat de test.**
 **Direction artistique / publication : NON VALIDÉE** ; PR #72 reste **DRAFT** et aucune V2 publique n'est modifiée.
-**Lancement automatique des tests renforcé :** le commit `a149b225` ajoute les nouveaux fichiers `geo-motion-camera.mjs/.d.mts` aux filtres CI ; vérifier le workflow associé au nouveau HEAD avant de considérer cette modification d'infrastructure qualifiée.
+**Lancement automatique des tests renforcé :** le commit `a149b225` ajoute les nouveaux fichiers `geo-motion-camera.mjs/.d.mts` aux filtres CI ; le workflow [#44616853136](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44616853136) a ensuite conclu **SUCCESS sur les deux jobs** au commit `a149b225`. Le code et les pixels de la démo sont inchangés ; seules les modifications documentaires ultérieures font évoluer le HEAD.
 
 **Prochaine intervention créative à haute valeur :** ne pas allonger indéfiniment le travail sur un anneau blanc. Construire GEO-2 (vrai pays cadré, lisible et mis en valeur, carte 50m/10m + média authentique + texte/chiffres), puis une scène PHOTO multi-couches 3–6 mouvements indépendants et une scène DATA (courbe/heatmap/ranking). Ces éléments servent plus directement la comparaison aux vidéos originales que la retouche d'un effet isolé.
