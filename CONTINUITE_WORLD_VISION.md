@@ -8,6 +8,8 @@
 
 **Règles maintenues** : scripts/recherches dans ChatGPT pour le moment, voix libre (Vivienne possible, non imposée), véritable montage média, BAOCOM totalement séparé, GDELT/blog global différés. Aucune auto-publication, pas de licences supposées. Bien distinguer test technique et qualité artistique. **Prochaine priorité** : lecture des preuves CI, alignement NASA/frontières/camera dans les images, puis country-focus à échelle 50m/10m dans un plan dédié, puis photo multicouche + data motion, QA iPhone/TikTok et voix/mix.
 
+**Contrôle Sprint 8 effectivement réalisé** : Actions [#44615478166](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44615478166) sur le commit de code `f34ae7c` : 2 jobs SUCCESS, 16 tests Node sur 16, MP4 réel H.264 150 images / 5,0s / 1080×1920, 4 captures du vrai Player Chromium, 0 erreurs navigateur. Artefact 14573009991 téléchargé et **pixels réellement inspectés**. Résultat : NASA / D3 / overlays visibles, déplacement caméra fonctionnel ; mais country spotlight trop discret, masqué par le marqueur ; œil blanc dominant et géographie 110m insuffisante pour le vrai zoom pays. Verdict technique positif, **artistique non validé**. [Rapport §7](worldhealth-vision-v2/docs/media/WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md). [PR #72](https://github.com/OBIANG5/World-Health-Vision/pull/72) DRAFT. Commit `a149b225` renforce les filtres de CI ; contrôler son run sur HEAD. Suite : country-focus 50m/10m puis PHOTO/DATA multi-couches.
+
 ---
 
 ## WORLD‑VISION MEDIA — GLOBE NASA 3D / SPRINT 7 (19 NOV. 2026)
