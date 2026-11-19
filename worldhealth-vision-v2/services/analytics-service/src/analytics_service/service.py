@@ -409,12 +409,20 @@ class AnalyticsService:
 
             resolution_cache = ResolutionCache()
             with timed_economic_phase("indicators"):
-                indicator_details = await asyncio.gather(*[
-                    self._call_catalog(
-                        lambda code=profile.indicator_code: self._catalog_client.get_indicator(code)
+                if self._settings.catalog_indicator_batch_enabled:
+                    # Keep the original lens order, require all 54 details or fail.
+                    indicator_details = await self._call_catalog(
+                        lambda: self._catalog_client.get_indicators_batch(
+                            [profile.indicator_code for profile in ECONOMIC_LENS_PROFILES]
+                        )
                     )
-                    for profile in ECONOMIC_LENS_PROFILES
-                ])
+                else:
+                    indicator_details = await asyncio.gather(*[
+                        self._call_catalog(
+                            lambda code=profile.indicator_code: self._catalog_client.get_indicator(code)
+                        )
+                        for profile in ECONOMIC_LENS_PROFILES
+                    ])
 
             with timed_economic_phase("series_provenance"):
                 overview_items = await asyncio.gather(*[

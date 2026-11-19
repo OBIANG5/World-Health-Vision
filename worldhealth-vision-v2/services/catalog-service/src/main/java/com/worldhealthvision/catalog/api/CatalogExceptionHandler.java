@@ -12,6 +12,7 @@ HTTP lisible et coherent.
 */
 
 import com.worldhealthvision.catalog.service.CatalogNotFoundException;
+import com.worldhealthvision.catalog.service.CatalogBadRequestException;
 import com.worldhealthvision.common.api.ApiErrorResponse;
 import com.worldhealthvision.common.http.WhvHttpHeaders;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,7 +37,8 @@ public class CatalogExceptionHandler {
 
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
-            ConstraintViolationException.class
+            ConstraintViolationException.class,
+            CatalogBadRequestException.class
     })
     public ResponseEntity<ApiErrorResponse> handleBadRequest(
             Exception exception,

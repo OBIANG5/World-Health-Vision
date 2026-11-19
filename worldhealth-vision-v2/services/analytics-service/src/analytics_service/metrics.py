@@ -64,7 +64,7 @@ _DEPENDENCY_OPERATIONS = {
     }),
     "catalog": frozenset({
         "readiness", "country", "local_context", "countries", "region",
-        "indicator", "indicators", "source", "dataset",
+        "indicator", "indicators", "indicators_batch", "source", "dataset",
     }),
 }
 
