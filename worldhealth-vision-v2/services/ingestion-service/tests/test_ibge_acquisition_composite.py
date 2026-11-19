@@ -310,3 +310,52 @@ def test_composite_does_not_consider_unfetched_legacy_data_a_complete_receipt(tm
             ).name,
             metadata_sha256="f" * 64, periods_sha256="e" * 64,
         )
+
+
+
+def test_composite_and_event_log_survive_relocation_and_detect_damaged_restore(tmp_path):
+    import shutil
+    original = tmp_path / "original-private"
+    restored = tmp_path / "restored-private"
+    pop = capture_population(original)
+    meta = capture_metadata(original)
+    source = IbgeCompositeReceiptStore(original)
+    receipt = source.create(
+        population_sha256=pop.notes["httpBodySha256"],
+        metadata_sha256=meta.aggregate_receipt.notes["httpBodySha256"],
+        periods_sha256=meta.periods_receipt.notes["httpBodySha256"],
+    )
+    shutil.copytree(original, restored)
+    journal = AcquisitionJournal(restored)
+    for dataset in ("CENSO2022_4714", "CENSO2022_4714_METADATA", "CENSO2022_4714_PERIODS"):
+        assert journal.audit("IBGE", dataset)["successCount"] == 1
+    assert IbgeCompositeReceiptStore(restored).verify(receipt["receiptSha256"])["linkedEvidenceCount"] == 3
+    # A copied tree with corrupt bytes cannot be considered a safe restore.
+    raw = next((restored / "ibge" / "censo2022_4714" / "revisions").glob("*/original.http.json"))
+    raw.write_bytes(raw.read_bytes() + b"TAMPER")
+    with pytest.raises(EvidenceIntegrityError):
+        journal.audit("IBGE", "CENSO2022_4714")
+    with pytest.raises(EvidenceIntegrityError):
+        IbgeCompositeReceiptStore(restored).verify(receipt["receiptSha256"])
+
+
+def test_a_fetch_revision_can_stay_constant_while_receipt_observation_count_changes(tmp_path):
+    pop = capture_population(tmp_path)
+    meta = capture_metadata(tmp_path)
+    store = IbgeCompositeReceiptStore(tmp_path)
+    selected = {
+        "population_sha256": pop.notes["httpBodySha256"],
+        "metadata_sha256": meta.aggregate_receipt.notes["httpBodySha256"],
+        "periods_sha256": meta.periods_receipt.notes["httpBodySha256"],
+    }
+    before = store.create(**selected)
+    replay = capture_population(tmp_path)
+    assert replay.run_id == pop.run_id
+    after = store.create(**selected)
+    assert after["receiptSha256"] != before["receiptSha256"]
+    assert after["successfulAcquisitionsAtReceipt"]["population"] == 2
+    assert before["successfulAcquisitionsAtReceipt"]["population"] == 1
+    # Old receipts remain immutable and verifiable: lastSeen is only the known
+    # state AT receipt issuance, not a promise of no future provider requests.
+    assert store.verify(before["receiptSha256"])["linkedEvidenceCount"] == 3
+    assert store.verify(after["receiptSha256"])["linkedEvidenceCount"] == 3
