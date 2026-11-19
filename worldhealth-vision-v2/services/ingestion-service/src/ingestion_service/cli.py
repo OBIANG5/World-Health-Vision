@@ -90,7 +90,7 @@ def review_ibge_census2022_rights():
     )
     from datetime import UTC, datetime
     now = datetime.now(UTC)
-    dossier = ibge_census_4714_initial_review(observed_at=now)
+    dossier = ibge_census_4714_initial_review()
     advice = inspect_reuse_claim(
         dossier, institution_code="IBGE", dataset_code="CENSO2022_4714",
         jurisdiction_iso3="BRA",
