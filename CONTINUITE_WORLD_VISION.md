@@ -1,5 +1,19 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## MEDIA WORLD‑VISION — SPRINT 6 / PACK GEO MULTI‑ANIMATIONS (19 NOV. 2026)
+
+**Nouvelle référence de reprise :** [WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md). PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44) toujours **DRAFT**, non fusionnée/non déployée. **Ne pas connecter BAOCOM, imposer Vivienne, écrire/rechercher automatiquement le script ou commencer le blog/GDELT dans le Studio.** Les scripts/recherches restent dans cette conversation ChatGPT ; le code réalise motion, montages, média, son, effets, export.
+
+**Références utilisateurs analysées :** deux MP4 privés : 94,57 s finance « Bourse Express » (nombre, courbes, cartes, heatmap, ticker) et 59,49 s géopolitique (fond satellite, pays drapeau, photos, changements de région), plus image fournie d'un globe européen/africain très lumineux encerclé d'un œil bleu-cyan. Les vidéos et images privées **ne sont pas copiées dans le GitHub**. Objectif : dépasser ces vidéos en combinant plusieurs animations indépendantes dans un même plan.
+
+**Nouveau code** : `services/media-renderer/src/GeoStory.tsx`, template `geo_story` dans la vraie composition `CreativeEdit.tsx`, cartographie **Natural Earth/World Atlas 110m** projetée avec **D3 Geo**, rotation, globe cyan, œil lumineux, frontières, arc de grand cercle, marqueur pulsant, image/vidéo fournie, compteur strictement fourni, titre. Contrat et UI de saisie lon/lat/route/donnée, exports identiques Preview+MP4 et vérifications. Fichiers modifiés : `creative/validate-project.mjs`, `render-project.mjs`, tests et fixture `geo-story.synthetic.example.json`, `CinematicProductionBoard.tsx`, dependencies D3/TopoJSON/World Atlas dans renderer+frontend, lockfile V2, Vite alias, test Chromium + CI.
+
+**Preuve déjà inspectée** : MP4 vertical **5s/1080×1920** issu de `geo-motion-intro.mp4`, captures `player-geo-frame-0/48/96/138.png` ; la géographie réelle, les frontières et les mouvements sont visibles. La qualité est **encore vectorielle** et non le photoréalisme du globe de référence. Un ancien CI a produit le renderer mais a échoué sur résolution Vite de l'atlas ; correction d'alias et dépendances verrouillées effectuée. **Consulter le HEAD et le dernier CI pour vérifier la version finale**, pas un ancien run. Les captures ont conduit à rapprocher photo, donnée et globe et à replacer le titre dans une zone plus sûre du format mobile ; le test de chevauchement a été renforcé.
+
+**Étapes prioritaires** : 1) rendre le dernier CI vert et inspecter les nouveaux PNG/MP4 avec mesure mobile ; 2) texture réelle NASA Blue Marble, moteur Three.js/@remotion/three avec géométrie/frontières alignées et fallback vectoriel ; 3) carte/pays et trajets source-contrôlés, zoom précis à haute résolution ; 4) data motion finance et animations photo multi-couches ; 5) révisions sans destruction/cache, TTS choisi par humain et mix pro, iOS/Android, Content OS média limité. **Ne pas confondre CI fonctionnelle et niveau graphique mondial acquis.**
+
+---
+
 ## SPRINT 5 — RENDU DOCUMENTAIRE VALIDÉ (19 NOV. 2026) — REPRENDRE ICI
 
 **État exact :** [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) toujours **DRAFT**, sans fusion ni déploiement public. Lire en premier [WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md §7–9](worldhealth-vision-v2/docs/media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md). **GitHub Actions [#44546198363 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363)**, 12 tests Node, build V2 et vraie vidéo de document + 4 séquences de test Player Chromium. Le MP4 d'exemple et quatre captures du document ont été téléchargés et examinés.
