@@ -8,6 +8,8 @@ fail() { echo "F1.2 host preflight FAILED: $*" >&2; exit 1; }
 : "${WHV_DB_PASSWORD_FILE:?WHV_DB_PASSWORD_FILE required}"
 : "${WHV_TIMESCALE_IMAGE:?WHV_TIMESCALE_IMAGE required}"
 : "${WHV_OIDC_ISSUER_URI:?WHV_OIDC_ISSUER_URI required}"
+: "${WHV_OIDC_JWKS_URI:?WHV_OIDC_JWKS_URI required}"
+: "${WHV_SECURITY_AUDIENCE:?WHV_SECURITY_AUDIENCE required}"
 : "${WHV_BACKUP_DIR:?WHV_BACKUP_DIR required}"
 
 infra_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -38,6 +40,13 @@ mode=$((8#$raw_mode))
 [[ "$WHV_TIMESCALE_IMAGE" =~ @sha256:[a-f0-9]{64}$ ]] ||
   fail "use a reviewed immutable TimescaleDB image digest, not a mutable tag"
 [[ "$WHV_OIDC_ISSUER_URI" =~ ^https:// ]] || fail "OIDC issuer must use HTTPS"
+[[ "$WHV_OIDC_JWKS_URI" =~ ^https:// ]] || fail "OIDC JWKS must use HTTPS"
+[[ "$WHV_SECURITY_AUDIENCE" =~ ^[A-Za-z0-9.:/_-]+$ ]] || fail "audience must be nonempty and URL/identifier safe"
+[[ "${WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS:-false}" == false ]] ||
+  fail "insecure test JWKS switch is forbidden outside isolated CI"
+if [[ "$WHV_OIDC_JWKS_URI" =~ (localhost|\\.invalid|\\.example|127\\.0\\.0\\.1) ]]; then
+  fail "test/example JWKS endpoint cannot be used for staging"
+fi
 if [[ "$WHV_OIDC_ISSUER_URI" =~ (localhost|\.invalid|\.example|127\.0\.0\.1) ]]; then
   fail "test/example issuer cannot be used on a real staging host"
 fi
