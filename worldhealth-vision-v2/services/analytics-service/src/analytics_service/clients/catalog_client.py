@@ -1,5 +1,7 @@
 import httpx
 
+from analytics_service.metrics import timed_dependency_http
+
 from analytics_service.national_comparisons import LocalCatalogResponse
 
 from analytics_service.models import (
@@ -28,12 +30,18 @@ class CatalogClient:
             transport=transport,
         )
 
+    async def _get(self, operation: str, path: str, *, params=None) -> httpx.Response:
+        # Only internal reviewed operation names reach the fixed-cardinality metrics.
+        with timed_dependency_http("catalog", operation):
+            response = await self._client.get(path, params=params)
+            response.raise_for_status()
+        return response
+
     async def aclose(self) -> None:
         await self._client.aclose()
 
     async def get_readiness(self) -> DependencyReadiness:
-        response = await self._client.get("/api/catalog/readiness")
-        response.raise_for_status()
+        response = await self._get("readiness", "/api/catalog/readiness")
         return DependencyReadiness(
             dependency="catalog-service",
             reachable=True,
@@ -41,8 +49,7 @@ class CatalogClient:
         )
 
     async def get_country(self, country_iso3: str) -> CountryDetail:
-        response = await self._client.get(f"/api/catalog/countries/{country_iso3}")
-        response.raise_for_status()
+        response = await self._get("country", f"/api/catalog/countries/{country_iso3}")
         return CountryDetail.model_validate(response.json())
 
     async def get_country_local_context(self, country_iso3: str) -> LocalCatalogResponse:
@@ -51,10 +58,9 @@ class CatalogClient:
         A documented release is NOT automatically a canonical observation.
         The catalog responds 404 when the ISO3 country is unknown.
         """
-        response = await self._client.get(
+        response = await self._get("local_context", 
             f"/api/catalog/countries/{country_iso3}/local-context"
         )
-        response.raise_for_status()
         return LocalCatalogResponse.model_validate(response.json())
 
     async def list_countries(
@@ -72,35 +78,29 @@ class CatalogClient:
         if region_code:
             params["regionCode"] = region_code
 
-        response = await self._client.get("/api/catalog/countries", params=params)
-        response.raise_for_status()
+        response = await self._get("countries", "/api/catalog/countries", params=params)
         payload = CatalogListEnvelope.model_validate(response.json())
         return [CountrySummary.model_validate(item) for item in payload.items]
 
     async def get_region(self, region_code: str) -> RegionDetail:
-        response = await self._client.get(f"/api/catalog/regions/{region_code}")
-        response.raise_for_status()
+        response = await self._get("region", f"/api/catalog/regions/{region_code}")
         return RegionDetail.model_validate(response.json())
 
     async def get_indicator(self, indicator_code: str) -> IndicatorDetail:
-        response = await self._client.get(f"/api/catalog/indicators/{indicator_code}")
-        response.raise_for_status()
+        response = await self._get("indicator", f"/api/catalog/indicators/{indicator_code}")
         return IndicatorDetail.model_validate(response.json())
 
     async def list_core_indicators(self) -> list[IndicatorSummary]:
-        response = await self._client.get("/api/catalog/indicators", params={"coreOnly": "true"})
-        response.raise_for_status()
+        response = await self._get("indicators", "/api/catalog/indicators", params={"coreOnly": "true"})
         payload = CatalogListEnvelope.model_validate(response.json())
         return [IndicatorSummary.model_validate(item) for item in payload.items]
 
     async def get_source(self, source_code: str) -> SourceDetail:
-        response = await self._client.get(f"/api/catalog/sources/{source_code}")
-        response.raise_for_status()
+        response = await self._get("source", f"/api/catalog/sources/{source_code}")
         return SourceDetail.model_validate(response.json())
 
     async def get_source_dataset(self, source_code: str, dataset_code: str) -> SourceDatasetDetail:
-        response = await self._client.get(f"/api/catalog/sources/{source_code}/datasets/{dataset_code}")
-        response.raise_for_status()
+        response = await self._get("dataset", f"/api/catalog/sources/{source_code}/datasets/{dataset_code}")
         return SourceDatasetDetail.model_validate(response.json())
 
     @staticmethod
