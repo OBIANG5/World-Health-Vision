@@ -16,7 +16,7 @@ type Shot = {
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
   mediaName:string;foregroundName:string;focusX:number;focusY:number;
   documentX:number;documentY:number;documentW:number;documentH:number;
-  geoLon:number;geoLat:number;geoSpin:number;
+  geoLon:number;geoLat:number;geoSpin:number;geoLook:"photo"|"vector";
   geoShowTarget:boolean;geoTargetLon:number;geoTargetLat:number;geoTargetLabel:string;
   geoShowRoute:boolean;geoFromLon:number;geoFromLat:number;
   geoShowMetric:boolean;geoMetricLabel:string;geoMetricValue:string;geoMetricUnit:string;
@@ -42,7 +42,7 @@ const initialShot=():Shot=>({
   id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,
   template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",foregroundName:"",focusX:0.5,focusY:0.5,
   documentX:.25,documentY:.32,documentW:.5,documentH:.22,
-  geoLon:0,geoLat:10,geoSpin:16,
+  geoLon:0,geoLat:10,geoSpin:16,geoLook:"photo",
   geoShowTarget:false,geoTargetLon:0,geoTargetLat:0,geoTargetLabel:"",
   geoShowRoute:false,geoFromLon:0,geoFromLat:0,
   geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:""
@@ -51,6 +51,7 @@ const initialShot=():Shot=>({
  * every coordinate and figure explicitly. Never insert synthetic values. */
 const buildGeo=(shot:Shot):CreativeShot["geo"]=>({
   center:{lon:shot.geoLon,lat:shot.geoLat},
+  look:shot.geoLook,
   spinDegrees:shot.geoSpin,
   ...(shot.geoShowTarget?{target:{
     lon:shot.geoTargetLon,lat:shot.geoTargetLat,label:shot.geoTargetLabel
@@ -347,6 +348,12 @@ export default function CinematicProductionBoard() {
               <strong>CARTE DU MONDE — DIRECTION GÉOGRAPHIQUE</strong>
               <span>Frontières Natural Earth réelles. Toutes les positions, routes et données doivent être choisies et vérifiées manuellement. Pas de chiffres ou de géocodage inventés.</span>
             </div>
+            <label>MATIÈRE DE LA TERRE
+              <select value={active.geoLook} onChange={e=>updateShot({geoLook:e.target.value as "photo"|"vector"})}>
+                <option value="photo">Terre 3D · photographie NASA Blue Marble (2004)</option>
+                <option value="vector">Carte vectorielle · Natural Earth (alternative explicite)</option>
+              </select>
+            </label>
             <div className="wvc-two-col">
               <label>CENTRE LONGITUDE
                 <input type="number" min="-180" max="180" step=".1" value={active.geoLon}
