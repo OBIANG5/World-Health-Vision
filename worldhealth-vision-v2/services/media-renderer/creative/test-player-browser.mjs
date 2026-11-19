@@ -34,7 +34,7 @@ async function serverReady(){
   throw Error("Local Vite smoke page not reachable: "+url);
 }
 async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
-  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":"player-browser-frame-";
+  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":"player-browser-frame-";
   const page=await browser.newPage();
   const errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
@@ -148,6 +148,48 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
            final.center!=="11.6000,-0.7000")
           throw Error("GEO camera failed to reach/hold editor-approved focus: "+JSON.stringify(final));
       }
+      if(mode==="country"&&frame===60){
+        const scene=await page.evaluate(()=>{
+          const focused=document.querySelector('[data-wv-country-focus]');
+          const detailed=document.querySelector('[data-wv-country-outline="10m"]');
+          const context=document.querySelector('[data-wv-country-context="50m"]');
+          const fill=document.querySelector('[data-wv-country-fill="10m"]');
+          const camera=document.querySelector('[data-wv-country-camera]');
+          return {
+            country:focused?.getAttribute("data-wv-country-focus")??null,
+            outlinePoints:detailed?.getAttribute("d")?.length??0,
+            contextPoints:context?.getAttribute("d")?.length??0,
+            outlineReveal:Number(detailed?.getAttribute("stroke-dashoffset")),
+            cameraScale:Number(camera?.getAttribute("data-wv-country-scale")),
+            hasFill:Boolean(fill),hasMarker:Boolean(document.querySelector('[data-wv-country-marker]')),
+            hasPhoto:Boolean(document.querySelector('[data-wv-country-media]')),
+            hasNumber:Boolean(document.querySelector('[data-wv-country-metric]'))
+          };
+        });
+        if(scene.country!=="266"||scene.outlinePoints<100||scene.contextPoints<200||
+          !scene.hasFill||!scene.hasMarker||!scene.hasPhoto||!scene.hasNumber||
+          scene.outlineReveal<=0||scene.outlineReveal>=1||
+          scene.cameraScale<.9||scene.cameraScale>1.08)
+          throw Error("Country-focus 10m/50m multilayer scene failed: "+JSON.stringify(scene));
+        console.log("[player-smoke] detailed country-focus layers proven",scene);
+      }
+      if(mode==="country"&&frame===155){
+        const scene=await page.evaluate(()=>{
+          const caption=document.querySelector('[data-wv-country-caption]');
+          const media=document.querySelector('[data-wv-country-media]');
+          const viewport=document.querySelector("#smoke-preview");
+          if(!caption||!media||!viewport)return null;
+          const a=caption.getBoundingClientRect(),b=media.getBoundingClientRect(),v=viewport.getBoundingClientRect();
+          return {captionTop:a.top,captionBottom:a.bottom,mediaBottom:b.bottom,
+            mobileMaxY:v.top+v.height*.79,
+            opacity:Number(getComputedStyle(caption).opacity)};
+        });
+        if(!scene||scene.captionTop<scene.mediaBottom+7||
+          scene.captionBottom>scene.mobileMaxY||
+          scene.opacity<.95)
+          throw Error("Country caption is covered, late or clipped on mobile: "+JSON.stringify(scene));
+        console.log("[player-smoke] country-focus mobile safe-area captions",scene);
+      }
       if(mode==="document"&&frame===0){
         const entrance=await page.evaluate(()=>{
           const card=document.querySelector('[data-wv-document-card="plan-synthetique"]');
@@ -224,7 +266,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     }
     const report={
       test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
-      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
       composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
       screen:{width:390,height:844},
       frames_in_composition:expectedDuration,
@@ -232,7 +274,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       screenshots,
       warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":"player-browser-smoke.report.json");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":"player-browser-smoke.report.json");
     fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
@@ -259,7 +301,9 @@ async function main(){
     await testCase(browser,{mode:"document",frames:[0,40,68,102],expectedDuration:140,expectVoice:false});
     console.log("[player-smoke] verifying complex orthographic geo animation");
     await testCase(browser,{mode:"geo",frames:[0,48,96,138],expectedDuration:150,expectVoice:false});
-    console.log("[player-smoke] all five real Player paths passed");
+    console.log("[player-smoke] exercising true 50m/10m country focus and multiple concurrent layers");
+    await testCase(browser,{mode:"country",frames:[0,60,115,155],expectedDuration:165,expectVoice:false});
+    console.log("[player-smoke] all six real Player paths passed");
   }finally{
     await browser.close();
   }
