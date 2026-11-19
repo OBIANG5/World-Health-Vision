@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## REPRISE RÉELLEMENT VÉRIFIÉE : MEDIA SPRINT 5 (19 NOV. 2026)
+
+**PR #44 en brouillon ; pas de merge ni Vercel modifié.** [Rapport canonique Sprint 5 §9](../media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md). [Actions #44546198363 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363) ; **12 tests Node, 0 échec**, build frontend, H.264 et Chromium Player du document en 4 temps. Artefact `14540488994` inspecté : la page est visible au frame0, rectangle au frame40, zoom au frame68, légende au frame102. **Espace page/cartouche ≈ 9,86 px et marge en bas ≈ 15,87 px sur 360×640**. L'échec précédent de 13,5 px de recouvrement a été résolu.
+
+**Chantier suivant** : ne plus multiplier des maquettes synthétiques. Utiliser **un vrai script préparé ici, une photographie/document ou vidéo authentique avec droits, et la voix réellement choisie** pour réaliser un premier reportage remarquable. Produire/réviser plusieurs versions à partir des mêmes sources et comparer les vidéos à une référence audiovisuelle excellente ; tester les vrais iPhone/TikTok overlays. Ensuite versions/cache des scènes, mastering/voix et workflow Content OS audiovisuel seulement. L'outil reçoit le script ; il n'écrit pas l'actualité. BAOCOM indépendant, Vivienne optionnelle, GDELT et blog différés.
+
+---
+
 ## MEDIA SPRINT 5 — DERNIER ÉTAT AVEC QA GÉOMÉTRIQUE (19 NOV. 2026)
 
 [Source canonique : WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md](../media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md). [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) DRAFT, aucun merge ni déploiement.
