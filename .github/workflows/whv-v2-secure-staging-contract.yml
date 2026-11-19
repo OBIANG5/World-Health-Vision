@@ -146,6 +146,14 @@ jobs:
           backup_file="$(find "$WHV_BACKUP_DIR" -maxdepth 1 -name '*.dump' -type f -print -quit)"
           test -n "$backup_file"
           bash worldhealth-vision-v2/infra/ops/restore-drill.sh "$backup_file" whv_backup_canary
+          cp "$backup_file" "$backup_file.damaged"
+          cp "$backup_file.sha256" "$backup_file.damaged.sha256"
+          printf 'CORRUPTED' >> "$backup_file.damaged"
+          if bash worldhealth-vision-v2/infra/ops/restore-drill.sh "$backup_file.damaged"; then
+            echo "FAILED: an altered archive passed checksum verification" >&2
+            exit 1
+          fi
+          echo "PASS: corrupted backup rejected before restore"
       - name: Keep original database intact after recovery test
         run: |
           docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T whv-timescaledb sh -eu -c '
