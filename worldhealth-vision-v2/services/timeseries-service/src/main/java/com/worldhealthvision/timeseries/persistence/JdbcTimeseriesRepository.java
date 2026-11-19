@@ -36,6 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Set;
+import java.util.function.Supplier;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -47,15 +51,35 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
     private final JdbcClient jdbcClient;
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
+    private final MeterRegistry meterRegistry;
 
     public JdbcTimeseriesRepository(
             JdbcClient jdbcClient,
             JdbcTemplate jdbcTemplate,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            MeterRegistry meterRegistry
     ) {
         this.jdbcClient = jdbcClient;
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
+        this.meterRegistry = meterRegistry;
+    }
+
+    /**
+     * Fixed labels only. Includes JDBC connection checkout, SQL execution and
+     * ResultSet mapping, but excludes HTTP serialization and Python processing.
+     * DO NOT label by country, source, dataset, user or query text.
+     */
+    private <T> List<T> timedBatch(String operation, Supplier<List<T>> task) {
+        if (!Set.of("history", "availability", "latest").contains(operation)) {
+            throw new IllegalArgumentException("Unknown bounded JDBC batch operation");
+        }
+        Timer.Sample sample = Timer.start(meterRegistry);
+        try {
+            return task.get();
+        } finally {
+            sample.stop(meterRegistry.timer("whv.timeseries.batch.jdbc", "operation", operation));
+        }
     }
 
     @Override
@@ -274,7 +298,7 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 where per_indicator_rank <= :limitPerIndicator
                 order by indicator_code asc, %s
                 """.formatted(orderColumns, orderColumns);
-        return jdbcClient.sql(sql)
+        return timedBatch("history", () -> jdbcClient.sql(sql)
                 .param("countryIso3", countryIso3)
                 .param("indicatorCodes", indicatorCodes)
                 .param("sourceCode", sourceCode)
@@ -285,7 +309,7 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 .param("includeMissing", includeMissing)
                 .param("limitPerIndicator", limitPerIndicator)
                 .query((rs, rowNum) -> mapObservation(rs))
-                .list();
+                .list());
     }
 
     @Override
@@ -431,7 +455,7 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 order by ranked.indicator_code, ranked.source_code,
                          ranked.dataset_code, ranked.period_granularity
                 """;
-        return jdbcClient.sql(sql)
+        return timedBatch("latest", () -> jdbcClient.sql(sql)
                 .param("countryIso3", countryIso3)
                 .param("indicatorCodes", indicatorCodes)
                 .param("sourceCode", sourceCode)
@@ -439,7 +463,7 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 .param("periodGranularity", periodGranularity)
                 .param("includeMissing", includeMissing)
                 .query((rs, rowNum) -> mapLatestSourceObservation(rs))
-                .list();
+                .list());
     }
 
     @Override
@@ -655,7 +679,7 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 order by indicator_code, source_code, dataset_code, period_granularity
                 """;
 
-        return jdbcClient.sql(sql)
+        return timedBatch("availability", () -> jdbcClient.sql(sql)
                 .param("countryIso3", countryIso3)
                 .param("indicatorCodes", indicatorCodes)
                 .param("sourceCode", sourceCode)
@@ -663,7 +687,7 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 .param("periodGranularity", periodGranularity)
                 .param("limit", limitPerIndicator)
                 .query((rs, rowNum) -> mapSeriesAvailability(rs))
-                .list();
+                .list());
     }
 
     @Override
