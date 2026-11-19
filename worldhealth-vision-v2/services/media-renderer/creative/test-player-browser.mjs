@@ -69,6 +69,31 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
       await sleep(600);
+      if(mode==="geo"&&frame===96){
+        const geometry=await page.evaluate(()=>{
+          const photo=document.querySelector('[data-wv-geo-photo]');
+          const copy=document.querySelector('[data-wv-geo-copy]');
+          const metric=document.querySelector('[data-wv-geo-metric]');
+          const target=document.querySelector('[data-wv-geo-target]');
+          const viewport=document.querySelector('#smoke-preview');
+          if(!photo||!copy||!metric||!target||!viewport)return null;
+          const a=photo.getBoundingClientRect(),b=copy.getBoundingClientRect();
+          const m=metric.getBoundingClientRect(),t=target.getBoundingClientRect();
+          const v=viewport.getBoundingClientRect();
+          return {
+            photoBottom:a.bottom,copyTop:b.top,copyBottom:b.bottom,
+            photoRight:a.right,targetLeft:t.left,
+            metricTop:m.top,metricBottom:m.bottom,
+            photoTop:a.top,
+            maxTextBottom:v.top+v.height*.79,
+          };
+        });
+        if(!geometry||geometry.photoBottom>geometry.copyTop-6||
+          geometry.copyBottom>geometry.maxTextBottom||
+          geometry.metricTop<geometry.photoTop-3||geometry.metricBottom>geometry.photoBottom+3)
+          throw Error("Geo card/title/metric breach mobile overlays or overlap: "+JSON.stringify(geometry));
+        console.log("[player-smoke] geo media/metric/title mobile layout",geometry);
+      }
       if(mode==="geo"&&frame===48){
         const scene=await page.evaluate(()=>{
           const globe=document.querySelector('[data-wv-geo-earth]');
