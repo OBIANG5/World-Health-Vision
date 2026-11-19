@@ -1,0 +1,191 @@
+{
+  "_WARNING": "PLANNING EXAMPLE ONLY: NOT VERIFIED, NOT APPROVED, NOT RENDERABLE, NOT FOR PUBLICATION",
+  "schema_version": "worldvision-cinematic-director-v1",
+  "episode_id": "WVXXX-replace-with-real-episode-id",
+  "event_date": "ENTER_EVIDENCE_BASED_EVENT_DATE",
+  "gates": {
+    "research": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "script": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "treatment": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "voice": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "casting": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "layouts": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "motion": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "edit": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "sound": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "qa": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    },
+    "delivery": {
+      "status": "not_started",
+      "reviewer": null,
+      "review_ref": null,
+      "artifact_sha256": null
+    }
+  },
+  "facts": [
+    {
+      "id": "C1",
+      "text": "CLAIM MUST BE VERIFIED BY THE EDITOR",
+      "status": "unverified",
+      "sources": []
+    }
+  ],
+  "script": {
+    "text": "WRITE AND APPROVE FACT-CHECKED SCRIPT HERE",
+    "sha256": null,
+    "human_approved": false
+  },
+  "treatment": {
+    "editorial_angle": "",
+    "emotional_arc": "",
+    "visual_language": "",
+    "reference_notes": ""
+  },
+  "voice": {
+    "speaker": "fr-FR-VivienneMultilingualNeural",
+    "continuous_take": true,
+    "same_episode": false,
+    "script_sha256": null,
+    "audio_sha256": null,
+    "audition_ref": null,
+    "audition_approved": false,
+    "duration_frames": null,
+    "licensed_provider_for_publication": false
+  },
+  "canvas": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "shots": [
+    {
+      "id": "SH01",
+      "function": "hook",
+      "kind": "primary_document",
+      "start_frame": null,
+      "end_frame": null,
+      "visual_message": "",
+      "cut_reason": "",
+      "visual_matches_claims": false,
+      "approved_by_human": false,
+      "claim_ids": [
+        "C1"
+      ],
+      "asset": {
+        "sha256": null,
+        "provenance_url": "",
+        "rights_status": "unverified",
+        "rights_ref": "",
+        "fabricated_event_footage": false
+      },
+      "layout": {
+        "sha256": null,
+        "mobile_approved": false
+      },
+      "motion": {
+        "template_id": "",
+        "intention": "",
+        "preview_sha256": null,
+        "mobile_approved": false
+      }
+    },
+    {
+      "id": "SH99",
+      "function": "outro",
+      "kind": "conceptual_animation",
+      "start_frame": null,
+      "end_frame": null,
+      "visual_message": "G0 original only",
+      "cut_reason": "Closing after continuous voiceover",
+      "visual_matches_claims": false,
+      "approved_by_human": false,
+      "claim_ids": [],
+      "asset": {
+        "sha256": null,
+        "provenance_url": "",
+        "rights_status": "owned",
+        "rights_ref": "",
+        "fabricated_event_footage": false
+      },
+      "layout": {
+        "sha256": null,
+        "mobile_approved": false
+      },
+      "motion": {
+        "template_id": "official-g0-original",
+        "intention": "Silent G0 outro unchanged",
+        "preview_sha256": null,
+        "mobile_approved": false
+      }
+    }
+  ],
+  "audio_master": {
+    "sha256": null,
+    "integrated_lufs": null,
+    "true_peak_dbtp": null,
+    "full_listen_approved": false
+  },
+  "quality_review": {
+    "every_shot_reviewed": false,
+    "full_mobile_playback_approved": false,
+    "subtitle_alignment_approved": false,
+    "fact_visual_consistency_approved": false,
+    "no_debug_text_in_pixels": false,
+    "final_preview_sha256": null
+  },
+  "delivery": {
+    "mp4_sha256": null,
+    "publication_manifest_sha256": null,
+    "human_release_approved": false,
+    "outro_original_g0": false
+  }
+}
