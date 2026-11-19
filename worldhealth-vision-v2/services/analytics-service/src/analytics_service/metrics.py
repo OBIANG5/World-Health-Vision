@@ -28,3 +28,19 @@ def observe_request(endpoint: str):
         raise
     finally:
         ANALYTICS_REQUEST_LATENCY_SECONDS.labels(endpoint=endpoint).observe(perf_counter() - start)
+
+# Fixed-cardinality phase measurements. Never label by country, source or user:
+# with 217+ territories and new verticals that would explode time-series costs
+# and could expose the user's interests in operational monitoring.
+ECONOMIC_SNAPSHOT_PHASE_SECONDS = Histogram(
+    "whv_analytics_country_economic_snapshot_phase_seconds",
+    "Country economic snapshot phases (catalog, indicators, series/provenance, total).",
+    labelnames=("phase",),
+    buckets=(0.005, 0.02, 0.05, 0.1, 0.25, 0.5, 1, 2, 3, 5, 10, 30),
+)
+
+
+def observe_economic_phase(phase: str, elapsed_seconds: float) -> None:
+    if phase not in {"country", "indicators", "series_provenance", "total"}:
+        raise ValueError("Unknown economic snapshot phase")
+    ECONOMIC_SNAPSHOT_PHASE_SECONDS.labels(phase=phase).observe(elapsed_seconds)
