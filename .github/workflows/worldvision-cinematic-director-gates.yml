@@ -142,7 +142,7 @@ jobs:
           test -s output/creative/player-document-frame-0.png
           test -s output/creative/player-document-frame-40.png
           test -s output/creative/player-document-frame-102.png
-          test -s output/creative/player-document-frame-130.png
+          test -s output/creative/player-document-frame-68.png
           test -s output/creative/player-document-smoke.report.json
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
@@ -173,7 +173,7 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-0.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-40.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-102.png
-            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-130.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-document-frame-68.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-document-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
