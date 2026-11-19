@@ -37,7 +37,8 @@ export function photoTrackPose(photo,frame,durationFrames){
       dx:subject?subject.dx*subjectProgress:0,
       dy:subject?subject.dy*subjectProgress:0},
     maskProgress,focusProgress,focusPoint,countProgress,
-    headingProgress:motionProgress(f,12,37),
+    // A news shot must carry its headline on the very first visible frame.
+    headingProgress:.78+.22*motionProgress(f,0,27),
     subtitleProgress:motionProgress(f,79,112),
     underlayProgress:motionProgress(f,0,28)
   };
