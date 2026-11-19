@@ -422,3 +422,52 @@ Branche `perf/v2-batch-timeseries-availability-2026-11-19`, créée au-dessus de
 
 ### Puis F1.2b.2c-3C2 : séries historiques
 Ce sera la partie la plus risquée, car la limite de préchargement historique `min(600,max(96,seriesLimit*10))` doit rester **une limite PAR INDICATEUR** et non une limite totale. Il faudra conserver des années communes entre éditeurs, latest run avec révisions, statuts estimés/manquants, périodes disjointes, et comparer intégralement `sourceAudit`, tendance et divergence. #48 et #42 restent ouvertes jusqu'aux validations. Ensuite sécurité, anti-abus, vraie ingestion locale/internationale, Watch, plateformes Money/Price/Tourisme/Trading/BRVM et radar GDELT avec licences. Documents maîtres de stratégie internationale et monétisation PR #41 préservés. Aucune dépense, déploiement, fusion ni changement aux branches média/voix ou V0/V1.
+
+
+---
+
+## 16. F1.2b.2c-3C2 — batch des séries HISTORIQUES (19 novembre 2026)
+
+### Source de reprise exacte
+- PR #51 `perf/v2-batch-timeseries-availability-2026-11-19`, SHA **`b49ef19888c17bc8c1cc48641373873a1751d4c2`**, trois workflows SUCCESS :
+  - canonique https://github.com/OBIANG5/World-Health-Vision/actions/runs/44529625537
+  - six services/panne HTTP 503/récupération https://github.com/OBIANG5/World-Health-Vision/actions/runs/44529625541
+  - SQL dense + A/B https://github.com/OBIANG5/World-Health-Vision/actions/runs/44529625579
+  - artefact https://github.com/OBIANG5/World-Health-Vision/actions/runs/44529625579/artifacts/14533650211
+- PR #51 a supprimé 53 HTTP supplémentaires (123 → 70), sans changer le **SHA256 complet** des réponses FRA/GAB hors `generatedAtUtc` : 54 indicateurs, 200 comparaisons de sources, 270 preuves, dates et statuts. Temps descriptifs FRA 404,775→276,355 ms et 390,212→255,136 ms ; Gabon 348,870→291,005 ms. **Pas de SLO mondial.**
+- PR #51 demeure **DRAFT non fusionnée** ; `WHV_ANALYTICS_TIMESERIES_AVAILABILITY_BATCH_ENABLED=false` par défaut. Compte rendu de la validation ajouté dans les commentaires de PR #51 sans changer son SHA final.
+
+### Branche de chantier 3C2
+`perf/v2-batch-timeseries-series-2026-11-19` créée directement depuis #51 validée. Toujours empilée ; ne pas fusionner directement avec `v2`. Issue #48 phase batch et issue #42 performance restent ouvertes.
+- Actuellement il reste **54 GET séries historiques** par snapshot, plus 16 autres appels (1 Catalog pays, 1 Catalog indicateurs, 1 latest batch, 1 availability batch, 4 sources + 4 datasets + 4 runs) = **70 GET/POST**.
+- Nouvelle API interne `POST /internal/timeseries/series/history/batch` ; une requête JDBC `latest_observation` sur un groupe de codes. `row_number() OVER (PARTITION BY indicator_code ORDER BY period_start [ASC|DESC],source_code,dataset_code,...)`, puis `rank <= limitPerIndicator`. **AUCUNE LIMITE GLOBALE.**
+- Le classement existant des séries individuelles a des ex-aequo non explicitement départagés pour deux granularités sur une même date/source : ce lot ajoute la fin de tri stable `period_granularity, period_end DESC, run_key` **dans le GET historique et dans le batch**, pour préserver les comparaisons reproductibles. Le générateur `EXPLAIN` a été aligné sur le SQL réel.
+- Client Analytics découpe automatiquement les 54 codes en sous-lots selon un budget `nombreDeCodes × limitPerIndicator <= 10000` et au plus 128 codes / POST, en préservant le **même historique de chaque indicateur**. Pour `seriesLimit=12`, préchargement historique de 120 lignes par code : 1 batch, attendu **70 → 17 HTTP**. Pour `seriesLimit=24`, fenêtre 240 lignes/code : 2 batches, attendu **70 → 18 HTTP** ; des fenêtres plus longues peuvent créer plus de lots, jamais tronquer globalement.
+- `WHV_ANALYTICS_TIMESERIES_SERIES_BATCH_ENABLED=false` par défaut. Les autres flags de Catalog/latest/availability restent indépendants et inactifs par défaut. En CI A/B, tous les autres batches sont activés dans les deux bras, afin d'isoler l'effet historique uniquement.
+- Tests Java Testcontainers : JSON intégral contre GET original avec LIMIT par code, filtre source IMF, dates et ASC/DESC, format, taille et budget ; tests Python de groupes, timestamps, statut MISSING/ESTIMATED, sourceRun, erreurs, découpage de 54 codes à 600 lignes -> quatre lots.
+- En plus du SHA256 complet des snapshots, test **direct de 54 GET vs le batch** sur le même dataset pour plusieurs scénarios : limite 1 DESC (contrôle critique contre limite globale), limite 5 ASC avec MISSING, source IMF, bornes temporelles 2010–2015. Aucun des 54 indicateurs ne doit disparaître.
+- Benchmark 10 snapshots SYNTHÉTIQUES FRA et GAB, sériesLimit 12 et 24, en alternant chemins. Identité SHA256 de tout le JSON sauf generatedAtUtc, 54 indicateurs, 200 comparaisons, 270 preuves ; compte HTTP 70 contre 17/18. Temps descriptifs uniquement, pas SLO production.
+- Nécessité stricte : trois pipelines CI verts sur SHA final et documentation des éventuels écarts. Dernier développement **non encore validé** tant que la CI n'est pas passée.
+
+### Suite après l'optimisation
+1. Profilage big-data : dataset synthétique incluant les 217 pays/territoires, sources hétérogènes locales, mensuel/trimestriel/annuel, révisions, données manquantes, problèmes de dates et coût mémoire/CPU/Hikari/pool, requêtes plan EXPLAIN et p95/p99 à plusieurs niveaux de charge, idéalement test A/B dans même runner.
+2. Sécurité : quotas / anti-abus / protection du backend contre abus API, authentification véritable interservices et segmentation du réseau avant tout déploiement, supervision, sauvegardes et rollback. Ne pas confondre «route non passée par Gateway» avec authentification.
+3. F1.3 : ingestion effective de données officielles nationales et internationales, statut source documentée vs connectée vs réellement ingérée ; prioriser pilotes pays et preuve d'édition/validation (Gabon et comparateurs).
+4. Watch, Atlas, Money, Price/Panier, Tourisme/Transport, Trading, BRVM, Média et radar GDELT/EarlyForge (mentions d'actualité non preuve statistique) ; conserver les documents de stratégie internationale et modèles de revenus de PR #41, traçabilité, droits et licences.
+5. Tout sur GitHub pour reprise inter-chat, sans aucune fusion non validée de la chaîne PR, aucun changement V0/V1/média/voix/Vercel ni dépense.
+
+
+### Validation RÉELLE de 3C2 — trois workflows verts sur le code SHA `4dc43bc`
+
+Les trois CI ont été **SUCCESS sur `4dc43bc308939e62d1fba666708899ab33506ace`** :
+1. Audit canonique Java/Python/frontend et Docker : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508361 — **tentative 2**. La première a échoué à résoudre Maven Central Spring Boot parent POM 3.3.2, sans modification du POM ; seul le job `docker-core` a été relancé et a réussi.
+2. Gateway/six conteneurs, panne HTTP 503 et reprise : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508380.
+3. SQL/HTTP dense, tests de filtres et A/B : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508598 ; artefact https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508598/artifacts/14535065504 .
+
+Preuves directes des 54 séries groupées : limite 1 DESC = 54 lignes (une par code), limite 5 ASC + MISSING = 270 lignes, IMF limite 10 = 540, date 2010–2015 limite 10 = 540, **JSON identique** aux 54 GET individuels pour chaque scénario. 10 snapshots entiers FRA/GAB/seriesLimit12/24 : même SHA256 JSON (sauf generatedAtUtc), 54 lenses, 200 comparaisons, 270 éléments de preuve. **70 → 17 HTTP** (120 lignes/code, 1 batch) ou **70 → 18** (240 lignes/code, 2 batches). Ces données sont toutes synthétiques et seulement en CI, pas des SLO internationaux. L'ancien GET et nouveau batch ont maintenant un ordre SQL déterministe pour les ex-aequo de granularité/date/source.
+
+**Chaîne PR complète :** #36 → #38 → #39 → #40 → #41 → #45 → #46 → #47 → #49 → #50 → #51 → #52 ; toutes les PR concernées demeurent brouillon/non fusionnées sauf mention explicite contraire vérifiée. Les drapeaux de batch sont **tous false par défaut** ; le site Vercel public et la branche `v2` sont inchangés. Aucun achat.
+
+**Étape intelligente suivante :** ne pas déclarer l'optimisation terminée pour une infrastructure internationale : tester data sets synthétiques hétérogènes (sources locales par pays, OBSERVED/ESTIMATED/MISSING, calendrier mensuel/trimestriel/annuel, révisions non simultanées, années communes absentes, 12→54→217 pays), surveiller plans SQL/Hikari/CPU/RAM et p95/p99 multi-utilisateurs, puis verrouiller contrôles de quota/auth interservices/TLS/backup/rollback avant un vrai déploiement. Ensuite priorité produit F1.3 : ingestion officielle réellement vérifiée de quelques pays pilotes, sources nationales comparées aux organisations internationales et droits/licences ; F1.4 Watch et plateformes Money/Price/Travel/Trading/BRVM, Radar GDELT filtré et média sous contrôle journalistique. Préserver les deux documents maîtres `docs/product` de PR #41.
+
+**Attention continuité :** ce complément documentaire crée un nouveau SHA au-dessus du SHA de code validé `4dc43bc`. Vérifier trois CI à nouveau sur le **nouveau SHA final** avant de parler de dernier commit validé. Sans cette vérification, la preuve reste celle de `4dc43bc` et la nouvelle PR candidate reste en brouillon.

@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 
 from analytics_service.metrics import timed_dependency_http
@@ -78,6 +79,73 @@ class TimeseriesClient:
         response = await self._get("series", "/api/timeseries/series", params=params)
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [TimeseriesObservation.model_validate(item) for item in payload.items]
+
+    async def list_series_batch(
+        self,
+        country_iso3: str,
+        indicator_codes: list[str],
+        source_code: str | None,
+        dataset_code: str | None,
+        period_granularity: str | None,
+        include_missing: bool,
+        sort_direction: str,
+        limit_per_indicator: int,
+    ) -> dict[str, list[TimeseriesObservation]]:
+        """Chunk by a fixed 10k-row budget; preserve each code's complete history.
+
+        The old GET limits EACH indicator to `limit_per_indicator`; a global
+        SQL limit would drop late indicators and destroy temporal alignment.
+        """
+        if (not 1 <= len(indicator_codes) <= 128 or
+                len(set(indicator_codes)) != len(indicator_codes) or
+                not 1 <= limit_per_indicator <= 1000):
+            raise ValueError("Series batch requires 1-128 unique codes and valid per-code limit.")
+        max_per_chunk = min(128, max(1, 10000 // limit_per_indicator))
+        chunks = [
+            indicator_codes[start:start + max_per_chunk]
+            for start in range(0, len(indicator_codes), max_per_chunk)
+        ]
+
+        async def read_chunk(codes: list[str]) -> dict[str, list[TimeseriesObservation]]:
+            resp = await self._post(
+                "series_batch", "/internal/timeseries/series/history/batch",
+                json={
+                    "countryIso3": country_iso3,
+                    "indicatorCodes": codes,
+                    "sourceCode": source_code,
+                    "datasetCode": dataset_code,
+                    "periodGranularity": period_granularity,
+                    "fromPeriodStart": None,
+                    "toPeriodStart": None,
+                    "includeMissing": include_missing,
+                    "sortDirection": sort_direction,
+                    "limitPerIndicator": limit_per_indicator,
+                },
+            )
+            data = resp.json()
+            if (not isinstance(data, dict) or data.get("count") != len(codes) or
+                    not isinstance(data.get("items"), list) or len(data["items"]) != len(codes)):
+                raise httpx.RemoteProtocolError("Malformed historical batch envelope.")
+            grouped: dict[str, list[TimeseriesObservation]] = {}
+            for code, group in zip(codes, data["items"], strict=True):
+                if not isinstance(group, dict) or group.get("indicatorCode") != code:
+                    raise httpx.RemoteProtocolError("Historical batch code/order mismatch.")
+                items = group.get("items")
+                if (not isinstance(items, list) or
+                        type(group.get("count")) is not int or group["count"] != len(items) or
+                        len(items) > limit_per_indicator):
+                    raise httpx.RemoteProtocolError("Historical batch count/limit violation.")
+                models = [TimeseriesObservation.model_validate(item) for item in items]
+                if any(row.indicatorCode != code for row in models):
+                    raise httpx.RemoteProtocolError("Historical batch crossed indicator boundaries.")
+                grouped[code] = models
+            return grouped
+
+        groups = await asyncio.gather(*(read_chunk(chunk) for chunk in chunks))
+        combined = {code: rows for part in groups for code, rows in part.items()}
+        if list(combined) != indicator_codes:
+            raise httpx.RemoteProtocolError("Historical batch omitted or reordered indicators.")
+        return combined
 
     async def list_latest_by_source(
         self,

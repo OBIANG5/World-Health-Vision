@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import com.worldhealthvision.timeseries.api.dto.LatestSourceBatchResponse;
 import com.worldhealthvision.timeseries.api.dto.AvailabilityBatchResponse;
+import com.worldhealthvision.timeseries.api.dto.SeriesBatchResponse;
+import com.worldhealthvision.timeseries.api.dto.SeriesBatchItem;
 import com.worldhealthvision.timeseries.api.dto.AvailabilityBatchItem;
 import com.worldhealthvision.timeseries.api.dto.LatestSourceBatchItem;
 import java.util.stream.Collectors;
@@ -69,6 +71,58 @@ public class TimeseriesQueryService {
                 limit
         );
         return new TimeseriesListResponse<>(items.size(), items);
+    }
+
+    public SeriesBatchResponse listSeriesBatch(
+            String countryIso3, List<String> indicatorCodes,
+            String sourceCode, String datasetCode, String periodGranularity,
+            LocalDate fromPeriodStart, LocalDate toPeriodStart,
+            boolean includeMissing, String sortDirection, int limitPerIndicator
+    ) {
+        if (countryIso3 == null || !countryIso3.trim().toUpperCase(Locale.ROOT).matches("[A-Z]{3}")) {
+            throw new IllegalArgumentException("Country must be ISO3.");
+        }
+        if (indicatorCodes == null || indicatorCodes.isEmpty() || indicatorCodes.size() > 128) {
+            throw new IllegalArgumentException("Historical series batch requires 1 to 128 codes.");
+        }
+        // Limit 10000 rows max to bound JSON parsing and heap. The Python
+        // caller splits 54 economic codes into bounded chunks when needed.
+        if (limitPerIndicator < 1 || limitPerIndicator > 1000
+                || (long) indicatorCodes.size() * limitPerIndicator > 10_000L) {
+            throw new IllegalArgumentException("Historical batch exceeds row budget.");
+        }
+        validatePeriodBounds(fromPeriodStart, toPeriodStart);
+        boolean descending = isDescendingSort(sortDirection);
+        Set<String> unique = new LinkedHashSet<>();
+        for (String raw : indicatorCodes) {
+            if (raw == null) {
+                throw new IllegalArgumentException("Null indicator code.");
+            }
+            String code = raw.trim().toUpperCase(Locale.ROOT);
+            if (!BATCH_CODE.matcher(code).matches() || !unique.add(code)) {
+                throw new IllegalArgumentException("Invalid/duplicated indicator.");
+            }
+        }
+        List<String> requested = new ArrayList<>(unique);
+        List<TimeseriesObservationResponse> rows = timeseriesRepository.listSeriesBatch(
+                countryIso3.trim().toUpperCase(Locale.ROOT), requested,
+                normalizeOptionalCode(sourceCode), normalizeOptionalCode(datasetCode),
+                normalizeOptionalCode(periodGranularity),
+                fromPeriodStart, toPeriodStart, includeMissing, descending, limitPerIndicator
+        );
+        Map<String, List<TimeseriesObservationResponse>> grouped = new LinkedHashMap<>();
+        for (String code : requested) grouped.put(code, new ArrayList<>());
+        for (TimeseriesObservationResponse row : rows) {
+            List<TimeseriesObservationResponse> bucket = grouped.get(row.indicatorCode());
+            if (bucket == null) {
+                throw new IllegalStateException("Unrequested historical indicator from SQL.");
+            }
+            bucket.add(row);
+        }
+        List<SeriesBatchItem> items = requested.stream()
+                .map(code -> new SeriesBatchItem(code, grouped.get(code).size(), grouped.get(code)))
+                .toList();
+        return new SeriesBatchResponse(items.size(), items);
     }
 
     public TimeseriesListResponse<LatestSourceObservationResponse> listLatestBySource(

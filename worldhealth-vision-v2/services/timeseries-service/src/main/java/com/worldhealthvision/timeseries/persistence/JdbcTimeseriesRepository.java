@@ -212,6 +212,92 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
     }
 
     @Override
+    public List<TimeseriesObservationResponse> listSeriesBatch(
+            String countryIso3, List<String> indicatorCodes, String sourceCode,
+            String datasetCode, String periodGranularity,
+            LocalDate fromPeriodStart, LocalDate toPeriodStart,
+            boolean includeMissing, boolean sortDescending, int limitPerIndicator
+    ) {
+        // Limit applies separately to EACH indicator. Using LIMIT globally
+        // would discard older common years and hide some source comparisons.
+        // Explicit tie-breakers match the individual GET's deterministic order
+        // for concurrent granularities or same-period source releases.
+        String direction = sortDescending ? "desc" : "asc";
+        String sql = """
+                with filtered as (
+                    select
+                        lo.source_code, lo.dataset_code, lo.run_key,
+                        lo.country_iso3, lo.indicator_code, lo.period_granularity,
+                        lo.period_start, lo.period_end, lo.period_label,
+                        lo.numeric_value, lo.text_value, lo.value_status,
+                        lo.source_published_at, lo.fetched_at_utc
+                    from timeseries.latest_observation lo
+                    where lo.country_iso3 = :countryIso3
+                      and lo.indicator_code in (:indicatorCodes)
+                      and (cast(:sourceCode as varchar) is null or lo.source_code = :sourceCode)
+                      and (cast(:datasetCode as varchar) is null or lo.dataset_code = :datasetCode)
+                      and (cast(:periodGranularity as varchar) is null or lo.period_granularity = :periodGranularity)
+                      and (cast(:fromPeriodStart as date) is null or lo.period_start >= :fromPeriodStart)
+                      and (cast(:toPeriodStart as date) is null or lo.period_start <= :toPeriodStart)
+                      and (cast(:includeMissing as boolean) = true or lo.value_status <> 'MISSING')
+                ),
+                ranked as (
+                    select
+                        f.*,
+                        row_number() over (
+                            partition by f.indicator_code
+                            order by f.period_start %s,
+                                     f.source_code asc, f.dataset_code asc,
+                                     f.period_granularity asc, f.period_end desc,
+                                     f.run_key asc
+                        ) as indicator_rank
+                    from filtered f
+                )
+                select
+                    lo.source_code,
+                    coalesce(s.display_name, lo.source_code) as source_display_name,
+                    lo.dataset_code,
+                    coalesce(sd.display_name, lo.dataset_code) as dataset_display_name,
+                    lo.run_key,
+                    lo.country_iso3,
+                    coalesce(c.display_name, lo.country_iso3) as country_display_name,
+                    lo.indicator_code,
+                    coalesce(i.display_name, lo.indicator_code) as indicator_display_name,
+                    lo.period_granularity,
+                    lo.period_start,
+                    lo.period_end,
+                    lo.period_label,
+                    lo.numeric_value,
+                    lo.text_value,
+                    lo.value_status,
+                    lo.source_published_at,
+                    lo.fetched_at_utc
+                from ranked lo
+                left join catalog.source s on s.code = lo.source_code
+                left join catalog.source_dataset sd on sd.code = lo.dataset_code and sd.source_id = s.id
+                left join catalog.country c on c.iso3 = lo.country_iso3
+                left join catalog.indicator i on i.code = lo.indicator_code
+                where lo.indicator_rank <= :limit
+                order by lo.indicator_code asc, lo.period_start %s,
+                         lo.source_code asc, lo.dataset_code asc,
+                         lo.period_granularity asc, lo.period_end desc,
+                         lo.run_key asc
+                """.formatted(direction, direction);
+        return jdbcClient.sql(sql)
+                .param("countryIso3", countryIso3)
+                .param("indicatorCodes", indicatorCodes)
+                .param("sourceCode", sourceCode)
+                .param("datasetCode", datasetCode)
+                .param("periodGranularity", periodGranularity)
+                .param("fromPeriodStart", fromPeriodStart)
+                .param("toPeriodStart", toPeriodStart)
+                .param("includeMissing", includeMissing)
+                .param("limit", limitPerIndicator)
+                .query((rs, rowNum) -> mapObservation(rs))
+                .list();
+    }
+
+    @Override
     public List<LatestSourceObservationResponse> listLatestBySource(
             String countryIso3,
             String indicatorCode,
@@ -1007,11 +1093,13 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
     private String seriesOrderBy(boolean sortDescending) {
         if (sortDescending) {
             return """
-                    order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc
+                    order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc,
+                             lo.period_granularity asc, lo.period_end desc, lo.run_key asc
                     """;
         }
         return """
-                order by lo.period_start asc, lo.source_code asc, lo.dataset_code asc
+                order by lo.period_start asc, lo.source_code asc, lo.dataset_code asc,
+                         lo.period_granularity asc, lo.period_end desc, lo.run_key asc
                 """;
     }
 
