@@ -9,6 +9,12 @@ export default defineConfig({
   // The interactive Player imports the EXACT same CreativeEdit.tsx as the
   // server-side renderer. Both trees must use one React/Remotion runtime.
   resolve: {
+    // Shared GeoStory.tsx is outside the frontend folder. This explicit alias
+    // is necessary for Vite/Rolldown to find the installed Natural Earth atlas
+    // from a shared renderer source file. Atlas stays a build-time dependency.
+    alias: {
+      'world-atlas/countries-110m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-110m.json'),
+    },
     dedupe: ['react', 'react-dom', 'remotion', '@remotion/transitions', '@remotion/layout-utils', 'd3-geo', 'topojson-client'],
   },
   build: {
