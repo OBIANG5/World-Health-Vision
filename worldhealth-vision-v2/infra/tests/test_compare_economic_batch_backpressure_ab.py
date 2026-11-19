@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from compare_economic_batch_backpressure_ab import read_queue_wait
+from analyze_economic_queue_wait import read_queue_wait
 
 
 def fixture(count=61, label='operation', duplicate=False):

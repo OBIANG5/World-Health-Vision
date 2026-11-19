@@ -60,7 +60,10 @@ python3 worldhealth-vision-v2/infra/tests/compare_economic_batch_backpressure_ab
   --baseline "$artifacts/queue-baseline.json" \
   --bounded "$artifacts/queue-bounded8.json" \
   --baseline-repeat "$artifacts/queue-baseline_repeat.json" \
-  --baseline-metrics "$artifacts/queue-baseline-metrics.prom" \
-  --bounded-metrics "$artifacts/queue-bounded8-metrics.prom" \
-  --baseline-repeat-metrics "$artifacts/queue-baseline_repeat-metrics.prom" \
   --output "$artifacts/queue-baseline-vs-bounded-ab.json"
+
+python3 worldhealth-vision-v2/infra/tests/analyze_economic_queue_wait.py \
+  --baseline "$artifacts/queue-baseline-metrics.prom" \
+  --bounded "$artifacts/queue-bounded8-metrics.prom" \
+  --baseline-repeat "$artifacts/queue-baseline_repeat-metrics.prom" \
+  --report "$artifacts/queue-baseline-vs-bounded-ab.json"

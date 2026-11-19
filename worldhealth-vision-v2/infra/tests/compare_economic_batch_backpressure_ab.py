@@ -9,50 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
-import re
 from pathlib import Path
-
-
-
-_WAIT = re.compile(
-    r'^whv_analytics_economic_timeseries_batch_wait_seconds_'
-    r'(count|sum)\{operation="(latest|availability|history)"\}\s+'
-    r'([0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)$'
-)
-
-
-def read_queue_wait(path: Path) -> dict:
-    """Read only the three reviewed private histogram count/sum pairs."""
-    series: dict[tuple[str, str], float] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if not line.startswith("whv_analytics_economic_timeseries_batch_wait_seconds_"):
-            continue
-        if "_bucket{" in line or "_created{" in line:
-            continue
-        match = _WAIT.fullmatch(line.strip())
-        if match is None:
-            raise ValueError("Unreviewed queue metric or private label")
-        kind, operation, raw_value = match.groups()
-        key = (operation, kind)
-        if key in series:
-            raise ValueError("Duplicate batch wait series")
-        value = float(raw_value)
-        if not math.isfinite(value) or value < 0:
-            raise ValueError("Non-finite or negative queue metric")
-        series[key] = value
-    result = {}
-    for operation in ("latest", "availability", "history"):
-        count = series.get((operation, "count"))
-        total = series.get((operation, "sum"))
-        if count != 61 or total is None:
-            raise ValueError("Missing or incorrectly counted batch wait observations")
-        result[operation] = {
-            "count": 61,
-            "total_wait_ms_across_all_requests": round(total * 1000, 3),
-            "mean_wait_ms_all_61_snapshots": round(total * 1000 / count, 3),
-        }
-    return result
 
 
 def read(path: Path) -> dict:
@@ -135,26 +92,9 @@ def main():
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--bounded", type=Path, required=True)
     parser.add_argument("--baseline-repeat", type=Path, required=True)
-    parser.add_argument("--baseline-metrics", type=Path, required=True)
-    parser.add_argument("--bounded-metrics", type=Path, required=True)
-    parser.add_argument("--baseline-repeat-metrics", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     data = compare(read(args.baseline), read(args.bounded), read(args.baseline_repeat))
-    wait = {
-        "baseline": read_queue_wait(args.baseline_metrics),
-        "bounded_8": read_queue_wait(args.bounded_metrics),
-        "baseline_repeat": read_queue_wait(args.baseline_repeat_metrics),
-    }
-    for mode in ("baseline", "baseline_repeat"):
-        if any(wait[mode][operation]["total_wait_ms_across_all_requests"] != 0
-               for operation in ("latest", "availability", "history")):
-            raise AssertionError("Uncapped baseline must not queue economic batches")
-    data["analytics_queue_wait"] = wait
-    data["queue_wait_interpretation"] = (
-        "Total is SUM of waits across requests and concurrency tiers, NOT wall-clock time; "
-        "cap shifts some waiting from JDBC/Hikari to the Analytics admission queue"
-    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(data, indent=2, ensure_ascii=False)+"\n",encoding="utf-8")
     for name, rows in data["results"].items():
@@ -163,10 +103,7 @@ def main():
               f"p95={max_tier['p95_ms']}ms Hikari pending sampled "
               f"{max_tier['hikari_pending_max_sampled']} "
               f"checkout_mean={max_tier['hikari_checkout_mean_ms']}ms")
-    for operation, item in wait["bounded_8"].items():
-        print(f"OBSERVED queue {operation}: mean={item['mean_wait_ms_all_61_snapshots']}ms, "
-              f"sum across requests={item['total_wait_ms_across_all_requests']}ms")
-    print("PASS: 180 snapshots, whole JSON source evidence parity and fixed queue metrics")
+    print("PASS: 180 snapshots; all 12 country full JSON hashes and 54-lens source evidence unchanged across A/B/A")
 
 
 if __name__ == "__main__":
