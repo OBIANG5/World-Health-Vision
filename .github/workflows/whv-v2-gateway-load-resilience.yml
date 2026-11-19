@@ -162,13 +162,19 @@ jobs:
           "${compose[@]}" stop analytics-service
           catalog_code="$(curl -sS --max-time 10 -o /dev/null -w '%{http_code}' \
             'http://127.0.0.1:18080/api/catalog/countries?limit=2' || true)"
-          product_code="$(curl -sS --max-time 35 -o /dev/null -w '%{http_code}' \
+          product_code="$(curl -sS --max-time 35 -o "$RUNNER_TEMP/whv-upstream-unavailable.json" -w '%{http_code}' \
             'http://127.0.0.1:18080/api/product/countries/FRA/economic-snapshot' || true)"
           test "$catalog_code" = 200 || { echo "Unrelated catalogue failed during analytics outage" >&2; exit 1; }
-          case "$product_code" in
-            500|502|503|504) echo "PASS: unavailable analytics returns a real error, not fabricated data ($product_code)";;
-            *) echo "FAILED: unexpected status when analytics is offline: $product_code" >&2; exit 1;;
-          esac
+          test "$product_code" = 503 || { echo "Expected 503, got $product_code" >&2; exit 1; }
+          python3 - "$RUNNER_TEMP/whv-upstream-unavailable.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1]))
+          assert data['error']=='UPSTREAM_UNAVAILABLE',data
+          assert data['retryable'] is True,data
+          assert data['requestId'] and data['timestampUtc'],data
+          assert 'statistics' not in data and 'data' not in data
+          print('PASS: analytics outage sends safe, structured, non-fabricated HTTP 503')
+          PY
           "${compose[@]}" up -d --wait analytics-service
           recovered=0
           for n in $(seq 1 30); do
