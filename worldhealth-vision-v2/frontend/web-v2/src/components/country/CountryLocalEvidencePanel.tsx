@@ -164,8 +164,8 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   useEffect(() => {
     if (!enabled || !/^[A-Z]{3}$/.test(iso3)) return;
     let active = true;
-    setData(null);
-    setStatus("loading");
+    // CountryDrawer keys this component by ISO3; the initial state is
+    // already loading. Avoid effect-synchronous setState and extra renders.
     fetchCountryLocalContext(iso3)
       .then((value) => {
         if (!active) return;
@@ -185,8 +185,8 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   useEffect(() => {
     if (!enabled || data?.countryIso3 !== iso3 || !data.documentedReleases.length) return;
     let active = true;
-    setComparisons(null);
-    setComparisonStatus("loading");
+    // Loading is derived while the first remote comparison is outstanding;
+    // no setState-synchronously-in-effect or misleading stale-source reset.
     fetchCountryNationalComparisons(iso3)
       .then((result) => {
         if (!active) return;
@@ -201,6 +201,10 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   }, [iso3, enabled, data]);
 
   if (!enabled || !/^[A-Z]{3}$/.test(iso3)) return null;
+
+  const comparisonDisplayStatus = comparisonStatus === "idle"
+    && status === "ready" && !!data?.documentedReleases.length
+    ? "loading" : comparisonStatus;
 
   const numberFormatter = new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US", {
     maximumFractionDigits: 0,
@@ -318,9 +322,9 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
                   <p><strong>{copy.methodology} :</strong> {item.methodologyCaveat}</p>
                   <div className="whv-national-comparison" aria-live="polite">
                     <strong className="whv-national-comparison-title">{copy.internationalHeading}</strong>
-                    {comparisonStatus === "loading" && <p role="status">{copy.comparisonLoading}</p>}
-                    {comparisonStatus === "unavailable" && <p role="status">{copy.comparisonUnavailable}</p>}
-                    {comparisonStatus === "ready" && (
+                    {comparisonDisplayStatus === "loading" && <p role="status">{copy.comparisonLoading}</p>}
+                    {comparisonDisplayStatus === "unavailable" && <p role="status">{copy.comparisonUnavailable}</p>}
+                    {comparisonDisplayStatus === "ready" && (
                       <>
                         <p className="whv-national-evidence-caution">{comparisonLabel}</p>
                         {live?.internationalLatest.map((external) => (
