@@ -25,6 +25,7 @@ export type CreativeShot = {
   eyebrow?:string;
   footnote?:string;
   media?:CreativeMedia|null;
+  foreground?:{src:string;credit?:string}|null;
   accent?:string;
   motion?:"locked"|"dolly"|"drift"|"push";
   transitionAfter?:"cut"|"dissolve"|"slide";
@@ -121,6 +122,7 @@ function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<
       filter:"drop-shadow(0 16px 38px rgba(1,9,18,"+shadowOpacity+"))",
     }}>
       <MediaPlate shot={shot}/>
+      <ForegroundPlate shot={shot}/>
     </AbsoluteFill>
     <AbsoluteFill style={{
       background:"linear-gradient(180deg,rgba(4,13,22,.28) 0%,transparent 31%,rgba(4,10,18,.11) 42%,rgba(4,10,18,.58) 68%,rgba(4,10,18,.92) 100%)",
@@ -161,6 +163,26 @@ function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<
   </AbsoluteFill>;
 }
 
+/**
+ * Optional externally segmented foreground for depth without fake AI footage.
+ * The transparent PNG/WebP is prepared by a specialist tool and staged intact.
+ * Different optical travel produces a restrained 2.5D parallax effect.
+ */
+function ForegroundPlate({shot}:{shot:CreativeShot}) {
+  const frame=useCurrentFrame();
+  const duration=Math.max(1,shot.durationFrames);
+  const progress=Math.max(0,Math.min(1,frame/duration));
+  if(!shot.foreground)return null;
+  return <AbsoluteFill style={{pointerEvents:"none",overflow:"hidden"}}>
+    <Img src={staticFile(shot.foreground.src)} style={{
+      width:"100%",height:"100%",objectFit:"cover",
+      objectPosition:Math.round((shot.focus?.x??.5)*100)+"% "+Math.round((shot.focus?.y??.5)*100)+"%",
+      transform:"translate3d("+Math.round(-16*progress)+"px,"+Math.round(-13*progress)+"px,0) scale("+(1.05+progress*.07)+")",
+      transformOrigin:"center center"
+    }}/>
+  </AbsoluteFill>;
+}
+
 function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>}) {
   const frame=useCurrentFrame();
   const {fps}=useVideoConfig();
@@ -192,6 +214,7 @@ function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Require
 
   return <AbsoluteFill style={{background:globalStyle.background,overflow:"hidden",fontFamily:globalStyle.editorialFont}}>
     <MediaPlate shot={shot}/>
+    <ForegroundPlate shot={shot}/>
     {!clean&&<>
       <AbsoluteFill style={{
         background:shot.media
