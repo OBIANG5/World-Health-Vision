@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## SPRINT 9 MEDIA — GEO-2 COUNTRY FOCUS / MULTI-COUCHES (19 NOVEMBRE)
+
+Nouveau `country_focus` en branche indépendante `feature/worldvision-country-focus-10m-multilayer-2026-11-19` empilée sur PR #72. Détail pays Natural Earth 10m, voisins 50m, rendu Remotion 1080×1920 avec caméra/cartographie/annotation/média/alpha/metric/texte en animations distinctes ; sélecteur lazy dans Studio et validation anti-marqueur faux. Voir [rapport Sprint 9](../media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md).
+
+**État : code en branche — contrôler le run GitHub HEAD, vérifier le vrai MP4 et les PNG avant de certifier.** La PR de base #72 est techniquement verte, mais sa qualité internationale visuelle n'est pas approuvée ; ce sprint répond au petit contour pays vu dans l'audit. Aucun merge dans `v2`, aucune diffusion ni données d'actualité fictives. Ensuite : correction des pixels et sécurité géographique, continuité globe→pays→photo, PHOTO 3–6 animations sur une image réelle, DATA, texte et audio professionnel. BAOCOM séparé, voix libre, pas de GDELT/blog dans cette branche.
+
+---
+
 ## MEDIA SPRINT 8 — GEO DIRECTOR / REPRISE MULTI-ANIMATIONS (19 NOVEMBRE 2026)
 
 **Nouvelle branche de travail isolée :** `feature/worldvision-geo-camera-country-spotlight-2026-11-19` (issue de PR #44, pas fusionnée dans V2). **Document de référence** : [WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md](../media/WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md). Le module ajoute mouvement de caméra à destination géographique fournie, arrivée maintenue, zoom mesuré, contour pays sourcé Natural Earth ; same pose D3 + vrai NASA globe Three. Tests unitaire, validation de contrats et contrôles Chromium ajoutés. Le code est committé, **la CI et les véritables photogrammes Sprint 8 restent à vérifier avant déclaration de succès**.
