@@ -299,6 +299,7 @@ async def main():
         "not_real_country_economic_data": True,
         "not_a_production_slo": True,
         "private_hikari_jdbc_sampling": profile_private_pool,
+        "batch_cap_configured_in_process": settings.economic_timeseries_batch_max_inflight,
         "jdbc_timer_scope": "Connection checkout + SQL execution + ResultSet mapping; excludes HTTP/JSON and Python",
         "snapshots": len(COUNTRIES) * len(CONCURRENCY),
         "concurrency_levels": list(CONCURRENCY),
