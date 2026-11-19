@@ -638,6 +638,22 @@ function AppContent() {
             {lang === "fr" ? "Rechercher un pays" : "Find a country"}
           </button>
         </div>
+        <div className="whv-story-perspectives">
+          <div>
+            <strong>{lang === "fr" ? "Plusieurs sources. Aucun regard imposé." : "Multiple sources. No imposed viewpoint."}</strong>
+            <p>{lang === "fr"
+              ? "Institutions nationales, médias locaux et organismes internationaux, avec leurs méthodes et limites."
+              : "National institutions, local reporting and international sources, with methods and limitations."}</p>
+          </div>
+          <div className="whv-story-perspectives-actions">
+            <button type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
+              {lang === "fr" ? "Sources du pays" : "Country sources"}
+            </button>
+            <button type="button" onClick={() => navigate({ kind: "sources" })}>
+              {lang === "fr" ? "Répertoire des sources" : "Source directory"}
+            </button>
+          </div>
+        </div>
         <div className="whv-story-metrics" aria-label={lang === "fr" ? "Aperçu du catalogue" : "Catalog overview"}>
           <div><strong>{countries.length || "—"}</strong><span>{lang === "fr" ? "pays & territoires" : "countries & territories"}</span></div>
           <div><strong>{VISION_PRODUCTS.length}</strong><span>{lang === "fr" ? "Visions sur la feuille de route" : "Visions on the roadmap"}</span></div>
@@ -661,6 +677,28 @@ function AppContent() {
               : "Atlas, Watch, Money, Travel, Price, Trading, BRVM and Global Radar: see current and planned tools."}
           </p>
         </div>
+        <section className="whv-mobile-perspectives" aria-label={lang === "fr" ? "Choisir et confronter les sources" : "Choose and compare sources"}>
+          <span className="whv-mobile-perspectives-label"><WorldIcon name="book" size={17}/>
+            {lang === "fr" ? "SOURCES & PERSPECTIVES" : "SOURCES & PERSPECTIVES"}
+          </span>
+          <strong>{lang === "fr" ? "Ne vous arrêtez pas à une source." : "Never stop at one source."}</strong>
+          <p>{lang === "fr"
+            ? "Choisissez les sources locales, les médias et les institutions internationales. Comparez leurs origines et leurs limites."
+            : "Choose local reporting and international institutions. Compare origins and limitations."}</p>
+          <div className="whv-mobile-perspectives-actions">
+            <button type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
+              {lang === "fr" ? "Sources du pays" : "Country sources"}
+              <WorldIcon name="arrow" size={16}/>
+            </button>
+            <button type="button" onClick={() => navigate({ kind: "sources" })}>
+              {lang === "fr" ? "Sources mondiales" : "Global sources"}
+              <WorldIcon name="arrow" size={16}/>
+            </button>
+          </div>
+          <small>{lang === "fr"
+            ? "Disponibilité variable : une source répertoriée n'est pas forcément connectée ni corroborée."
+            : "Availability varies: a listed source is not necessarily connected or corroborated."}</small>
+        </section>
         <button type="button" className="whv-mobile-vision-entry" onClick={() => openVisionHub()}>
           <span><strong>{lang === "fr" ? "Explorer les Visions World-Vision" : "Explore World-Vision products"}</strong>
             <small>{lang === "fr" ? "Catalogue, usages, maturité et prochaines étapes" : "Catalog, use cases, readiness and next steps"}</small></span>
