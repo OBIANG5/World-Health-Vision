@@ -455,3 +455,19 @@ Ce sera la partie la plus risquée, car la limite de préchargement historique `
 3. F1.3 : ingestion effective de données officielles nationales et internationales, statut source documentée vs connectée vs réellement ingérée ; prioriser pilotes pays et preuve d'édition/validation (Gabon et comparateurs).
 4. Watch, Atlas, Money, Price/Panier, Tourisme/Transport, Trading, BRVM, Média et radar GDELT/EarlyForge (mentions d'actualité non preuve statistique) ; conserver les documents de stratégie internationale et modèles de revenus de PR #41, traçabilité, droits et licences.
 5. Tout sur GitHub pour reprise inter-chat, sans aucune fusion non validée de la chaîne PR, aucun changement V0/V1/média/voix/Vercel ni dépense.
+
+
+### Validation RÉELLE de 3C2 — trois workflows verts sur le code SHA `4dc43bc`
+
+Les trois CI ont été **SUCCESS sur `4dc43bc308939e62d1fba666708899ab33506ace`** :
+1. Audit canonique Java/Python/frontend et Docker : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508361 — **tentative 2**. La première a échoué à résoudre Maven Central Spring Boot parent POM 3.3.2, sans modification du POM ; seul le job `docker-core` a été relancé et a réussi.
+2. Gateway/six conteneurs, panne HTTP 503 et reprise : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508380.
+3. SQL/HTTP dense, tests de filtres et A/B : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508598 ; artefact https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508598/artifacts/14535065504 .
+
+Preuves directes des 54 séries groupées : limite 1 DESC = 54 lignes (une par code), limite 5 ASC + MISSING = 270 lignes, IMF limite 10 = 540, date 2010–2015 limite 10 = 540, **JSON identique** aux 54 GET individuels pour chaque scénario. 10 snapshots entiers FRA/GAB/seriesLimit12/24 : même SHA256 JSON (sauf generatedAtUtc), 54 lenses, 200 comparaisons, 270 éléments de preuve. **70 → 17 HTTP** (120 lignes/code, 1 batch) ou **70 → 18** (240 lignes/code, 2 batches). Ces données sont toutes synthétiques et seulement en CI, pas des SLO internationaux. L'ancien GET et nouveau batch ont maintenant un ordre SQL déterministe pour les ex-aequo de granularité/date/source.
+
+**Chaîne PR complète :** #36 → #38 → #39 → #40 → #41 → #45 → #46 → #47 → #49 → #50 → #51 → #52 ; toutes les PR concernées demeurent brouillon/non fusionnées sauf mention explicite contraire vérifiée. Les drapeaux de batch sont **tous false par défaut** ; le site Vercel public et la branche `v2` sont inchangés. Aucun achat.
+
+**Étape intelligente suivante :** ne pas déclarer l'optimisation terminée pour une infrastructure internationale : tester data sets synthétiques hétérogènes (sources locales par pays, OBSERVED/ESTIMATED/MISSING, calendrier mensuel/trimestriel/annuel, révisions non simultanées, années communes absentes, 12→54→217 pays), surveiller plans SQL/Hikari/CPU/RAM et p95/p99 multi-utilisateurs, puis verrouiller contrôles de quota/auth interservices/TLS/backup/rollback avant un vrai déploiement. Ensuite priorité produit F1.3 : ingestion officielle réellement vérifiée de quelques pays pilotes, sources nationales comparées aux organisations internationales et droits/licences ; F1.4 Watch et plateformes Money/Price/Travel/Trading/BRVM, Radar GDELT filtré et média sous contrôle journalistique. Préserver les deux documents maîtres `docs/product` de PR #41.
+
+**Attention continuité :** ce complément documentaire crée un nouveau SHA au-dessus du SHA de code validé `4dc43bc`. Vérifier trois CI à nouveau sur le **nouveau SHA final** avant de parler de dernier commit validé. Sans cette vérification, la preuve reste celle de `4dc43bc` et la nouvelle PR candidate reste en brouillon.

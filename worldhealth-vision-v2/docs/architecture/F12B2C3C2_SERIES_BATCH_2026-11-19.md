@@ -28,3 +28,15 @@ Même après 3C1, chaque synthèse des 54 indicateurs exige 54 GET historiques. 
 - Séparer fonctionnalités institutionnelles publiques des flux GDELT (détection de mentions), des prix commerciaux et des médias : modèles temporels, confiance, droits, granularité et provenance distincts. Respecter local institutions pour chaque pays ; un registre de 217 pays n'est **pas** 217 connecteurs actifs.
 - Après performance et sécurité : vraie ingestion, Watch, verticales Money/Price/Transport/Trading/BRVM, contenu média, monétisation publicitaire/affiliation/B2B/Premium seulement après valeur démontrée et conformité. Stratégies maîtres PR #41 intactes.
 - Documenter chaque test, décision et limite sur GitHub. Aucun achat ni fusion/déploiement sur `v2`, Vercel public, V0/V1 ou branches média/voix.
+
+
+## Résultat vérifié du lot 3C2 sur le code SHA 4dc43bc
+
+19/11/2026, **les trois pipelines ont réussi** :
+- https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508361 (canonical, tentative 2 après résolution Maven Central transitoire).
+- https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508380 (Gateway 503 structuré et récupération).
+- https://github.com/OBIANG5/World-Health-Vision/actions/runs/44531508598 (SQL dense + A/B + contrats historiques). Artefact `14535065504`.
+
+Les 54 GET individuels ont produit **exactement le même JSON par code** que le batch : limit=1 DESC (54 valeurs), limit=5 ASC + missing (270), filtre IMF limit=10 (540), bornes 2010–2015 limit=10 (540), avec les vraies données **synthétiques de test** et leurs runKeys/statuts. Les 10 snapshots entiers FRA/GAB à seriesLimit12/24 ont le même SHA256 JSON à l'exception de generatedAtUtc : 54 lenses, 200 comparaisons, 270 preuves ; 70 HTTP avant, **17 HTTP** à seriesLimit12 et **18** à seriesLimit24 (deux lots de 240 lignes par indicateur). Cette baisse du fan-out est démontrée ; la latence et le coût sur 217 pays avec données hétérogènes **restent à démontrer**. Tous les batchs opt-in restent désactivés par défaut, aucune PR n'est fusionnée et Vercel n'a pas été modifié.
+
+**Suite :** dimensionnement international représentatif (paliers 12/54/217 pays, mois/trimestres/années, révisions, lectures multi-utilisateurs), plans EXPLAIN, Hikari, CPU/RAM, quotas, auth interservices, sources nationales réellement ingérées, puis Watch/verticales GDELT/monétisation selon gouvernance. Ce texte est une mise à jour documentaire postérieure au SHA `4dc43bc` validé, donc il faut contrôler les trois workflows du SHA documentaire final.
