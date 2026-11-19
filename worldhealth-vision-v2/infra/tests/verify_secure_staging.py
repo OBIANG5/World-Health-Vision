@@ -58,6 +58,11 @@ def verify(document: dict) -> None:
                     "JWT must be enabled in secure staging")
             issuer = env.get("WHV_SECURITY_ISSUER_URI") or ""
             require(issuer.startswith("https://"), "OIDC issuer must use HTTPS")
+            jwks = env.get("WHV_SECURITY_JWK_SET_URI") or ""
+            require(jwks.startswith("https://"), "JWKS endpoint must use HTTPS")
+            require(bool(env.get("WHV_SECURITY_AUDIENCE")), "API audience required")
+            require(env.get("WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS") == "false",
+                    "test-only HTTP JWKS must be disabled in staging")
         require(private in nets(name), name + " left the private network")
 
     for name in expected - {"whv-timescaledb"}:
