@@ -125,3 +125,14 @@
   font-size:11px;font-weight:760;cursor:pointer;
 }
 .wvc-crop-toggle:hover{background:#24485e}
+
+
+/* Side-by-side A/B narration audition: no locked synthetic voice. */
+.wvc-auditions{display:grid;grid-template-columns:1fr;gap:9px;margin:4px 0}
+.wvc-audition{
+  background:#132635;border:1px solid rgba(136,180,202,.22);border-radius:10px;
+  display:flex;flex-direction:column;gap:6px;min-width:0;padding:12px
+}
+.wvc-audition span{font-size:10px;font-weight:760;letter-spacing:.07em;color:#8fc6dc}
+.wvc-audition strong{font-size:11px;color:#e9f1f5;overflow-wrap:anywhere;font-weight:620}
+.wvc-audition audio{width:100%;min-width:0;height:36px}
