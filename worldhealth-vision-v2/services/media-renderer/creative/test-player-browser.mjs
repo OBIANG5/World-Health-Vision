@@ -10,7 +10,20 @@
 import fs from "node:fs";
 import path from "node:path";
 import {createHash} from "node:crypto";
-import {openBrowser} from "@remotion/renderer";
+import puppeteer from "puppeteer-core";
+// Puppeteer automates the Vite page. @remotion/renderer.openBrowser() is a
+// DIFFERENT, internal HeadlessBrowser interface intended for MP4 rendering.
+// Treating that browser as Puppeteer caused CI #44536331856 to hang/fail.
+const chromeCandidates=[
+  process.env.WV_TEST_CHROME,
+  process.env.PUPPETEER_EXECUTABLE_PATH,
+  "/usr/bin/google-chrome",
+  "/usr/bin/google-chrome-stable",
+  "/usr/bin/chromium",
+  "/usr/bin/chromium-browser"
+].filter(Boolean);
+const executablePath=chromeCandidates.find(file=>fs.existsSync(file));
+
 
 const url="http://127.0.0.1:5173/creative-player-smoke.html";
 const output=path.resolve("output/creative");
@@ -29,7 +42,13 @@ async function main(){
   console.log("[player-smoke] waiting for local Vite server");
   await ready();
   console.log("[player-smoke] opening Chromium");
-  const browser=await openBrowser("chrome",{shouldDumpIo:false});
+  if(!executablePath)throw new Error("No system Chromium/Chrome executable: install the runner browser or provide WV_TEST_CHROME.");
+  console.log("[player-smoke] browser binary:",executablePath);
+  const browser=await puppeteer.launch({
+    executablePath,
+    headless:true,
+    args:["--no-sandbox","--disable-setuid-sandbox","--disable-dev-shm-usage","--disable-gpu"]
+  });
   const errors=[];
   try{
     const page=await browser.newPage();
@@ -69,6 +88,6 @@ async function main(){
     };
     fs.writeFileSync(path.join(output,"player-browser-smoke.report.json"),JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
-  }finally{await browser.close({silent:true});}
+  }finally{await browser.close();}
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
