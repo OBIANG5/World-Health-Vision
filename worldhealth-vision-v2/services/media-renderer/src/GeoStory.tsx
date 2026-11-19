@@ -257,7 +257,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
           d={spotlightPath} fill="rgba(9,215,246,.13)" fillRule="evenodd"
           stroke="#62f6ff" strokeWidth="7" strokeLinejoin="round"
           opacity={spotlightIn*enter}
-          style={{filter:"drop-shadow(0 0 9px rgba(14,228,255,.55))"}}/>
+          style={{filter:"drop-shadow(0 0 9px rgba(14,228,255,.55))"}}/>}
         {!isPhoto&&<circle cx="540" cy="690" r="463" fill="url(#wv-geo-sphere-gloss)"/>}
         {/* Level 4: great-circle route with SVG path-length reveal. */}
         {arc&&<path data-wv-geo-route="true" d={arc} fill="none"
