@@ -6,7 +6,7 @@
  * NOTE: atlas IDs are ISO 3166-1 numeric-looking string IDs, NOT a complete
  * universal legal sovereignty register. De facto/cartographic point of view.
  */
-import {geoAzimuthalEqualArea,geoCentroid,geoPath,geoDistance,geoContains} from "d3-geo";
+import {geoAzimuthalEqualArea,geoCentroid,geoPath,geoDistance,geoContains,geoArea} from "d3-geo";
 import {feature} from "topojson-client";
 
 const padId=id=>String(id).padStart(3,"0");
@@ -34,15 +34,22 @@ export function countryFocusGeometry(detailAtlas,contextAtlas,countryId){
   if(detailPath.length<4)return null;
   // Only nearby countries are included in the visual context. This reduces
   // unrelated paths and avoids projecting antipodal borders behind the focus.
+  // A fixed 72-degree context radius previously generated >700k characters
+  // of unrelated polygons for the Gabon test. Derive the context radius from
+  // the actual 10m country's spherical area and clamp for islands/large states.
+  // This only affects surrounding context, NEVER the detailed 10m outline.
+  const footprint=Math.min(2,Math.max(0,geoArea(selectedCountry)));
+  const contextRadius=Math.min(1.10,Math.max(.36,
+    4*Math.sqrt(footprint/Math.PI)));
   const near=contextTopology.geometries.filter(g=>{
     const f=feature(contextAtlas,g);
     const center=geoCentroid(f);
-    return center.every(Number.isFinite)&&geoDistance(centroid,center)<1.25;
+    return center.every(Number.isFinite)&&geoDistance(centroid,center)<contextRadius;
   });
   const contextPath=near.map(g=>path(feature(contextAtlas,g))||"").join(" ");
   const centerXY=projection(centroid);
   return {
-    countryId,centroid,centerXY,
+    countryId,centroid,centerXY,contextRadius,
     country:selectedCountry,
     contextPath,detailPath,
     projection,
