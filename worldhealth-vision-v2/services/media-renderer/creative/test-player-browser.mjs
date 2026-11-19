@@ -34,20 +34,27 @@ async function serverReady(){
   throw Error("Local Vite smoke page not reachable: "+url);
 }
 async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
-  const prefix=mode==="film"?"player-film-frame-":"player-browser-frame-";
+  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":"player-browser-frame-";
   const page=await browser.newPage();
   const errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
   try{
     await page.setViewport({width:390,height:844,deviceScaleFactor:1});
-    await page.goto(url+(mode==="film"?"?mode=film":""),{
+    await page.goto(url+(mode==="shot"?"":"?mode="+mode),{
       waitUntil:"domcontentloaded",timeout:35000
     });
     await page.waitForFunction("window.__wvSmokeReady === true",{timeout:30000});
-    await page.waitForFunction(
-      "Array.from(document.querySelectorAll('#smoke-preview img')).some(im=>im.complete&&im.naturalWidth>0)",
-      {timeout:30000}
-    );
+    if(mode==="clip"){
+      await page.waitForFunction(
+        "Array.from(document.querySelectorAll('#smoke-preview video')).some(v=>v.readyState>=2 && v.videoWidth>0)",
+        {timeout:30000}
+      );
+    }else{
+      await page.waitForFunction(
+        "Array.from(document.querySelectorAll('#smoke-preview img')).some(im=>im.complete&&im.naturalWidth>0)",
+        {timeout:30000}
+      );
+    }
     const state=await page.evaluate(()=>({
       mode:window.__wvSmokeMode,frames:window.__wvSmokeFrames,
       hasVoice:window.__wvSmokeHasVoice,
@@ -82,7 +89,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     }
     const report={
       test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
-      input:"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      input:mode==="clip"?"locally supplied synthetic H.264 video as blob": "original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
       composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
       screen:{width:390,height:844},
       frames_in_composition:expectedDuration,
@@ -90,7 +97,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       screenshots,
       warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":"player-browser-smoke.report.json");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":"player-browser-smoke.report.json");
     fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
@@ -111,7 +118,9 @@ async function main(){
     await testCase(browser,{mode:"shot",frames:[0,74],expectedDuration:105,expectVoice:false});
     console.log("[player-smoke] checking real whole-film transitions and imported WAV");
     await testCase(browser,{mode:"film",frames:[0,100,145],expectedDuration:165,expectVoice:true});
-    console.log("[player-smoke] both true Player paths passed");
+    console.log("[player-smoke] verifying imported H.264 MP4 clip from local file");
+    await testCase(browser,{mode:"clip",frames:[0,74],expectedDuration:105,expectVoice:false});
+    console.log("[player-smoke] all three real Player paths passed");
   }finally{
     await browser.close();
   }
