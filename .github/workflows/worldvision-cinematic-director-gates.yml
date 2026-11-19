@@ -120,5 +120,14 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
-      - run: npm ci --no-audit --no-fund
-      - run: npm run build
+      # Temporary bootstrap: the lockfile is refreshed by a dedicated
+      # one-time branch-only job, then we switch back to npm ci.
+      - run: npm install --no-audit --no-fund
+      - name: Verify one coherent Remotion/React runtime and compile actual shared composition
+        run: |
+          npm ls @remotion/player remotion @remotion/layout-utils @remotion/transitions react react-dom --depth=0
+          npm run build
+      - name: Verify a dedicated lazy Player bundle exists
+        run: |
+          find dist/assets -maxdepth 1 -name '*CreativeCompositionPreview*' -print
+          test -n "$(find dist/assets -maxdepth 1 -name '*CreativeCompositionPreview*' -print -quit)"
