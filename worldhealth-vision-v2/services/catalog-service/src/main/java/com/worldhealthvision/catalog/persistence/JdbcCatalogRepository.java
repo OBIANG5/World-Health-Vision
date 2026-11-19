@@ -556,18 +556,45 @@ public class JdbcCatalogRepository implements CatalogRepository {
 
         return jdbcClient.sql(sql)
                 .param("code", code)
-                .query((rs, rowNum) -> new IndicatorDetailResponse(
-                        rs.getString("code"),
-                        rs.getString("display_name"),
-                        rs.getString("topic"),
-                        rs.getString("unit_label"),
-                        rs.getString("description"),
-                        rs.getString("preferred_frequency"),
-                        rs.getString("source_dataset_code"),
-                        rs.getBoolean("is_core"),
-                        rs.getString("methodology_notes")
-                ))
+                .query(this::mapIndicatorDetail)
                 .optional();
+    }
+
+    @Override
+    public List<IndicatorDetailResponse> findIndicatorsByCodes(List<String> codes) {
+        String sql = """
+                select
+                    i.code,
+                    i.display_name,
+                    i.topic,
+                    i.unit_label,
+                    i.description,
+                    i.preferred_frequency,
+                    sd.code as source_dataset_code,
+                    i.is_core,
+                    i.methodology_notes
+                from catalog.indicator i
+                left join catalog.source_dataset sd on sd.id = i.source_dataset_id
+                where i.code in (:codes)
+                """;
+        return jdbcClient.sql(sql)
+                .param("codes", codes)
+                .query(this::mapIndicatorDetail)
+                .list();
+    }
+
+    private IndicatorDetailResponse mapIndicatorDetail(ResultSet rs, int rowNum) throws SQLException {
+        return new IndicatorDetailResponse(
+                rs.getString("code"),
+                rs.getString("display_name"),
+                rs.getString("topic"),
+                rs.getString("unit_label"),
+                rs.getString("description"),
+                rs.getString("preferred_frequency"),
+                rs.getString("source_dataset_code"),
+                rs.getBoolean("is_core"),
+                rs.getString("methodology_notes")
+        );
     }
 
     @Override

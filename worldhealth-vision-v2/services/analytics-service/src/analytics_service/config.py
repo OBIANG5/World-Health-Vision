@@ -6,6 +6,8 @@ class Settings(BaseSettings):
 
     service_port: int = 8000
     request_timeout_seconds: int = 60
+    # Opt-in only after differential CI and operational review; no public change.
+    catalog_indicator_batch_enabled: bool = False
     catalog_base_url: str = "http://localhost:8082"
     timeseries_base_url: str = "http://localhost:8083"
     default_country_overview_indicator_limit: int = 5

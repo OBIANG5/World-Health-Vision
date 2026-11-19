@@ -37,6 +37,12 @@ class CatalogClient:
             response.raise_for_status()
         return response
 
+    async def _post(self, operation: str, path: str, *, json: dict) -> httpx.Response:
+        with timed_dependency_http("catalog", operation):
+            response = await self._client.post(path, json=json)
+            response.raise_for_status()
+        return response
+
     async def aclose(self) -> None:
         await self._client.aclose()
 
@@ -89,6 +95,25 @@ class CatalogClient:
     async def get_indicator(self, indicator_code: str) -> IndicatorDetail:
         response = await self._get("indicator", f"/api/catalog/indicators/{indicator_code}")
         return IndicatorDetail.model_validate(response.json())
+
+    async def get_indicators_batch(self, codes: list[str]) -> list[IndicatorDetail]:
+        """Private batch. Wrong count/order is a dependency contract failure.
+
+        Do not mask omitted indicators, reorder profiles or silently fall back
+        on fictitious records. The caller decides whether this path is enabled.
+        """
+        if not (1 <= len(codes) <= 128) or len(set(codes)) != len(codes):
+            raise ValueError("Indicator batch must have 1 to 128 unique codes.")
+        response = await self._post(
+            "indicators_batch", "/internal/catalog/indicators/batch", json={"codes": codes}
+        )
+        payload = CatalogListEnvelope.model_validate(response.json())
+        details = [IndicatorDetail.model_validate(item) for item in payload.items]
+        if payload.count != len(codes) or len(details) != len(codes) or [
+            item.code for item in details
+        ] != codes:
+            raise httpx.RemoteProtocolError("Invalid internal Catalog indicator batch response.")
+        return details
 
     async def list_core_indicators(self) -> list[IndicatorSummary]:
         response = await self._get("indicators", "/api/catalog/indicators", params={"coreOnly": "true"})

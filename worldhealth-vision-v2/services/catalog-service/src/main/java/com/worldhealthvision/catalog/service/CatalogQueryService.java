@@ -20,6 +20,13 @@ import com.worldhealthvision.catalog.api.dto.SourceDetailResponse;
 import com.worldhealthvision.catalog.api.dto.SourceSummaryResponse;
 import com.worldhealthvision.catalog.persistence.CatalogRepository;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -140,6 +147,50 @@ public class CatalogQueryService {
         String normalizedCode = code.trim().toUpperCase();
         return catalogRepository.findIndicatorByCode(normalizedCode)
                 .orElseThrow(() -> new CatalogNotFoundException("Unknown indicator: " + normalizedCode));
+    }
+
+    private static final Pattern INDICATOR_CODE = Pattern.compile("[A-Z0-9_.]{1,64}");
+
+    /** One JDBC query for a bounded validated batch; no partial responses. */
+    public CatalogListResponse<IndicatorDetailResponse> getIndicatorsBatch(List<String> codes) {
+        if (codes == null || codes.isEmpty() || codes.size() > 128) {
+            throw new CatalogBadRequestException("Indicator batch must contain 1 to 128 codes.");
+        }
+
+        Set<String> uniqueCodes = new LinkedHashSet<>();
+        for (String code : codes) {
+            if (code == null) {
+                throw new CatalogBadRequestException("Null indicator code.");
+            }
+            String normalized = code.trim().toUpperCase(Locale.ROOT);
+            if (!INDICATOR_CODE.matcher(normalized).matches()) {
+                throw new CatalogBadRequestException("Invalid indicator code.");
+            }
+            if (!uniqueCodes.add(normalized)) {
+                throw new CatalogBadRequestException("Duplicate indicator code.");
+            }
+        }
+
+        List<String> requested = new ArrayList<>(uniqueCodes);
+        Map<String, IndicatorDetailResponse> byCode = new LinkedHashMap<>();
+        for (IndicatorDetailResponse item : catalogRepository.findIndicatorsByCodes(requested)) {
+            if (byCode.putIfAbsent(item.code(), item) != null) {
+                throw new IllegalStateException("Catalog returned duplicate indicator codes.");
+            }
+        }
+
+        List<IndicatorDetailResponse> ordered = new ArrayList<>();
+        for (String code : requested) {
+            IndicatorDetailResponse value = byCode.get(code);
+            if (value == null) {
+                throw new CatalogNotFoundException("Unknown indicator: " + code);
+            }
+            ordered.add(value);
+        }
+        if (byCode.size() != ordered.size()) {
+            throw new IllegalStateException("Catalog returned unrequested indicators.");
+        }
+        return new CatalogListResponse<>(ordered.size(), ordered);
     }
 
     public CatalogListResponse<SourceSummaryResponse> listSources(boolean enabledOnly) {

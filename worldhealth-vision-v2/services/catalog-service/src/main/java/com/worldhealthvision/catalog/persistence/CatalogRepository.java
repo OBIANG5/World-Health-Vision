@@ -57,6 +57,9 @@ public interface CatalogRepository {
 
     Optional<IndicatorDetailResponse> findIndicatorByCode(String code);
 
+    /** Internal validated bulk lookup; source order re-established in the service. */
+    List<IndicatorDetailResponse> findIndicatorsByCodes(List<String> codes);
+
     List<SourceSummaryResponse> listSources(boolean enabledOnly);
 
     List<SourceDetailResponse> listSourceDetails(boolean enabledOnly);
