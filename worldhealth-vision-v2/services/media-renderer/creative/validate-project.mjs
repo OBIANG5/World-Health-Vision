@@ -7,7 +7,7 @@ import path from "node:path";
 import fs from "node:fs";
 
 export const FORMAT = "worldvision-creative-project-v1";
-const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal"]);
+const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus"]);
 const TRANSITIONS = new Set(["cut","dissolve","slide"]);
 const MOTIONS = new Set(["locked","dolly","drift","push"]);
 const IMAGE_EXT = new Set([".png",".jpg",".jpeg",".webp"]);
@@ -78,7 +78,25 @@ export function inspectProject(project) {
       bad(errors,p+".durationFrames","Cinematic focus reveal needs at least 90 frames to complete the composition.");
     if(scene.template==="focus_reveal"&&(!isText(scene.title,90)||!scene.title?.trim()))
       bad(errors,p+".title","Focus reveal requires a concise authored headline (max 90 characters).");
-    const needsMedia=["documentary","evidence","clean_video","focus_reveal"].includes(scene.template);
+    if(scene.template==="document_focus"){
+      if(scene.durationFrames<115)
+        bad(errors,p+".durationFrames","Document focus needs at least 115 frames for legible evidence and authored captions.");
+      if(!isText(scene.title,90)||!scene.title?.trim())
+        bad(errors,p+".title","Document focus needs a concise, supplied headline (up to 90 characters).");
+      if(scene.subtitle!==undefined&&!isText(scene.subtitle,180))
+        bad(errors,p+".subtitle","Document focus subtitle is limited to 180 characters.");
+      if(scene.media?.kind!=="image")
+        bad(errors,p+".media","Document focus requires a supplied unaltered still image/screenshot.");
+      const region=scene.documentRegion;
+      if(!region||typeof region!=="object"||
+         ![region.x,region.y,region.width,region.height].every(v=>typeof v==="number"&&Number.isFinite(v))||
+         region.width<.12||region.width>.85||region.height<.08||region.height>.8||
+         region.x<0||region.y<0||
+         region.x+region.width>1.0000001||region.y+region.height>1.0000001)
+        bad(errors,p+".documentRegion",
+          "Select a visible 0-1 document region x/y/width/height; width 12%-85%, height 8%-80%, fully inside the unmodified document viewport.");
+    }
+    const needsMedia=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(scene.template);
     if(needsMedia&&!scene.media)bad(errors,p+".media","This composition requires your real source image/clip; no fake fallback.");
     if(scene.foreground!==undefined&&scene.foreground!==null){
       if(!scene.media)
