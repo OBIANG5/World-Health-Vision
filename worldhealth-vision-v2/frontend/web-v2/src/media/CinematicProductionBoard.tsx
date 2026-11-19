@@ -1,5 +1,6 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import type {CreativeEditProps, CreativeMedia, CreativeShot} from "../../../../services/media-renderer/src/CreativeEdit";
+import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
 // Lazy: do not load the sizeable motion runtime until a user requests preview.
@@ -7,7 +8,7 @@ const RealCreativePreview = lazy(() => import("./CreativeCompositionPreview"));
 const CountrySelector10m = lazy(() => import("./CountrySelector10m"));
 import "./CinematicProductionBoard.css";
 
-type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus";
+type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_story";
 type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
@@ -19,6 +20,21 @@ const COUNTRIES=((atlasData as unknown as {objects:{countries:{geometries:AtlasG
   .sort((a,b)=>a.name.localeCompare(b.name,"fr"));
 const COUNTRY_IDS=new Set(COUNTRIES.map(c=>c.id));
 type Asset = {name:string;size:number;kind:MediaType;url:string};
+type PhotoSettings={
+  camera:PhotoMotion["camera"];
+  subject:NonNullable<PhotoMotion["subject"]>;
+  mask:NonNullable<PhotoMotion["mask"]>;
+  focus:NonNullable<PhotoMotion["focus"]>;
+  metric:NonNullable<PhotoMotion["metric"]>;
+};
+const initialPhotoSettings=():PhotoSettings=>({
+  camera:{zoomFrom:1.05,zoomTo:1.13,panX:18,panY:-14,startFrame:0,endFrame:132},
+  subject:{dx:-12,dy:-17,scale:.055,startFrame:12,endFrame:125},
+  mask:{axis:"horizontal",startFrame:18,endFrame:68},
+  focus:{x:.5,y:.48,radius:83,startFrame:48,endFrame:91},
+  metric:{label:"",value:0,unit:"",precision:0,sourceLabel:"",startFrame:71,endFrame:122}
+});
+
 type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
@@ -31,10 +47,11 @@ type Shot = {
   geoShowTarget:boolean;geoTargetLon:number;geoTargetLat:number;geoTargetLabel:string;
   geoShowRoute:boolean;geoFromLon:number;geoFromLat:number;
   geoShowMetric:boolean;geoMetricLabel:string;geoMetricValue:string;geoMetricUnit:string;
+  photoSettings:PhotoSettings;photoUseSubject:boolean;photoUseMask:boolean;photoUseFocus:boolean;photoUseMetric:boolean;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
   documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
-  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",country_focus:"Pays en détail · carte 1:10m / média / données",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
+  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",country_focus:"Pays en détail · carte 1:10m / média / données",photo_story:"PHOTO · six pistes de motion sur une image",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
 };
 const MOTION_LABELS:Record<Motion,string>={
   locked:"Cadre fixe",dolly:"Approche de caméra",drift:"Mouvement latéral",push:"Révélation progressive"
@@ -59,7 +76,8 @@ const initialShot=():Shot=>({
   geoShowCountry:false,geoCountryId:"",
   geoShowTarget:false,geoTargetLon:0,geoTargetLat:0,geoTargetLabel:"",
   geoShowRoute:false,geoFromLon:0,geoFromLat:0,
-  geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:""
+  geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:"",
+  photoSettings:initialPhotoSettings(),photoUseSubject:false,photoUseMask:true,photoUseFocus:false,photoUseMetric:false
 });
 /** No geography or numeric fact is inferred from text here. The user chooses
  * every coordinate and figure explicitly. Never insert synthetic values. */
@@ -85,6 +103,40 @@ const buildGeo=(shot:Shot):CreativeShot["geo"]=>({
     unit:shot.geoMetricUnit,precision:0
   }}:{})
 });
+const buildPhoto=(shot:Shot):PhotoMotion=>({
+  camera:shot.photoSettings.camera,
+  ...(shot.photoUseSubject?{subject:shot.photoSettings.subject}:{}),
+  ...(shot.photoUseMask?{mask:shot.photoSettings.mask}:{}),
+  ...(shot.photoUseFocus?{focus:shot.photoSettings.focus}:{}),
+  ...(shot.photoUseMetric?{metric:shot.photoSettings.metric}:{})
+});
+const validPhoto=(s:Shot)=>{
+  if(s.template!=="photo_story")return true;
+  const within=(v:number,min:number,max:number)=>Number.isFinite(v)&&v>=min&&v<=max;
+  const beats=(t:{startFrame:number;endFrame:number},min:number)=>Number.isInteger(t.startFrame)&&
+    Number.isInteger(t.endFrame)&&t.startFrame>=0&&t.endFrame<=s.durationFrames&&
+    t.endFrame-t.startFrame>=min;
+  const c=s.photoSettings.camera,m=s.photoSettings.metric,f=s.photoSettings.focus;
+  return Boolean(s.durationFrames>=150&&s.durationFrames<=3600&&
+    s.title.trim()&&s.title.length<=90&&s.subtitle.length<=180&&
+    beats(c,35)&&c.startFrame<=s.durationFrames-20&&
+    within(c.zoomFrom,1.03,1.18)&&within(c.zoomTo,c.zoomFrom,1.20)&&
+    within(c.panX,-40,40)&&within(c.panY,-45,45)&&
+    Math.abs(c.panX)<=(c.zoomTo-1)*540&&Math.abs(c.panY)<=(c.zoomTo-1)*960&&
+    (!s.photoUseSubject||(s.foregroundName&&beats(s.photoSettings.subject,25)&&
+      within(s.photoSettings.subject.dx,-45,45)&&
+      within(s.photoSettings.subject.dy,-45,45)&&
+      within(s.photoSettings.subject.scale,0,.16)))&&
+    (!s.photoUseMask||(beats(s.photoSettings.mask,20)&&
+      ["horizontal","vertical"].includes(s.photoSettings.mask.axis)))&&
+    (!s.photoUseFocus||(beats(f,20)&&within(f.x,.07,.93)&&within(f.y,.09,.76)&&
+      within(f.radius,35,190)))&&
+    (!s.photoUseMetric||(beats(m,25)&&m.label.trim()&&m.label.length<=55&&
+      Number.isFinite(m.value)&&Math.abs(m.value)<=1e12&&
+      m.unit.length<=12&&m.sourceLabel.trim()&&m.sourceLabel.length<=160&&
+      Number.isInteger(m.precision)&&m.precision>=0&&m.precision<=2))
+  );
+};
 const inLon=(v:number)=>Number.isFinite(v)&&v>=-180&&v<=180;
 const inLat=(v:number)=>Number.isFinite(v)&&v>=-85&&v<=85;
 const validGeo=(s:Shot)=>{
@@ -136,10 +188,11 @@ export default function CinematicProductionBoard() {
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const foregroundAsset=files.find(f=>f.name===active.foregroundName);
-  const needsRealMedia=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(active.template);
+  const needsRealMedia=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_story"].includes(active.template);
   const previewCanRender=(!needsRealMedia||Boolean(activeAsset&&activeAsset.kind!=="audio"))&&
     (active.template!=="focus_reveal"||Boolean(active.title.trim()&&active.title.length<=90&&active.durationFrames>=90))&&
-    (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115))&&validGeo(active);
+    (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115))&&
+    (active.template!=="photo_story"||activeAsset?.kind==="image")&&validPhoto(active)&&validGeo(active);
   // Exact props type of the REAL server-rendered Remotion compositor; object
   // URLs only exist in this browser session and never reach GitHub or an API.
   const previewProps=useMemo<CreativeEditProps>(()=>{
@@ -163,6 +216,7 @@ export default function CinematicProductionBoard() {
         transitionFrames:0,
         focus:{x:active.focusX,y:active.focusY},
         ...(active.template==="document_focus"?{documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH}}:{}),
+        ...(active.template==="photo_story"?{photo:buildPhoto(active)}:{}),
         ...((active.template==="geo_story"||active.template==="country_focus")?{geo:buildGeo(active)}:{})
       }],
       narration:null,
@@ -172,7 +226,7 @@ export default function CinematicProductionBoard() {
     };
   },[active,activeAsset,foregroundAsset,projectName,script,accent]);
   const canExport=script.trim().length>0&&shots.every(shot=>{
-    const requires=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(shot.template);
+    const requires=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_story"].includes(shot.template);
     const hasMedia=!requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
     const validFocus=shot.template!=="focus_reveal"||Boolean(shot.title.trim()&&shot.title.length<=90&&shot.durationFrames>=90);
     const validDocument=shot.template!=="document_focus"||Boolean(
@@ -183,7 +237,8 @@ export default function CinematicProductionBoard() {
       shot.documentX+shot.documentW<=1.0000001&&shot.documentY+shot.documentH<=1.0000001
     );
     const validForeground=!shot.foregroundName||Boolean(shot.mediaName&&files.some(f=>f.name===shot.foregroundName&&f.kind==="image"));
-    return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot);
+    return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot)&&validPhoto(shot)&&
+      (shot.template!=="photo_story"||files.some(f=>f.name===shot.mediaName&&f.kind==="image"));
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
@@ -218,6 +273,7 @@ export default function CinematicProductionBoard() {
         transitionFrames:i===shots.length-1||shot.transitionAfter==="cut"?0:shot.transitionFrames,
         focus:{x:shot.focusX,y:shot.focusY},
         ...(shot.template==="document_focus"?{documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH}}:{}),
+        ...(shot.template==="photo_story"?{photo:buildPhoto(shot)}:{}),
         ...((shot.template==="geo_story"||shot.template==="country_focus")?{geo:buildGeo(shot)}:{})
       };
     }),
@@ -250,6 +306,7 @@ export default function CinematicProductionBoard() {
     e.currentTarget.value="";
   };
   const updateShot=(change:Partial<Shot>)=>setShots(old=>old.map(s=>s.id===selectedId?{...s,...change}:s));
+  const updatePhotoTrack=(key:keyof PhotoSettings,change:Record<string,unknown>)=>updateShot({photoSettings:{...active.photoSettings,[key]:{...active.photoSettings[key],...change}}});
   const addShot=()=>{
     const existing=new Set(shots.map(x=>x.id));
     let n=shots.length+1;let id="plan-"+String(n).padStart(2,"0");
@@ -279,6 +336,7 @@ export default function CinematicProductionBoard() {
         title:s.title,subtitle:s.subtitle,eyebrow:s.eyebrow,
         focus:{x:s.focusX,y:s.focusY},
         ...(s.template==="document_focus"?{documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH}}:{}),
+        ...(s.template==="photo_story"?{photo:buildPhoto(s)}:{}),
         ...((s.template==="geo_story"||s.template==="country_focus")?{geo:buildGeo(s)}:{}),
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
@@ -364,7 +422,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
           <div className="wvc-two-col">
-            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
+            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus"||e.target.value==="photo_story")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
@@ -380,6 +438,87 @@ export default function CinematicProductionBoard() {
           </label>
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
+          {active.template==="photo_story"&&<div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
+            <div className="wvc-focus-heading">
+              <strong>PHOTO MOTION — UNE IMAGE, PLUSIEURS ANIMATIONS SIMULTANÉES</strong>
+              <span>Source réelle obligatoire. Les pistes ont des temps indépendants : caméra, détourage externe, révélation du même original, focus manuel, chiffre sourcé et typographie. Aucun objet ou fait généré.</span>
+            </div>
+            <div className="wvc-two-col">
+              <label>ZOOM DE DÉPART <input type="number" step=".01" min="1.03" max="1.18" value={active.photoSettings.camera.zoomFrom}
+                onChange={e=>updatePhotoTrack("camera",{zoomFrom:Number(e.target.value)})}/></label>
+              <label>ZOOM D'ARRIVÉE <input type="number" step=".01" min="1.03" max="1.2" value={active.photoSettings.camera.zoomTo}
+                onChange={e=>updatePhotoTrack("camera",{zoomTo:Number(e.target.value)})}/></label>
+              <label>PAN X · PIXELS <input type="number" min="-40" max="40" step="1" value={active.photoSettings.camera.panX}
+                onChange={e=>updatePhotoTrack("camera",{panX:Number(e.target.value)})}/></label>
+              <label>PAN Y · PIXELS <input type="number" min="-45" max="45" step="1" value={active.photoSettings.camera.panY}
+                onChange={e=>updatePhotoTrack("camera",{panY:Number(e.target.value)})}/></label>
+            </div>
+            <details><summary>Timeline caméra — début et arrivée</summary>
+              <div className="wvc-two-col">
+                <label>DÉBUT (s) <input type="number" step=".1" min="0" value={active.photoSettings.camera.startFrame/30}
+                  onChange={e=>updatePhotoTrack("camera",{startFrame:Math.round(Number(e.target.value)*30)})}/></label>
+                <label>FIN (s) <input type="number" step=".1" min="1" value={active.photoSettings.camera.endFrame/30}
+                  onChange={e=>updatePhotoTrack("camera",{endFrame:Math.round(Number(e.target.value)*30)})}/></label>
+              </div>
+            </details>
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.photoUseMask}
+              onChange={e=>updateShot({photoUseMask:e.target.checked})}/>Révélation progressive du même original par masque</label>
+            {active.photoUseMask&&<div className="wvc-two-col">
+              <label>AXE <select value={active.photoSettings.mask.axis}
+                onChange={e=>updatePhotoTrack("mask",{axis:e.target.value})}>
+                <option value="horizontal">Latéral</option><option value="vertical">Vertical</option>
+              </select></label>
+              <label>DÉBUT (s) <input type="number" step=".1" value={active.photoSettings.mask.startFrame/30}
+                onChange={e=>updatePhotoTrack("mask",{startFrame:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>FIN (s) <input type="number" step=".1" value={active.photoSettings.mask.endFrame/30}
+                onChange={e=>updatePhotoTrack("mask",{endFrame:Math.round(Number(e.target.value)*30)})}/></label>
+            </div>}
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.photoUseSubject}
+              onChange={e=>updateShot({photoUseSubject:e.target.checked})}/>Parallaxe du premier plan détouré (PNG/WebP transparent importé)</label>
+            {active.photoUseSubject&&<div className="wvc-two-col">
+              <label>DÉPLACEMENT X <input type="number" min="-45" max="45" value={active.photoSettings.subject.dx}
+                onChange={e=>updatePhotoTrack("subject",{dx:Number(e.target.value)})}/></label>
+              <label>DÉPLACEMENT Y <input type="number" min="-45" max="45" value={active.photoSettings.subject.dy}
+                onChange={e=>updatePhotoTrack("subject",{dy:Number(e.target.value)})}/></label>
+              <label>PROFONDEUR (ZOOM SUPPLÉMENTAIRE) <input type="number" min="0" max=".16" step=".01" value={active.photoSettings.subject.scale}
+                onChange={e=>updatePhotoTrack("subject",{scale:Number(e.target.value)})}/></label>
+              <label>DÉBUT (s) <input type="number" step=".1" value={active.photoSettings.subject.startFrame/30}
+                onChange={e=>updatePhotoTrack("subject",{startFrame:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>FIN (s) <input type="number" step=".1" value={active.photoSettings.subject.endFrame/30}
+                onChange={e=>updatePhotoTrack("subject",{endFrame:Math.round(Number(e.target.value)*30)})}/></label>
+            </div>}
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.photoUseFocus}
+              onChange={e=>updateShot({photoUseFocus:e.target.checked})}/>Focus sur un détail explicitement choisi dans l'image</label>
+            {active.photoUseFocus&&<div className="wvc-two-col">
+              <label>X (0–1) <input type="number" min=".07" max=".93" step=".01" value={active.photoSettings.focus.x}
+                onChange={e=>updatePhotoTrack("focus",{x:Number(e.target.value)})}/></label>
+              <label>Y (0–1) <input type="number" min=".09" max=".76" step=".01" value={active.photoSettings.focus.y}
+                onChange={e=>updatePhotoTrack("focus",{y:Number(e.target.value)})}/></label>
+              <label>RAYON (px) <input type="number" min="35" max="190" value={active.photoSettings.focus.radius}
+                onChange={e=>updatePhotoTrack("focus",{radius:Number(e.target.value)})}/></label>
+              <label>DÉBUT (s) <input type="number" step=".1" value={active.photoSettings.focus.startFrame/30}
+                onChange={e=>updatePhotoTrack("focus",{startFrame:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>FIN (s) <input type="number" step=".1" value={active.photoSettings.focus.endFrame/30}
+                onChange={e=>updatePhotoTrack("focus",{endFrame:Math.round(Number(e.target.value)*30)})}/></label>
+            </div>}
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.photoUseMetric}
+              onChange={e=>updateShot({photoUseMetric:e.target.checked})}/>Chiffre animé et ATTRIBUTION obligatoire</label>
+            {active.photoUseMetric&&<div className="wvc-two-col">
+              <label>INTITULÉ <input maxLength={55} value={active.photoSettings.metric.label}
+                onChange={e=>updatePhotoTrack("metric",{label:e.target.value})}/></label>
+              <label>VALEUR <input type="number" value={active.photoSettings.metric.value}
+                onChange={e=>updatePhotoTrack("metric",{value:Number(e.target.value)})}/></label>
+              <label>UNITÉ <input maxLength={12} value={active.photoSettings.metric.unit}
+                onChange={e=>updatePhotoTrack("metric",{unit:e.target.value})}/></label>
+              <label>LIBELLÉ DE SOURCE <input maxLength={160} value={active.photoSettings.metric.sourceLabel}
+                onChange={e=>updatePhotoTrack("metric",{sourceLabel:e.target.value})}/></label>
+              <label>DÉBUT (s) <input type="number" step=".1" value={active.photoSettings.metric.startFrame/30}
+                onChange={e=>updatePhotoTrack("metric",{startFrame:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>FIN (s) <input type="number" step=".1" value={active.photoSettings.metric.endFrame/30}
+                onChange={e=>updatePhotoTrack("metric",{endFrame:Math.round(Number(e.target.value)*30)})}/></label>
+            </div>}
+            <p className="wvc-hint">Ces réglages sont des pistes de montage, pas une preuve des faits. Le masque et le focus utilisent les pixels de l'image importée. Vérifie cadrage et sujet après mouvement ; seuls les assets aux droits connus peuvent être diffusés.</p>
+          </div>}
           {active.template==="geo_story"&&<div className="wvc-focus-control" aria-label="Direction du plan géographique">
             <div className="wvc-focus-heading">
               <strong>CARTE DU MONDE — DIRECTION GÉOGRAPHIQUE</strong>
