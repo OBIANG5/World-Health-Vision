@@ -136,3 +136,28 @@
 .wvc-audition span{font-size:10px;font-weight:760;letter-spacing:.07em;color:#8fc6dc}
 .wvc-audition strong{font-size:11px;color:#e9f1f5;overflow-wrap:anywhere;font-weight:620}
 .wvc-audition audio{width:100%;min-width:0;height:36px}
+
+
+/* Real composition, not a CSS imitation of the rendered frames. */
+.wvc-preview-switch{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.wvc-preview-switch button{
+  flex:1 1 110px;min-height:42px;border:1px solid #54768a;background:#142d3e;
+  border-radius:9px;padding:9px 10px;font:inherit;font-size:11px;font-weight:750;
+  color:#bdd9e6;cursor:pointer
+}
+.wvc-preview-switch button.selected{
+  color:#071b26;background:#caeaf7;border-color:#9dcbdf;
+}
+.wvc-preview-switch button:hover:not(.selected){background:#23465b}
+.wvc-composition-preview{width:100%;height:100%;aspect-ratio:9/16;background:#071522}
+.wvc-composition-preview>div{max-width:100%;max-height:100%}
+.wvc-player-loading,.wvc-player-error{
+  width:100%;height:100%;min-height:120px;display:flex;flex-direction:column;
+  justify-content:center;gap:12px;align-items:center;padding:20px;
+  text-align:center;color:#d0e8f4;font-size:12px;line-height:1.5;
+  background:linear-gradient(150deg,#172e3c,#09131d);
+}
+.wvc-player-error small{max-height:160px;overflow:auto;color:#ecc3b3;overflow-wrap:anywhere}
+@media (prefers-reduced-motion:reduce){
+  .wvc-preview-switch button{transition:none}
+}
