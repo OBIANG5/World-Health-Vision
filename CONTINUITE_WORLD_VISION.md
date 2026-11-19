@@ -1,6 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 
+## WORLD-VISION MEDIA — SPRINT 9 GEO-2 CERTIFIÉ TECHNIQUEMENT (19 NOV. 2026)
+
+État fiable et contrôlé : [PR #74](https://github.com/OBIANG5/World-Health-Vision/pull/74) code `country_focus` 10m/50m, carte/pays/média/donnée/texte multicouches. **Dernier code fonctionnel vérifié : `b553f7d38c4111ec8de02e43e1a2dbbf1f614c82`** ; [run #44624747361](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361) **2 jobs SUCCESS, 19 tests Node PASS, six parcours Chromium PASS**. Vérification vraie vidéo 5,5 s 1080×1920 H.264 et photogrammes : l'espace titre→carte est passé de 3,8 à **17,48 px**, le bas de la carte est au-dessus du cartouche photo, contour 10m source Natural Earth et contexte 50m visibles. Artefact #14578693543 conserve toutes les preuves.
+
+**Attention** : qualité artistique mondiale, médias éditorialement sourcés/licenciés et Safari/Android NON certifiés. La PR reste DRAFT, aucune fusion/déploiement/publication. Le cap directeur depuis les vidéos Bourse Express et géopolitique demeure **UNE même image avec plusieurs mouvements indépendants et chorégraphiés**. La suite prioritaire est PHOTO Motion multi-pistes, puis DATA, puis séquence globe→pays→photo/document avec voix/mix. Lire le rapport détaillé [Sprint 9 §8](worldhealth-vision-v2/docs/media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md). BAOCOM reste séparé, recherche/script dans ChatGPT, narrateur libre, blog/GDELT différés.
+
+---
+
+
 ## WORLD-VISION MEDIA — SPRINT 9 / AUDIT VISUEL ET CORRECTIONS (19 NOV. 2026)
 
 **Reprise prioritaire** : PR #74, branche `feature/worldvision-country-focus-10m-multilayer-2026-11-19`. Lire le [rapport complet GEO-2 §7](worldhealth-vision-v2/docs/media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md). Contrairement aux premiers builds, nous avons téléchargé et **inspecté les vraies captures Player/MP4** de la CI #44621299587 : carte Gabon 10m, contexte 50m, photo synthétique, compteur et titre réellement animés en même temps. **Deux défauts graphiques avérés** : image 0 trop vide et bas du pays recouvert par la photo. Ils ont été corrigés dans le code (emprise carte déplacée et portrait séparé, base visuelle dès frame 0) et des tests de non-régression ajoutés. Rayon des pays voisins passé de 1,25 rad constant à un choix adaptatif à la taille de la géométrie pour réduire les 709 064 caractères de path observés. Tests Fidji/Russie ajoutés. **Ne PAS annoncer correction artistique définitive sans relire le run #44622728753 et ses images.**
