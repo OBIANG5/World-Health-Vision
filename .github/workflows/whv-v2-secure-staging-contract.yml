@@ -100,6 +100,11 @@ jobs:
             python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/api/analytics/readiness', timeout=15).status)"
           docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml exec -T ingestion-service \
             python -c "from pathlib import Path; p=Path('/app/data/bronze/.staging-ci-probe'); p.write_text('okay'); assert p.read_text()=='okay'; p.unlink(); print('PASS bronze persistence writes as nonroot')"
+      - name: Record baseline container resources for hosting estimates
+        run: |
+          ids="$(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml ps -q)"
+          test -n "$ids"
+          docker stats --no-stream --format '{{.Name}}: {{.MemUsage}}, CPU={{.CPUPerc}}' $ids
       - name: Print relevant container logs on failure (no secrets)
         if: failure()
         run: |
