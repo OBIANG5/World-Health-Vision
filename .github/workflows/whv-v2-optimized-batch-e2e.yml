@@ -92,17 +92,17 @@ jobs:
                   assert e['WHV_SECURITY_ENABLED']=='true'
                   assert e['WHV_PUBLIC_READ_ENABLED']=='true'
                   assert e['WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS']=='false'
-          required_flags=(
-               'WHV_ANALYTICS_CATALOG_INDICATOR_BATCH_ENABLED',
-               'WHV_ANALYTICS_TIMESERIES_LATEST_BATCH_ENABLED',
-               'WHV_ANALYTICS_TIMESERIES_AVAILABILITY_BATCH_ENABLED',
-               'WHV_ANALYTICS_TIMESERIES_HISTORY_BATCH_ENABLED',
-           )
-           analytics=services['analytics-service']
-           assert not analytics.get('ports'), 'Analytics exposed publicly'
-           env=analytics['environment']
-           assert all(env.get(flag)=='true' for flag in required_flags), env
-           print('PASS: all four batch flags active, JWT remains enabled and no DB exposed')
+         required_flags=(
+              'WHV_ANALYTICS_CATALOG_INDICATOR_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_LATEST_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_AVAILABILITY_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_HISTORY_BATCH_ENABLED',
+          )
+          analytics=services['analytics-service']
+          assert not analytics.get('ports'), 'Analytics exposed publicly'
+          env=analytics['environment']
+          assert all(env.get(flag)=='true' for flag in required_flags), env
+          print('PASS: all four batch flags active, JWT remains enabled and no DB exposed')
           PY
 
       - name: Build and start true backend (Gateway, catalog, time series, analytics, ingestion, Timescale)
@@ -132,13 +132,13 @@ jobs:
           test "$private_code" = 401
           test "$advisor_code" = 401
           internal_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
-             -H 'Content-Type: application/json' \
-             -d '{"countryIso3":"FRA","indicatorCodes":["NY.GDP.MKTP.CD"],"limitPerIndicator":96}' \
-             'http://127.0.0.1:18080/internal/timeseries/series/history/batch' || true)"
-           test "$internal_code" != 200 || {
-             echo "Private batch route exposed via public Gateway" >&2; exit 1;
-           }
-           echo "PASS: public read, private advisor/source-runs and internal batch route isolation"
+            -H 'Content-Type: application/json' \
+            -d '{"countryIso3":"FRA","indicatorCodes":["NY.GDP.MKTP.CD"],"limitPerIndicator":96}' \
+            'http://127.0.0.1:18080/internal/timeseries/series/history/batch' || true)"
+          test "$internal_code" != 200 || {
+            echo "Private batch route exposed via public Gateway" >&2; exit 1;
+          }
+          echo "PASS: public read, private advisor/source-runs and internal batch route isolation"
 
       - name: Collect idle full-stack memory/CPU (not production sizing)
         run: |
