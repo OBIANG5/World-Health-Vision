@@ -27,6 +27,7 @@
           "lat": 12
         },
         "spinDegrees": 12,
+        "look": "photo",
         "target": {
           "lon": 12,
           "lat": -2,
