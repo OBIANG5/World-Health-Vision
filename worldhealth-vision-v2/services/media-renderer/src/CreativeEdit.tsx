@@ -19,7 +19,7 @@ export type CreativeMedia = {
 export type CreativeShot = {
   id:string;
   durationFrames:number;
-  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal";
+  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus";
   title?:string;
   subtitle?:string;
   eyebrow?:string;
@@ -31,6 +31,8 @@ export type CreativeShot = {
   transitionAfter?:"cut"|"dissolve"|"slide";
   transitionFrames?:number;
   focus?:{x:number;y:number};
+  /** Region is in 0..1 COORDINATES OF THE VISIBLE DOCUMENT VIEWPORT. */
+  documentRegion?:{x:number;y:number;width:number;height:number};
 };
 export type CreativeEditProps = {
   version:1;
@@ -97,10 +99,11 @@ function MediaPlate({shot}:{shot:CreativeShot}) {
  * No AI-generated background, no fabricated news image, no arbitrary "Ken Burns".
  * Everything is frame-derived so stills, previews and full renders match.
  */
-function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>}) {
+function FocusReveal({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>;enterOverlapFrames:number}) {
   const frame=useCurrentFrame();
   const {fps}=useVideoConfig();
-  const beat=(start:number,end:number)=>interpolate(frame,[start,end],[0,1],clamp);
+  const localFrame=Math.max(0,frame-enterOverlapFrames);
+  const beat=(start:number,end:number)=>interpolate(localFrame,[start,end],[0,1],clamp);
   const ease=(x:number)=>1-Math.pow(1-x,3);
   const expand=ease(beat(8,48));
   const insetX=interpolate(expand,[0,1],[8,0]);
@@ -108,7 +111,7 @@ function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<
   const insetBottom=interpolate(expand,[0,1],[18,0]);
   const corner=interpolate(expand,[0,1],[23,0]);
   const shadowOpacity=interpolate(expand,[0,1],[.6,0]);
-  const titleSpring=spring({frame:frame-29,fps,config:{mass:1,damping:25,stiffness:96}});
+  const titleSpring=spring({frame:frame-enterOverlapFrames-29,fps,config:{mass:1,damping:25,stiffness:96}});
   const textIn=Math.max(0,Math.min(1,titleSpring));
   const lineIn=ease(beat(31,57));
   const overlineIn=ease(beat(32,50));
@@ -203,6 +206,130 @@ function ForegroundPlate({shot}:{shot:CreativeShot}) {
   </AbsoluteFill>;
 }
 
+/**
+ * DOCUMENT FOCUS — authentic supplied evidence, no invented excerpt.
+ *
+ * The motion magnifies PIXELS of the original image inside a user-directed
+ * rectangle. Nothing retypes or hallucinates the underlying document.
+ * The rectangle is deliberately relative to the rendered paper viewport
+ * (which displays the complete original image using objectFit: contain).
+ *
+ * Direction: paper arrives -> precise focus rectangle draws -> camera gently
+ * magnifies the selected passage -> authored context appears. Text is kept
+ * inside the mobile-safe composition, with incoming transition holdback.
+ */
+function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
+  shot:CreativeShot;
+  globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>;
+  enterOverlapFrames:number;
+}){
+  const frame=useCurrentFrame();
+  const {fps}=useVideoConfig();
+  const f=Math.max(0,frame-enterOverlapFrames);
+  const beat=(a:number,b:number)=>interpolate(f,[a,b],[0,1],clamp);
+  const ease=(n:number)=>1-Math.pow(1-n,3);
+  const enter=ease(beat(0,23));
+  const emphasis=ease(beat(22,46));
+  const inspection=ease(beat(48,91));
+  const holdOut=textFadeOut(frame,shot.durationFrames,
+    shot.transitionAfter==="cut"?0:(shot.transitionFrames??0));
+  const r=shot.documentRegion??{x:.25,y:.35,width:.5,height:.2};
+  const centerX=(r.x+r.width/2)*100,centerY=(r.y+r.height/2)*100;
+  // Deliberately restrained (< 1.55x), to avoid pixelated "fake evidence".
+  const scale=1+inspection*Math.min(.48,.31/Math.max(r.width,r.height));
+  const documentEntrance=spring({
+    frame:frame-enterOverlapFrames,fps,
+    config:{mass:1,damping:27,stiffness:105}
+  });
+  const lensOpacity=emphasis*(1-inspection*.35);
+  const titleIn=ease(beat(56,77))*holdOut;
+  const subtitleIn=ease(beat(73,97))*holdOut;
+  const accent=shot.accent??globalStyle.accent;
+  const titleSize=shot.title?fitTextOnNLines({
+    text:shot.title,maxBoxWidth:818,maxLines:2,
+    fontFamily:globalStyle.editorialFont,fontWeight:790,maxFontSize:78
+  }).fontSize:78;
+  const subtitleSize=shot.subtitle?fitTextOnNLines({
+    text:shot.subtitle,maxBoxWidth:805,maxLines:2,
+    fontFamily:globalStyle.editorialFont,fontWeight:480,maxFontSize:32
+  }).fontSize:32;
+  return <AbsoluteFill style={{
+    background:"#071520",fontFamily:globalStyle.editorialFont,
+    color:globalStyle.ink,overflow:"hidden"
+  }}>
+    <AbsoluteFill style={{
+      background:"radial-gradient(ellipse at 76% 34%,rgba(69,135,159,.18),transparent 59%)"
+    }}/>
+    <div style={{
+      position:"absolute",top:242,left:88,right:165,
+      opacity:ease(beat(6,19))*holdOut
+    }}>
+      <div style={{
+        height:4,width:78,background:accent,marginBottom:24
+      }}/>
+      {shot.eyebrow&&<div dir="auto" style={{
+        fontSize:23,fontWeight:760,letterSpacing:".09em",
+        lineHeight:1.25,color:"#c4e5f2",overflowWrap:"anywhere"
+      }}>{shot.eyebrow}</div>}
+    </div>
+    <div style={{
+      position:"absolute",top:353,left:92,width:896,height:1138,
+      border:"1px solid rgba(155,194,208,.28)",
+      borderRadius:26,
+      overflow:"hidden",
+      background:"#ecf0f1",
+      boxShadow:"0 28px 75px rgba(0,0,0,.44)",
+      opacity:enter,
+      transform:"translateY("+Math.round((1-documentEntrance)*67)+"px)"
+    }}>
+      <div style={{
+        position:"absolute",inset:0,
+        transform:"scale("+scale+")",
+        transformOrigin:centerX+"% "+centerY+"%"
+      }}>
+        {/* DocumentFocus accepts a real still image only. The original document
+            remains whole; no fabricated quote, retyped fact or generic stock. */}
+        {shot.media?.kind==="image"&&<Img
+          src={resolveCreativeSource(shot.media.src)}
+          style={{
+            width:"100%",height:"100%",objectFit:"contain",
+            objectPosition:"center center"
+          }}
+        />}
+        <div style={{
+          position:"absolute",
+          left:(r.x*100)+"%",top:(r.y*100)+"%",
+          width:(r.width*100)+"%",height:(r.height*100)+"%",
+          opacity:lensOpacity,
+          border:"4px solid "+accent,
+          borderRadius:5,
+          background:"rgba(77,178,212,.065)",
+          boxShadow:"0 0 0 1100px rgba(2,12,22,.42),0 0 20px rgba(17,110,145,.42)"
+        }}/>
+      </div>
+    </div>
+    <div style={{
+      position:"absolute",left:89,right:162,bottom:372,
+      padding:"28px 0 0",
+      borderTop:"1px solid rgba(140,207,229,.45)",
+      background:"linear-gradient(90deg,rgba(4,16,27,.93),rgba(4,16,27,.73))",
+      boxShadow:"0 0 45px 24px rgba(4,16,27,.42)",
+      opacity:titleIn
+    }}>
+      {shot.title&&<div data-wv-title={shot.id} dir="auto" style={{
+        fontSize:titleSize,fontWeight:790,letterSpacing:"-.035em",
+        lineHeight:1.08,whiteSpace:"pre-line",overflowWrap:"break-word",
+        transform:"translateY("+Math.round((1-titleIn)*30)+"px)"
+      }}>{shot.title}</div>}
+      {shot.subtitle&&<div dir="auto" style={{
+        fontSize:subtitleSize,lineHeight:1.28,marginTop:16,
+        fontWeight:480,color:"#d8eaf3",opacity:subtitleIn,
+        transform:"translateY("+Math.round((1-subtitleIn)*18)+"px)"
+      }}>{shot.subtitle}</div>}
+    </div>
+  </AbsoluteFill>;
+}
+
 function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>;enterOverlapFrames:number}) {
   const frame=useCurrentFrame();
   const {fps}=useVideoConfig();
@@ -212,7 +339,8 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
   const evidence=shot.template==="evidence";
   const clean=shot.template==="clean_video";
   const move=spring({frame:frame-enterOverlapFrames,fps,config:{mass:1,damping:24,stiffness:90}});
-  if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle}/>;
+  if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
+  if(shot.template==="document_focus")return <DocumentFocus shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   const opacity=reveal(frame,enterOverlapFrames,17);
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
   const subtitleFade=reveal(frame,enterOverlapFrames+15,18);
