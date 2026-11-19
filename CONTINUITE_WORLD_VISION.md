@@ -6,15 +6,9 @@ La première décision du 19/11 imposant 11 « portes » éditoriales et Vivienn
 
 ---
 
-## NOUVELLE DÉCISION ACTIVE — 19 NOVEMBRE 2026 — PRIORITÉ ABSOLUE AUX VIDÉOS
+### Archive de la première interprétation du 19/11 — ANNULÉE
 
-**Le propriétaire maintient BAOCOM comme projet complètement indépendant.** Aucune migration BAOCOM vers GitHub, aucune API ou fusion BAOCOM → World-Vision. On garde seulement certaines idées : visualisation pédagogique des étapes, montage modifiable par scène, réutilisation de modèles graphiques professionnels.
-
-**World-Vision média :** ChatGPT est le réalisateur/copilote éditorial ; les moteurs déjà présents servent à composer, synchroniser, monter et contrôler. Priorité aux reportages réellement excellents (image, motion design, narration Vivienne, sound design, authenticité), par **11 portes artistiques/techniques**, validées une par une : `research → script → treatment → voice → casting → layouts → motion → edit → sound → qa → delivery`. Aucun nouveau MP4 intégral sans planches et micro-animations acceptées. Aucun élément précédemment validé ne doit être modifié tacitement.
-
-**À différer :** Content OS, blog multi-format et raccordement GDELT dans la partie médias jusqu'à l'intégration logicielle effective de GDELT ; ne pas rouvrir ces chantiers à ce stade.
-
-**Nouveau travail vérifié :** branche `feature/worldvision-cinematic-director-gates-2026-11-19`, [PR #44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44), [direction artistique et feuille de route](worldhealth-vision-v2/docs/media/WORLDVISION_CINEMATIC_DIRECTOR_PRODUCTION_V1_2026-11-19.md), code `worldhealth-vision-v2/services/media-renderer/cinematic/director_gate.py`, tests CI réalisés. **Le validateur est une fondation structurelle, pas une preuve de qualité cinéma, et aucune vidéo nouvelle n'est produite.** Prochain travail réel : artboards 9:16 d'un plan utile, micro-animation 3–6s et audition Vivienne de l'actualité choisie. Ne pas merger automatiquement.
+Les anciennes contraintes de onze portes, script/recherche dans le code et voix Vivienne imposée ont été explicitement retirées. Voir la correction prioritaire ci-dessus.
 
 ---
 
