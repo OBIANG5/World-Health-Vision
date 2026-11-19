@@ -1,7 +1,8 @@
 /**
  * Browser acceptance smoke for the REAL V2 static phone preview.
- * Fails closed if the globe, preserved map, sources/navigation, or honest
- * preview disclosure regresses. Uses the existing preview snapshot assets
+ * Fails closed if the single interactive globe, country drill-down,
+ * sources/navigation or honest preview disclosure regresses. The retired
+ * Leaflet eye-map mode must never return. Uses existing preview snapshots
  * WITHOUT inventing economic observations or reaching a production backend.
  */
 import { chromium } from "playwright";
@@ -71,6 +72,19 @@ try {
     if (!box || box.width < 150 || box.height < 150) {
       throw new Error(device.name + ": globe is missing or too small");
     }
+    // The current V2 has ONE real interactive globe. The old switch and
+    // Leaflet eye-map were intentionally removed in Electric Earth (2026-11-13).
+    // Never reintroduce them just to make a stale browser test pass.
+    if (await page.locator(".whv-map-mode-switch").count() !== 0 ||
+        await page.locator(".eye-map-surface").count() !== 0) {
+      throw new Error(device.name + ": obsolete Leaflet/eye-map mode returned");
+    }
+    // A beautiful canvas without working geography is not an acceptable V2.
+    await globe.click({ position: { x: box.width * 0.5, y: box.height * 0.51 } });
+    await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 15000 });
+    await page.locator(".country-drawer.open .drawer-btn.close").click();
+    await page.locator(".country-drawer.open").waitFor({ state: "hidden", timeout: 15000 });
+
     const before = await globe.evaluate((canvas) => canvas.toDataURL());
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
@@ -80,13 +94,6 @@ try {
     const after = await globe.evaluate((canvas) => canvas.toDataURL());
     if (before === after) throw new Error(device.name + ": globe drag did not change view");
     await page.screenshot({ path: "preview-artifacts/" + device.name + "-globe.png", fullPage: true });
-
-    await page.getByRole("button", { name: /Carte œil/ }).click();
-    await page.locator(".eye-map-surface .leaflet-container").waitFor({
-      state: "visible", timeout: 15000,
-    });
-    await page.getByRole("button", { name: /Globe/ }).click();
-    await globe.waitFor({ state: "visible", timeout: 15000 });
 
     const navTools = page.locator("button.whv-nav-btn--tools");
     if (await navTools.isVisible()) {
@@ -115,7 +122,7 @@ try {
     }
     await page.screenshot({ path: "preview-artifacts/" + device.name + "-tools.png", fullPage: true });
     if (pageErrors.length) throw new Error(device.name + " runtime errors: " + pageErrors.join("; "));
-    console.log("PASS", device.name, "catalog", catalogSize, "globe, eye map, 9 tools, preview honesty");
+    console.log("PASS", device.name, "catalog", catalogSize, "single globe, country drill-down, 9 tools, preview honesty");
     await page.close();
   }
   console.log("PASS real V2 static preview iPhone and desktop acceptance");
