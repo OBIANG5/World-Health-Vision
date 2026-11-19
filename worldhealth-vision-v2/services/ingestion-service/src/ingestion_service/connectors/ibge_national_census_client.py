@@ -11,6 +11,7 @@ levels, years and rights require explicit review before expansion.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime
 import hashlib
 import json
 import re
@@ -37,12 +38,17 @@ class IbgeNationalPopulation:
     resident_population: int
     raw_payload: list[dict[str, Any]]
     raw_sha256: str
+    http_body_sha256: str
+    raw_response_bytes: bytes
+    response_received_at_utc: str
     source_url: str
     source_variable_label: str
     source_unit_label: str
 
 
-def parse_ibge_national_population(payload: Any) -> IbgeNationalPopulation:
+def parse_ibge_national_population(
+    payload: Any, *, original_http_bytes: bytes | None = None
+) -> IbgeNationalPopulation:
     """Fail closed on aggregate, geography, year, unit, ambiguity or null values."""
     if not isinstance(payload, list) or len(payload) != 1:
         raise ValueError("IBGE Census response must contain exactly one variable")
@@ -83,10 +89,23 @@ def parse_ibge_national_population(payload: Any) -> IbgeNationalPopulation:
     if not 100_000 <= population <= 500_000_000:
         raise ValueError("IBGE Census population outside reviewable bounds")
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    if original_http_bytes is None:
+        # Direct parser tests have no HTTP exchange; use canonical JSON.
+        original_http_bytes = canonical
+    else:
+        try:
+            original_decoded = json.loads(original_http_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, ValueError) as exc:
+            raise ValueError("IBGE original HTTP bytes are not UTF-8 JSON") from exc
+        if original_decoded != payload:
+            raise ValueError("IBGE original bytes and normalized payload differ")
     return IbgeNationalPopulation(
         resident_population=population,
         raw_payload=payload,
         raw_sha256=hashlib.sha256(canonical).hexdigest(),
+        http_body_sha256=hashlib.sha256(original_http_bytes).hexdigest(),
+        raw_response_bytes=original_http_bytes,
+        response_received_at_utc=datetime.now(UTC).isoformat(),
         source_url=IBGE_BASE_URL + IBGE_DATA_PATH + "?localidades=N1%5Ball%5D",
         source_variable_label=variable_label,
         source_unit_label=unit,
@@ -124,4 +143,4 @@ class IbgeNationalCensusClient:
             payload = json.loads(body)
         except (ValueError, UnicodeDecodeError) as exc:
             raise ValueError("IBGE JSON invalid") from exc
-        return parse_ibge_national_population(payload)
+        return parse_ibge_national_population(payload, original_http_bytes=bytes(body))
