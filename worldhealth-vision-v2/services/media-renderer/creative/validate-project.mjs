@@ -31,7 +31,7 @@ export function durationFrames(project){
   for(let i=0;i<project.shots.length;i++){
     const scene=project.shots[i];
     total+=scene.durationFrames||0;
-    if(i<project.shots.length-1&&scene.transitionAfter!=="cut")
+    if(i<project.shots.length-1&&["dissolve","slide"].includes(scene.transitionAfter))
       total-=scene.transitionFrames||0;
   }
   total+=project.outro?.durationFrames||0;
@@ -63,6 +63,7 @@ export function inspectProject(project) {
     const t=scene.transitionFrames??0;
     if(!boundedInteger(t,0,18))bad(errors,p+".transitionFrames","Only deliberate 0-18 frame transitions.");
     if(i===project.shots.length-1&&t>0)bad(errors,p+".transitionFrames","Final shot cannot transition into an absent shot.");
+    if(t>0&&!["dissolve","slide"].includes(scene.transitionAfter))bad(errors,p+".transitionFrames","Transition frames require dissolve or slide.");
     if(i<project.shots.length-1&&scene.transitionAfter!=="cut"&&t>0&&
        (t>=scene.durationFrames||t>=project.shots[i+1]?.durationFrames))
       bad(errors,p+".transitionFrames","Transition must be shorter than both adjacent shots.");
