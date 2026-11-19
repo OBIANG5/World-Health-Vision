@@ -4,13 +4,17 @@ on:
   pull_request:
     branches:
       - 'security/v2-jwt-signature-audience-scopes-2026-11-19'
+      - 'test/v2-fullstack-gateway-load-resilience-2026-11-19'
     paths:
       - 'worldhealth-vision-v2/infra/tests/**'
+      - 'worldhealth-vision-v2/services/analytics-service/**'
+      - 'worldhealth-vision-v2/infra/docker/**'
       - '.github/workflows/whv-v2-gateway-load-resilience.yml'
       - 'worldhealth-vision-v2/docs/**'
   push:
     branches:
       - 'test/v2-fullstack-gateway-load-resilience-*'
+      - 'improve/v2-analytics-perf-and-global-vision-*'
   workflow_dispatch:
 
 permissions:
@@ -39,6 +43,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Install Python 3.12 for analytics regression tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run analytics unit and source-evidence regression tests before container build
+        run: |
+          python -m pip install --disable-pip-version-check -e './worldhealth-vision-v2/services/analytics-service[dev]'
+          python -m pytest -q worldhealth-vision-v2/services/analytics-service/tests
 
       - name: Prepare one-off DB secret and a metrics directory
         run: |
