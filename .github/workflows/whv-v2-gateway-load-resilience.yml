@@ -4,13 +4,17 @@ on:
   pull_request:
     branches:
       - 'security/v2-jwt-signature-audience-scopes-2026-11-19'
+      - 'test/v2-fullstack-gateway-load-resilience-2026-11-19'
     paths:
       - 'worldhealth-vision-v2/infra/tests/**'
+      - 'worldhealth-vision-v2/services/analytics-service/**'
+      - 'worldhealth-vision-v2/infra/docker/**'
       - '.github/workflows/whv-v2-gateway-load-resilience.yml'
       - 'worldhealth-vision-v2/docs/**'
   push:
     branches:
       - 'test/v2-fullstack-gateway-load-resilience-*'
+      - 'improve/v2-analytics-perf-and-global-vision-*'
   workflow_dispatch:
 
 permissions:
@@ -39,6 +43,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Install Python 3.12 for analytics regression tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run analytics unit and source-evidence regression tests before container build
+        run: |
+          python -m pip install --disable-pip-version-check -e './worldhealth-vision-v2/services/analytics-service[dev]'
+          python -m pytest -q worldhealth-vision-v2/services/analytics-service/tests
 
       - name: Prepare one-off DB secret and a metrics directory
         run: |
@@ -118,6 +132,29 @@ jobs:
             --requests-per-path 40 --workers 4 \
             --output worldhealth-vision-v2/infra/benchmarks/artifacts/gateway-load.json
 
+      - name: Capture private Analytics phase histogram for economic snapshots
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            exec -T analytics-service python -c \
+            "import urllib.request; data=urllib.request.urlopen('http://127.0.0.1:8000/metrics',timeout=10).read(); print(data.decode())" \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-private-metrics.prom
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-private-metrics.prom')
+          lines=p.read_text().splitlines()
+          phases=('country','indicators','series_provenance','total')
+          for phase in phases:
+              token='whv_analytics_country_economic_snapshot_phase_seconds_sum{phase="'+phase+'"}'
+              values=[float(x.split()[-1]) for x in lines if x.startswith(token+' ')]
+              counter='whv_analytics_country_economic_snapshot_phase_seconds_count{phase="'+phase+'"}'
+              counts=[float(x.split()[-1]) for x in lines if x.startswith(counter+' ')]
+              assert len(values)==1 and len(counts)==1 and counts[0]>=1,phase
+              avg=round(values[0]/counts[0]*1000,2)
+              print(f'OBSERVED {phase}: {avg}ms mean over {int(counts[0])} requests')
+          print('PASS: fixed-cardinality private phase measurements were collected')
+          PY
+
       - name: Verify partial failure isolation and restoration
         run: |
           compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
@@ -125,13 +162,28 @@ jobs:
           "${compose[@]}" stop analytics-service
           catalog_code="$(curl -sS --max-time 10 -o /dev/null -w '%{http_code}' \
             'http://127.0.0.1:18080/api/catalog/countries?limit=2' || true)"
-          product_code="$(curl -sS --max-time 35 -o /dev/null -w '%{http_code}' \
+          product_code="$(curl -sS --max-time 35 -o "$RUNNER_TEMP/whv-upstream-unavailable.json" -w '%{http_code}' \
             'http://127.0.0.1:18080/api/product/countries/FRA/economic-snapshot' || true)"
           test "$catalog_code" = 200 || { echo "Unrelated catalogue failed during analytics outage" >&2; exit 1; }
-          case "$product_code" in
-            500|502|503|504) echo "PASS: unavailable analytics returns a real error, not fabricated data ($product_code)";;
-            *) echo "FAILED: unexpected status when analytics is offline: $product_code" >&2; exit 1;;
-          esac
+          test "$product_code" = 503 || {
+            echo "Expected 503, got $product_code" >&2
+            python3 - "$RUNNER_TEMP/whv-upstream-unavailable.json" <<'PY'
+          from pathlib import Path
+          import sys
+          text=Path(sys.argv[1]).read_text(errors='replace')
+          print('Response body prefix (CI-only):',text[:350])
+          PY
+            exit 1
+          }
+          python3 - "$RUNNER_TEMP/whv-upstream-unavailable.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1]))
+          assert data['error']=='UPSTREAM_UNAVAILABLE',data
+          assert data['retryable'] is True,data
+          assert data['requestId'] and data['timestampUtc'],data
+          assert 'statistics' not in data and 'data' not in data
+          print('PASS: analytics outage sends safe, structured, non-fabricated HTTP 503')
+          PY
           "${compose[@]}" up -d --wait analytics-service
           recovered=0
           for n in $(seq 1 30); do
@@ -142,6 +194,13 @@ jobs:
           done
           test "$recovered" = 1 || { echo "Analytics route did not recover after restart" >&2; exit 1; }
           echo "PASS: catalogue isolation and economic endpoint recovery"
+
+      - name: Diagnose only container error classes on failure
+        if: failure()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            logs --no-color --tail=90 gateway-service analytics-service || true
 
       - name: Capture post-recovery memory and CPU
         if: success()
