@@ -53,6 +53,11 @@ WORKDIR /app
 
 COPY --from=build /workspace/${SERVICE_MODULE}/target/*.jar /app/app.jar
 
+# Run the application as a dedicated unprivileged user. Runtime writes, if any,
+# must go to an explicitly mounted volume or staging tmpfs (not the image root).
+RUN groupadd --system --gid 10001 whv && useradd --system --uid 10001 --gid whv --no-create-home whv
+USER 10001:10001
+
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
