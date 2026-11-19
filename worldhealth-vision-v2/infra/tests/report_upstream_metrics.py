@@ -44,7 +44,7 @@ def parse_metrics(metrics_text: str) -> dict:
         if line.startswith("#"):
             continue
         # Histograms contain bucket samples as well; the summary needs sum/count.
-        if "_bucket{" in line:
+        if "_bucket{" in line or "_created{" in line:
             continue
         match = SAMPLE_RE.fullmatch(line.strip())
         if match is None:
