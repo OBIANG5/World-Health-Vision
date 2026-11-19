@@ -177,6 +177,7 @@ services:
     environment:
       WHV_GATEWAY_PORT: "8080"
       WHV_SECURITY_ENABLED: "true"
+      WHV_PUBLIC_READ_ENABLED: "false" # Private staging API
       WHV_SECURITY_ISSUER_URI: ${WHV_OIDC_ISSUER_URI:?Configure a real trusted OIDC issuer first}
       WHV_CATALOG_BASE_URL: http://catalog-service:8080
       WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
