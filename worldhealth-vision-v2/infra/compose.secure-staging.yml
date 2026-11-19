@@ -160,10 +160,12 @@ services:
     depends_on:
       timeseries-service:
         condition: service_healthy
-    # Egress is needed for institutions' official APIs. Never publish ingestion routes.
+    # Egress is needed for institutions' APIs. This bridge does NOT implement an
+    # outbound host firewall or domain allowlist; configure that separately.
+    # Never publish ingestion routes.
     networks:
       - core_private
-      - restricted_egress
+      - internet_egress
 
   gateway-service:
     <<: *app-defaults
@@ -190,10 +192,11 @@ services:
         condition: service_healthy
       analytics-service:
         condition: service_started
-    # External issuer / JWKS discovery needs egress; the HTTP port remains loopback-only.
+    # OIDC issuer discovery needs egress; this is not a destination allowlist.
+    # The HTTP port remains loopback-only.
     networks:
       - core_private
-      - restricted_egress
+      - internet_egress
     healthcheck:
       test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080'"]
       interval: 10s
@@ -205,7 +208,7 @@ networks:
   core_private:
     driver: bridge
     internal: true
-  restricted_egress:
+  internet_egress:
     driver: bridge
 
 secrets:
