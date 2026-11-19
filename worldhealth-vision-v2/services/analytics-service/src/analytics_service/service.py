@@ -425,6 +425,22 @@ class AnalyticsService:
                     ])
 
             with timed_economic_phase("series_provenance"):
+                latest_by_indicator = None
+                if self._settings.timeseries_latest_batch_enabled:
+                    # One bounded internal POST. Each indicator has its own SQL
+                    # rank by (indicator, source, dataset, granularity).
+                    # Important: the legacy overview always used includeMissing=False
+                    # for latest even if requested for the historical preview.
+                    latest_by_indicator = await self._call_timeseries(
+                        lambda: self._timeseries_client.list_latest_by_source_batch(
+                            country_iso3=country.iso3,
+                            indicator_codes=[item.code for item in indicator_details],
+                            source_code=self._normalize_optional_code(source_code),
+                            dataset_code=self._normalize_optional_code(dataset_code),
+                            period_granularity=self._normalize_optional_code(period_granularity),
+                            include_missing=False,
+                        )
+                    )
                 overview_items = await asyncio.gather(*[
                     self._build_indicator_overview(
                         country=country,
@@ -435,6 +451,10 @@ class AnalyticsService:
                         include_missing=include_missing,
                         series_limit=series_limit or self._settings.default_country_overview_series_limit,
                         resolution_cache=resolution_cache,
+                        preloaded_latest_by_source=(
+                            latest_by_indicator[indicator.code]
+                            if latest_by_indicator is not None else None
+                        ),
                     )
                     for indicator in indicator_details
                 ])
@@ -936,6 +956,7 @@ class AnalyticsService:
         include_missing: bool,
         series_limit: int,
         resolution_cache: ResolutionCache,
+        preloaded_latest_by_source: list[LatestSourceObservation] | None = None,
     ) -> IndicatorOverviewResponse:
         latest_by_source, availability, series = await asyncio.gather(
             self._call_timeseries(
@@ -947,7 +968,8 @@ class AnalyticsService:
                     period_granularity=period_granularity,
                     include_missing=False,
                 )
-            ),
+            ) if preloaded_latest_by_source is None
+            else asyncio.sleep(0, result=preloaded_latest_by_source),
             self._call_timeseries(
                 lambda: self._timeseries_client.list_series_availability(
                     country_iso3=country.iso3,

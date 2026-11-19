@@ -33,6 +33,12 @@ class TimeseriesClient:
             response.raise_for_status()
         return response
 
+    async def _post(self, operation: str, path: str, *, json: dict) -> httpx.Response:
+        with timed_dependency_http("timeseries", operation):
+            response = await self._client.post(path, json=json)
+            response.raise_for_status()
+        return response
+
     async def aclose(self) -> None:
         await self._client.aclose()
 
@@ -97,6 +103,49 @@ class TimeseriesClient:
         response = await self._get("latest_by_source", "/api/timeseries/series/latest", params=params)
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [LatestSourceObservation.model_validate(item) for item in payload.items]
+
+    async def list_latest_by_source_batch(
+        self,
+        country_iso3: str,
+        indicator_codes: list[str],
+        source_code: str | None,
+        dataset_code: str | None,
+        period_granularity: str | None,
+        include_missing: bool,
+    ) -> dict[str, list[LatestSourceObservation]]:
+        """Same per-code source order as individual GET, with no shared rank or limit."""
+        if not (1 <= len(indicator_codes) <= 128) or len(set(indicator_codes)) != len(indicator_codes):
+            raise ValueError("Latest batch requires 1-128 unique indicator codes.")
+        body = {
+            "countryIso3": country_iso3,
+            "indicatorCodes": indicator_codes,
+            "sourceCode": source_code,
+            "datasetCode": dataset_code,
+            "periodGranularity": period_granularity,
+            "includeMissing": include_missing,
+        }
+        response = await self._post(
+            "latest_batch", "/internal/timeseries/series/latest/batch", json=body
+        )
+        document = response.json()
+        if (not isinstance(document, dict) or
+                document.get("count") != len(indicator_codes) or
+                not isinstance(document.get("items"), list) or
+                len(document["items"]) != len(indicator_codes)):
+            raise httpx.RemoteProtocolError("Invalid latest-per-source batch envelope.")
+        results: dict[str, list[LatestSourceObservation]] = {}
+        for expected, group in zip(indicator_codes, document["items"], strict=True):
+            if not isinstance(group, dict) or group.get("indicatorCode") != expected:
+                raise httpx.RemoteProtocolError("Latest batch indicator order mismatch.")
+            raw_items = group.get("items")
+            if (not isinstance(raw_items, list) or
+                    type(group.get("count")) is not int or group["count"] != len(raw_items)):
+                raise httpx.RemoteProtocolError("Latest batch group count mismatch.")
+            models = [LatestSourceObservation.model_validate(item) for item in raw_items]
+            if any(item.indicatorCode != expected for item in models):
+                raise httpx.RemoteProtocolError("Cross-indicator observation contamination.")
+            results[expected] = models
+        return results
 
     async def list_series_availability(
         self,

@@ -59,7 +59,7 @@ def timed_economic_phase(phase: str):
 # Never use dynamic URLs, country codes, source names or users as metric labels.
 _DEPENDENCY_OPERATIONS = {
     "timeseries": frozenset({
-        "readiness", "series", "latest_by_source", "availability",
+        "readiness", "series", "latest_by_source", "latest_batch", "availability",
         "country_comparison", "source_runs",
     }),
     "catalog": frozenset({
