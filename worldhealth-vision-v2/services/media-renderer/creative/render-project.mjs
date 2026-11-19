@@ -14,7 +14,7 @@ import os from "node:os";
 import {createHash,randomUUID} from "node:crypto";
 import {fileURLToPath} from "node:url";
 import {bundle} from "@remotion/bundler";
-import {renderMedia,selectComposition} from "@remotion/renderer";
+import {renderMedia,renderStill,selectComposition} from "@remotion/renderer";
 import {FORMAT,inspectProject,resolveLocalFile} from "./validate-project.mjs";
 
 const rendererRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
@@ -22,11 +22,11 @@ function args(argv){
   const o={};
   for(let i=0;i<argv.length;i+=2){
     const key=argv[i],value=argv[i+1];
-    if(!["--project","--assets","--output"].includes(key)||!value||value.startsWith("--"))
+    if(!["--project","--assets","--output","--shot"].includes(key)||!value||value.startsWith("--"))
       throw new Error("Usage: --project <JSON> --assets <directory> --output <master.mp4>");
     o[key]=value;
   }
-  if(argv.length!==6||!o["--project"]||!o["--assets"]||!o["--output"])
+  if(![6,8].includes(argv.length)||!o["--project"]||!o["--assets"]||!o["--output"])
     throw new Error("Missing --project, --assets or --output.");
   return o;
 }
@@ -41,7 +41,23 @@ async function run(argv){
   const assetRoot=path.resolve(cli["--assets"]);
   const output=path.resolve(cli["--output"]);
   if(path.extname(output).toLowerCase()!==".mp4")throw new Error("Output must be an MP4.");
-  const project=JSON.parse(fs.readFileSync(projectPath,"utf-8"));
+  const fullProject=JSON.parse(fs.readFileSync(projectPath,"utf-8"));
+  const fullInspection=inspectProject(fullProject);
+  if(!fullInspection.ok){
+    process.stderr.write(JSON.stringify({status:"invalid_project",issues:fullInspection.errors},null,2)+"\n");
+    return 2;
+  }
+  const shotId=cli["--shot"]||null;
+  if(shotId&&!fullProject.shots.some(s=>s.id===shotId)){
+    throw new Error("Requested shot was not found: "+shotId);
+  }
+  // This is a strictly isolated preview, not an edit of the original project.
+  // Never add or regenerate a voice, music or logo while examining one shot.
+  const project=shotId?{
+    ...fullProject,
+    shots:fullProject.shots.filter(s=>s.id===shotId).map(s=>({...s,transitionAfter:"cut",transitionFrames:0})),
+    voice:null,music:null,outro:null
+  }:fullProject;
   const inspection=inspectProject(project);
   if(!inspection.ok){
     process.stderr.write(JSON.stringify({status:"invalid_project",issues:inspection.errors},null,2)+"\n");
@@ -128,14 +144,31 @@ async function run(argv){
       pixelFormat:"yuv420p",crf:17,overwrite:true,
     });
     const sha=await hashFile(output);
+    // Use Remotion's pixel-accurate frame renderer, not a simulated browser
+    // source preview or a generic screenshot of the unrendered input photo.
+    const stillDir=output+".stills";
+    fs.mkdirSync(stillDir,{recursive:true});
+    const frames=[0,Math.floor((inspection.frames-1)*0.5),inspection.frames-1];
+    const stills=[];
+    for(const [i,frame] of [...new Set(frames)].entries()){
+      const name="frame-"+String(i+1).padStart(2,"0")+"-at-"+frame+".png";
+      const location=path.join(stillDir,name);
+      await renderStill({composition,serveUrl,inputProps:props,frame,output:location,imageFormat:"png"});
+      stills.push({frame,file:location,sha256:await hashFile(location)});
+    }
     const report={
       schema_version:FORMAT,episode_id:project.id,
+      mode:shotId?"single_shot_preview":"full_film",
+      shot_id:shotId,
+      input_manifest_sha256:await hashFile(projectPath),
+      source_project_duration_frames:fullInspection.frames,
       source_script_sha256:createHash("sha256").update(project.script,"utf8").digest("hex"),
       exact_script_unchanged:true,
       output_path:output,output_sha256:sha,
       duration_frames:inspection.frames,canvas:{width:1080,height:1920,fps:30},
       track_voice:project.voice?.label??(project.voice?"externally_supplied":"no_narration"),
       media:ledger,
+      actual_rendered_stills:stills,
       warnings:["Tech render only. Not an AI quality guarantee, not editorial verification or publication approval."],
     };
     fs.writeFileSync(output+".report.json",JSON.stringify(report,null,2)+"\n");
