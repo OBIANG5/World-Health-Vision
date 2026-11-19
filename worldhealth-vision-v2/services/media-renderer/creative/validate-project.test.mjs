@@ -6,6 +6,7 @@ import os from "node:os";
 import {fileURLToPath} from "node:url";
 import {FORMAT,inspectProject,durationFrames,resolveLocalFile} from "./validate-project.mjs";
 import {geoCameraPose} from "../src/geo-motion-camera.mjs";
+import {photoTrackPose,motionProgress} from "../src/photo-motion-tracks.mjs";
 import {countryFocusGeometry} from "../src/country-focus-geometry.mjs";
 import {createRequire} from "node:module";
 import {geoContains} from "d3-geo";
@@ -301,4 +302,75 @@ test("international country focus loads independent 10m shapes for Fiji and Russ
     assert.ok(geometry.contextRadius>=.36&&geometry.contextRadius<=1.10);
   }
   // Island/datetime-rich countries still require a human visual map review.
+});
+
+test("photo STORY tracks are separate, monotone and camera-tied in Player and MP4",()=>{
+  const photo={
+    camera:{zoomFrom:1.05,zoomTo:1.13,panX:18,panY:-14,startFrame:0,endFrame:132},
+    subject:{dx:-12,dy:-17,scale:.055,startFrame:12,endFrame:125},
+    mask:{axis:"horizontal",startFrame:18,endFrame:68},
+    focus:{x:.5,y:.48,radius:83,startFrame:48,endFrame:91},
+    metric:{label:"TEST",value:42,unit:" TEST",precision:0,
+      sourceLabel:"source fictive de CI — aucun fait",startFrame:71,endFrame:122}
+  };
+  const at0=photoTrackPose(photo,0,165);
+  const at40=photoTrackPose(photo,40,165);
+  const at80=photoTrackPose(photo,80,165);
+  const at140=photoTrackPose(photo,140,165);
+  assert.equal(at0.camera.scale,1.05);
+  assert.equal(at0.subject.progress,0);
+  assert.equal(at0.focusProgress,0);
+  assert.equal(at0.countProgress,0);
+  assert.ok(at40.camera.progress>0&&at40.maskProgress>0);
+  assert.equal(at40.countProgress,0,"Metric stays held while image is revealed");
+  assert.ok(at80.focusProgress>0);
+  assert.ok(at80.countProgress>0&&at80.countProgress<1);
+  assert.equal(at140.maskProgress,1);
+  assert.equal(at140.focusProgress,1);
+  assert.equal(at140.countProgress,1);
+  assert.ok(Math.abs(at140.camera.scale-1.13)<1e-10);
+  assert.equal(at140.camera.panX,18);
+  assert.ok(at140.focusPoint&&Math.abs(at140.focusPoint.x-558)<.01);
+  assert.deepEqual(photoTrackPose(photo,80,165),at80);
+  assert.equal(motionProgress(0,10,60),0);
+  assert.equal(motionProgress(60,10,60),1);
+});
+
+test("photo STORY validates imported original, safe crop, foreground, timing and metric attribution",()=>{
+  const p=clone(sample),s=p.shots[0];
+  s.template="photo_story";s.durationFrames=165;
+  s.title="UNE SEULE PHOTO · SIX MOUVEMENTS";
+  s.subtitle="Essai original, non journalistique.";
+  s.media={kind:"image",file:"synthetic-landscape.png"};
+  s.foreground={file:"synthetic-foreground.png"};
+  s.photo={
+    camera:{zoomFrom:1.05,zoomTo:1.13,panX:18,panY:-14,startFrame:0,endFrame:132},
+    subject:{dx:-12,dy:-17,scale:.055,startFrame:12,endFrame:125},
+    mask:{axis:"horizontal",startFrame:18,endFrame:68},
+    focus:{x:.5,y:.48,radius:83,startFrame:48,endFrame:91},
+    metric:{label:"TEST TECHNIQUE",value:42,unit:" TEST",precision:0,
+      sourceLabel:"Simulation non journalistique",startFrame:71,endFrame:122}
+  };
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  s.photo.camera.panX=80;
+  assert.ok(reasons(p).includes("shots[0].photo.camera"));
+  s.photo.camera.panX=18;
+  s.photo.focus.x=.98;
+  assert.ok(reasons(p).includes("shots[0].photo.focus"));
+  s.photo.focus.x=.5;
+  s.photo.metric.sourceLabel="";
+  assert.ok(reasons(p).includes("shots[0].photo.metric"));
+  s.photo.metric.sourceLabel="Simulation non journalistique";
+  s.foreground=undefined;
+  assert.ok(reasons(p).includes("shots[0].photo.subject"));
+  s.foreground={file:"synthetic-foreground.png"};
+  s.photo.mask.endFrame=22;
+  assert.ok(reasons(p).includes("shots[0].photo.mask"));
+  s.photo.mask.endFrame=68;
+  s.media={kind:"video",file:"synthetic-clip.mp4"};
+  assert.ok(reasons(p).includes("shots[0].media"));
+  s.media={kind:"image",file:"synthetic-landscape.png"};
+  assert.equal(inspectProject(p).ok,true);
+  delete s.photo;
+  assert.ok(reasons(p).includes("shots[0].photo"));
 });
