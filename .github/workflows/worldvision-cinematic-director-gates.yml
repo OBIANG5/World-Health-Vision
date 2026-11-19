@@ -113,7 +113,11 @@ jobs:
           echo $! > /tmp/wv-player-vite.pid
       - name: Inspect real Remotion Player pixels in Chromium browser
         run: |
-          node creative/test-player-browser.mjs
+          timeout --kill-after=10s 150s node creative/test-player-browser.mjs || {
+            echo "Player/browser smoke failed; Vite diagnostics:"
+            tail -n 100 /tmp/wv-player-vite.log || true
+            exit 1
+          }
           test -s output/creative/player-browser-frame-0.png
           test -s output/creative/player-browser-frame-74.png
           test -s output/creative/player-browser-smoke.report.json
