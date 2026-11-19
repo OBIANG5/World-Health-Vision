@@ -47,6 +47,16 @@ const DEFAULT_BG="#0b1721";
 const DEFAULT_ACCENT="#8bbecf";
 const DEFAULT_FONT="'Helvetica Neue',Arial,sans-serif";
 const reveal=(f:number,delay:number,duration:number)=>interpolate(f,[delay,delay+duration],[0,1],clamp);
+
+/**
+ * Keep two editorial headlines from fighting during an overlapped transition.
+ * Images may dissolve or slide continuously, but outgoing captions finish
+ * before the incoming captions become legible.
+ */
+const textFadeOut=(f:number,totalFrames:number,overlapFrames:number)=>{
+  if(overlapFrames<=0)return 1;
+  return interpolate(f,[totalFrames-overlapFrames,totalFrames],[1,0],clamp);
+};
 /**
  * Rendering and Player use the SAME React components. The renderer stages local
  * assets under public/, while the browser Studio passes user-selected blob:
@@ -140,19 +150,20 @@ function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<
     <div style={{
       position:"absolute",top:248,left:87,right:154,display:"flex",
       alignItems:"center",justifyContent:"space-between",
-      opacity:overlineIn,transform:"translateY("+Math.round((1-overlineIn)*-18)+"px)"
+      opacity:overlineIn*textFadeOut(frame,shot.durationFrames,shot.transitionAfter==="cut"?0:(shot.transitionFrames??0)),transform:"translateY("+Math.round((1-overlineIn)*-18)+"px)"
     }}>
 {shot.eyebrow&&<span style={{fontSize:24,fontWeight:700,letterSpacing:".1em",color:shot.accent??globalStyle.accent,maxWidth:755}}>{shot.eyebrow}</span>}
     </div>
     <div style={{
       position:"absolute",left:88,right:164,bottom:415,
-      display:"flex",flexDirection:"column",alignItems:"flex-start"
+      display:"flex",flexDirection:"column",alignItems:"flex-start",
+      opacity:textFadeOut(frame,shot.durationFrames,shot.transitionAfter==="cut"?0:(shot.transitionFrames??0))
     }}>
       <div style={{
         background:shot.accent??globalStyle.accent,width:Math.round(lineIn*90),height:5,
         marginBottom:29,opacity:lineIn
       }}/>
-      {shot.title&&<div dir="auto" style={{
+      {shot.title&&<div data-wv-title={shot.id} dir="auto" style={{
         fontSize:titleSize,fontWeight:815,letterSpacing:"-.047em",lineHeight:1.07,
         whiteSpace:"pre-line",overflowWrap:"break-word",
         maxWidth:880,
@@ -192,7 +203,7 @@ function ForegroundPlate({shot}:{shot:CreativeShot}) {
   </AbsoluteFill>;
 }
 
-function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>}) {
+function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;globalStyle:Required<NonNullable<CreativeEditProps["visualStyle"]>>;enterOverlapFrames:number}) {
   const frame=useCurrentFrame();
   const {fps}=useVideoConfig();
   const accent=shot.accent??globalStyle.accent;
@@ -200,11 +211,11 @@ function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Require
   const numeric=shot.template==="number";
   const evidence=shot.template==="evidence";
   const clean=shot.template==="clean_video";
-  const move=spring({frame,fps,config:{mass:1,damping:24,stiffness:90}});
+  const move=spring({frame:frame-enterOverlapFrames,fps,config:{mass:1,damping:24,stiffness:90}});
   if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle}/>;
-  const opacity=reveal(frame,0,17);
+  const opacity=reveal(frame,enterOverlapFrames,17);
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
-  const subtitleFade=reveal(frame,15,18);
+  const subtitleFade=reveal(frame,enterOverlapFrames+15,18);
   const glow=shot.media?"0 5px 38px rgba(0,0,0,.48)":"none";
   const textSize=shot.title
     ? fitTextOnNLines({
@@ -238,15 +249,16 @@ function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Require
         justifyContent:kinetic?"center":"flex-end",
         padding:kinetic?"260px 105px":"0 96px 286px 92px",
         color:globalStyle.ink,
+        opacity:textFadeOut(frame,shot.durationFrames,shot.transitionAfter==="cut"?0:(shot.transitionFrames??0)),
       }}>
         <div style={{maxWidth:888}}>
           {shot.eyebrow&&<div style={{
             color:accent,textTransform:"uppercase",fontSize:25,fontWeight:700,
             letterSpacing:"0.17em",lineHeight:1.25,marginBottom:25,
-            opacity:reveal(frame,5,15)
+            opacity:reveal(frame,enterOverlapFrames+5,15)
           }}>{shot.eyebrow}</div>}
           {shot.title&&<div style={{overflow:"hidden"}}>
-            <div style={{
+            <div data-wv-title={shot.id} style={{
               fontSize:textSize,
               lineHeight:numeric?.94:kinetic?1.04:1.09,
               fontWeight:numeric?850:790,
@@ -297,8 +309,9 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
   const timelineFrames=creativeDuration({...props,brandOutro:null});
   const children:React.ReactNode[]=[];
   props.shots.forEach((shot,index)=>{
+    const enterOverlapFrames=index>0?(transitionOf(props.shots[index-1])?.frames??0):0;
     children.push(<TransitionSeries.Sequence key={"shot-"+shot.id} name={shot.id} durationInFrames={shot.durationFrames}>
-      <CinematicShot shot={shot} globalStyle={base}/>
+      <CinematicShot shot={shot} globalStyle={base} enterOverlapFrames={enterOverlapFrames}/>
     </TransitionSeries.Sequence>);
     if(index<props.shots.length-1){
       const t=transitionOf(shot);
