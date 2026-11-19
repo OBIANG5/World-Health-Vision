@@ -15,6 +15,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.UUID;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,6 +38,9 @@ class TimeseriesControllerIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     @Test
     void shouldAcceptObservationBatchAndExposeBusinessReadEndpoints() throws Exception {
@@ -506,6 +511,43 @@ class TimeseriesControllerIntegrationTest {
         mockMvc.perform(post("/internal/timeseries/series/availability/batch")
                 .contentType(MediaType.APPLICATION_JSON).content(oversized.toString()))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldMeasureOnlyFixedCardinalityJdbcBatchOperations() throws Exception {
+        // No synthetic data required: empty grouped results still execute the
+        // actual JDBC path and must be observed without geo/source labels.
+        var codes = java.util.List.of("NY.GDP.MKTP.CD", "SP.POP.TOTL");
+        for (String route : java.util.List.of(
+                "/internal/timeseries/series/latest/batch",
+                "/internal/timeseries/series/availability/batch",
+                "/internal/timeseries/series/history/batch"
+        )) {
+            var request = new java.util.LinkedHashMap<String, Object>();
+            request.put("countryIso3", "FRA");
+            request.put("indicatorCodes", codes);
+            if (route.endsWith("/availability/batch")) {
+                request.put("limitPerIndicator", 100);
+            } else if (route.endsWith("/history/batch")) {
+                request.put("sortDirection", "DESC");
+                request.put("limitPerIndicator", 96);
+            }
+            mockMvc.perform(post(route).contentType(MediaType.APPLICATION_JSON)
+                    .content(new ObjectMapper().writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.count").value(2));
+        }
+        for (String operation : java.util.List.of("latest", "availability", "history")) {
+            Timer timer = meterRegistry.find("whv.timeseries.batch.jdbc")
+                    .tag("operation", operation).timer();
+            assertTrue(timer != null && timer.count() > 0,
+                    "Every private JDBC batch must have a fixed operation timer.");
+            assertEquals(java.util.Set.of("operation"),
+                    timer.getId().getTags().stream()
+                            .map(io.micrometer.core.instrument.Tag::getKey)
+                            .collect(java.util.stream.Collectors.toSet()),
+                    "Never attach country, source, dataset, user or SQL to a JDBC timer.");
+        }
     }
 
 }
