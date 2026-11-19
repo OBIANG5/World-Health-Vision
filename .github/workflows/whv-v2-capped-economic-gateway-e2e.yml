@@ -1,0 +1,294 @@
+name: WHV V2 - capped economic batch Gateway and dual outage
+
+on:
+  push:
+    branches:
+      - 'perf/v2-economy-batch-backpressure-ab-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-capped-economic-gateway-${{ github.ref }}
+  cancel-in-progress: true
+
+# Fictional CI identity URLs are intentionally NOT reachable and can never be
+# copied into production. Only anonymous reviewed GET data APIs are probed.
+env:
+  WHV_TIMESCALE_IMAGE: timescale/timescaledb:2.15.3-pg16
+  WHV_OIDC_ISSUER_URI: https://ci-only.invalid/realms/worldvision
+  WHV_OIDC_JWKS_URI: https://ci-only.invalid/realms/worldvision/jwks
+  WHV_SECURITY_AUDIENCE: worldvision-ci-load
+  WHV_DB_PASSWORD_FILE: /tmp/whv_ci_load_password
+  WHV_GATEWAY_HOST_PORT: "18080"
+  WHV_ECONOMIC_BATCH_LIMIT: "8"
+
+jobs:
+  full-stack-gateway:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Python 3.12 for analytics regression tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run analytics unit and source-evidence regression tests before container build
+        run: |
+          python -m pip install --disable-pip-version-check -e './worldhealth-vision-v2/services/analytics-service[dev]'
+          python -m pytest -q worldhealth-vision-v2/services/analytics-service/tests
+
+      - name: Prepare one-off DB secret and a metrics directory
+        run: |
+          openssl rand -hex 40 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0644 "$WHV_DB_PASSWORD_FILE"
+          mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_gateway.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/report_upstream_metrics.py
+          python3 -m unittest discover -s worldhealth-vision-v2/infra/tests -p 'test_report_upstream_metrics.py' -v
+
+      - name: Fail if CI overlay exposes databases or disables JWT
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            config --format json > "$RUNNER_TEMP/ci-compose-config.json"
+          python3 - "$RUNNER_TEMP/ci-compose-config.json" <<'PY'
+          import json,sys
+          services=json.load(open(sys.argv[1]))['services']
+          expected={'whv-timescaledb','catalog-service','timeseries-service',
+                    'analytics-service','ingestion-service','gateway-service'}
+          assert set(services)==expected
+          for name,service in services.items():
+              ports=service.get('ports') or []
+              if name!='gateway-service':
+                  assert not ports,(name,ports)
+              else:
+                  assert len(ports)==1 and ports[0]['host_ip']=='127.0.0.1'
+                  e=service['environment']
+                  assert e['WHV_SECURITY_ENABLED']=='true'
+                  assert e['WHV_PUBLIC_READ_ENABLED']=='true'
+                  assert e['WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS']=='false'
+          required_flags=(
+              'WHV_ANALYTICS_CATALOG_INDICATOR_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_LATEST_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_AVAILABILITY_BATCH_ENABLED',
+              'WHV_ANALYTICS_TIMESERIES_HISTORY_BATCH_ENABLED',
+          )
+          analytics=services['analytics-service']
+          assert not analytics.get('ports'), 'Analytics exposed publicly'
+          env=analytics['environment']
+          assert all(env.get(flag)=='true' for flag in required_flags), env
+          assert env['WHV_ANALYTICS_ECONOMIC_TIMESERIES_BATCH_MAX_INFLIGHT']=='8', env
+          print('PASS: all four batch flags active, JWT remains enabled and no DB exposed')
+          PY
+
+      - name: Build and start true backend (Gateway, catalog, time series, analytics, ingestion, Timescale)
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            up -d --build --wait whv-timescaledb catalog-service timeseries-service analytics-service ingestion-service gateway-service
+
+      - name: Verify Gateway readiness and access isolation
+        run: |
+          ready=0
+          for n in $(seq 1 50); do
+            if curl -fsS --max-time 3 http://127.0.0.1:18080/actuator/health >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1 || { echo "Gateway never became healthy" >&2; exit 1; }
+          public_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/catalog/countries?limit=2')"
+          private_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/timeseries/source-runs')"
+          advisor_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+            -H 'Content-Type: application/json' \
+            -d '{"question":"test-only"}' \
+            'http://127.0.0.1:18080/api/analytics/advisor/chat')"
+          test "$public_code" = 200
+          test "$private_code" = 401
+          test "$advisor_code" = 401
+          internal_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+            -H 'Content-Type: application/json' \
+            -d '{"countryIso3":"FRA","indicatorCodes":["NY.GDP.MKTP.CD"],"limitPerIndicator":96}' \
+            'http://127.0.0.1:18080/internal/timeseries/series/history/batch' || true)"
+          test "$internal_code" != 200 || {
+            echo "Private batch route exposed via public Gateway" >&2; exit 1;
+          }
+          echo "PASS: public read, private advisor/source-runs and internal batch route isolation"
+
+      - name: Collect idle full-stack memory/CPU (not production sizing)
+        run: |
+          set -eu
+          compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml)
+          ids="$("${compose[@]}" ps -q)"
+          test -n "$ids"
+          docker stats --no-stream --format '{{json .}}' $ids \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/idle-container-stats.jsonl
+          cat worldhealth-vision-v2/infra/benchmarks/artifacts/idle-container-stats.jsonl
+
+      - name: Measure p50/p95/p99 on bounded real Gateway GETs
+        run: |
+          python3 worldhealth-vision-v2/infra/tests/benchmark_gateway.py \
+            --path '/api/catalog/countries?limit=2' \
+            --path '/api/timeseries/sources/coverage' \
+            --path '/api/product/countries/FRA/economic-snapshot' \
+            --requests-per-path 40 --workers 4 \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/gateway-load.json
+
+      - name: Capture private Analytics phase histogram for economic snapshots
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            exec -T analytics-service python -c \
+            "import urllib.request; data=urllib.request.urlopen('http://127.0.0.1:8000/metrics',timeout=10).read(); print(data.decode())" \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-private-metrics.prom
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-private-metrics.prom')
+          lines=p.read_text().splitlines()
+          phases=('country','indicators','series_provenance','total')
+          for phase in phases:
+              token='whv_analytics_country_economic_snapshot_phase_seconds_sum{phase="'+phase+'"}'
+              values=[float(x.split()[-1]) for x in lines if x.startswith(token+' ')]
+              counter='whv_analytics_country_economic_snapshot_phase_seconds_count{phase="'+phase+'"}'
+              counts=[float(x.split()[-1]) for x in lines if x.startswith(counter+' ')]
+              assert len(values)==1 and len(counts)==1 and counts[0]>=1,phase
+              avg=round(values[0]/counts[0]*1000,2)
+              print(f'OBSERVED {phase}: {avg}ms mean over {int(counts[0])} requests')
+          print('PASS: fixed-cardinality private phase measurements were collected')
+          PY
+
+      - name: Verify and archive fixed-cardinality outbound HTTP operation profile
+        run: |
+          python3 worldhealth-vision-v2/infra/tests/report_upstream_metrics.py \
+            --input worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-private-metrics.prom \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-dependency-http-summary.json \
+            --require-optimized-economic
+
+      - name: Verify partial failure isolation and restoration
+        run: |
+          compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml)
+          "${compose[@]}" stop analytics-service
+          catalog_code="$(curl -sS --max-time 10 -o /dev/null -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/catalog/countries?limit=2' || true)"
+          product_code="$(curl -sS --max-time 35 -o "$RUNNER_TEMP/whv-upstream-unavailable.json" -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/product/countries/FRA/economic-snapshot' || true)"
+          test "$catalog_code" = 200 || { echo "Unrelated catalogue failed during analytics outage" >&2; exit 1; }
+          test "$product_code" = 503 || {
+            echo "Expected 503, got $product_code" >&2
+            python3 - "$RUNNER_TEMP/whv-upstream-unavailable.json" <<'PY'
+          from pathlib import Path
+          import sys
+          text=Path(sys.argv[1]).read_text(errors='replace')
+          print('Response body prefix (CI-only):',text[:350])
+          PY
+            exit 1
+          }
+          python3 - "$RUNNER_TEMP/whv-upstream-unavailable.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1]))
+          assert data['error']=='UPSTREAM_UNAVAILABLE',data
+          assert data['retryable'] is True,data
+          assert data['requestId'] and data['timestampUtc'],data
+          assert 'statistics' not in data and 'data' not in data
+          print('PASS: analytics outage sends safe, structured, non-fabricated HTTP 503')
+          PY
+          "${compose[@]}" up -d --wait analytics-service
+          recovered=0
+          for n in $(seq 1 30); do
+            code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+              'http://127.0.0.1:18080/api/product/countries/FRA/economic-snapshot' || true)"
+            if [[ "$code" == 200 ]]; then recovered=1; break; fi
+            sleep 2
+          done
+          test "$recovered" = 1 || { echo "Analytics route did not recover after restart" >&2; exit 1; }
+          echo "PASS: catalogue isolation and economic endpoint recovery"
+
+      - name: Verify active-batch response during Timeseries outage and restoration
+        run: |
+          compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml)
+          "${compose[@]}" stop timeseries-service
+          catalog_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/catalog/countries?limit=2' || true)"
+          economic_code="$(curl -sS --max-time 35 -o "$RUNNER_TEMP/whv-optimized-timeseries-outage.json" -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/product/countries/FRA/economic-snapshot' || true)"
+          test "$catalog_code" = 200 || { echo "Catalog failed during Timeseries outage" >&2; exit 1; }
+          python3 - "$economic_code" "$RUNNER_TEMP/whv-optimized-timeseries-outage.json" <<'PY'
+          import json,sys
+          status=sys.argv[1]
+          if status not in {'502','503'}:
+              raise SystemExit(f'Expected transient 502/503 from Timeseries outage, got {status}')
+          data=json.load(open(sys.argv[2]))
+          if not isinstance(data,dict) or any(x in data for x in ('lenses','statistics','data','sourceAudit')):
+              raise SystemExit('Outage returned fabricated or unstructured economic data')
+          print(f'PASS: optimized Timeseries dependency outage safely returns HTTP {status}')
+          PY
+          "${compose[@]}" up -d --wait timeseries-service
+          recovered=0
+          for n in $(seq 1 30); do
+            code="$(curl -sS --max-time 20 -o /dev/null -w '%{http_code}' \
+              'http://127.0.0.1:18080/api/product/countries/FRA/economic-snapshot' || true)"
+            if [[ "$code" == 200 ]]; then recovered=1; break; fi
+            sleep 2
+          done
+          test "$recovered" = 1 || { echo "Optimized economy did not recover" >&2; exit 1; }
+          echo 'PASS: active-batch economy recovered after Timeseries restart'
+
+      - name: Diagnose only container error classes on failure
+        if: failure()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            logs --no-color --tail=90 gateway-service analytics-service || true
+
+      - name: Capture post-recovery memory and CPU
+        if: success()
+        run: |
+          compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml)
+          ids="$("${compose[@]}" ps -q)"
+          docker stats --no-stream --format '{{json .}}' $ids \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/post-recovery-container-stats.jsonl
+
+      - name: Preserve metrics and component diagnostics if a test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-capped-economic-gateway-and-dual-outage
+          path: worldhealth-vision-v2/infra/benchmarks/artifacts/
+          if-no-files-found: ignore
+
+      - name: Tear down ALL CI-only data and secrets
+        if: always()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-batch-optimized.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-economic-batch-limit.yml \
+            down --volumes --remove-orphans || true
+          rm -f "$WHV_DB_PASSWORD_FILE"
