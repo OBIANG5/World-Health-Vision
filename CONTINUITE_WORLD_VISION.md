@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — SPRINT 11 DATA MOTION (19 NOV. 2026)
+
+**NOUVELLE BRANCHE MÉDIA dédiée :** `feature/worldvision-data-motion-sourced-charts-2026-11-19` empilée sur la PR #80 PHOTO. Lire [WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md). Le logiciel sait désormais *en code de branche* préparer des **courbes temporelles, classements avec ex æquo et heatmaps de valeurs** via `data_story`/Remotion, dans le vrai Player et les MP4. La source, l'institution, l'indicateur, la date, l'unité et **l'intervalle explicite de l'axe** sont FOURNIS par le journaliste. Les classements/heatmaps partent de zéro ; les dates de courbe doivent être réelles et chronologiques. Le Studio fournit un formulaire complet et une saisie de série `DATE|LIBELLÉ|VALEUR`. Tests et films à vérifier : **ne pas annoncer ce nouveau Sprint 11 comme certifié avant la CI et les vrais pixels**.
+
+**État des fondations :** PR #44 Studio, #72 GEO, #74 pays/50m/10m, #80 PHOTO, désormais PR DATA. Tous drafts, aucune fusion dans V2, aucune publication. La PR #79 est **un prototype PHOTO concurrent à garder en référence**, pas un second template à intégrer en parallèle ; la préférence d'architecture est #80, avec tests sur images réelles à poursuivre. [CI PHOTO #44629579242](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44629579242) **2/2 vert, 21/21 tests, vrai film 165 frames** sur SHA `3df37e5`; des commits PHOTO plus récents requièrent leur propre validation exacte.
+
+**SUITE :** inspecter vrais MP4/PNG DATA → corriger la lisibilité, préserver le retour favorable sur la vidéo Gabon → film journalistique complet GEO→PAYS→PHOTO→DATA→DOCUMENT avec narrateur libre et droits vérifiés, puis motion AUDIO/TEXTE, tests iOS/Android et rendu premium. Ne pas revenir à des slides séparées ; **une image porte plusieurs animations utiles en parallèle**. Source/script depuis ChatGPT pour le moment, BAOCOM séparé, blog/GDELT hors du Studio.
+
+---
+
 ## WORLD-VISION MEDIA — SPRINT 10 PHOTO MOTION / UNE IMAGE SIX PISTES (19 NOV. 2026)
 
 **Nouvelle branche empilée sur PR #74 :** `feature/worldvision-photo-multilayer-motion-tracks-2026-11-19`, toujours **DRAFT, aucune fusion V2, aucun déploiement**. Référence centrale : [WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md). Suite directe des vidéos références Bourse Express/géopolitique : l'objectif est **UNE photographie réelle et plusieurs mouvements simultanés**. Template `photo_story`, moteur `photoTrackPose` déterministe, six pistes séparées (caméra, masque, premier plan transparent, focus lié à la caméra, compteur avec attribution, typographie) en même composition Remotion Player+MP4. L'atelier dispose de véritables réglages de chaque piste ; le validateur refuse les zooms, positions, durées et données incompatibles. Fixtures purement synthétiques, pas une actualité.
