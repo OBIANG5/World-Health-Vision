@@ -6,6 +6,12 @@ import os from "node:os";
 import {fileURLToPath} from "node:url";
 import {FORMAT,inspectProject,durationFrames,resolveLocalFile} from "./validate-project.mjs";
 import {geoCameraPose} from "../src/geo-motion-camera.mjs";
+import {countryFocusGeometry} from "../src/country-focus-geometry.mjs";
+import {createRequire} from "node:module";
+import {geoContains} from "d3-geo";
+const requireAtlas=createRequire(import.meta.url);
+const atlas10=requireAtlas("world-atlas/countries-10m.json");
+const atlas50=requireAtlas("world-atlas/countries-50m.json");
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const sample=JSON.parse(fs.readFileSync(path.join(here,"project.example.json"),"utf8"));
@@ -238,4 +244,48 @@ test("geo camera and sourced country spotlight fail closed on unknown geometry o
   delete shot.geo.camera;
   delete shot.geo.spotlight;
   assert.equal(inspectProject(p).ok,true,"Old GEO projects remain valid");
+});
+
+test("country-focus: 10m real polygon, 50m sourced context and legal source identity",()=>{
+  const g=countryFocusGeometry(atlas10,atlas50,"266");
+  assert.ok(g&&g.detailPath.length>100&&g.contextPath.length>200);
+  assert.ok(g.centerXY&&g.centerXY.every(Number.isFinite));
+  assert.equal(g.countryId,"266");
+  assert.equal(g.geoContainsPoint([11.6,-.7]),true,"Gabon location should sit within the country");
+  assert.equal(g.geoContainsPoint([2.35,48.86]),false,"Paris must not appear inside Gabon");
+  assert.equal(countryFocusGeometry(atlas10,atlas50,"999"),null,"Unknown country cannot be fabricated");
+});
+
+test("country-focus validator rejects fake map, wrong country marker, and shortened storytelling",()=>{
+  const p=clone(sample);
+  const shot=p.shots[0];
+  shot.template="country_focus";
+  shot.durationFrames=150;
+  shot.title="FOCUS PAYS — DÉMONSTRATION";
+  shot.subtitle="Animation de données fictives sur une cartographie réelle.";
+  shot.geo={center:{lon:0,lat:10},
+    spotlight:{countryId:"266"},
+    target:{lon:11.6,lat:-.7,label:"POINT TECHNIQUE"},
+    metric:{label:"TEST TECHNIQUE",value:42,unit:" TEST",precision:0}};
+  shot.media={kind:"image",file:"synthetic-landscape.png"};
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  shot.geo.spotlight.countryId="999";
+  assert.ok(reasons(p).includes("shots[0].geo.spotlight"));
+  shot.geo.spotlight.countryId="266";
+  shot.geo.target={lon:2.35,lat:48.86,label:"PAS AU GABON"};
+  assert.ok(reasons(p).includes("shots[0].geo.target"));
+  shot.geo.target={lon:11.6,lat:-.7,label:"POINT TECHNIQUE"};
+  shot.durationFrames=80;
+  assert.ok(reasons(p).includes("shots[0].durationFrames"));
+  shot.durationFrames=150;
+  shot.geo.camera={to:{lon:5,lat:0},startFrame:10,endFrame:100,zoom:1.1};
+  assert.ok(reasons(p).includes("shots[0].geo"));
+  delete shot.geo.camera;
+  shot.geo.route={from:{lon:2,lat:5},to:{lon:3,lat:4}};
+  assert.ok(reasons(p).includes("shots[0].geo"));
+  delete shot.geo.route;
+  assert.equal(inspectProject(p).ok,true);
+  // Existing GEO and other scenes are not forced into country-focus.
+  shot.template="geo_story";
+  assert.equal(inspectProject(p).ok,true);
 });
