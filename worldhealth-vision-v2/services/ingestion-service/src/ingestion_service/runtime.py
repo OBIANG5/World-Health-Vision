@@ -1,6 +1,8 @@
 from importlib.resources import files
 
 from ingestion_service.bronze_store import BronzeStore
+from ingestion_service.connectors.ibge_national_census_client import IbgeNationalCensusClient
+from ingestion_service.pipelines.ibge_national_census import IbgeNationalCensusPilot
 from ingestion_service.country_scope import load_published_country_iso3s
 from ingestion_service.settings import get_settings
 from ingestion_service.connectors.ilostat_client import IloStatClient
@@ -42,6 +44,17 @@ from ingestion_service.pipelines.unodc import UnodcIngestionService
 from ingestion_service.pipelines.unsd_sdg import UnsdSdgIngestionService
 from ingestion_service.pipelines.who_gho import WhoGhoIngestionService
 from ingestion_service.pipelines.worldbank import WorldBankIngestionService
+
+
+def build_ibge_national_census_pilot() -> IbgeNationalCensusPilot:
+    """No public endpoint and NO implicit Timeseries publication before reuse review."""
+    settings = get_settings()
+    return IbgeNationalCensusPilot(
+        client=IbgeNationalCensusClient(
+            timeout_seconds=min(max(settings.request_timeout_seconds, 1), 60),
+        ),
+        bronze_store=BronzeStore(settings.bronze_root),
+    )
 
 
 def build_worldbank_service() -> WorldBankIngestionService:

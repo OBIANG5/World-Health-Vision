@@ -7,18 +7,33 @@ from ingestion_service.runtime import (
     build_numbeo_service,
     build_unodc_service,
     build_worldbank_service,
+    build_ibge_national_census_pilot,
 )
 from ingestion_service.settings import get_settings
 
 app = typer.Typer(help="WorldHealth Vision ingestion CLI.")
 worldbank_app = typer.Typer(help="World Bank ingestion commands.")
+ibge_app = typer.Typer(help="Brazil IBGE national source; Bronze-only research pilot.")
 unodc_app = typer.Typer(help="UNODC ingestion commands.")
 numbeo_app = typer.Typer(help="Numbeo ingestion commands (clé API requise).")
 app.add_typer(worldbank_app, name="worldbank")
+app.add_typer(ibge_app, name="ibge")
 app.add_typer(unodc_app, name="unodc")
 app.add_typer(numbeo_app, name="numbeo")
 pilot_app = typer.Typer(help="Controlled official multi-source evidence pilots.")
 app.add_typer(pilot_app, name="pilot")
+
+
+@ibge_app.command("capture-census-2022-population")
+def capture_ibge_census_2022_population():
+    """Fetch actual IBGE primary-source national figure to immutable research Bronze.
+
+    This does not update Timeseries, the public Atlas or its source coverage
+    claims. Commercial/redistribution rights and revision metadata must first
+    be assessed; see DATA-1A evidence contract.
+    """
+    manifest = build_ibge_national_census_pilot().capture_population_2022()
+    typer.echo(manifest.model_dump_json(indent=2))
 
 
 @worldbank_app.command("fetch-countries")
