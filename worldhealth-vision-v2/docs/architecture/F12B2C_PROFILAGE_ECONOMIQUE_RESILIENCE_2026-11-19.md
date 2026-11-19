@@ -46,6 +46,8 @@ Test : arrêter Analytics, GET catalogue doit rester 200, GET synthèse doit êt
 
 **GO seulement si** les tests Java, les tests Python et le scénario de panne en six conteneurs passent sur le SHA final de cette PR. Si la couche Spring transforme une exception autrement, corriger le mécanisme et repasser la CI plutôt que déclarer terminé.
 
+**Cause réelle détectée pendant les essais multi-runners :** l'arrêt d'Analytics peut produire soit une connexion refusée, soit `java.net.UnknownHostException` avec cause Netty `DnsErrorCauseException: SERVFAIL` (le conteneur arrêté n'est plus résolu par le DNS Docker). Le premier mapping ne reconnaissait que les refus de connexion/timeouts : sur un des jobs il a renvoyé 500, sur l'autre 503. L'implémentation candidate traite maintenant **explicitement UnknownHostException** comme une panne d'une route proxifiée, avec un test dédié contre les fuites de nom interne. **Cette correction doit repasser les deux pipelines sur le SHA final.**
+
 ## 4. Prochaines investigations pour une vraie baisse de latence (sous-étapes à traiter séparément)
 
 ### F1.2b.2c-2 : compter et profiler les dépendances
