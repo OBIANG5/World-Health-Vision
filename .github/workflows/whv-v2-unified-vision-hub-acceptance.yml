@@ -1,0 +1,101 @@
+name: World-Vision V2 — isolated ecosystem UI, accessibility and original Atlas acceptance
+
+on:
+  push:
+    branches:
+      - 'product/world-vision-unified-experience-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-vision-hub-${{ github.ref }}
+  cancel-in-progress: true
+
+# No public deployment, no GitHub Pages, no publishing and no paid providers.
+# Offline data snapshots are explicitly test FIXTURES, never official live data.
+jobs:
+  vision-hub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exactly the candidate frontend SHA
+        uses: actions/checkout@v4
+        with:
+          path: source
+          persist-credentials: false
+
+      - name: Checkout fixture branch for transparent offline previews ONLY
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: evidence
+          persist-credentials: false
+
+      - name: Use Node.js 22 with npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/worldhealth-vision-v2/frontend/web-v2/package-lock.json
+
+      - name: Build and lint the CURRENT frontend, not an HTML mock
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          # Full legacy repo lint currently has 30+ pre-existing errors in untouched
+          # hooks/globe/country components; audit changed files strictly here.
+          npx eslint src/App.tsx src/components/layout/EyeLayout.tsx src/components/layout/VisionHub.tsx src/product/visionProducts.ts
+          npx tsc -b --pretty false
+          VITE_WHV_PREVIEW_MODE=true npx vite build --base=./
+
+      - name: Assemble isolated candidate bundle with labelled archived preview fixtures
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from shutil import copy2,copytree
+          src=Path('source/worldhealth-vision-v2/frontend/web-v2/dist')
+          evidence=Path('evidence')
+          target=Path('preview')
+          assert (src/'index.html').is_file() and (src/'assets').is_dir()
+          assert not target.exists()
+          copytree(src,target)
+          fixtures=('preview-countries.js','preview-sources.js','preview-local-catalog.js','preview-bootstrap.js')
+          for name in fixtures:
+              assert (evidence/name).is_file(),name
+              copy2(evidence/name,target/name)
+          html=(target/'index.html').read_text(encoding='utf-8')
+          assert '<head>' in html
+          tags='<meta name="robots" content="noindex,nofollow">\n'
+          tags+=''.join(f'<script src="./{name}"></script>\n' for name in fixtures)
+          (target/'index.html').write_text(html.replace('<head>','<head>\n'+tags,1),encoding='utf-8')
+          print('PASS: genuine React app built from candidate; offline catalog is marked as archival test fixture')
+          PY
+
+      - name: Install Chromium browser ONLY for acceptance tests
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Confirm existing original globe, country drawer and source UX survives
+        env:
+          WHV_PREVIEW_DIRECTORY: ${{ github.workspace }}/preview
+        run: node source/worldhealth-vision-v2/frontend/web-v2/preview-smoke.mjs
+
+      - name: Test global Vision Hub on iPhone and desktop, no dead actions or misleading data
+        env:
+          WHV_PREVIEW_DIRECTORY: ${{ github.workspace }}/preview
+        run: node source/worldhealth-vision-v2/frontend/web-v2/vision-hub-smoke.mjs
+
+      - name: Save actual screenshots and baseline acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-unified-hub-iphone-desktop
+          path: |
+            preview-artifacts/
+            vision-hub-artifacts/
+          if-no-files-found: warn
+          retention-days: 30
