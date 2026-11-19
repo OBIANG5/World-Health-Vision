@@ -1,4 +1,4 @@
-import React,{useMemo} from "react";
+import {useMemo} from "react";
 import {AbsoluteFill,Img,OffthreadVideo,useCurrentFrame} from "remotion";
 import {fitTextOnNLines} from "@remotion/layout-utils";
 import {geoOrthographic,geoPath,geoGraticule10,geoInterpolate} from "d3-geo";
