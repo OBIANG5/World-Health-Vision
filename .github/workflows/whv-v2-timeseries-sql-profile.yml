@@ -10,6 +10,7 @@ on:
       - 'perf/v2-batch-timeseries-availability-*'
       - 'perf/v2-batch-timeseries-historical-*'
       - 'perf/v2-dense-batch-sql-hikari-profiling-*'
+      - 'perf/v2-economy-batch-backpressure-ab-*'
   pull_request:
     branches:
       - 'improve/v2-analytics-perf-and-global-vision-sql-profiling-*'
