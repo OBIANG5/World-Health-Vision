@@ -18,7 +18,7 @@ const DETAILED_IDS=new Set(DETAIL_COUNTRIES.map(g=>String(g.id).padStart(3,"0"))
 const COUNTRY_IDS=new Set(countryGeometry.map(g=>String(g.id).padStart(3,"0")));
 
 export const FORMAT = "worldvision-creative-project-v1";
-const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus"]);
+const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus","photo_story"]);
 const TRANSITIONS = new Set(["cut","dissolve","slide"]);
 const MOTIONS = new Set(["locked","dolly","drift","push"]);
 const IMAGE_EXT = new Set([".png",".jpg",".jpeg",".webp"]);
@@ -106,6 +106,58 @@ export function inspectProject(project) {
          region.x+region.width>1.0000001||region.y+region.height>1.0000001)
         bad(errors,p+".documentRegion",
           "Select a visible 0-1 document region x/y/width/height; width 12%-85%, height 8%-80%, fully inside the unmodified document viewport.");
+    }
+    if(scene.template==="photo_story"){
+      if(!boundedInteger(scene.durationFrames,150,3600))
+        bad(errors,p+".durationFrames","Multi-track PHOTO needs 150-3600 frames for staggered beats.");
+      if(!isText(scene.title,90)||!scene.title?.trim())
+        bad(errors,p+".title","Provide a short human-authored photographic headline (<=90).");
+      if(scene.subtitle!==undefined&&!isText(scene.subtitle,180))
+        bad(errors,p+".subtitle","Max 180 characters for the spoken/visual explanatory line.");
+      if(scene.media?.kind!=="image")
+        bad(errors,p+".media","PHOTO multi-layer requires one original supplied still image; video/photo synthesis is not substituted.");
+      const ph=scene.photo;
+      if(!ph||typeof ph!=="object"||Array.isArray(ph)){
+        bad(errors,p+".photo","Author separate deterministic motion tracks, no inferred image contents.");
+      }else{
+        const within=(v,min,max)=>typeof v==="number"&&Number.isFinite(v)&&v>=min&&v<=max;
+        const timing=(q,min=25)=>q&&boundedInteger(q.startFrame,0,scene.durationFrames-20)&&
+          boundedInteger(q.endFrame,1,scene.durationFrames)&&q.endFrame-q.startFrame>=min;
+        const c=ph.camera;
+        if(!c||!timing(c,35)||!within(c.zoomFrom,1.03,1.18)||
+          !within(c.zoomTo,c.zoomFrom??2,1.20)||
+          !within(c.panX,-40,40)||!within(c.panY,-45,45)||
+          (Number.isFinite(c.zoomTo)&&Number.isFinite(c.panX)&&
+             Math.abs(c.panX)>(c.zoomTo-1)*540)||
+          (Number.isFinite(c.zoomTo)&&Number.isFinite(c.panY)&&
+             Math.abs(c.panY)>(c.zoomTo-1)*960))
+          bad(errors,p+".photo.camera","Camera needs valid beats, modest zoom 1.03-1.20, and pan within original still's zoomed crop.");
+        if(ph.subject!==undefined){
+          const s=ph.subject;
+          if(!scene.foreground||!timing(s,25)||!within(s.dx,-45,45)||
+            !within(s.dy,-45,45)||!within(s.scale,0,.16))
+            bad(errors,p+".photo.subject","Independent parallax requires an external transparent foreground, sensible offsets and timing.");
+        }
+        if(ph.mask!==undefined){
+          const m=ph.mask;
+          if(!timing(m,20)||!["horizontal","vertical"].includes(m.axis))
+            bad(errors,p+".photo.mask","Clip must reveal original image in a defined horizontal/vertical direction.");
+        }
+        if(ph.focus!==undefined){
+          const f=ph.focus;
+          if(!timing(f,20)||!within(f.x,.07,.93)||!within(f.y,.09,.76)||
+            !within(f.radius,35,190))
+            bad(errors,p+".photo.focus","Manual focus stays in usable image area with valid radius and motion beats.");
+        }
+        if(ph.metric!==undefined){
+          const m=ph.metric;
+          if(!timing(m,25)||!isText(m.label,55)||!m.label?.trim()||
+            !within(m.value,-1e12,1e12)||!isText(m.unit,12)||
+            !boundedInteger(m.precision,0,2)||
+            !isText(m.sourceLabel,160)||!m.sourceLabel?.trim())
+            bad(errors,p+".photo.metric","An editor-provided count needs a finite value, unit, readable source label and independent timing.");
+        }
+      }
     }
     // Geo storytelling is cartography, not geocoding. ALL coordinates, routes
     // and statistics must have been explicitly approved by the human editor.
@@ -198,7 +250,7 @@ export function inspectProject(project) {
         }
       }
     }
-    const needsMedia=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(scene.template);
+    const needsMedia=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_story"].includes(scene.template);
     if(needsMedia&&!scene.media)bad(errors,p+".media","This composition requires your real source image/clip; no fake fallback.");
     if(scene.foreground!==undefined&&scene.foreground!==null){
       if(!scene.media)
