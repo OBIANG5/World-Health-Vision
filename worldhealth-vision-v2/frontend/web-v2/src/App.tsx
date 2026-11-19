@@ -406,7 +406,7 @@ function AppContent() {
   }, [navigate]);
 
   const headerActions = (
-    <nav className="whv-nav" aria-label={lang === "fr" ? "Explorer World Health Vision" : "Explore World Health Vision"}>
+    <nav className="whv-nav" aria-label={lang === "fr" ? "Naviguer dans World-Vision" : "Navigate World-Vision"}>
       <button type="button" className="whv-nav-btn whv-nav-btn--mobile-hub" aria-expanded={showToolsMenu && navDomain === "all"}
         onClick={(event) => openNavDomain("all", event.currentTarget)}><><WorldIcon name="menu" size={17}/> Menu</></button>
       {(showCountrySelector || showToolsMenu) && (
@@ -419,12 +419,18 @@ function AppContent() {
         onClick={() => {
           setDrawerOpen(false); setRegionDrawerOpen(false); setShowToolsMenu(false);
           setShowSourcesModal(false); setShowCountrySelector(false);
+          navigate({ kind: "home" });
         }}>
         {lang === "fr" ? "Accueil" : "Home"}
       </button>
       <button type="button" className="whv-nav-btn whv-vision-nav"
-        aria-expanded={showVisionHub} onClick={openVisionHub}>
+        aria-expanded={showVisionHub} onClick={() => openVisionHub()}>
         {lang === "fr" ? "Les Visions" : "All Visions"}
+      </button>
+      <button type="button" className="whv-nav-btn whv-global-search-trigger"
+        onClick={openWorldDiscovery}
+        title={lang === "fr" ? "Rechercher · / ou Ctrl+K" : "Search · / or Ctrl+K"}>
+        <WorldIcon name="search" size={16}/>{lang === "fr" ? "Rechercher" : "Search"}
       </button>
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--explore" + (showToolsMenu && navDomain === "explore" ? " active" : "")}
@@ -464,7 +470,8 @@ function AppContent() {
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--sources" + (showSourcesModal ? " active" : "")}
         onClick={() => {
-          setShowSourcesModal((v) => !v); setShowCountrySelector(false);
+          navigate(route.kind === "sources" ? { kind: "home" } : { kind: "sources" });
+          setShowSourcesModal(false); setShowCountrySelector(false);
           setShowWatchlist(false); setRegionDrawerOpen(false); setShowToolsMenu(false);
         }}>
         {lang === "fr" ? "Sources" : "Sources"}
@@ -624,11 +631,11 @@ function AppContent() {
           ? "Atlas, veille, devises, voyages, prix et marchés : un écosystème pour comprendre les faits et prendre des décisions mieux documentées."
           : "Atlas, monitoring, currencies, travel, prices and markets: one ecosystem for understanding facts and making better-informed decisions."}</p>
         <div className="whv-story-actions">
-          <button type="button" className="whv-story-primary" onClick={openVisionHub}>
+          <button type="button" className="whv-story-primary" onClick={() => openVisionHub()}>
             {lang === "fr" ? "Découvrir les Visions" : "Explore the Visions"} <span aria-hidden="true"><WorldIcon name="arrow" size={17}/></span>
           </button>
-          <button type="button" className="whv-story-secondary" onClick={() => openNavDomain("explore")}>
-            {lang === "fr" ? "Explorer l'Atlas" : "Explore the Atlas"}
+          <button type="button" className="whv-story-secondary" onClick={openWorldDiscovery}>
+            {lang === "fr" ? "Rechercher un pays" : "Find a country"}
           </button>
         </div>
         <div className="whv-story-metrics" aria-label={lang === "fr" ? "Aperçu du catalogue" : "Catalog overview"}>
@@ -654,7 +661,7 @@ function AppContent() {
               : "Atlas, Watch, Money, Travel, Price, Trading, BRVM and Global Radar: see current and planned tools."}
           </p>
         </div>
-        <button type="button" className="whv-mobile-vision-entry" onClick={openVisionHub}>
+        <button type="button" className="whv-mobile-vision-entry" onClick={() => openVisionHub()}>
           <span><strong>{lang === "fr" ? "Explorer les Visions World-Vision" : "Explore World-Vision products"}</strong>
             <small>{lang === "fr" ? "Catalogue, usages, maturité et prochaines étapes" : "Catalog, use cases, readiness and next steps"}</small></span>
           <WorldIcon name="arrow" size={21}/>
@@ -691,7 +698,7 @@ function AppContent() {
             <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="shield" size={23}/></span>
             <span>{lang === "fr" ? "Sécurité" : "Safety"}</span>
           </button>
-          <button type="button" className="whv-mobile-shortcut" onClick={openVisionHub}>
+          <button type="button" className="whv-mobile-shortcut" onClick={() => openVisionHub()}>
             <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="layers" size={23}/></span>
             <span>{lang === "fr" ? "Les Visions" : "All Visions"}</span>
           </button>
