@@ -5,6 +5,7 @@ on:
     branches:
       - 'feature/worldvision-cinematic-*'
       - 'feature/worldvision-photo-*'
+      - 'feature/worldvision-data-*'
     paths:
       - 'worldhealth-vision-v2/services/media-renderer/creative/**'
       - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
