@@ -48,7 +48,7 @@ const atmosphereFragment=[
 " gl_FragColor=vec4(cyan,haze*.83);",
 "}"
 ].join("\n");
-function EarthMesh({longitude,latitude}:{longitude:number;latitude:number}){
+function EarthMesh({longitude,latitude,zoom}:{longitude:number;latitude:number;zoom:number}){
   const map=useLoader(TextureLoader,staticFile(textureFile));
   useEffect(()=>{
     map.colorSpace=SRGBColorSpace;
@@ -59,7 +59,7 @@ function EarthMesh({longitude,latitude}:{longitude:number;latitude:number}){
   // Offset by -90deg - centerLon to align with D3 geoOrthographic.
   const rx=latitude*Math.PI/180;
   const ry=-(Math.PI/2+longitude*Math.PI/180);
-  return <>
+  return <group scale={zoom}>
     <ambientLight intensity={1.15}/>
     <directionalLight position={[-800,620,1700]} intensity={1.85} color="#ffffff"/>
     <directionalLight position={[900,-350,450]} intensity={.54} color="#00a6ff"/>
@@ -86,14 +86,15 @@ function EarthMesh({longitude,latitude}:{longitude:number;latitude:number}){
         fragmentShader={atmosphereFragment} transparent depthWrite={false}
         blending={AdditiveBlending} side={FrontSide}/>
     </mesh>
-  </>;
+  </group>;
 }
 export function GeoPhotorealEarth({
-  centerLongitude,centerLatitude,spinDegrees
+  centerLongitude,centerLatitude,spinDegrees,zoom=1
 }:{
-  centerLongitude:number;centerLatitude:number;spinDegrees:number;
+  centerLongitude:number;centerLatitude:number;spinDegrees:number;zoom?:number;
 }){
   return <div data-wv-geo-nasa-texture="NASA-BlueMarble-June-2004"
+    data-wv-geo-sphere-scale={zoom.toFixed(4)}
     style={{position:"absolute",left:0,top:65,width:1080,height:1250,
       pointerEvents:"none",overflow:"hidden"}}>
     <ThreeCanvas orthographic width={1080} height={1250}
@@ -101,7 +102,7 @@ export function GeoPhotorealEarth({
       style={{width:"100%",height:"100%",background:"transparent"}}
       gl={{alpha:true,antialias:true,preserveDrawingBuffer:true}}>
       <EarthMesh longitude={centerLongitude-spinDegrees}
-        latitude={centerLatitude}/>
+        latitude={centerLatitude} zoom={zoom}/>
     </ThreeCanvas>
   </div>;
 }
