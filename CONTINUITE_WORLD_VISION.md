@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — GEO-2 / SPRINT 9 FINAL TECHNICAL EVIDENCE (19 NOV. 2026)
+
+**PR #74 toujours DRAFT, non fusionnée/non déployée.** Le commit du moteur `b553f7d38c4111ec8de02e43e1a2dbbf1f614c82` a été testé par [CI #44624747361 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361) sur les **deux jobs** : tests Node, build frontend V2, MP4 synthétique H.264 1080x1920/165 images et vrai Player Chromium. Artefact téléchargé **14578693543** ; 7 frames réellement examinées (Player 0/60/115/155, master 0/82/164). Pays Gabon 10m, contexte 50m, marker, photo fictive, compteur fictif, titres/captions coexistants.
+
+**QA visuelle concrète :** ancien run #44623703278 a échoué sur seulement **3,82 px** de séparation titre/carte sur Player 360px. La version corrigée donne **17,48 px** (seuil 12px), pays entier non couvert par photo, première frame amorcée non vide. Région 50m ~84 114 caractères vs 709 064 auparavant (~88% moins), silhouette 10m intacte. **Reste** : beaucoup de bas de cadre sous-utilisé, photogrammes de fiction non publiables, pas de droits d'actu, pas de test iPhone Safari/Android, pas de garantie de qualité artistique mondiale. Voir [Sprint 9 §8](worldhealth-vision-v2/docs/media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md).
+
+**Ensuite, priorité PHOTO MULTILAYER : UNE photographie source vérifiée + 3–6 pistes d'animation indépendantes** (caméra, détourage externe 2,5D, masquage, lumière, chiffres fournis, texte et sound cues), puis DATA graphes finance, puis vrai reportage globe→pays→photo. Ne pas relancer des retouches infinies du globe/pays. Scripts/sources ChatGPT pour le moment, voix interchangeable, BAOCOM séparé, blog/GDELT différés, pas de publication.
+
+---
+
 
 ## WORLD-VISION MEDIA — SPRINT 9 GEO-2 CERTIFIÉ TECHNIQUEMENT (19 NOV. 2026)
 
