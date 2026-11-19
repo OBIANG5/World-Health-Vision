@@ -71,4 +71,22 @@ Le test ancien `test-player-browser.mjs` a été bloqué à cause d'une confusio
 5. Pour la prochaine réalisation, **l'utilisateur apporte le script et potentiellement des fichiers** ; le logiciel assemble, anime, finit. Aucune voix imposée, aucun transfert BAOCOM.
 6. Documenter chaque erreur et chaque solution avec commits, tests et caveats. Ne pas déclarer un film prêt pour publication sans visionnage, contrôle journalistique et accord éditorial du propriétaire.
 
+
+## 7. Preuve d'exécution confirmée — film complet, pas seulement compilation
+
+**Preuve de la nouvelle timeline à deux plans : [GitHub Actions #44540102940](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540102940), conclu SUCCESS pour les deux jobs.** Le commit de code testé comprend `creative-player-smoke.tsx`, `CreativeCompositionPreview.tsx`, `CinematicProductionBoard.tsx` et le test Chromium multi-scènes. **11 tests Node réussis, 0 échec ; build web V2 réussi.**
+
+**Artefact réel** : `worldvision-creative-compositor-demo`, artifact ID GitHub `14538076534`. Il contient :
+- `player-film-frame-0.png` : premier cadre de l'image synthétique ;
+- `player-film-frame-100.png` : deux scènes visibles dans le **chevauchement du fondu** (notre code de transition Remotion, non une image CSS statique) ;
+- `player-film-frame-145.png` : deuxième plan « LE RÉCIT CONTINUE. » visible seul ;
+- `player-film-smoke.report.json` : durée **165 images**, erreurs de navigateur **0**, trois SHA-256 distincts, piste synthétique déclarée ;
+- les MP4 tests, trois stills de `focus_reveal` et le rapport du détecteur de silence FFmpeg.
+
+Les trois PNG ont été **ouverts et inspectés** : le fondu est bien présent, puis la typographie du deuxième plan arrive. L'essai prouve l'assemblage de deux plans avec piste audio *référencée* dans le Player mais **pas la qualité acoustique de l'écoute** : l'interprétation d'une voix et le mastering restent des validations distinctes.
+
+**Observation artistique critique :** la typographie du deuxième plan se trouve sur un simple dégradé sombre et la transition intermédiaire produit des titres superposés. C'est acceptable pour tester un fondu, **pas une direction artistique « meilleure au monde »**. Ne pas transformer ce clip synthétique en modèle de journalisme ni le publier.
+
+**Ajustement UX ultérieur du 19 novembre** : la largeur de visionnage sur téléphone a été augmentée (jusqu'à **360 px en 9:16**) et les précédents plafonds de 235 px sur mobile et 420 px en hauteur ont été retirés. **Contrôler le build du HEAD actualisé via son CI** avant de déclarer cette correction de présentation totalement validée.
+
 **Cette documentation décrit ce qui est réellement présent dans la branche, pas une fonctionnalité déjà déployée sur Vercel.**
