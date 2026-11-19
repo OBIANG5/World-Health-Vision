@@ -56,6 +56,12 @@ public interface TimeseriesRepository {
             int limit
     );
 
+    /** Aggregates and orders availability independently for each indicator. */
+    List<SeriesAvailabilityResponse> listSeriesAvailabilityBatch(
+            String countryIso3, List<String> indicatorCodes, String sourceCode,
+            String datasetCode, String periodGranularity, int limitPerIndicator
+    );
+
     List<CountryLatestComparisonResponse> listLatestCountryComparison(
             String countryIso3Csv,
             String indicatorCode,
