@@ -73,7 +73,13 @@ class QuarantinedJsonEvidenceStore:
         self._max_bytes = max_response_bytes
 
     def _revisions(self, source_code: str, dataset_code: str) -> Path:
-        return self._root / _code(source_code) / _code(dataset_code) / "revisions"
+        # Reject intermediate symlinks before creating or reading private data.
+        source = self._root / _code(source_code)
+        dataset = source / _code(dataset_code)
+        revisions = dataset / "revisions"
+        if any(path.is_symlink() for path in (self._root, source, dataset, revisions)):
+            raise EvidenceIntegrityError("Symlinked evidence storage root is forbidden")
+        return revisions
 
     def capture(
         self,
@@ -146,7 +152,13 @@ class QuarantinedJsonEvidenceStore:
             _write_private(temporary / "observations.ndjson", ndjson)
             _write_private(
                 temporary / "manifest.json",
-                manifest.model_dump_json(indent=2).encode("utf-8"),
+                # Portable receipt: on-disk paths are relative to the revision
+                # directory. Returned RunManifest is rehydrated with real paths.
+                manifest.model_copy(update={
+                    "raw_payload_path": Path("original.http.json"),
+                    "normalized_payload_path": Path("observations.ndjson"),
+                    "manifest_path": Path("manifest.json"),
+                }).model_dump_json(indent=2).encode("utf-8"),
             )
             try:
                 temporary.rename(destination)
@@ -208,9 +220,9 @@ class QuarantinedJsonEvidenceStore:
             manifest.source_code != source_code
             or manifest.dataset_code != dataset_code
             or manifest.run_id != "sha256-" + response_sha256
-            or manifest.raw_payload_path != paths[0]
-            or manifest.normalized_payload_path != paths[1]
-            or manifest.manifest_path != paths[2]
+            or manifest.raw_payload_path != Path("original.http.json")
+            or manifest.normalized_payload_path != Path("observations.ndjson")
+            or manifest.manifest_path != Path("manifest.json")
         ):
             raise EvidenceIntegrityError("Manifest paths/identity do not match revision")
         for key, value in _REQUIRED_QUARANTINE.items():
@@ -232,7 +244,13 @@ class QuarantinedJsonEvidenceStore:
                 raise EvidenceIntegrityError("Normalized observation is not a JSON object")
         except (ValueError, UnicodeDecodeError) as exc:
             raise EvidenceIntegrityError("Invalid normalized JSON") from exc
-        return manifest
+        # Never trust absolute paths stored in evidence; derive from the
+        # verified root to permit relocation and disaster recovery.
+        return manifest.model_copy(update={
+            "raw_payload_path": paths[0],
+            "normalized_payload_path": paths[1],
+            "manifest_path": paths[2],
+        })
 
     def list_verified_revisions(
         self, source_code: str, dataset_code: str
