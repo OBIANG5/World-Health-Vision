@@ -1,0 +1,58 @@
+{
+  "schema_version": "worldvision-creative-project-v1",
+  "id": "wv-geo-motion-technical-reference",
+  "title": "ATELIER GÉOGRAPHIQUE — TEST NON JOURNALISTIQUE",
+  "script": "Exemple de composition géographique. Toutes les coordonnées sont des données de démonstration, et aucun événement réel n'est affirmé.",
+  "aspect_ratio": "9:16",
+  "fps": 30,
+  "style": {
+    "background": "#04111e",
+    "ink": "#f7fbff",
+    "accent": "#74ebff"
+  },
+  "shots": [
+    {
+      "id": "geo-intro",
+      "durationFrames": 150,
+      "template": "geo_story",
+      "title": "LE MONDE EN MOUVEMENT",
+      "subtitle": "Cartographie animée, données fictives clairement identifiées.",
+      "eyebrow": "DÉMONSTRATION TECHNIQUE · AUCUNE ACTUALITÉ",
+      "motion": "locked",
+      "transitionAfter": "cut",
+      "transitionFrames": 0,
+      "geo": {
+        "center": {
+          "lon": 10,
+          "lat": 12
+        },
+        "spinDegrees": 12,
+        "target": {
+          "lon": 12,
+          "lat": -2,
+          "label": "POINT DE TEST"
+        },
+        "route": {
+          "from": {
+            "lon": -9,
+            "lat": 40
+          },
+          "to": {
+            "lon": 12,
+            "lat": -2
+          },
+          "label": "Trajet de démonstration"
+        },
+        "metric": {
+          "label": "VALEUR FICTIVE",
+          "value": 42,
+          "unit": " TEST",
+          "precision": 0
+        }
+      }
+    }
+  ],
+  "voice": null,
+  "music": null,
+  "outro": null
+}
