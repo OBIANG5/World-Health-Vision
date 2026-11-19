@@ -60,7 +60,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
   const mapOpacity=.6+.4*enter;
   const spin=(geo.spinDegrees??16)*progress;
   const proj=useMemo(()=>geoOrthographic()
-    .scale(399).translate([540,747]).rotate([
+    .scale(463).translate([540,690]).rotate([
       -geo.center.lon+spin,-geo.center.lat
     ]).clipAngle(89.999).precision(.7),[
     geo.center.lon,geo.center.lat,spin
@@ -135,9 +135,9 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
           <feGaussianBlur stdDeviation="21"/>
         </filter>
       </defs>
-      <ellipse cx="540" cy="750" rx="646" ry="491"
+      <ellipse cx="540" cy="690" rx="670" ry="525"
         fill="url(#wv-geo-aperture-white)" opacity=".98"/>
-      <ellipse cx="540" cy="750" rx="650" ry="493"
+      <ellipse cx="540" cy="690" rx="674" ry="529"
         fill="none" stroke="#00afff" strokeWidth="40" opacity=".76"
         filter="url(#wv-geo-aperture-halo)"/>
     </svg>}
@@ -185,34 +185,34 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
           <feGaussianBlur stdDeviation="7"/>
         </filter>
         <clipPath id="wv-geo-sphere-clip">
-          <circle cx="540" cy="747" r="399"/>
+          <circle cx="540" cy="690" r="463"/>
         </clipPath>
       </defs>
-      <ellipse cx="540" cy="752" rx="644" ry="490"
+      <ellipse cx="540" cy="690" rx="674" ry="528"
         fill="none" stroke="#09adff" strokeWidth="29"
         opacity={.24+Math.sin(local/29)*.04}
         style={{filter:"url(#wv-geo-soft-glow)"}}/>
-      <ellipse cx="540" cy="752" rx="620" ry="471"
+      <ellipse cx="540" cy="690" rx="657" ry="516"
         fill="none" stroke="url(#wv-geo-eye)" strokeWidth={13+3*Math.sin(local/17)}
         opacity={.5+.5*enter}/>
-      <ellipse cx="540" cy="752" rx="614" ry="465"
+      <ellipse cx="540" cy="690" rx="647" ry="508"
         fill="none" stroke="#ceffff" strokeWidth="3" opacity={.48*enter}/>
       {/* Level 3: planet, real Natural Earth borders, projection-true rotation. */}
       {/* Important photo-mode mask fix: the old VECTOR circles filled the
           entire globe cyan and hid the real NASA satellite pixels. Only rims
           may glow on top of a photographic planet, never opaque disks. */}
-      <circle data-wv-geo-earth="true" cx="540" cy="747" r="418"
+      <circle data-wv-geo-earth="true" cx="540" cy="690" r="483"
         fill={isPhoto?"none":"#08ddff"}
         stroke={isPhoto?"#04d2ff":"none"} strokeWidth={isPhoto?13:0}
         opacity={isPhoto?.55:.35} filter="url(#wv-geo-soft-glow)"
-        transform={"translate(540 747) scale("+atmosphere+") translate(-540 -747)"}/>
-      <circle cx="540" cy="747" r="405"
+        transform={"translate(540 690) scale("+atmosphere+") translate(-540 -747)"}/>
+      <circle cx="540" cy="690" r="471"
         fill={isPhoto?"none":"#11caff"}
         stroke={isPhoto?"#12ceff":"none"}
         strokeWidth={isPhoto?5:0}
         opacity={isPhoto?.74:.7}
         filter="url(#wv-geo-neon-glow)"/>
-      <circle cx="540" cy="747" r="399"
+      <circle cx="540" cy="690" r="463"
         fill={isPhoto?"transparent":"url(#wv-geo-water)"}
         stroke="#a2f8ff" strokeWidth={isPhoto?2.2:4}
         opacity={mapOpacity}/>
@@ -228,7 +228,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
         <path data-wv-geo-borders="true" d={bordersPath}
           fill="none" stroke="#f5fdff" strokeWidth={isPhoto?2.2:1.65}
           opacity={(isPhoto?.91:.81)*enter}/>
-        {!isPhoto&&<circle cx="540" cy="747" r="399" fill="url(#wv-geo-sphere-gloss)"/>}
+        {!isPhoto&&<circle cx="540" cy="690" r="463" fill="url(#wv-geo-sphere-gloss)"/>}
         {/* Level 4: great-circle route with SVG path-length reveal. */}
         {arc&&<path data-wv-geo-route="true" d={arc} fill="none"
           stroke="#4cecff" strokeWidth="5" strokeLinecap="round"
