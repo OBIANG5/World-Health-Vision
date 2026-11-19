@@ -16,7 +16,7 @@ SAMPLE_RE = re.compile(
     r'(requests_total|latency_seconds_(?:sum|count))'
     r'\{([^}]*)\}\s+([0-9.eE+-]+)(?:\s|$)'
 )
-LABEL_RE = re.compile(r'([a-z_]+)="([^"]*)"')
+LABEL_RE = re.compile(r'([a-z_][a-z0-9_]*)="([^"]*)"')
 OPERATIONS = {
     "timeseries": {
         "readiness", "series", "latest_by_source", "availability",
@@ -50,7 +50,14 @@ def parse_metrics(metrics_text: str) -> dict:
         if match is None:
             raise ValueError("Unknown upstream-metric sample format")
         name, raw_labels, raw_value = match.groups()
-        labels = dict(LABEL_RE.findall(raw_labels))
+        # Match every complete key-value token; silently ignoring malformed or
+        # extra labels could hide a country/source identifier from validation.
+        tokens = raw_labels.split(",")
+        if any(LABEL_RE.fullmatch(token) is None for token in tokens):
+            raise ValueError("Unreviewed upstream-metric label syntax")
+        labels = dict(LABEL_RE.fullmatch(token).groups() for token in tokens)
+        if len(labels) != len(tokens):
+            raise ValueError("Duplicate upstream-metric label name")
         keys = {"dependency", "operation", "outcome"} if name == "requests_total" else {"dependency", "operation"}
         if set(labels) != keys:
             raise ValueError("Unreviewed upstream-metric label names")
