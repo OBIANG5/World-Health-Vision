@@ -52,6 +52,7 @@ class GatewaySignedJwtIntegrationTest {
     private static final String KID = "worldvision-ci-only-key";
     private static HttpServer jwks;
     private static HttpServer analytics;
+    private static HttpServer catalog;
     private static KeyPair trustedKey;
     private static KeyPair attackerKey;
     private static String issuer;
@@ -83,11 +84,16 @@ class GatewaySignedJwtIntegrationTest {
                 json(exchange, "{\"ok\":true}");
             });
             analytics.start();
+            catalog = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+            catalog.createContext("/api/catalog/", exchange -> json(exchange, "{\"items\":[]}"));
+            catalog.start();
         }
         registry.add("whv.security.issuer-uri", () -> issuer);
         registry.add("whv.security.jwk-set-uri",
                 () -> "http://127.0.0.1:" + jwks.getAddress().getPort() + "/keys");
         registry.add("whv.security.audience", () -> AUDIENCE);
+        registry.add("WHV_CATALOG_BASE_URL",
+                () -> "http://127.0.0.1:" + catalog.getAddress().getPort());
         registry.add("WHV_ANALYTICS_BASE_URL",
                 () -> "http://127.0.0.1:" + analytics.getAddress().getPort());
     }
@@ -99,6 +105,9 @@ class GatewaySignedJwtIntegrationTest {
         }
         if (analytics != null) {
             analytics.stop(0);
+        }
+        if (catalog != null) {
+            catalog.stop(0);
         }
     }
 
@@ -177,10 +186,8 @@ class GatewaySignedJwtIntegrationTest {
 
     @Test
     void publicCountryRemainsAnonymousButAdvisorDoesNot() {
-        // No upstream catalogue stub in this class; the PUBLIC authentication
-        // boundary can be checked by asserting it is not a 401 response.
-        client.get().uri("/api/product/countries/GAB/overview")
-                .exchange().expectStatus().is5xxServerError();
+        client.get().uri("/api/catalog/countries?limit=2")
+                .exchange().expectStatus().isOk();
         client.post().uri("/api/analytics/advisor/chat")
                 .header("Content-Type", "application/json")
                 .bodyValue("{}").exchange().expectStatus().isUnauthorized();
