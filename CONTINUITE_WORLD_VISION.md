@@ -1,5 +1,17 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — SPRINT 4 VALIDÉ TECHNIQUEMENT (19 NOVEMBRE 2026)
+
+**PR #44 DRAFT / NON MERGÉE / NON DÉPLOYÉE**. Le document de reprise le plus complet est [WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md), surtout **sections 7 à 9**.
+
+Le Studio V2 dispose de trois vues : source, plan réellement animé, film entier avec raccords Remotion, voix et musique librement sélectionnées ; **même `CreativeEdit.tsx` pour Player et export MP4**. La vue est dimensionnée jusqu'à 360 px de largeur en respectant le vrai 9:16. **Les titres ne se chevauchent plus au milieu du fondu** : gate d'entrée/sortie du texte ajouté dans le moteur partagé.
+
+**Preuve complète du code** : [Actions #44541690295 — deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44541690295), 11 tests Node, build V2, vrai MP4 et Chromium, film synthétique deux plans/165 frames, images 0/100/145 et contrôle de l'opacité du titre entrant (≤0,02 au moment du fondu). Captures inspectées ; les mouvements sont corrects techniquement mais la direction artistique n'est PAS au niveau de publication mondiale. [Actions #44540638541](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540638541) valide la mise en page.
+
+**Prochain travail** : obtenir une véritable photo/vidéo autorisée et un script fourni ici, composer une séquence d'ouverture forte, la comparer à des références haut de gamme et améliorer l'audio, les raccords et la colorimétrie ; QA iPhone Safari et Android ; caches par plan et stockage media privé après. Pas de voix obligatoire, pas d'IA de recherche/script imposée dans le logiciel, BAOCOM séparé, GDELT/blog différés.
+
+---
+
 ## REPRISE MÉDIA — SPRINT 4 / FILM ENTIER (19 NOVEMBRE 2026)
 
 **PR #44** : [World‑Vision MEDIA — montage et prévisualisation du film entier](https://github.com/OBIANG5/World-Health-Vision/pull/44), DRAFT sans fusion ni déploiement. **Source de vérité à lire d'abord** : [WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md).
