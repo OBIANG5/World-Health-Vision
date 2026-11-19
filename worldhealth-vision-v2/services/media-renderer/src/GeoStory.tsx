@@ -1,5 +1,5 @@
 import React,{useMemo} from "react";
-import {AbsoluteFill,Img,OffthreadVideo,useCurrentFrame,useVideoConfig} from "remotion";
+import {AbsoluteFill,Img,OffthreadVideo,useCurrentFrame} from "remotion";
 import {fitTextOnNLines} from "@remotion/layout-utils";
 import {geoOrthographic,geoPath,geoGraticule10,geoInterpolate} from "d3-geo";
 import {feature,mesh} from "topojson-client";
@@ -49,7 +49,6 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
   enterOverlapFrames:number;
 }){
   const frame=useCurrentFrame();
-  const {fps}=useVideoConfig();
   const local=Math.max(0,frame-enterOverlapFrames);
   const progress=Math.min(1,local/Math.max(1,shot.durationFrames-enterOverlapFrames));
   const geo=shot.geo!;
@@ -203,6 +202,17 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
             opacity=".8"/>
           <circle cx={targetXY[0]} cy={targetXY[1]} r="9"
             fill="#e6ffff" stroke="#006c9e" strokeWidth="3"/>
+          {geo.target.label&&<g>
+            <rect x={targetXY[0]+23} y={targetXY[1]-24}
+              width={Math.min(270,Math.max(115,geo.target.label.length*13+28))}
+              height="39" rx="9" fill="#051d31" opacity=".88"
+              stroke="#7eebfa" strokeWidth="1.4"/>
+            <text x={targetXY[0]+37} y={targetXY[1]+2}
+              fill="#edfcff" fontSize="22" fontWeight="720"
+              style={{fontFamily:globalStyle.editorialFont}}>
+              {geo.target.label}
+            </text>
+          </g>}
         </g>}
       </g>
     </svg>
