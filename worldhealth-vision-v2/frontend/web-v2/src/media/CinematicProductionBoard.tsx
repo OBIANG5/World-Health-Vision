@@ -1,11 +1,11 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
-import type {CreativeEditProps, CreativeMedia} from "../../../../services/media-renderer/src/CreativeEdit";
+import type {CreativeEditProps, CreativeMedia, CreativeShot} from "../../../../services/media-renderer/src/CreativeEdit";
 
 // Lazy: do not load the sizeable motion runtime until a user requests preview.
 const RealCreativePreview = lazy(() => import("./CreativeCompositionPreview"));
 import "./CinematicProductionBoard.css";
 
-type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus";
+type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story";
 type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
@@ -16,10 +16,14 @@ type Shot = {
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
   mediaName:string;foregroundName:string;focusX:number;focusY:number;
   documentX:number;documentY:number;documentW:number;documentH:number;
+  geoLon:number;geoLat:number;geoSpin:number;
+  geoShowTarget:boolean;geoTargetLon:number;geoTargetLat:number;geoTargetLabel:string;
+  geoShowRoute:boolean;geoFromLon:number;geoFromLat:number;
+  geoShowMetric:boolean;geoMetricLabel:string;geoMetricValue:string;geoMetricUnit:string;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
   documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
-  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
+  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
 };
 const MOTION_LABELS:Record<Motion,string>={
   locked:"Cadre fixe",dolly:"Approche de caméra",drift:"Mouvement latéral",push:"Révélation progressive"
@@ -37,8 +41,41 @@ const typesByExt=(name:string):MediaType|null=>{
 const initialShot=():Shot=>({
   id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,
   template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",foregroundName:"",focusX:0.5,focusY:0.5,
-  documentX:.25,documentY:.32,documentW:.5,documentH:.22
+  documentX:.25,documentY:.32,documentW:.5,documentH:.22,
+  geoLon:0,geoLat:10,geoSpin:16,
+  geoShowTarget:false,geoTargetLon:0,geoTargetLat:0,geoTargetLabel:"",
+  geoShowRoute:false,geoFromLon:0,geoFromLat:0,
+  geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:""
 });
+/** No geography or numeric fact is inferred from text here. The user chooses
+ * every coordinate and figure explicitly. Never insert synthetic values. */
+const buildGeo=(shot:Shot):CreativeShot["geo"]=>({
+  center:{lon:shot.geoLon,lat:shot.geoLat},
+  spinDegrees:shot.geoSpin,
+  ...(shot.geoShowTarget?{target:{
+    lon:shot.geoTargetLon,lat:shot.geoTargetLat,label:shot.geoTargetLabel
+  }}:{}),
+  ...(shot.geoShowRoute?{route:{
+    from:{lon:shot.geoFromLon,lat:shot.geoFromLat},
+    to:{lon:shot.geoTargetLon,lat:shot.geoTargetLat}
+  }}:{}),
+  ...(shot.geoShowMetric?{metric:{
+    label:shot.geoMetricLabel,value:Number(shot.geoMetricValue),
+    unit:shot.geoMetricUnit,precision:0
+  }}:{})
+});
+const inLon=(v:number)=>Number.isFinite(v)&&v>=-180&&v<=180;
+const inLat=(v:number)=>Number.isFinite(v)&&v>=-85&&v<=85;
+const validGeo=(s:Shot)=>s.template!=="geo_story"||Boolean(
+  s.durationFrames>=120&&s.title.trim()&&s.title.length<=90&&
+  inLon(s.geoLon)&&inLat(s.geoLat)&&Math.abs(s.geoSpin)<=360&&
+  (!s.geoShowTarget||(inLon(s.geoTargetLon)&&inLat(s.geoTargetLat)&&s.geoTargetLabel.length<=80))&&
+  (!s.geoShowRoute||(s.geoShowTarget&&inLon(s.geoFromLon)&&inLat(s.geoFromLat)&&
+    (s.geoFromLon!==s.geoTargetLon||s.geoFromLat!==s.geoTargetLat)))&&
+  (!s.geoShowMetric||(s.geoMetricLabel.trim()&&s.geoMetricLabel.length<=55&&
+    s.geoMetricValue.trim()!==""&&Number.isFinite(Number(s.geoMetricValue))&&
+    Math.abs(Number(s.geoMetricValue))<=1e12&&s.geoMetricUnit.length<=12))
+);
 const mkSlug=(value:string)=>("wv-"+value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60))||"wv-projet";
 const path="https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-cinematic-director-gates-2026-11-19/worldhealth-vision-v2/docs/media/WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md";
 
@@ -87,7 +124,8 @@ export default function CinematicProductionBoard() {
         transitionAfter:"cut",
         transitionFrames:0,
         focus:{x:active.focusX,y:active.focusY},
-        ...(active.template==="document_focus"?{documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH}}:{})
+        ...(active.template==="document_focus"?{documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH}}:{}),
+        ...(active.template==="geo_story"?{geo:buildGeo(active)}:{})
       }],
       narration:null,
       soundtrack:null,
@@ -107,7 +145,7 @@ export default function CinematicProductionBoard() {
       shot.documentX+shot.documentW<=1.0000001&&shot.documentY+shot.documentH<=1.0000001
     );
     const validForeground=!shot.foregroundName||Boolean(shot.mediaName&&files.some(f=>f.name===shot.foregroundName&&f.kind==="image"));
-    return hasMedia&&validFocus&&validDocument&&validForeground;
+    return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot);
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
@@ -141,7 +179,8 @@ export default function CinematicProductionBoard() {
         transitionAfter:i===shots.length-1?"cut":shot.transitionAfter,
         transitionFrames:i===shots.length-1||shot.transitionAfter==="cut"?0:shot.transitionFrames,
         focus:{x:shot.focusX,y:shot.focusY},
-        ...(shot.template==="document_focus"?{documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH}}:{})
+        ...(shot.template==="document_focus"?{documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH}}:{}),
+        ...(shot.template==="geo_story"?{geo:buildGeo(shot)}:{})
       };
     }),
     narration:voiceFile&&files.find(f=>f.name===voiceFile)
@@ -202,6 +241,7 @@ export default function CinematicProductionBoard() {
         title:s.title,subtitle:s.subtitle,eyebrow:s.eyebrow,
         focus:{x:s.focusX,y:s.focusY},
         ...(s.template==="document_focus"?{documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH}}:{}),
+        ...(s.template==="geo_story"?{geo:buildGeo(s)}:{}),
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
         ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName}}:{}),
@@ -286,7 +326,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
           <div className="wvc-two-col">
-            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
+            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):e.target.value==="geo_story"?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
@@ -302,6 +342,57 @@ export default function CinematicProductionBoard() {
           </label>
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
+          {active.template==="geo_story"&&<div className="wvc-focus-control" aria-label="Direction du plan géographique">
+            <div className="wvc-focus-heading">
+              <strong>CARTE DU MONDE — DIRECTION GÉOGRAPHIQUE</strong>
+              <span>Frontières Natural Earth réelles. Toutes les positions, routes et données doivent être choisies et vérifiées manuellement. Pas de chiffres ou de géocodage inventés.</span>
+            </div>
+            <div className="wvc-two-col">
+              <label>CENTRE LONGITUDE
+                <input type="number" min="-180" max="180" step=".1" value={active.geoLon}
+                  onChange={e=>updateShot({geoLon:Number(e.target.value)})}/>
+              </label>
+              <label>CENTRE LATITUDE
+                <input type="number" min="-85" max="85" step=".1" value={active.geoLat}
+                  onChange={e=>updateShot({geoLat:Number(e.target.value)})}/>
+              </label>
+              <label>ROTATION PENDANT LE PLAN · DEGRÉS
+                <input type="number" min="-360" max="360" step="1" value={active.geoSpin}
+                  onChange={e=>updateShot({geoSpin:Number(e.target.value)})}/>
+              </label>
+            </div>
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.geoShowTarget}
+              onChange={e=>updateShot({geoShowTarget:e.target.checked,geoShowRoute:e.target.checked?active.geoShowRoute:false})}/>
+              Localiser un lieu explicitement indiqué
+            </label>
+            {active.geoShowTarget&&<div className="wvc-two-col">
+              <label>LIEU · LONGITUDE <input type="number" min="-180" max="180" step=".01"
+                value={active.geoTargetLon} onChange={e=>updateShot({geoTargetLon:Number(e.target.value)})}/></label>
+              <label>LIEU · LATITUDE <input type="number" min="-85" max="85" step=".01"
+                value={active.geoTargetLat} onChange={e=>updateShot({geoTargetLat:Number(e.target.value)})}/></label>
+              <label>NOM DU LIEU <input value={active.geoTargetLabel} maxLength={80}
+                onChange={e=>updateShot({geoTargetLabel:e.target.value})}/></label>
+            </div>}
+            {active.geoShowTarget&&<label className="wvc-geo-toggle"><input type="checkbox" checked={active.geoShowRoute}
+              onChange={e=>updateShot({geoShowRoute:e.target.checked})}/>Tracer un arc géographique réel</label>}
+            {active.geoShowRoute&&<div className="wvc-two-col">
+              <label>DÉPART · LONGITUDE <input type="number" min="-180" max="180" step=".01"
+                value={active.geoFromLon} onChange={e=>updateShot({geoFromLon:Number(e.target.value)})}/></label>
+              <label>DÉPART · LATITUDE <input type="number" min="-85" max="85" step=".01"
+                value={active.geoFromLat} onChange={e=>updateShot({geoFromLat:Number(e.target.value)})}/></label>
+            </div>}
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.geoShowMetric}
+              onChange={e=>updateShot({geoShowMetric:e.target.checked})}/>Animer une donnée du script (chiffre vérifié)</label>
+            {active.geoShowMetric&&<div className="wvc-two-col">
+              <label>LIBELLÉ <input maxLength={55} value={active.geoMetricLabel}
+                onChange={e=>updateShot({geoMetricLabel:e.target.value})}/></label>
+              <label>VALEUR <input inputMode="decimal" value={active.geoMetricValue}
+                onChange={e=>updateShot({geoMetricValue:e.target.value})}/></label>
+              <label>UNITÉ <input maxLength={12} value={active.geoMetricUnit}
+                onChange={e=>updateShot({geoMetricUnit:e.target.value})}/></label>
+            </div>}
+            <p className="wvc-hint">Une photographie ou un extrait vidéo importé dans « Média source » apparaît dans la même composition que le globe, l'arc, les chiffres et les titres. Aucun élément n'est censé illustrer une actualité sans provenance vérifiée.</p>
+          </div>}
           {active.template==="document_focus"&&<div className="wvc-focus-control" aria-label="Sélection de la zone du document à inspecter">
             <div className="wvc-focus-heading">
               <strong>ZONE DU DOCUMENT À METTRE EN LUMIÈRE</strong>
