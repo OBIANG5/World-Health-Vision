@@ -6,14 +6,9 @@ La première décision du 19/11 imposant 11 « portes » éditoriales et Vivienn
 
 ---
 
-## Décisions supplémentaires actives — 19 novembre 2026
+### Archive de la première interprétation du 19/11 — ANNULÉE
 
-| ID | Date | Domaine | Décision | État | Preuve |
-|---|---|---|---|---|---|
-| D-MEDIA-20261119-01 | 2026-11-19 | Architecture | **BAOCOM indépendant** : aucun push GitHub de BAOCOM, aucun raccord technique. Inspirer seulement des idées d'interface et de montage. | ACTIVE | Confirmation du propriétaire ; [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) |
-| D-MEDIA-20261119-02 | 2026-11-19 | Périmètre | **Reporter Content OS/blog et couplage média avec GDELT** jusqu'à intégration GDELT dans la plateforme logicielle. Priorité immédiate à la qualité vidéo. | ACTIVE | Confirmation du propriétaire |
-| D-MEDIA-20261119-03 | 2026-11-19 | Production | **ChatGPT copilote IA**, Remotion/FFmpeg et code métier comme exécutants. Une scène à la fois, scripts et plans acceptés verrouillés, 11 portes, maquettes avant animations, voix Vivienne continue, revue humaine. | ACTIVE | [Plan cinéma v1](../media/WORLDVISION_CINEMATIC_DIRECTOR_PRODUCTION_V1_2026-11-19.md) |
-| D-MEDIA-20261119-04 | 2026-11-19 | Validations | Tests automatiques, scores et rapports ne suffisent jamais à affirmer que la vidéo est artistiquement excellente ou publiable. Aucune fusion/production sans preuve. | ACTIVE | [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) |
+Les anciennes contraintes de onze portes, script/recherche dans le code et voix Vivienne imposée ont été explicitement retirées. Voir la correction prioritaire ci-dessus.
 
 ---
 
