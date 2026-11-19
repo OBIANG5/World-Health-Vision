@@ -42,6 +42,7 @@ jobs:
           python3 -m py_compile worldhealth-vision-v2/infra/tests/analyze_batch_jdbc_plans.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/compare_economic_batch_backpressure_ab.py
           python3 -m unittest discover -s worldhealth-vision-v2/infra/tests -p 'test_compare_economic_batch_backpressure_ab.py' -v
+          python3 -m unittest discover -s worldhealth-vision-v2/infra/tests -p 'test_compare_economic_batch_backpressure_ab.py' -v
           bash -n worldhealth-vision-v2/infra/tests/run_economic_backpressure_ab.sh
           mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
           python3 worldhealth-vision-v2/infra/tests/sql_profile_build_fixture.py \
