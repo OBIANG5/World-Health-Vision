@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — SPRINT 11 DATA SOURCE-LOCKED (19 NOVEMBRE 2026)
+
+**Branche DATA isolée** : `feature/worldvision-data-motion-sourced-2026-11-19`, issue du PHOTO #80 (commit `22d108fdd4e1694975b73146aa15a7325ac04065`). Rapport technique/artistique complet : [WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md). Nouveau template `data_story` dans la même composition Player/MP4, quatre modes **courbe (temps exact ou catégorie), comparaison signée avec zéro, ranking descendant, heatmap avec légende min/max explicite**. Studio saisit chiffres/matrice, source, série, date, unité, méthode, URL et statut synthétique ; aucunes valeurs fictives saisies automatiquement pour un futur reportage. Tests Node/Chromium et vrais MP4 synthétiques en CI. **Dernier résultat CI à lire : #44631915738 puis son correctif**, ne pas présumer de succès avant inspection des vrais pixels.
+
+Les références inchangées : géopolitique et Bourse Express ; image globe-œil ; **une image = plusieurs animations indépendantes**. Retour explicite utilisateur : **« La vidéo du Gabon est belle, très belle »**, conserver la signature visuelle GEO-2 Gabon et l'utiliser comme base de comparaison. Deux PR PHOTO #79/#80 existaient ; #80 propose pistes indépendantes pures, focus attaché à la caméra et attribution source, ne jamais fusionner les deux templates côte à côte. Scripts/sources ChatGPT+humain, narrateur libre, BAOCOM séparé, GDELT/blog différés.
+
+**Après validation DATA :** film complet GEO→PAYS→PHOTO→DATA→DOCUMENT + voix/mix/sous-titres synchronisés, vrais médias autorisés, essais iPhone Safari/Android et vérification sources. Toutes les branches restent DRAFT et **non fusionnées/non déployées sur V2**.
+
+---
+
 ## WORLD-VISION MEDIA — SPRINT 10 PHOTO MOTION / UNE IMAGE SIX PISTES (19 NOV. 2026)
 
 **Nouvelle branche empilée sur PR #74 :** `feature/worldvision-photo-multilayer-motion-tracks-2026-11-19`, toujours **DRAFT, aucune fusion V2, aucun déploiement**. Référence centrale : [WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md). Suite directe des vidéos références Bourse Express/géopolitique : l'objectif est **UNE photographie réelle et plusieurs mouvements simultanés**. Template `photo_story`, moteur `photoTrackPose` déterministe, six pistes séparées (caméra, masque, premier plan transparent, focus lié à la caméra, compteur avec attribution, typographie) en même composition Remotion Player+MP4. L'atelier dispose de véritables réglages de chaque piste ; le validateur refuse les zooms, positions, durées et données incompatibles. Fixtures purement synthétiques, pas une actualité.
