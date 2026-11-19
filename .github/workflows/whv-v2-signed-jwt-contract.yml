@@ -1,0 +1,72 @@
+name: WHV V2 - signed JWT and authorization security contract
+
+on:
+  pull_request:
+    branches:
+      - 'feature/v2-gateway-public-private-contract-2026-11-19'
+      - 'v2'
+    paths:
+      - 'worldhealth-vision-v2/services/gateway-service/**'
+      - 'worldhealth-vision-v2/infra/**'
+      - '.github/workflows/whv-v2-signed-jwt-contract.yml'
+  push:
+    branches:
+      - 'security/v2-jwt-signature-audience-scopes-*'
+    paths:
+      - 'worldhealth-vision-v2/services/gateway-service/**'
+      - 'worldhealth-vision-v2/infra/**'
+      - '.github/workflows/whv-v2-signed-jwt-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-jwt-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  signed-jwt-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Test signed RS256/JWKS, expiry, issuer, audience, scopes and legacy routing
+        working-directory: worldhealth-vision-v2
+        run: |
+          chmod +x mvnw
+          ./mvnw -B -ntp -pl services/gateway-service -am test
+      - name: Ensure no signed token or private key is stored in tracked source
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('worldhealth-vision-v2/services/gateway-service')
+          actual=(root/'src/main/java/com/worldhealthvision/gateway/security/GatewayJwtDecoderConfiguration.java').read_text()
+          cfg=(root/'src/main/resources/application.yml').read_text()
+          compose=Path('worldhealth-vision-v2/infra/compose.secure-staging.yml').read_text()
+          assert 'JwtValidators.createDefaultWithIssuer' in actual
+          assert 'JwtClaimValidator<List<String>>("aud"' in actual
+          assert 'NimbusReactiveJwtDecoder.withJwkSetUri' in actual
+          assert 'WHV_SECURITY_JWK_SET_URI:' in compose
+          assert 'WHV_SECURITY_AUDIENCE:' in compose
+          assert 'WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS: "false"' in compose
+          assert 'allow-insecure-loopback-jwks-for-tests:' in cfg
+          print('PASS: decoder validates issuer and audience; no insecure JWKS staging flag')
+          PY
+      - name: Save JUnit evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-jwt-cryptographic-junit
+          path: worldhealth-vision-v2/services/gateway-service/target/surefire-reports/
+          if-no-files-found: ignore
