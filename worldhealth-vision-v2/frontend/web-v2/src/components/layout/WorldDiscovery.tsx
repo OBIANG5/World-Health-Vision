@@ -65,7 +65,7 @@ export default function WorldDiscovery({
       countries: countriesFound.slice(0, 18),
       countryTotal: countriesFound.length,
     };
-  }, [query, countries]);
+  }, [query, countries, language]);
 
   useEffect(() => {
     const focusedBefore = document.activeElement instanceof HTMLElement
