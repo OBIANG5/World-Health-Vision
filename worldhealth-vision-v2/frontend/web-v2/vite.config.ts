@@ -15,7 +15,7 @@ export default defineConfig({
     alias: {
       'world-atlas/countries-110m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-110m.json'),
     },
-    dedupe: ['react', 'react-dom', 'remotion', '@remotion/transitions', '@remotion/layout-utils', 'd3-geo', 'topojson-client'],
+    dedupe: ['react', 'react-dom', 'remotion', '@remotion/transitions', '@remotion/layout-utils', '@remotion/three', '@react-three/fiber', 'three', 'd3-geo', 'topojson-client'],
   },
   build: {
     // Découpe les grosses libs en chunks séparés : le navigateur les met en cache
