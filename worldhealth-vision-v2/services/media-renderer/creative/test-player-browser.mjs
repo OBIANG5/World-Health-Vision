@@ -34,7 +34,7 @@ async function serverReady(){
   throw Error("Local Vite smoke page not reachable: "+url);
 }
 async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
-  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":"player-browser-frame-";
+  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":mode==="photo"?"player-photo-frame-":"player-browser-frame-";
   const page=await browser.newPage();
   const errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
@@ -147,6 +147,48 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
            Math.abs(final.zoom-final.sphereZoom)>.001||
            final.center!=="11.6000,-0.7000")
           throw Error("GEO camera failed to reach/hold editor-approved focus: "+JSON.stringify(final));
+      }
+      if(mode==="photo"&&frame===50){
+        const scene=await page.evaluate(()=>{
+          const source=document.querySelector('[data-wv-photo-camera-scale]');
+          const reveal=document.querySelector('[data-wv-photo-reveal]');
+          const spot=document.querySelector('[data-wv-photo-highlight]');
+          const foreground=document.querySelector('[data-wv-photo-cutout]');
+          const title=document.querySelector('[data-wv-photo-title]');
+          const metric=document.querySelector('[data-wv-photo-metric]');
+          return {
+            cameraScale:Number(source?.getAttribute("data-wv-photo-camera-scale")),
+            reveal:Number(reveal?.getAttribute("data-wv-photo-reveal")),
+            highlight:Number(spot?.getAttribute("data-wv-photo-highlight")),
+            foreground:Boolean(foreground),title:Boolean(title),metric:Boolean(metric),
+            photoCount:document.querySelectorAll('[data-wv-photo-multilayer] img').length
+          };
+        });
+        if(!scene||scene.photoCount<3||!scene.foreground||!scene.title||!scene.metric||
+          scene.cameraScale<=1.02||scene.cameraScale>=1.11||
+          scene.reveal<=.1||scene.reveal>=.95||
+          scene.highlight<=.04||scene.highlight>=.95)
+          throw Error("Independent PHOTO tracks not present in real Player: "+JSON.stringify(scene));
+        console.log("[player-smoke] PHOTO independent camera/reveal/parallax/highlight/data/type",scene);
+      }
+      if(mode==="photo"&&frame===150){
+        const geometry=await page.evaluate(()=>{
+          const caption=document.querySelector('[data-wv-photo-caption]');
+          const metric=document.querySelector('[data-wv-photo-metric]');
+          const viewport=document.querySelector("#smoke-preview");
+          if(!caption||!metric||!viewport)return null;
+          const a=caption.getBoundingClientRect(),m=metric.getBoundingClientRect(),v=viewport.getBoundingClientRect();
+          return {
+            metricBottom:m.bottom,captionTop:a.top,captionBottom:a.bottom,
+            safeMaxY:v.top+v.height*.79,
+            captionOpacity:Number(getComputedStyle(caption).opacity)
+          };
+        });
+        if(!geometry||geometry.metricBottom>geometry.captionTop-5||
+           geometry.captionBottom>geometry.safeMaxY||
+           geometry.captionOpacity<.95)
+          throw Error("PHOTO multilayer numeric/caption collision or TikTok mobile overlay breach: "+JSON.stringify(geometry));
+        console.log("[player-smoke] PHOTO numeric/text phone safe area",geometry);
       }
       if(mode==="country"&&(frame===0||frame===115)){
         const scene=await page.evaluate(()=>{
@@ -288,7 +330,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     }
     const report={
       test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
-      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":mode==="photo"?"single original abstract photo and externally segmented synthetic alpha, metric fictive; six independent tracks":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
       composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
       screen:{width:390,height:844},
       frames_in_composition:expectedDuration,
@@ -296,7 +338,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       screenshots,
       warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":"player-browser-smoke.report.json");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":mode==="photo"?"player-photo-smoke.report.json":"player-browser-smoke.report.json");
     fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
@@ -325,7 +367,9 @@ async function main(){
     await testCase(browser,{mode:"geo",frames:[0,48,96,138],expectedDuration:150,expectVoice:false});
     console.log("[player-smoke] exercising true 50m/10m country focus and multiple concurrent layers");
     await testCase(browser,{mode:"country",frames:[0,60,115,155],expectedDuration:165,expectVoice:false});
-    console.log("[player-smoke] all six real Player paths passed");
+    console.log("[player-smoke] exercising one-source PHOTO composition with six independent tracks");
+    await testCase(browser,{mode:"photo",frames:[0,50,115,150],expectedDuration:165,expectVoice:false});
+    console.log("[player-smoke] all seven real Player paths passed");
   }finally{
     await browser.close();
   }
