@@ -139,7 +139,7 @@ POOL_REQUIRED = (
 )
 BATCH_OPERATIONS = ("history", "availability", "latest")
 METRIC_LINE = re.compile(
-    r'^([a-z][a-z0-9_]*)(?:\\{([^}]*)\\})?\\s+([-+0-9.eE]+)(?:\\s|$)'
+    r'^([a-z][a-z0-9_]*)(?:\{([^}]*)\})?\s+([-+0-9.eE]+)(?:\s|$)'
 )
 
 
