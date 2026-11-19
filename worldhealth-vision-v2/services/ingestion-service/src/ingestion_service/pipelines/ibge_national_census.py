@@ -1,9 +1,6 @@
 """Source-to-Bronze pilot: no public Timeseries write and no inferred reuse grant."""
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from uuid import uuid4
-
 from ingestion_service.bronze_store import BronzeStore
 from ingestion_service.connectors.ibge_national_census_client import (
     IBGE_POPULATION_DATASET,
@@ -36,6 +33,8 @@ class IbgeNationalCensusPilot:
                 "originalLabel": item.source_variable_label,
                 "sourceUrl": item.source_url,
                 "rawSha256": item.raw_sha256,
+                "httpBodySha256": item.http_body_sha256,
+                "responseReceivedAtUtc": item.response_received_at_utc,
                 "referencePopulationType": "RESIDENT_CENSUS_POPULATION",
                 "reuseRights": "REVIEW_REQUIRED",
             },
@@ -45,12 +44,10 @@ class IbgeNationalCensusPilot:
                 "REUSE_RIGHTS_REVIEW_REQUIRED",
             ],
         )
-        run_id = f"ibge-census2022-bra-{datetime.now(UTC):%Y%m%dT%H%M%SZ}-{uuid4().hex[:12]}"
-        return self._bronze.persist_dataset(
+        return self._bronze.persist_quarantined_json_evidence(
             source_code="IBGE",
             dataset_code=IBGE_POPULATION_DATASET,
-            run_id=run_id,
-            raw_payload=item.raw_payload,
+            raw_response_bytes=item.raw_response_bytes,
             normalized_records=[observation.model_dump(mode="json")],
             notes={
                 "countryIso3": "BRA",
