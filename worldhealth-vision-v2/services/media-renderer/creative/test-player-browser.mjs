@@ -106,12 +106,15 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             projectedLandPathLength:land?.getAttribute("d")?.length??0,
             projectedBordersLength:borders?.getAttribute("d")?.length??0,
             route:Boolean(route),routeDashOffset:Number(route?.getAttribute("stroke-dashoffset")??NaN),
-            target:Boolean(target),photo:Boolean(document.querySelector('[data-wv-geo-photo]'))
+            target:Boolean(target),photo:Boolean(document.querySelector('[data-wv-geo-photo]')),
+            nasaCanvas:Boolean(document.querySelector('[data-wv-geo-nasa-texture] canvas')),
+            nasaSource:document.querySelector('[data-wv-geo-nasa-texture]')?.getAttribute('data-wv-geo-nasa-texture')??null
           };
         });
         if(!scene.globe||!scene.land||!scene.borders||scene.projectedLandPathLength<3000||
           scene.projectedBordersLength<1000||!scene.route||!Number.isFinite(scene.routeDashOffset)||
-          scene.routeDashOffset>=.95||!scene.target||!scene.photo)
+          scene.routeDashOffset>=.95||!scene.target||!scene.photo||
+          !scene.nasaCanvas||scene.nasaSource!=="NASA-BlueMarble-June-2004")
           throw Error("Geo animation missing real projected multi-layer elements: "+JSON.stringify(scene));
         console.log("[player-smoke] Atlas projected geography / simultaneous animated layers",scene);
       }
