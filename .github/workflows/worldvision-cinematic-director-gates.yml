@@ -1,0 +1,34 @@
+name: World-Vision cinematic director — structured quality gates
+
+on:
+  push:
+    branches:
+      - 'feature/worldvision-cinematic-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/cinematic/**'
+      - '.github/workflows/worldvision-cinematic-director-gates.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/cinematic/**'
+      - '.github/workflows/worldvision-cinematic-director-gates.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cinematic-director-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile Python sources
+        run: python -m compileall -q worldhealth-vision-v2/services/media-renderer/cinematic
+      - name: Run director gate regression tests
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: python -m unittest discover -s cinematic -p 'test_*.py' -v
