@@ -1,0 +1,8 @@
+# CI-DISPOSABLE ONLY — never deploy this exposure override in production.
+# Expose Prometheus ONLY INSIDE Docker core_private; no public/Gateway routes.
+# Batch metrics have fixed labels only: operation=history|latest|availability.
+services:
+  timeseries-service:
+    environment:
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus"
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: "never"
