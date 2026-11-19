@@ -49,6 +49,7 @@ jobs:
           python3 -m py_compile worldhealth-vision-v2/infra/tests/sql_profile_analyze_plans.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/sql_profile_build_fixture.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_internal_timeseries.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_analytics_dense_snapshot.py
 
       - name: Generate EXPLAIN from actual Timeseries JDBC repository
         run: |
@@ -121,6 +122,16 @@ jobs:
             > worldhealth-vision-v2/infra/benchmarks/artifacts/internal-http-concurrency.json
           python3 -m json.tool worldhealth-vision-v2/infra/benchmarks/artifacts/internal-http-concurrency.json > /dev/null
           echo 'PASS: populated 54-indicator internal HTTP benchmark, concurrency 1/4/16/54'
+
+      - name: Prove full Analytics 54-lens snapshot and count duplicate provenance lookups
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            exec -T analytics-service python - \
+            < worldhealth-vision-v2/infra/tests/benchmark_analytics_dense_snapshot.py \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/dense-analytics-snapshot-profile.json
+          python3 -m json.tool worldhealth-vision-v2/infra/benchmarks/artifacts/dense-analytics-snapshot-profile.json > /dev/null
+          echo 'PASS: full synthetic Analytics snapshot and upstream provenance counts archived'
 
       - name: Capture bounded resource cost after the synthetic experiment
         if: success()
