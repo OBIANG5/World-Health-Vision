@@ -1,6 +1,7 @@
 import type {GeoProjection} from "d3-geo";
 export type CountryFocusGeometry={
   countryId:string;
+  contextRadius:number;
   centroid:[number,number];
   centerXY:[number,number]|null;
   country:unknown;
