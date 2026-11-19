@@ -19,6 +19,9 @@
       "@remotion/transitions/fade": ["./node_modules/@remotion/transitions/dist/presentations/fade.d.ts"],
       "@remotion/transitions/slide": ["./node_modules/@remotion/transitions/dist/presentations/slide.d.ts"],
       "@remotion/layout-utils": ["./node_modules/@remotion/layout-utils"],
+      "@remotion/three": ["./node_modules/@remotion/three"],
+      "@react-three/fiber": ["./node_modules/@react-three/fiber"],
+      "three": ["./node_modules/@types/three"],
       "d3-geo": ["./node_modules/@types/d3-geo"],
       "topojson-client": ["./node_modules/@types/topojson-client"],
       "world-atlas/*": ["./node_modules/world-atlas/*"]
