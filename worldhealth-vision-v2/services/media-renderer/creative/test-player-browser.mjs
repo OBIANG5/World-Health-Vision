@@ -278,6 +278,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           const chart=document.querySelector('[data-wv-data-graph]');
           const line=document.querySelector('[data-wv-data-line]');
           const bars=document.querySelectorAll('[data-wv-data-bar]');
+          const rankLabels=Array.from(bars).map(g=>g.querySelector('text')?.textContent?.trim()??"");
           const cells=document.querySelectorAll('[data-wv-data-cell]');
           const negativeBar=document.querySelector('[data-wv-data-bar="1"] rect');
           const zero=Number(chart?.getAttribute('data-wv-data-zero'));
@@ -294,7 +295,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             headingOpacity:heading?Number(getComputedStyle(heading).opacity):0,
             chart:chart?.getAttribute('data-wv-data-graph')??null,
             lineOffset:line?Number(line.getAttribute('stroke-dashoffset')):null,
-            barCount:bars.length,cellCount:cells.length,zero,negativeBarEnd,
+            barCount:bars.length,cellCount:cells.length,zero,negativeBarEnd,rankLabels,
             source:prov?.textContent??'',
             sourceOpacity:source?Number(getComputedStyle(source).opacity):0,
             sourceBottom:source?.getBoundingClientRect().bottom??null,
@@ -313,6 +314,9 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           (kind==="trend"&&!(graphic.lineOffset!==null&&graphic.lineOffset>0&&graphic.lineOffset<1))||
           (["ranking","comparison"].includes(kind)&&graphic.barCount<2)||
           (kind==="heatmap"&&graphic.cellCount<4)||
+          (kind==="ranking"&&(graphic.rankLabels[0]?.slice(0,2)!=="01"||
+            graphic.rankLabels[1]?.slice(0,2)!=="01"||
+            graphic.rankLabels[2]?.slice(0,2)!=="03"))||
           (kind==="comparison"&&(!Number.isFinite(graphic.zero)||!Number.isFinite(graphic.negativeBarEnd)||
             Math.abs(graphic.negativeBarEnd-graphic.zero)>.01))
         ))throw Error("Data chart did not animate authentic editorial values: "+JSON.stringify(graphic));
