@@ -3,6 +3,7 @@ import {AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, interpolate, spring,
 import {TransitionSeries, linearTiming} from "@remotion/transitions";
 import {fade} from "@remotion/transitions/fade";
 import {slide} from "@remotion/transitions/slide";
+import {fitTextOnNLines} from "@remotion/layout-utils";
 
 /**
  * A real Remotion composition for supplied scripts, images, clips, voices and
@@ -92,8 +93,18 @@ function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<
   const lineIn=ease(beat(31,57));
   const overlineIn=ease(beat(32,50));
   const textMask=Math.max(0,Math.min(1,titleSpring));
-  const titleSize=(shot.title?.length??0)>62?62:(shot.title?.length??0)>38?75:90;
-  const subtitleSize=(shot.subtitle?.length??0)>115?27:33;
+  // Use the existing layout engine's font metrics rather than brittle
+  // heuristics based on character counts (French, Arabic, Cyrillic, etc.).
+  const titleSize=shot.title
+    ? fitTextOnNLines({
+        text:shot.title,maxBoxWidth:795,maxLines:3,
+        fontFamily:globalStyle.editorialFont,fontWeight:815,maxFontSize:88,
+      }).fontSize : 88;
+  const subtitleSize=shot.subtitle
+    ? fitTextOnNLines({
+        text:shot.subtitle,maxBoxWidth:790,maxLines:2,
+        fontFamily:globalStyle.editorialFont,fontWeight:500,maxFontSize:33,
+      }).fontSize : 33;
   return <AbsoluteFill style={{
     background:globalStyle.background,
     fontFamily:globalStyle.editorialFont,
@@ -116,15 +127,14 @@ function FocusReveal({shot,globalStyle}:{shot:CreativeShot;globalStyle:Required<
       opacity:ease(beat(32,65))
     }}/>
     <div style={{
-      position:"absolute",top:108,left:87,right:87,display:"flex",
+      position:"absolute",top:248,left:87,right:154,display:"flex",
       alignItems:"center",justifyContent:"space-between",
       opacity:overlineIn,transform:"translateY("+Math.round((1-overlineIn)*-18)+"px)"
     }}>
-      <span style={{fontSize:26,fontWeight:780,letterSpacing:".14em",color:"#f6fcff"}}>WORLD—VISION</span>
-      {shot.eyebrow&&<span style={{fontSize:22,fontWeight:620,letterSpacing:".1em",color:globalStyle.accent,textAlign:"right",maxWidth:500}}>{shot.eyebrow}</span>}
+{shot.eyebrow&&<span style={{fontSize:24,fontWeight:700,letterSpacing:".1em",color:shot.accent??globalStyle.accent,maxWidth:755}}>{shot.eyebrow}</span>}
     </div>
     <div style={{
-      position:"absolute",left:88,right:90,bottom:310,
+      position:"absolute",left:88,right:164,bottom:415,
       display:"flex",flexDirection:"column",alignItems:"flex-start"
     }}>
       <div style={{
