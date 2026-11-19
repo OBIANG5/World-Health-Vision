@@ -214,7 +214,7 @@
 
 
 /* DOCUMENT FOCUS / source geometry matches real renderer (x=92/1080,
-   y=315/1920, width=896/1080, height=900/1920).
+   y=315/1920, width=896/1080, height=830/1920).
    This is a still comparison only — the Remotion Player renders real motion. */
 .wvc-document-source{
   position:absolute;inset:0;background:#071520;color:#cee8f5;
@@ -222,7 +222,7 @@
 }
 .wvc-document-page{
   position:absolute;left:8.52%;top:16.41%;
-  width:82.96%;height:46.875%;
+  width:82.96%;height:43.23%;
   background:#e9edef;
   border:1px solid #6690a2;
   border-radius:2.3%;box-shadow:0 14px 22px rgba(0,0,0,.42);
