@@ -134,7 +134,8 @@ class GatewayPublicReadIntegrationTest {
                 .exchange().expectStatus().isUnauthorized();
         assertThat(requests.get()).isZero();
 
-        client.mutateWith(mockJwt())
+        client.mutateWith(mockJwt().authorities(
+                        new org.springframework.security.core.authority.SimpleGrantedAuthority("SCOPE_advisor:invoke")))
                 .post().uri("/api/analytics/advisor/chat")
                 .header("Content-Type", "application/json")
                 .bodyValue("{\"question\":\"What is the inflation in Gabon?\",\"iso3\":\"GAB\"}")
