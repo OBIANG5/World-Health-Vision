@@ -1,5 +1,16 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## POINT DE REPRISE TECHNIQUE — MOTION DIRECTOR SPRINT 2 — 19 NOVEMBRE 2026
+
+La PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44) continue **sans merge**. Lire maintenant **[World‑Vision Motion Director Sprint 2](worldhealth-vision-v2/docs/media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md)** pour les changements de code exacts, les tests, la revue des rendus, les limites et le backlog P1–P7.
+
+Le logiciel reçoit les scripts ici rédigés et les médias utilisateur. Derniers apports : `focus_reveal` 9:16 animé, texte mesuré avec Remotion officiel, points d'intérêt x/y, **parallaxe 2,5D depuis un détourage externe**, visualisation du cadrage dans la page, **écoute A/B de deux prises vocales** sans voix imposée, montage individuel avec `--shot`, vraies images `renderStill()` et SHA de la source. Les clips tests utilisent des images **synthétiques, non journalistiques** ; ils ne prouvent pas une qualité artistique mondiale. Ne pas relancer le débat sur onze portes obligatoires / Vivienne forcée : c'était refusé et annulé.
+
+Le dernier workflow vert documenté pour le compositing 2,5D : [Actions #44526523013](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44526523013). **Vérifier la CI du HEAD le plus récent** avant toute annonce de réussite sur les modifications ultérieures. Le test monte l'image, la couche PNG alpha, une vidéo et une piste audio ; aucun fournisseur d'IA de génération/voix n'est branché. Prochaine priorité : une vraie prévisualisation de la composition dans l'interface, qualité cinématographique éprouvée sur **vrais médias choisis**, cache/assemblage sélectif, et voix/son améliorés avec les outils existants.
+
+---
+
+
 ## CORRECTION PRIORITAIRE DU PROPRIÉTAIRE — 19 NOV. 2026 (PREND PRÉSÉANCE)
 
 La première décision du 19/11 imposant 11 « portes » éditoriales et Vivienne au pipeline a été explicitement **refusée et remplacée**. Les modules Python rigides ont été supprimés. **On fournit des scripts et des médias à World-Vision ; ChatGPT travaille la recherche/le récit dans cette conversation. Le logiciel excelle dans la direction artistique, les animations, le montage, la voix libre et la finition en réutilisant les meilleurs moteurs existants.** BAOCOM n'est ni connecté ni poussé, blog/GDELT attendent. Consulter le [nouveau cahier des charges](worldhealth-vision-v2/docs/media/WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md) (lien relatif depuis la racine) et la [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44).
