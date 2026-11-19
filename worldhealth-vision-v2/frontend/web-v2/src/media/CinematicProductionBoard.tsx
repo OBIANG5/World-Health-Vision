@@ -101,8 +101,8 @@ export default function CinematicProductionBoard() {
       shots:shots.map(s=>({
         id:s.id,durationFrames:s.durationFrames,template:s.template,
         title:s.title,subtitle:s.subtitle,eyebrow:s.eyebrow,
-        motion:s.motion,transitionAfter:s.transitionAfter,
-        transitionFrames:s.transitionAfter==="cut"?0:s.transitionFrames,
+        motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
+        transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
         ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName}}:{})
       })),
       ...(voiceFile?{voice:{file:voiceFile,label:"Voix choisie ou enregistrée",volume:1}}:{}),
@@ -194,7 +194,7 @@ export default function CinematicProductionBoard() {
           {activeAsset?.kind==="video"&&<video src={activeAsset.url} controls playsInline preload="metadata"/>}
           {!activeAsset&&<div className="wvc-no-preview"><span>WORLD—VISION</span><strong>TON MÉDIA<br/>ICI</strong><small>L'image d'actualité doit être fournie ou choisie explicitement.</small></div>}
         </div>
-        <p>Prévisualisation du **fichier original uniquement**. Les animations, transitions et effets seront produits par Remotion : cet écran ne les simule pas trompeusement.</p>
+        <p>Prévisualisation du <strong>fichier original uniquement</strong>. Les animations, transitions et effets seront produits par Remotion : cet écran ne les simule pas trompeusement.</p>
         <label className="wvc-accent">ACCENT GRAPHIQUE <input type="color" value={accent} onChange={e=>setAccent(e.target.value)}/></label>
       </aside>
     </div>
