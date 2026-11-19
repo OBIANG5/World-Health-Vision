@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## MEDIA WORLD‑VISION — SPRINT 3 : VRAIE PRÉVISUALISATION REMOTION (19 NOV 2026)
+
+Le nouveau document [Sprint 3 — Creative Player](worldhealth-vision-v2/docs/media/WORLDVISION_CREATIVE_PLAYER_SPRINT3_2026-11-19.md) explique le travail réel, les limites et le prochain chantier. **PR #44 en brouillon, non fusionnée, non déployée.**
+
+La visualisation du **plan animé réel** dans la V2 est maintenant codée : `CreativeCompositionPreview.tsx` charge `@remotion/player` à la demande, importe le **même `services/media-renderer/src/CreativeEdit.tsx` que l'export MP4**, reçoit les fichiers utilisateur via object URL locale, et affiche la vraie composition (titres, effet 2,5D, mouvements, cadrage). L'ancien aperçu du média source reste disponible. Les paquets `remotion`, `@remotion/player`, `@remotion/transitions`, `@remotion/layout-utils` sont fixés à **4.0.542** avec `package-lock.json` mis à jour à partir d'un install CI et restauration de `npm ci`. Le frontend a déjà compilé en CI. **Le test navigateur Chromium doit être vérifié sur le run #44534781424** avant de dire qu'il a réussi. Les tests de rendu MP4 et de détection de silences FFmpeg étaient déjà verts.
+
+Le logiciel n'écrit pas le script à la place de ChatGPT. Aucune voix imposée, BAOCOM séparé, blog et raccord GDELT différés. **À venir :** test vrai iPhone/Safari, aperçu de timeline entière, proxies vidéo & uploads authentifiés, cache des plans et surtout réalisation d'un plan haut de gamme sur des médias authentiques fournis.
+
+---
+
 ## MÉDIA — REPRISE APRÈS INTERRUPTION : CONTRÔLES TERMINÉS (19 NOV 2026)
 
 **Source de vérité récente** : [Motion Director Sprint 2 / chapitre 7](worldhealth-vision-v2/docs/media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md). [PR #44 BROUILLON](https://github.com/OBIANG5/World-Health-Vision/pull/44), code vérifié au commit `04399843d2af6106d7158b7ffa33652dd960a693`, [GitHub Actions #44530170278 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278) : renderer et frontend V2 verts ; 11 tests, renders H.264 9:16, couche 2,5D, montage d'un plan, FFmpeg détectant une pause intentionnelle d'environ 1,3 s et préservant le SHA du WAV. Les modifications documentaires ultérieures ne changent pas le code testé.
