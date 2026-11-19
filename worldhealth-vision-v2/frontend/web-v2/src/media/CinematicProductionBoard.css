@@ -161,3 +161,53 @@
 @media (prefers-reduced-motion:reduce){
   .wvc-preview-switch button{transition:none}
 }
+
+
+/*
+ * SPRINT 4: Treat the real Player as a PHONE-SIZE REVIEW STAGE.
+ * Previously max-height:420px and max-width:235px reduced the video so much
+ * that editorial text/safe-zone problems were hard to see on mobile.
+ * Never squash its native 9:16 aspect ratio.
+ */
+.wvc-device{
+  max-height:none;
+  max-width:360px;
+  height:auto;
+  margin-left:auto;
+  margin-right:auto;
+  aspect-ratio:9/16;
+}
+.wvc-preview-switch{max-width:360px;margin-left:auto;margin-right:auto}
+.wvc-crop-toggle{display:block;margin-left:auto;margin-right:auto}
+@media(min-width:1301px){
+  .wvc-workspace{
+    grid-template-columns:minmax(260px,27%) minmax(320px,1fr) minmax(340px,33%);
+  }
+}
+@media(max-width:1300px){
+  .wvc-workspace{
+    grid-template-columns:minmax(260px,38%) minmax(320px,1fr);
+  }
+  .wvc-preview{
+    grid-column:1/-1;
+    border-top:1px solid rgba(140,174,196,.14);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    column-gap:0;
+  }
+  .wvc-preview-title,.wvc-preview-switch,.wvc-crop-toggle,
+  .wvc-device,.wvc-preview p,.wvc-accent{
+    grid-column:auto;
+    grid-row:auto;
+  }
+  .wvc-preview-switch{width:100%}
+  .wvc-preview p{max-width:530px;margin:16px auto 6px}
+  .wvc-accent{width:min(360px,100%);margin-top:12px}
+}
+@media(max-width:760px){
+  .wvc-workspace{display:block}
+  .wvc-preview{display:flex}
+  .wvc-device{max-width:min(360px,100%);max-height:none}
+}
