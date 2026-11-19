@@ -31,3 +31,35 @@ Contrat : chaque tâche est locale à un snapshot et n'est jamais conservée glo
 - Vérifier une fixture plus volumineuse (>12 pays et séries quotidiennes), EXPLAIN/Hikari sous charge concurrente réelle, pression mémoire/CPU et dégradation 503.
 - Distinguer UI statique Vercel, CI jetable et backend réellement hébergé ; aucune intégration GDELT/prix commerciaux déclarée par ces changements.
 - Conserver les documents stratégiques GDELT/EarlyForge/Watch/Money/Transport/Panier/Trading/BRVM/Média, licences et monétisation responsables de PR #41. Aucun hébergement ni coût engagé.
+
+
+## 5. Résultat mesuré et comparaison de contenu (CI du 19 novembre 2026)
+
+**SHA validé avant le présent ajout documentaire :** `7a19a3fe1121c1733a1fe534d8cea38c9b05e2cd`.
+
+Trois workflows terminés **SUCCESS sur ce même SHA** :
+- Canonique Java/Python/TypeScript + backend : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44523204620
+- Gateway six conteneurs, panne 503 et retour 200 : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44523204307
+- Profilage SQL et snapshot dense : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44523204585 , artefact https://github.com/OBIANG5/World-Health-Vision/actions/runs/44523204585/artifacts/14528492256
+
+Baseline #46 **sur la même fixture générée** et la même date : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44522730822 , artefact https://github.com/OBIANG5/World-Health-Vision/actions/runs/44522730822/artifacts/14528791578.
+
+| Mesure | Baseline #46, premier/second | Candidate #47, premier/second |
+| --- | --- | --- |
+| Appels HTTP vérifiés | 557 / 317 | **229 / 229** |
+| Catalog source | 216 / 12 | **4 / 4** |
+| Catalog dataset | 76 / 32 | **4 / 4** |
+| Timeseries source_runs | 48 / 56 | **4 / 4** |
+| 54 indicateurs & 54×3 séries | Tous présents | **Tous présents** |
+| Comparaisons de sources | 200 / 200 | **200 / 200** |
+| Éléments de preuve audit | 270 / 270 | **270 / 270** |
+| Durée snapshot (millisecondes) | 1513,684 / 839,379 | 665,957 / 515,832 |
+| Empreinte SHA-256 de la réponse (hors generatedAtUtc) | `31799cc0c650a5d1c6f0e3fdbf5ffdb859374a4790f6a54922e7b1b005489c38` | **Identique** |
+
+L'empreinte correspond à **tous les objets de la réponse**, y compris valeurs synthétiques, sourceAudit, périodes, fraîcheur, confiance, narratifs et liste de 54 lenses. Les expériences ont été réalisées le même jour ; un champ de fraîcheur calculé selon la date civile peut évoluer lors d'une vérification future. Aucun chiffre officiel n'a été créé.
+
+**Interprétation juste :** la réduction du nombre d'appels est structurelle et prouvée. La réduction de latence est OBSERVÉE, mais l'exécution sur des runners différents n'autorise pas un pourcentage garanti en production. Aucun index SQL ni source économique n'a été modifié par cette PR.
+
+Pour verrouiller la non-régression, une assertion CI complémentaire vérifie désormais exactement 229 appels, 4+4+4 métadonnées, 200 comparaisons et 270 preuves dans cette fixture. **Cette modification constitue un nouveau commit : attendre les nouvelles CI sur ce SHA avant de considérer le lot entier validé.**
+
+**Prochain lot séparé :** https://github.com/OBIANG5/World-Health-Vision/issues/48 — batch multi-indicateurs et contrats de séries par indicateur, équivalence et charge internationale, sans fusion directe ni dépense.
