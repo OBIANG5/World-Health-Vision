@@ -121,8 +121,8 @@ jobs:
           # Negative-control fixture: verify that a deliberately inserted 1.3s silence is not missed.
           node creative/audit-voice.mjs /tmp/worldvision-fixture-assets/synthetic-tone-with-gap.wav 5.2 > output/creative/audit-with-gap.json
           node --input-type=module -e "import fs from 'node:fs';const r=JSON.parse(fs.readFileSync('output/creative/audit-with-gap.json','utf8'));if(!r.flags.some(f=>f.code==='long_pause_for_listening_review'&&f.length_seconds>=1))process.exit(1);console.log('Confirmed real, flagged silence',r.flags);"
-      - name: Bootstrap frontend geo deps for browser smoke (temporary)
-        run: npm install --prefix ../../frontend/web-v2 --no-audit --no-fund
+      - name: Install exact locked frontend for browser preview
+        run: npm ci --prefix ../../frontend/web-v2 --no-audit --no-fund
       - name: Start private test page with explicitly synthetic source media
         run: |
           mkdir -p ../../frontend/web-v2/public/smoke
@@ -216,11 +216,8 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
-      - name: Bootstrap exact updated map dependencies for web V2 (temporary)
-        run: npm install --no-audit --no-fund
-      - name: Publish lockfile chunks for reproducible restoration
-        run: |
-          node -e "const fs=require('fs');const b=fs.readFileSync('package-lock.json').toString('base64');for(let i=0;i<b.length;i+=3500)console.log('WV_GEOLOCK_'+String(i/3500).padStart(5,'0')+'='+b.slice(i,i+3500));console.log('WV_GEOLOCK_BYTES='+fs.statSync('package-lock.json').size)"
+      - name: Install locked frontend D3/Remotion dependencies
+        run: npm ci --no-audit --no-fund
 
       - name: Verify one coherent Remotion/React runtime and compile actual shared composition
         run: |
