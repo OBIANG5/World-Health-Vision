@@ -45,8 +45,6 @@ jobs:
         run: npm run typecheck
       - name: Test project import, arbitrary voice and file safety
         run: node --test creative/validate-project.test.mjs
-      - name: Install a Chromium renderer
-        run: npx remotion browser ensure
       - name: Render a synthetic media-free motion graphics test
         run: |
           mkdir -p /tmp/worldvision-assets
