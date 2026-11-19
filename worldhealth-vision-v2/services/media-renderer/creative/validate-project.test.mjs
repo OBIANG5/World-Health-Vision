@@ -251,6 +251,8 @@ test("country-focus: 10m real polygon, 50m sourced context and legal source iden
   assert.ok(g&&g.detailPath.length>100&&g.contextPath.length>200);
   assert.ok(g.centerXY&&g.centerXY.every(Number.isFinite));
   assert.equal(g.countryId,"266");
+  assert.ok(g.contextRadius>=.36&&g.contextRadius<.8);
+  assert.ok(g.contextPath.length<650000,"Gabon context must not draw nearly the entire globe");
   assert.equal(g.geoContainsPoint([11.6,-.7]),true,"Gabon location should sit within the country");
   assert.equal(g.geoContainsPoint([2.35,48.86]),false,"Paris must not appear inside Gabon");
   assert.equal(countryFocusGeometry(atlas10,atlas50,"999"),null,"Unknown country cannot be fabricated");
@@ -288,4 +290,15 @@ test("country-focus validator rejects fake map, wrong country marker, and shorte
   // Existing GEO and other scenes are not forced into country-focus.
   shot.template="geo_story";
   assert.equal(inspectProject(p).ok,true);
+});
+
+test("international country focus loads independent 10m shapes for Fiji and Russia",()=>{
+  for(const id of ["242","643"]){
+    const geometry=countryFocusGeometry(atlas10,atlas50,id);
+    assert.ok(geometry, "Valid world-atlas country ID "+id);
+    assert.ok(geometry.detailPath.length>50, "10m country outline must exist");
+    assert.ok(geometry.centroid.every(Number.isFinite));
+    assert.ok(geometry.contextRadius>=.36&&geometry.contextRadius<=1.10);
+  }
+  // Island/datetime-rich countries still require a human visual map review.
 });
