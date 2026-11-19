@@ -84,3 +84,28 @@ test("no implicit publication or false AI quality approval",()=>{
   assert.equal(Object.hasOwn(project,"approved"),false);
   assert.equal(inspectProject(project).ok,true);
 });
+
+test("professionally prepared foreground cutout is optional and must be transparent-image format",()=>{
+  const project=clone(sample);
+  project.shots[0].media={kind:"image",file:"assets/primary.jpg"};
+  project.shots[0].foreground={file:"assets/foreground.png"};
+  assert.equal(inspectProject(project).ok,true);
+  project.shots[0].foreground={file:"assets/foreground.jpg"};
+  assert.ok(reasons(project).includes("shots[0].foreground.file"));
+  delete project.shots[0].media;
+  project.shots[0].foreground={file:"assets/foreground.webp"};
+  assert.ok(reasons(project).includes("shots[0].foreground"));
+});
+test("cinematic focus reveal needs actual user media, enough frames and concise title",()=>{
+  const project=clone(sample);
+  project.shots[0].template="focus_reveal";
+  project.shots[0].durationFrames=75;
+  assert.ok(reasons(project).includes("shots[0].durationFrames"));
+  assert.ok(reasons(project).includes("shots[0].media"));
+  project.shots[0].durationFrames=100;
+  project.shots[0].title="A real authored headline";
+  project.shots[0].media={kind:"image",file:"abstract/demo.png"};
+  assert.equal(inspectProject(project).ok,true);
+  project.shots[0].title="X".repeat(91);
+  assert.ok(reasons(project).includes("shots[0].title"));
+});
