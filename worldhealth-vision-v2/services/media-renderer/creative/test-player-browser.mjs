@@ -26,21 +26,27 @@ async function ready(){
 }
 
 async function main(){
+  console.log("[player-smoke] waiting for local Vite server");
   await ready();
+  console.log("[player-smoke] opening Chromium");
   const browser=await openBrowser("chrome",{shouldDumpIo:false});
   const errors=[];
   try{
     const page=await browser.newPage();
     await page.setViewport({width:390,height:844,deviceScaleFactor:1});
     page.on("pageerror",e=>errors.push("pageerror: "+String(e)));
-    await page.goto(url,{waitUntil:"networkidle2",timeout:90000});
-    await page.waitForFunction("window.__wvSmokeReady === true",{timeout:45000});
+    console.log("[player-smoke] opening test page");
+    await page.goto(url,{waitUntil:"domcontentloaded",timeout:30000});
+    console.log("[player-smoke] waiting for React + Remotion Player");
+    await page.waitForFunction("window.__wvSmokeReady === true",{timeout:30000});
     // The Remotion <Img /> must have loaded the local synthetic blob: URL.
-    await page.waitForFunction("Array.from(document.querySelectorAll('#smoke-preview img')).some(im => im.complete && im.naturalWidth > 0)",{timeout:45000});
+    console.log("[player-smoke] waiting for synthetic blob:image paint");
+    await page.waitForFunction("Array.from(document.querySelectorAll('#smoke-preview img')).some(im => im.complete && im.naturalWidth > 0)",{timeout:30000});
     const element=await page.$("#smoke-preview");
     if(!element)throw Error("Missing real Player container");
     const frames=[0,74];
     const results=[];
+    console.log("[player-smoke] seeking and capturing exact Player frames");
     for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
       await sleep(450); // allow the browser to paint and load frame imagery
