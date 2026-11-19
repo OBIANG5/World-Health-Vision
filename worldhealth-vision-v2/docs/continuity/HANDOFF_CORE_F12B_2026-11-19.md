@@ -553,3 +553,54 @@ Fixture strictement **SYNTHÉTIQUE**, réutilisant le script SQL de #46 : 12 pay
 5. Premier produit réel : ingestion institutionnelle traçable et licenciée localement, comparaison nationale/régionale/internationale, puis moteur Watch persistant et verticales Money/Price/Travel/Trading/BRVM ; GDELT pour des mentions/signaux, **pas** pour des statistiques officielles. Conserver les deux documents maîtres de stratégie et revenus de la PR #41. Ne pas intégrer branches média/voix dans cette chaîne technique.
 
 **Attention :** le présent commit documentaire change le SHA de #58 ; vérifier le résultat des CI sur son **nouveau SHA**, puis inscrire la preuve définitive en commentaire GitHub sans provoquer de nouveau commit inutile.
+
+
+---
+
+## 20. F1.2b.2d-3 — admission control économique 0/8/0, résultats A/B/A — 19/11/2026
+
+**À lire en priorité pour reprendre le travail dans un autre chat.** Les deux documents maîtres restent la référence de la VISION et des REVENUS :
+- `docs/product/STRATEGIE_INTERNATIONALE_WORLD_VISION_MASTER_2026-11-19.md`
+- `docs/product/REGISTRE_PRODUITS_SOURCES_REVENUS_PRIORITES_2026-11-19.md`.
+Ces documents sont des **projets/stratégies**, pas un inventaire de produits livrés. Ne pas les remplacer par un résumé technique. Le MEDIA/VOIX, V0 et V1 sont exclus de la présente chaîne backend mais leur stratégie/charte reste préservée.
+
+### Dépendance exacte et état
+
+PR **#59** https://github.com/OBIANG5/World-Health-Vision/pull/59, DRAFT, base #58 (`perf/v2-dense-batch-sql-hikari-profiling-2026-11-19`), laquelle dépend de #57 → #55 → #53 → #51 → #50 → #49 → #47 → #46 → #45 → #41 → #40 → #39 → #38 → #36 → branche `v2` ; PR #35 globe UI distincte. **Rien de tout cela n'a été fusionné/déployé sur le site public à cette étape.**
+
+Dans Analytics : `WHV_ANALYTICS_ECONOMIC_TIMESERIES_BATCH_MAX_INFLIGHT` (**0 par défaut**, schéma Pydantic entre 0 et 64). Un `asyncio.Semaphore` partagé **par processus** peut borner ensemble les trois appels lourds `latest / availability / history` des snapshots économiques. Erreurs et annulations relâchent la place ; métriques `operation` fixe uniquement, sans pays/source/personne. **Ce n'est pas** un rate limiter universel, ni un mécanisme global multi-réplicas. Ne jamais appliquer la valeur 8 aux services publics sans tests supplémentaires.
+
+### Preuve sur la même base de données, mêmes sources, et même code
+
+CI **SUCCESS**, SHA exécutable `e716eb669a3f8d1757f9de089ffd9330502b0e25` :
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/44542527928
+Artefact intégral : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44542527928/artifacts/14538393774
+
+Le runner crée une base **ENTIÈREMENT SYNTHÉTIQUE** de 124 416 observations, 12 pays, 54 codes canoniques de profils, 4 sources fictives, 24 années et 2 révisions. Les quatre optimisations de batch sont ON **seulement dans ce runner** ; un redémarrage du seul Analytics change le cap **0 → 8 → 0**, PostgreSQL, Catalog et Timeseries ne sont PAS réinitialisés. Pour chaque configuration, 12 pays aux paliers concurrence 1/2/4/8/12 → **60 snapshots** ; 180/180 succès. Pour chacun des pays, SHA256 du **JSON entier hors generatedAtUtc** inchangé entre modes ; toujours 54 indicateurs, 200 comparaisons de sources, 270 preuves sur cette fixture. Aucune observation économique officielle et aucune donnée créée à partir de GDELT.
+
+| Indicateur au palier 12 | Sans limite #1 | Limite 8 | Sans limite #2 |
+|---|---:|---:|---:|
+| Temps 12 pays (ms) | 2039,224 | **1861,472** | 2019,164 |
+| Latence individuelle p50 (ms) | 1803,413 | **1466,674** | 1833,008 |
+| Latence individuelle p95 (ms ; n=12) | 2034,339 | **1858,183** | 2014,862 |
+| Hikari max active échantillonné | 20 | **6** | 20 |
+| Hikari max attente échantillonnée | 3 | **0** | 16 |
+| Attente acquisition moyenne (ms) | 89,212 | **0,275** | 69,626 |
+| Temps JDBC batch historique moyen (ms) | 776,611 | **178,955** | 775,521 |
+| Temps JDBC disponibilité moyen (ms) | 800,549 | **163,583** | 713,851 |
+| Temps JDBC dernières valeurs moyen (ms) | 663,130 | **141,353** | 419,961 |
+
+**Interprétation honnête :** le cap=8 a amélioré d'environ 8,7 % le temps total **dans CE run** et a déporté l'attente en amont d'Hikari. Il n'est PAS prouvé optimal ni sûr sous des milliers d'utilisateurs ; les échantillons Hikari ne constituent pas des maxima de production ; l'attente dans Analytics peut augmenter même quand Hikari diminue. Le tri par cache/réchauffage est partiellement atténué par A/B/A, pas éliminé. **Ne pas activer encore en production.**
+
+### La suite technique à exécuter, dans l'ordre, sans moindre effort
+
+1. Assurer **3 validations GitHub sur le SHA final de PR #59** : canonique Java/Python/frontend/Testcontainers, SQL dense et réponses économiques complètes, Gateway réel / panne et reprise (Analytics HTTP 503, Timeseries HTTP 502) avec cap 8 activé uniquement CI si cela ne change pas l'oracle. Corriger toute régression. Attention, l'ajout de ce handoff produit un nouveau SHA : les anciens runs green ne couvrent pas un nouveau commit.
+2. Répéter des **contre-expériences bornées** (0/4/6/8/12, plusieurs répétitions, ordres randomisés ou alternés, froid/chaud, niveaux 1/2/4/8/12/plus selon coûts) et enregistrer en plus le **temps de file d'attente Analytics**. Comparer débit total et erreurs/timeouts, fairness entre utilisateurs, annulations pendant la queue, sémaphores multi-process et multi-réplicas. Décider cap ou rejet sur preuves, pas intuition.
+3. Mesurer et borner **octets JSON/RAM** de `54 × 600`, tester compression interservices (CPU vs débit vs latence), éviter une allocation incontrôlée et un faux cache de chiffres périmés. Conserver preuves, révisions, MISSING/ESTIMATED/SUPPRESSED et années communes.
+4. Issue **#56** (https://github.com/OBIANG5/World-Health-Vision/issues/56) : charge synthétique **hétérogène** sur ~50 pays avant dimensionnement 217 ; sources locales uniquement sur certains pays, périodes daily/monthly/annual, révisions, valeurs absentes, qualité, statistiques comparables, droits; coûts CPU/RSS/JDBC/SQL/Python. Aucune prétention de couverture officielle mondiale.
+5. Avant staging public : identités interservices mTLS/scopes, quotas/anti-abus, ACL, backups+restauration, IPv6/routage, métriques privées sans PII, latences internet, pannes 502/503 et monitoring. Aucun achat ou déploiement sans validation du coût et des accès.
+6. **Priorité produit par le document stratégique** : (0) Core V2 sûr, fiable et sourcé ; (1) une vraie observation d'une institution nationale **avec licence et période vérifiées**, chaîne source→ingestion→DB→API→globe ; (2) compte + WatchRule persistante, Observation, Evaluation, Outbox et Receipt, consentement/opt-out ; (3) Money-Vision/FX-Watch ; (4) Transport/Tourisme-Watch ; (5) Price/Panier ; (6) Trading ; (7) BRVM/B2B, tandis que Média + GDELT/EarlyForge avancent sur leur piste éditoriale **distincte**.
+7. **Revenus prévus (NON réalisés, sans estimation fictive)** : gratuit utile ; affiliation transparente avec tarifs réellement réservables (voyage/transfert/prix) ; Premium alertes, historique et fonctionnalités ; B2B/API/export sous licence ; publicité secondaire ; partenariat média sous indépendance éditoriale. Les expérimentations commerciales sont décrites dans le second document maître avec formules trafic×conversion×commission nette, coûts cloud/API/notifications, rétention et consentements.
+8. Conserver `SourceRegistry` et les états `DISCOVERED/CATALOGUED/ACCESS_APPROVED/CONNECTED/INGESTED/VERIFIED/DEGRADED/REVOKED`. **217 pays et 22 sources du registre ne signifient pas couverture réelle**. GDELT fournit des **mentions/signalements**, non de véritables observations statistiques. EarlyForge est un modèle de workflow à examiner, non un partenaire intégré.
+
+**Interdits maintenus :** fusion des PR sans revue, modification `v2` publique, dépense/hébergement, réemploi des données synthétiques comme chiffres officiels, branches média/voix ou V0/V1, promesse de revenus ou d'API fournisseur sans contrat.
