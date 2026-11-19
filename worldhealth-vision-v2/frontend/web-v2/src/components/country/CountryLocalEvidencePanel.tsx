@@ -143,11 +143,11 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   const selectedSourceCodes = sourceSelection.countryIso3 === iso3 ? sourceSelection.codes : [];
   const chosenSources = data?.localSources.filter((source) => selectedSourceCodes.includes(source.sourceCode)) ?? [];
 
-  const sourceTypeLabel = (type: string) => type === "NATIONAL_OFFICIAL"
+  const sourceTypeLabel = (type: string | undefined) => type === "NATIONAL_OFFICIAL"
     ? copy.official
     : type === "REGIONAL_OFFICIAL" ? copy.regional
       : type === "LOCAL_MEDIA" ? copy.press : copy.other;
-  const sourceConnectionLabel = (state: string) => state === "INGESTION_VERIFIED"
+  const sourceConnectionLabel = (state: string | undefined) => state === "INGESTION_VERIFIED"
     ? copy.connectionVerified
     : state === "CONNECTOR_IN_REVIEW" ? copy.connectionInReview : copy.catalogueOnly;
 
