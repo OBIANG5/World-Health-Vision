@@ -1,0 +1,161 @@
+name: WHV V2 - disposable dense Timeseries SQL profile
+
+on:
+  push:
+    branches:
+      - 'test/v2-sql-timeseries-dense-fixture-*'
+  pull_request:
+    branches:
+      - 'improve/v2-analytics-perf-and-global-vision-sql-profiling-*'
+    paths:
+      - '.github/workflows/whv-v2-timeseries-sql-profile.yml'
+      - 'worldhealth-vision-v2/infra/tests/sql_profile_*'
+      - 'worldhealth-vision-v2/infra/tests/test_sql_profile_contracts.py'
+      - 'worldhealth-vision-v2/infra/tests/test_sql_profile_build_fixture.py'
+      - 'worldhealth-vision-v2/services/timeseries-service/**'
+      - 'worldhealth-vision-v2/docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-timeseries-sql-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WHV_TIMESCALE_IMAGE: timescale/timescaledb:2.15.3-pg16
+  WHV_OIDC_ISSUER_URI: https://ci-only.invalid/realms/worldvision
+  WHV_OIDC_JWKS_URI: https://ci-only.invalid/realms/worldvision/jwks
+  WHV_SECURITY_AUDIENCE: worldvision-ci-sql
+  WHV_DB_PASSWORD_FILE: /tmp/whv_ci_dense_sql_secret
+  WHV_GATEWAY_HOST_PORT: "18080"
+
+jobs:
+  synthetic-sql-profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Unit-test source-derived SQL and parser without DB
+        run: |
+          python3 -m unittest discover -s worldhealth-vision-v2/infra/tests -p 'test_sql_profile_contracts.py' -v
+          python3 -m unittest discover -s worldhealth-vision-v2/infra/tests -p 'test_sql_profile_build_fixture.py' -v
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/sql_profile_generate_explain.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/sql_profile_analyze_plans.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/sql_profile_build_fixture.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_internal_timeseries.py
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_analytics_dense_snapshot.py
+
+      - name: Generate EXPLAIN from actual Timeseries JDBC repository
+        run: |
+          mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
+          python3 worldhealth-vision-v2/infra/tests/sql_profile_generate_explain.py \
+            --source worldhealth-vision-v2/services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/persistence/JdbcTimeseriesRepository.java \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/generated-sql-explains.sql \
+            --ci-fixture-only
+
+      - name: Generate synthetic fixture from actual 54 economic lens profiles
+        run: |
+          python3 worldhealth-vision-v2/infra/tests/sql_profile_build_fixture.py \
+            --profiles worldhealth-vision-v2/services/analytics-service/src/analytics_service/product_profiles.py \
+            --template worldhealth-vision-v2/infra/tests/sql_profile_dense_fixture.sql \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/rendered-synthetic-fixture.sql \
+            --ci-fixture-only
+
+      - name: Prepare disposable DB credential and confirm isolated Compose
+        run: |
+          openssl rand -hex 40 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0644 "$WHV_DB_PASSWORD_FILE"
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            config --format json > "$RUNNER_TEMP/whv-sql-compose.json"
+          python3 - "$RUNNER_TEMP/whv-sql-compose.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1]))
+          required={'whv-timescaledb','catalog-service','timeseries-service','analytics-service'}
+          services=data['services']
+          assert required.issubset(services)
+          assert not services['whv-timescaledb'].get('ports'), 'DB exposed to host'
+          assert not services['catalog-service'].get('ports'), 'Catalog exposed to host'
+          assert not services['timeseries-service'].get('ports'), 'Timeseries exposed to host'
+          assert not services['analytics-service'].get('ports'), 'Analytics exposed to host'
+          print('PASS: synthetic DB and data services have no published ports')
+          PY
+
+      - name: Start disposable TimescaleDB, catalog, timeseries and internal analytics
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            up -d --build --wait whv-timescaledb catalog-service timeseries-service analytics-service
+
+      - name: Seed 124416 transparently synthetic revised observations
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            exec -T whv-timescaledb sh -ec \
+            'test -s /run/secrets/whv_db_password; PGPASSWORD="$(cat /run/secrets/whv_db_password)" exec psql -X -v ON_ERROR_STOP=1 -U whv_user -d whv' \
+            < worldhealth-vision-v2/infra/benchmarks/artifacts/rendered-synthetic-fixture.sql
+
+      - name: Run 3 canonical Java SQL queries, first-touch and 5 repeated plans each
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            exec -T whv-timescaledb sh -ec \
+            'test -s /run/secrets/whv_db_password; PGPASSWORD="$(cat /run/secrets/whv_db_password)" exec psql -X -q -t -A -v ON_ERROR_STOP=1 -U whv_user -d whv' \
+            < worldhealth-vision-v2/infra/benchmarks/artifacts/generated-sql-explains.sql \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/sql-explain-raw.log
+          python3 worldhealth-vision-v2/infra/tests/sql_profile_analyze_plans.py \
+            --input worldhealth-vision-v2/infra/benchmarks/artifacts/sql-explain-raw.log \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/sql-explain-summary.json
+
+      - name: Compare bounded internal Timeseries HTTP concurrency on populated database
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            exec -T analytics-service python - \
+            < worldhealth-vision-v2/infra/tests/benchmark_internal_timeseries.py \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/internal-http-concurrency.json
+          python3 -m json.tool worldhealth-vision-v2/infra/benchmarks/artifacts/internal-http-concurrency.json > /dev/null
+          echo 'PASS: populated 54-indicator internal HTTP benchmark, concurrency 1/4/16/54'
+
+      - name: Prove full Analytics 54-lens snapshot and count duplicate provenance lookups
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            exec -T analytics-service python - \
+            < worldhealth-vision-v2/infra/tests/benchmark_analytics_dense_snapshot.py \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/dense-analytics-snapshot-profile.json
+          python3 -m json.tool worldhealth-vision-v2/infra/benchmarks/artifacts/dense-analytics-snapshot-profile.json > /dev/null
+          echo 'PASS: full synthetic Analytics snapshot and upstream provenance counts archived'
+
+      - name: Capture bounded resource cost after the synthetic experiment
+        if: success()
+        run: |
+          ids="$(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            ps -q whv-timescaledb catalog-service timeseries-service analytics-service)"
+          test -n "$ids"
+          docker stats --no-stream --format '{{json .}}' $ids \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/sql-profile-container-stats.jsonl
+
+      - name: Preserve SQL profile and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-synthetic-timeseries-sql-profiling
+          path: worldhealth-vision-v2/infra/benchmarks/artifacts/
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Destroy synthetic database and one-off secrets
+        if: always()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            down -v --remove-orphans || true
+          rm -f "$WHV_DB_PASSWORD_FILE"
