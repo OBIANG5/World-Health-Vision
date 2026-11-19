@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -91,7 +92,8 @@ public final class UpstreamUnavailableHandler implements WebExceptionHandler, Or
     private static boolean isNetworkAvailabilityFailure(Throwable error) {
         Throwable current = error;
         for (int depth = 0; depth < 12 && current != null; depth++) {
-            if (current instanceof ConnectException
+            if (current instanceof UnknownHostException
+                    || current instanceof ConnectException
                     || current instanceof SocketTimeoutException
                     || current instanceof TimeoutException
                     || "ConnectTimeoutException".equals(current.getClass().getSimpleName())
