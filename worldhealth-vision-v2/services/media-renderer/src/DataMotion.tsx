@@ -115,7 +115,7 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
           strokeLinecap="round" pathLength={1} strokeDasharray="1"
           strokeDashoffset={1-beat.plot}
           style={{filter:"drop-shadow(0 0 12px rgba(46,221,255,.35))"}}/>
-        {serial.map((point,i)=><g key={i} opacity={pct((beat.plot*(series.length-1)-i)*2)}>
+        {serial.map((point,i)=><g key={i} opacity={dataStagger(beat.plot,i,serial.length,.13)}>
           <circle cx={point.x} cy={point.y} r="8" fill="#e3feff" stroke="#0a7f9e" strokeWidth="3"/>
           {(i===0||i===serial.length-1)&&<text x={point.x} y={1160} textAnchor={i===0?"start":"end"}
             style={labelClass}>{point.label}</text>}
@@ -124,10 +124,10 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
       {mode==="ranking"&&<g data-wv-data-ranking="true">
         {ranking.map((point,i)=>{
           const y=537+i*81;
-          const progress=pct((beat.plot*ranking.length-i)*.88);
+          const progress=dataStagger(beat.plot,i,ranking.length,.30);
           return <g key={point.label+"-"+i} opacity={beat.grid}>
-            <text x="126" y={y+37} style={labelClass}>
-              {String(point.rank).padStart(2,"0")} · {point.label.slice(0,18)}
+            <text x="126" y={y+37} style={{...labelClass,fontSize:point.label.length>15?21:26}}>
+              {String(point.rank).padStart(2,"0")} · {point.label}
             </text>
             <rect x="390" y={y+8} width={Math.max(0,500*valueWidth(point.value)*progress)}
               height="43" rx="8" fill={accent} fillOpacity=".85"/>
@@ -139,14 +139,14 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
       {mode==="heatmap"&&<g data-wv-data-heatmap="true">
         {heat.map((cell,i)=>{
           const x=127+cell.col*280,y=542+cell.row*153;
-          const reveal=pct((beat.plot*heat.length-i)*.6);
+          const reveal=dataStagger(beat.plot,i,heat.length,.30);
           const intensity=cell.intensity;
           return <g key={cell.label+"-"+i} opacity={reveal}>
             <rect x={x} y={y} width="254" height="130" rx="13"
               fill={accent} fillOpacity={.08+.65*intensity}
               stroke="#8be9f5" strokeOpacity=".28" strokeWidth="2"/>
-            <text x={x+18} y={y+45} fill="#f3fdff" fontSize="27"
-              fontWeight="650">{cell.label.slice(0,16)}</text>
+            <text x={x+18} y={y+45} fill="#f3fdff" fontSize={cell.label.length>15?19:27}
+              fontWeight="650">{cell.label}</text>
             <text x={x+18} y={y+92} fill="#e7fcff" fontSize="44"
               fontWeight="820">{format(cell.value)}{d.unit}</text>
           </g>;
