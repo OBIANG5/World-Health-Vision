@@ -289,6 +289,83 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
     }
 
     @Override
+    public List<LatestSourceObservationResponse> listLatestBySourceBatch(
+            String countryIso3, List<String> indicatorCodes, String sourceCode,
+            String datasetCode, String periodGranularity, boolean includeMissing
+    ) {
+        // Same column projection, filters and ranking as listLatestBySource.
+        // The only semantic extension is indicator_code in the partition key
+        // and a parameterized bounded IN list, never one global LIMIT/rank.
+        String sql = """
+                with ranked as (
+                    select
+                        lo.source_code,
+                        lo.dataset_code,
+                        lo.run_key,
+                        lo.country_iso3,
+                        lo.indicator_code,
+                        lo.period_granularity,
+                        lo.period_start,
+                        lo.period_end,
+                        lo.period_label,
+                        lo.numeric_value,
+                        lo.text_value,
+                        lo.value_status,
+                        lo.source_published_at,
+                        lo.fetched_at_utc,
+                        row_number() over (
+                            partition by lo.indicator_code, lo.source_code,
+                                         lo.dataset_code, lo.period_granularity
+                            order by lo.period_start desc, lo.fetched_at_utc desc
+                        ) as rn
+                    from timeseries.latest_observation lo
+                    where lo.country_iso3 = :countryIso3
+                      and lo.indicator_code in (:indicatorCodes)
+                      and (cast(:sourceCode as varchar) is null or lo.source_code = :sourceCode)
+                      and (cast(:datasetCode as varchar) is null or lo.dataset_code = :datasetCode)
+                      and (cast(:periodGranularity as varchar) is null or lo.period_granularity = :periodGranularity)
+                      and (cast(:includeMissing as boolean) = true or lo.value_status <> 'MISSING')
+                )
+                select
+                    ranked.source_code,
+                    coalesce(s.display_name, ranked.source_code) as source_display_name,
+                    ranked.dataset_code,
+                    coalesce(sd.display_name, ranked.dataset_code) as dataset_display_name,
+                    ranked.run_key,
+                    ranked.country_iso3,
+                    coalesce(c.display_name, ranked.country_iso3) as country_display_name,
+                    ranked.indicator_code,
+                    coalesce(i.display_name, ranked.indicator_code) as indicator_display_name,
+                    ranked.period_granularity,
+                    ranked.period_start,
+                    ranked.period_end,
+                    ranked.period_label,
+                    ranked.numeric_value,
+                    ranked.text_value,
+                    ranked.value_status,
+                    ranked.source_published_at,
+                    ranked.fetched_at_utc
+                from ranked
+                left join catalog.source s on s.code = ranked.source_code
+                left join catalog.source_dataset sd on sd.code = ranked.dataset_code and sd.source_id = s.id
+                left join catalog.country c on c.iso3 = ranked.country_iso3
+                left join catalog.indicator i on i.code = ranked.indicator_code
+                where ranked.rn = 1
+                order by ranked.indicator_code, ranked.source_code,
+                         ranked.dataset_code, ranked.period_granularity
+                """;
+        return jdbcClient.sql(sql)
+                .param("countryIso3", countryIso3)
+                .param("indicatorCodes", indicatorCodes)
+                .param("sourceCode", sourceCode)
+                .param("datasetCode", datasetCode)
+                .param("periodGranularity", periodGranularity)
+                .param("includeMissing", includeMissing)
+                .query((rs, rowNum) -> mapLatestSourceObservation(rs))
+                .list();
+    }
+
+    @Override
     public List<SeriesAvailabilityResponse> listSeriesAvailability(
             String countryIso3,
             String indicatorCode,

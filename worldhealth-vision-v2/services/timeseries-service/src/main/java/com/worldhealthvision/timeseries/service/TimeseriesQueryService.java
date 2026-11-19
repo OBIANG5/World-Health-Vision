@@ -11,6 +11,15 @@ import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
 import com.worldhealthvision.timeseries.persistence.TimeseriesRepository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+import com.worldhealthvision.timeseries.api.dto.LatestSourceBatchResponse;
+import com.worldhealthvision.timeseries.api.dto.LatestSourceBatchItem;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -77,6 +86,52 @@ public class TimeseriesQueryService {
                 includeMissing
         );
         return new TimeseriesListResponse<>(items.size(), items);
+    }
+
+    private static final Pattern BATCH_CODE = Pattern.compile("[A-Z0-9_.]{1,64}");
+
+    public LatestSourceBatchResponse listLatestBySourceBatch(
+            String countryIso3, List<String> indicatorCodes,
+            String sourceCode, String datasetCode,
+            String periodGranularity, boolean includeMissing
+    ) {
+        if (countryIso3 == null || !countryIso3.trim().toUpperCase(Locale.ROOT).matches("[A-Z]{3}")) {
+            throw new IllegalArgumentException("Batch countryIso3 must be an ISO3 code.");
+        }
+        if (indicatorCodes == null || indicatorCodes.isEmpty() || indicatorCodes.size() > 128) {
+            throw new IllegalArgumentException("Batch requires 1 to 128 indicator codes.");
+        }
+        Set<String> distinct = new LinkedHashSet<>();
+        for (String code : indicatorCodes) {
+            if (code == null || !BATCH_CODE.matcher(code.trim().toUpperCase(Locale.ROOT)).matches()
+                    || !distinct.add(code.trim().toUpperCase(Locale.ROOT))) {
+                throw new IllegalArgumentException("Invalid or duplicated indicator code.");
+            }
+        }
+        List<String> requested = new ArrayList<>(distinct);
+        List<LatestSourceObservationResponse> rows = timeseriesRepository.listLatestBySourceBatch(
+                countryIso3.trim().toUpperCase(Locale.ROOT), requested,
+                normalizeOptionalCode(sourceCode), normalizeOptionalCode(datasetCode),
+                normalizeOptionalCode(periodGranularity), includeMissing
+        );
+
+        // No global LIMIT. A code with no observations gets an empty list just
+        // as the existing GET does, rather than a fabricated zero or HTTP 404.
+        Map<String, List<LatestSourceObservationResponse>> groups = new LinkedHashMap<>();
+        for (String code : requested) {
+            groups.put(code, new ArrayList<>());
+        }
+        for (LatestSourceObservationResponse row : rows) {
+            List<LatestSourceObservationResponse> group = groups.get(row.indicatorCode());
+            if (group == null) {
+                throw new IllegalStateException("Batch SQL returned unrequested indicator.");
+            }
+            group.add(row);
+        }
+        List<LatestSourceBatchItem> items = requested.stream()
+                .map(code -> new LatestSourceBatchItem(code, groups.get(code).size(), groups.get(code)))
+                .toList();
+        return new LatestSourceBatchResponse(items.size(), items);
     }
 
     public TimeseriesListResponse<SeriesAvailabilityResponse> listSeriesAvailability(

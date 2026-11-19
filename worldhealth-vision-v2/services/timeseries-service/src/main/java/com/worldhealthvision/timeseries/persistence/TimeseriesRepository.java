@@ -41,6 +41,12 @@ public interface TimeseriesRepository {
             boolean includeMissing
     );
 
+    /** One SQL window, with independent rank partitions for each indicator. */
+    List<LatestSourceObservationResponse> listLatestBySourceBatch(
+            String countryIso3, List<String> indicatorCodes, String sourceCode,
+            String datasetCode, String periodGranularity, boolean includeMissing
+    );
+
     List<SeriesAvailabilityResponse> listSeriesAvailability(
             String countryIso3,
             String indicatorCode,
