@@ -1,0 +1,109 @@
+name: WHV V2 - isolated preview acceptance before merge
+
+on:
+  pull_request:
+    branches:
+      - v2
+    paths:
+      - 'worldhealth-vision-v2/frontend/web-v2/**'
+      - '.github/workflows/whv-v2-preview-pr-acceptance.yml'
+  push:
+    branches:
+      - 'feature/v2-foundation-quality-gates-*'
+    paths:
+      - 'worldhealth-vision-v2/frontend/web-v2/**'
+      - '.github/workflows/whv-v2-preview-pr-acceptance.yml'
+  workflow_dispatch:
+
+# No secrets, no deployments, no pushes to v2/preview/Vercel.
+# Historical static snapshots are fixtures only, never production API evidence.
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-v2-preview-pr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-real-v2-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout the exact candidate commit
+        uses: actions/checkout@v4
+        with:
+          path: source
+          persist-credentials: false
+
+      - name: Checkout frozen snapshot fixture branch (never as application source)
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: evidence
+          persist-credentials: false
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/worldhealth-vision-v2/frontend/web-v2/package-lock.json
+
+      - name: Install and typecheck the candidate
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npx tsc -b --pretty false
+
+      - name: Build the real V2 frontend as a clearly disclosed offline preview
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        env:
+          VITE_WHV_PREVIEW_MODE: 'true'
+        run: npx vite build --base=./
+
+      - name: Assemble isolated preview using archived fixtures, never claim live APIs
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from shutil import copy2, copytree
+          source = Path('source/worldhealth-vision-v2/frontend/web-v2/dist')
+          evidence = Path('evidence')
+          target = Path('preview')
+          if not (source / 'index.html').is_file() or not (source / 'assets').is_dir():
+              raise SystemExit('Refusing acceptance: V2 candidate build is incomplete')
+          if target.exists():
+              raise SystemExit('Refusing acceptance: preview directory already exists')
+          copytree(source, target)
+          fixtures = ('preview-countries.js', 'preview-sources.js',
+                      'preview-local-catalog.js', 'preview-bootstrap.js')
+          for name in fixtures:
+              if not (evidence / name).is_file():
+                  raise SystemExit(f'Refusing acceptance: snapshot fixture missing: {name}')
+              copy2(evidence / name, target / name)
+          html = (target / 'index.html').read_text(encoding='utf-8')
+          if '<head>' not in html:
+              raise SystemExit('Refusing acceptance: head tag missing')
+          bootstrap = ('<meta name="robots" content="noindex,nofollow">\n' +
+                       ''.join(f'<script src="./{file}"></script>\n' for file in fixtures))
+          (target / 'index.html').write_text(html.replace('<head>', '<head>\n' + bootstrap, 1), encoding='utf-8')
+          print('Candidate compiled from current ref; historical snapshots are fixtures ONLY.')
+          PY
+
+      - name: Install Chromium for browser acceptance
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Verify iPhone and desktop: interactive globe, country, tools, truthful preview
+        env:
+          WHV_PREVIEW_DIRECTORY: ${{ github.workspace }}/preview
+        run: node source/worldhealth-vision-v2/frontend/web-v2/preview-smoke.mjs
+
+      - name: Upload browser screenshots for human review, even after failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-candidate-phone-desktop
+          path: preview-artifacts/
+          if-no-files-found: ignore
