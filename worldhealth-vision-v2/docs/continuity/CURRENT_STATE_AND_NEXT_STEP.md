@@ -1,5 +1,11 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## MEDIA — SPRINT 10 PHOTO MULTILAYER (19 NOVEMBRE)
+
+Branche active `feature/worldvision-photo-multilayer-motion-tracks-2026-11-19`, enfant de PR #74, non fusionnée/non déployée. Nouveau template `photo_story` : la **même** image importée, six animations déterministes indépendantes, détourage transparent externe si fourni, focus lié à la caméra, compteur avec source, masque révélation et titres. Contrôles exposés au Studio et validation de données/échelles; suite de tests + rendu H.264 à exécuter et inspecter. [Rapport détaillé](../media/WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md). Ne pas confondre « codé » et « certifié ». Après preuves visuelles PHOTO : pack DATA, puis raccord narratif globe/pays/photo et mixage/audio. Scripts et sources ChatGPT+utilisateur; pas de publication automatique; voix libre; BAOCOM séparé; blog/GDELT différés.
+
+---
+
 ## SPRINT 9 MEDIA — GEO-2 COUNTRY FOCUS / MULTI-COUCHES (19 NOVEMBRE)
 
 Nouveau `country_focus` en branche indépendante `feature/worldvision-country-focus-10m-multilayer-2026-11-19` empilée sur PR #72. Détail pays Natural Earth 10m, voisins 50m, rendu Remotion 1080×1920 avec caméra/cartographie/annotation/média/alpha/metric/texte en animations distinctes ; sélecteur lazy dans Studio et validation anti-marqueur faux. Voir [rapport Sprint 9](../media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md).
