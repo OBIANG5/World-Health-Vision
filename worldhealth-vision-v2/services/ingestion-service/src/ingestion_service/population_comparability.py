@@ -78,7 +78,7 @@ class PopulationComparabilityAssessment(BaseModel):
     shared_upstream_input_status: Literal[
         "UNKNOWN_POSSIBLE_SHARED_NATIONAL_STATISTICAL_INPUT"
     ] = "UNKNOWN_POSSIBLE_SHARED_NATIONAL_STATISTICAL_INPUT"
-    independent_corrobation_established: Literal[False] = False
+    independent_corroboration_established: Literal[False] = False
     numeric_delta_persons: None = None
     numeric_difference_percent: None = None
     headline_agreement_or_disagreement: None = None
@@ -140,6 +140,10 @@ def assess_population_comparability(
     else:
         status = ComparableStatus.METHOD_REVIEW_REQUIRED
         reasons.append("SAME_REFERENCE_DOES_NOT_PROVE_METHOD_EQUIVALENCE")
+    if national.reference_instant != international.reference_instant and status != ComparableStatus.MISSING_SOURCE:
+        reasons.append("CENSUS_31_JULY_VS_WDI_MIDYEAR_REFERENCE")
+    if national.method != international.method and status != ComparableStatus.MISSING_SOURCE:
+        reasons.append("FIELD_CENSUS_VS_DEMOGRAPHIC_ESTIMATE")
     reasons.extend((
         "NATIONAL_CENSUS_INCLUDES_DOCUMENTED_IMPUTATION",
         "INTERNATIONAL_ESTIMATE_CAN_INCLUDE_NATIONAL_STATISTICAL_OFFICE_INPUTS",
