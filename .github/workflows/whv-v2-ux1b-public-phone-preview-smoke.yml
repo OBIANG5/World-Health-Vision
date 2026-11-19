@@ -1,0 +1,46 @@
+name: World-Vision UX-1B — verify new iPhone source-choice preview is public
+
+on:
+  push:
+    branches:
+      - preview-worldvision-ux1b-sources-2026-11-19
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Stable content-pinned GitHack preview. The older public Vercel alias is NOT
+# modified. Real data/API unavailable; original catalog snapshots are disclosed.
+jobs:
+  public-iphone-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Check public exact UX-1B compiled React commit HTML, JS, CSS, offline warning
+        env:
+          PREVIEW_BUNDLE_SHA: f6dc80082ef961f8c05a93def321dc9b114f4afb
+        run: |
+          set -euo pipefail
+          origin="https://raw.githack.com/OBIANG5/World-Health-Vision/$PREVIEW_BUNDLE_SHA"
+          fetch() {
+            curl --fail --location --silent --show-error --retry 5 \
+              --retry-all-errors --retry-delay 2 --max-time 30 "$1" -o "$2"
+          }
+          fetch "$origin/index.html" /tmp/wv-ux1b.html
+          grep -F './assets/index-DuQF_ncP.js' /tmp/wv-ux1b.html >/dev/null
+          grep -F './assets/index-DafoKzHo.css' /tmp/wv-ux1b.html >/dev/null
+          grep -F './preview-bootstrap.js' /tmp/wv-ux1b.html >/dev/null
+          grep -F 'noindex,nofollow' /tmp/wv-ux1b.html >/dev/null
+          fetch "$origin/assets/index-DuQF_ncP.js" /tmp/wv-ux1b.js
+          fetch "$origin/assets/index-DafoKzHo.css" /tmp/wv-ux1b.css
+          fetch "$origin/preview-bootstrap.js" /tmp/wv-ux1b-bootstrap.js
+          fetch "$origin/preview-local-catalog.js" /tmp/wv-ux1b-local.js
+          test "$(wc -c < /tmp/wv-ux1b.js)" -gt 100000
+          test "$(wc -c < /tmp/wv-ux1b.css)" -gt 30000
+          grep -F 'whv-mobile-perspectives' /tmp/wv-ux1b.js >/dev/null
+          grep -F 'whv-mobile-perspectives' /tmp/wv-ux1b.css >/dev/null
+          grep -F 'aucune donnée économique mondiale simulée' /tmp/wv-ux1b-bootstrap.js >/dev/null
+          grep -F 'INSTAT_GABON' /tmp/wv-ux1b-local.js >/dev/null
+          echo "PASS: public UX-1B HTML + React JS + source-choice CSS + transparent institutional fixture reachable."
+          echo "MOBILE PREVIEW URL: $origin/index.html"
+          rm /tmp/wv-ux1b.html /tmp/wv-ux1b.js /tmp/wv-ux1b.css /tmp/wv-ux1b-bootstrap.js /tmp/wv-ux1b-local.js
