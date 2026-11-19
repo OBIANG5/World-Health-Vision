@@ -42,6 +42,7 @@ export default function CinematicProductionBoard() {
   const [shots,setShots]=useState<Shot[]>([initialShot()]);
   const [selectedId,setSelectedId]=useState("plan-01");
   const [voiceFile,setVoiceFile]=useState("");
+  const [comparisonVoice,setComparisonVoice]=useState("");
   const [musicFile,setMusicFile]=useState("");
   const [outroFile,setOutroFile]=useState("");
   const [accent,setAccent]=useState("#8bbecf");
@@ -149,6 +150,25 @@ export default function CinematicProductionBoard() {
             <option value="">Aucune — la voix pourra être choisie plus tard</option>
             {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select>
+          <label htmlFor="wvc-voice-b">AUTRE PRISE À COMPARER</label>
+          <select id="wvc-voice-b" value={comparisonVoice} onChange={e=>setComparisonVoice(e.target.value)}>
+            <option value="">Aucune autre prise sélectionnée</option>
+            {files.filter(f=>f.kind==="audio"&&f.name!==voiceFile).map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
+          </select>
+          <div className="wvc-auditions" aria-label="Écoute comparative des voix fournies">
+            {([
+              ["A — Voix principale",voiceFile],
+              ["B — Comparaison, non exportée",comparisonVoice]
+            ] as [string,string][]).filter(x=>x[1]&&files.some(f=>f.name===x[1])).map(([label,name])=>{
+              const audio=files.find(f=>f.name===name);
+              return <div className="wvc-audition" key={label}>
+                <span>{label}</span>
+                <strong>{name}</strong>
+                <audio controls preload="none" src={audio?.url} aria-label={label+": "+name}/>
+              </div>;
+            })}
+          </div>
+          <p className="wvc-hint">Écoute les deux prises du même texte au même volume. Aucune voix n'est générée automatiquement ; seule la prise principale est exportée dans le projet.</p>
           <label htmlFor="wvc-music">MUSIQUE / AMBIANCE</label>
           <select id="wvc-music" value={musicFile} onChange={e=>setMusicFile(e.target.value)}>
             <option value="">Aucune</option>
