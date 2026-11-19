@@ -116,8 +116,12 @@ class GatewayPublicReadIntegrationTest {
                 "/actuator/prometheus",
                 "/actuator/info"
         };
+        // Spring Security returns 401 to anonymous callers even when the
+        // rule is denyAll; an authenticated caller receives 403 instead.
         for (String uri : forbidden) {
-            client.get().uri(uri).exchange().expectStatus().isForbidden();
+            client.get().uri(uri).exchange().expectStatus().isUnauthorized();
+            client.mutateWith(mockJwt()).get().uri(uri)
+                    .exchange().expectStatus().isForbidden();
         }
         assertThat(requests.get()).isZero();
     }
@@ -154,7 +158,9 @@ class GatewayPublicReadIntegrationTest {
     @Test
     void publicHealthProbeIsNotADataOrMetricsBackdoor() {
         client.get().uri("/actuator/health").exchange().expectStatus().isOk();
-        client.get().uri("/actuator/prometheus").exchange().expectStatus().isForbidden();
+        client.get().uri("/actuator/prometheus").exchange().expectStatus().isUnauthorized();
+        client.mutateWith(mockJwt()).get().uri("/actuator/prometheus")
+                .exchange().expectStatus().isForbidden();
         assertThat(requests.get()).isZero();
     }
 
