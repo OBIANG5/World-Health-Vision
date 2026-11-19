@@ -69,6 +69,14 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
       await sleep(600);
+      if(mode==="document"&&frame===0){
+        const entrance=await page.evaluate(()=>{
+          const card=document.querySelector('[data-wv-document-card="plan-synthetique"]');
+          return card?{opacity:Number(getComputedStyle(card).opacity),height:card.getBoundingClientRect().height}:null;
+        });
+        if(!entrance||entrance.opacity<.9||entrance.height<200)
+          throw Error("News evidence intro must not begin with a blank screen: "+JSON.stringify(entrance));
+      }
       if(mode==="document"&&frame===40){
         const region=await page.evaluate(()=>{
           const target=document.querySelector('[data-wv-evidence-target="plan-synthetique"]');
@@ -77,6 +85,27 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
         if(!region||region.visible<.1||region.rect.width<30||region.rect.height<20)
           throw Error("Document region is not visible at inspection beat: "+JSON.stringify(region));
         console.log("[player-smoke] authentic-pixel evidence highlight validated",region);
+      }
+      if(mode==="document"&&frame===102){
+        const geometry=await page.evaluate(()=>{
+          const card=document.querySelector('[data-wv-document-card="plan-synthetique"]');
+          const captions=document.querySelector('[data-wv-document-caption="plan-synthetique"]');
+          const viewport=document.querySelector("#smoke-preview");
+          if(!card||!captions||!viewport)return null;
+          const box=card.getBoundingClientRect();
+          const text=captions.getBoundingClientRect();
+          const frame=viewport.getBoundingClientRect();
+          return {
+            cardBottom:box.bottom,
+            captionTop:text.top,
+            captionBottom:text.bottom,
+            mobileMaxY:frame.top+frame.height*.78
+          };
+        });
+        if(!geometry||geometry.cardBottom>geometry.captionTop+3||
+           geometry.captionBottom>geometry.mobileMaxY+3)
+          throw Error("Document caption covers evidence or enters mobile overlay danger zone: "+JSON.stringify(geometry));
+        console.log("[player-smoke] document safe-area and non-overlap verified",geometry);
       }
       if(mode==="document"&&frame===102){
         const titleVisible=await page.evaluate(()=>{
