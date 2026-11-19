@@ -118,6 +118,29 @@ jobs:
             --requests-per-path 40 --workers 4 \
             --output worldhealth-vision-v2/infra/benchmarks/artifacts/gateway-load.json
 
+      - name: Capture private Analytics phase histogram for economic snapshots
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            exec -T analytics-service python -c \
+            "import urllib.request; data=urllib.request.urlopen('http://127.0.0.1:8000/metrics',timeout=10).read(); print(data.decode())" \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-private-metrics.prom
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('worldhealth-vision-v2/infra/benchmarks/artifacts/analytics-private-metrics.prom')
+          lines=p.read_text().splitlines()
+          phases=('country','indicators','series_provenance','total')
+          for phase in phases:
+              token='whv_analytics_country_economic_snapshot_phase_seconds_sum{phase="'+phase+'"}'
+              values=[float(x.split()[-1]) for x in lines if x.startswith(token+' ')]
+              counter='whv_analytics_country_economic_snapshot_phase_seconds_count{phase="'+phase+'"}'
+              counts=[float(x.split()[-1]) for x in lines if x.startswith(counter+' ')]
+              assert len(values)==1 and len(counts)==1 and counts[0]>=1,phase
+              avg=round(values[0]/counts[0]*1000,2)
+              print(f'OBSERVED {phase}: {avg}ms mean over {int(counts[0])} requests')
+          print('PASS: fixed-cardinality private phase measurements were collected')
+          PY
+
       - name: Verify partial failure isolation and restoration
         run: |
           compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
