@@ -103,3 +103,24 @@ Avant déverrouillage : récupérer et conserver une version datée des termes e
 6. Priorité **DATA-1B2 droits/métadonnées + preuve durable de stockage/reprise**, puis DATA-1B3 comparabilité et DATA-1C ingestion contrôlée. Documenter systématiquement tests, commits, coûts, risques et prochaine décision.
 
 **Invariants permanents World-Vision : international, multilingue, honnête, méthodologies contrôlées, institution nationale + régionale + internationale, séparation du statistique officiel/GDELT/prix commerciaux, vérification des licences, aucune fausse disponibilité et aucune publication média automatique.**
+
+
+## 7. Addendum de validation et durcissement (même journée, 19/11/2026)
+
+### Preuve d'acquisition IBGE réelle (nouveau mécanisme)
+- Workflow LIVE autonome : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44614630826 ; **SUCCESS sur le code de première version** f7dc554ca3ea0ad4fe9cf64bcc56a0b561222cc8.
+- Récupération HTTPS effective BRA / N1 / 2022 / 4714 / 93, aucune valeur brute imprimée, aucun upload d'archive, suppression du TemporaryDirectory à la fin.
+- Empreinte exacte du corps HTTP enregistré : 03ab8d57735ac80ac001b07e5ba14a6b661d9cc61a6b0470c811674e0ca1ed5a.
+- Empreinte JSON canonique (normalisation indépendante du format HTTP) : 7304ff3751facbed5224ce1a94b3fce48539f9a29d877124d2025f9be1ac291d.
+- Empreinte de l'observation NDJSON : ba7178cb283234a21350b26b99c917fee328090c66b1538906dcd17737b02d0d.
+- Les empreintes prouvent la reproductibilité relative à cette acquisition et que le format brut est bien distinct de la représentation canonique. Elles **ne constituent ni une signature IBGE ni une licence de réutilisation**.
+- Workflow SYNTHÉTIQUE précédemment vert : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44614168845 (33 tests ciblés, 76 tests ingestion à ce stade). Après tout durcissement/documentation, reconsulter les deux CI au SHA final de #70 ; conserver les verdicts des runs échoués antérieurs.
+
+### Durcissements supplémentaires de la PR #70
+- **Restaurabilité** : manifest.json enregistre désormais les noms de fichiers **relatifs au dossier de révision**. Le vérificateur reconstitue les chemins dans le nouvel emplacement et n'autorise pas de référence arbitraire. Test copytree dans une autre racine privée avec vérification du contenu original.
+- **Chemins** : refus des symlinks dans les segments de stockage source/dataset/revisions et des fichiers/symlink finaux ; pas de sortie du répertoire privé par nom de source arbitraire.
+- **Budget mémoire** : limite des bytes HTTP de 1 Mo pour ce pilote, 8 Mo pour le NDJSON normalisé, 256 Ko pour le manifest. Vérification de taille avant relecture, refus des archives corrompues ou surdimensionnées sans lecture incontrôlée.
+- **Limites assumées** : SHA seuls ne remplacent pas une signature cryptographique externe ni les droits d'accès FS ; sur multi-hôtes il faut registre transactionnel/gestion des leases ; sur stockage permanent il faut sauvegarde et restauration réellement prouvées. L'horodatage firstSeen n'est pas un journal de chaque fetch : à construire en DATA-1B2.
+- **Issue de continuation** : https://github.com/OBIANG5/World-Health-Vision/issues/71 (DATA-1B2). Ne pas créer de serveur ou étendre la publication avant décision de budget et droit. PR #70 = candidate DRAFT isolée.
+
+**Point de contrôle pour les prochains chats :** toujours retrouver le **SHA HEAD de PR #70**, regarder ses deux GitHub Actions (synthétique ET LIVE) sur le même SHA, puis lire cette note et l'issue #71. En cas de divergence, la CI et le code priment sur le texte historique. 

@@ -604,3 +604,14 @@ Le runner crée une base **ENTIÈREMENT SYNTHÉTIQUE** de 124 416 observations, 
 8. Conserver `SourceRegistry` et les états `DISCOVERED/CATALOGUED/ACCESS_APPROVED/CONNECTED/INGESTED/VERIFIED/DEGRADED/REVOKED`. **217 pays et 22 sources du registre ne signifient pas couverture réelle**. GDELT fournit des **mentions/signalements**, non de véritables observations statistiques. EarlyForge est un modèle de workflow à examiner, non un partenaire intégré.
 
 **Interdits maintenus :** fusion des PR sans revue, modification `v2` publique, dépense/hébergement, réemploi des données synthétiques comme chiffres officiels, branches média/voix ou V0/V1, promesse de revenus ou d'API fournisseur sans contrat.
+
+
+---
+
+## 21. Reprise DATA-1B1 — original HTTP + révisions immuables (19/11/2026)
+
+L'objectif produit a **progressé de F1.2b.2d vers de vraies données institutionnelles**, sans abandonner le backlog SQL/Hikari/performance issue #63. La source nationale IBGE/Censo 2022 a fait l'objet de la PR #69 et d'une première requête officielle réelle en CI. La PR DRAFT **#70** (base #69, sans merge) ajoute un archivage privé relecture/replay/évolution de version, empreinte des bytes HTTP et NDJSON, écriture atomique du dossier et contrôles de taille/corruption ; collecte LIVE en CI avec suppression éphémère et aucune publication.
+
+**Document de reprise le plus récent (à lire avant de coder) :** docs/continuity/WORLD_VISION_DATA1B1_BYTE_EVIDENCE_2026-11-19.md sur branche data/v2-ibge-byte-evidence-revision-ledger-2026-11-19, PR https://github.com/OBIANG5/World-Health-Vision/pull/70 . Vérifier ses 2 workflows GitHub Actions sur le SHA final. Prochaine étape DATA-1B2 = https://github.com/OBIANG5/World-Health-Vision/issues/71, droits du dataset, métadonnées, suivi des révisions de source, conservation privée sur vrai volume durable et tests de récupération. Ne pas fusionner #70 en ignorant sa chaîne dépendante, ni mettre des données IBGE non autorisées dans le frontend public.
+
+**Rappels de continuité** : UI #67→#64→#35 (Vercel issue #68), Core jusqu'à #59 en DRAFT, performance issue #63, 11 Visions (Atlas, Watch, Money, Transport, Tourism, Price, Panier, Trading, BRVM, Radar, Média) et documents stratégie/revenus. Média/voix ne sont PAS modifiés. **Aucune dépense ni déploiement payant ou production effectué.**
