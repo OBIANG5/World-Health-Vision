@@ -34,7 +34,7 @@ async function serverReady(){
   throw Error("Local Vite smoke page not reachable: "+url);
 }
 async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
-  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":"player-browser-frame-";
+  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":"player-browser-frame-";
   const page=await browser.newPage();
   const errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
@@ -69,6 +69,27 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
       await sleep(600);
+      if(mode==="geo"&&frame===48){
+        const scene=await page.evaluate(()=>{
+          const globe=document.querySelector('[data-wv-geo-earth]');
+          const land=document.querySelector('[data-wv-geo-land]');
+          const borders=document.querySelector('[data-wv-geo-borders]');
+          const route=document.querySelector('[data-wv-geo-route]');
+          const target=document.querySelector('[data-wv-geo-target]');
+          return {
+            globe:Boolean(globe),land:Boolean(land),borders:Boolean(borders),
+            projectedLandPathLength:land?.getAttribute("d")?.length??0,
+            projectedBordersLength:borders?.getAttribute("d")?.length??0,
+            route:Boolean(route),routeDashOffset:Number(route?.getAttribute("stroke-dashoffset")??NaN),
+            target:Boolean(target),photo:Boolean(document.querySelector('[data-wv-geo-photo]'))
+          };
+        });
+        if(!scene.globe||!scene.land||!scene.borders||scene.projectedLandPathLength<3000||
+          scene.projectedBordersLength<1000||!scene.route||!Number.isFinite(scene.routeDashOffset)||
+          scene.routeDashOffset>=.95||!scene.target||!scene.photo)
+          throw Error("Geo animation missing real projected multi-layer elements: "+JSON.stringify(scene));
+        console.log("[player-smoke] Atlas projected geography / simultaneous animated layers",scene);
+      }
       if(mode==="document"&&frame===0){
         const entrance=await page.evaluate(()=>{
           const card=document.querySelector('[data-wv-document-card="plan-synthetique"]');
@@ -145,7 +166,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     }
     const report={
       test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
-      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
       composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
       screen:{width:390,height:844},
       frames_in_composition:expectedDuration,
@@ -153,7 +174,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       screenshots,
       warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":"player-browser-smoke.report.json");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":"player-browser-smoke.report.json");
     fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
@@ -178,7 +199,9 @@ async function main(){
     await testCase(browser,{mode:"clip",frames:[0,74],expectedDuration:105,expectVoice:false});
     console.log("[player-smoke] examining directed documentary inspection without fabricating quotes");
     await testCase(browser,{mode:"document",frames:[0,40,68,102],expectedDuration:140,expectVoice:false});
-    console.log("[player-smoke] all four real Player paths passed");
+    console.log("[player-smoke] verifying complex orthographic geo animation");
+    await testCase(browser,{mode:"geo",frames:[0,48,96,138],expectedDuration:150,expectVoice:false});
+    console.log("[player-smoke] all five real Player paths passed");
   }finally{
     await browser.close();
   }
