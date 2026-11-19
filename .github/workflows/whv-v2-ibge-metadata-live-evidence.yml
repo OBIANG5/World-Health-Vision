@@ -68,7 +68,7 @@ jobs:
                   print("Verified quarantined resource:", receipt.notes["resource"],
                         "HTTP SHA256:", receipt.notes["httpBodySha256"])
               now = datetime.now(UTC)
-              rights = ibge_census_4714_initial_review(observed_at=now)
+              rights = ibge_census_4714_initial_review()
               advice = inspect_reuse_claim(
                   rights, institution_code="IBGE", dataset_code="CENSO2022_4714",
                   jurisdiction_iso3="BRA", operation=ReviewedRight.PUBLIC_COMMERCIAL_DISPLAY,
