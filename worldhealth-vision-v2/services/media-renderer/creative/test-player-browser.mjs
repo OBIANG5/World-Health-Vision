@@ -34,7 +34,7 @@ async function serverReady(){
   throw Error("Local Vite smoke page not reachable: "+url);
 }
 async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
-  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":"player-browser-frame-";
+  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":"player-browser-frame-";
   const page=await browser.newPage();
   const errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
@@ -69,6 +69,23 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
       await sleep(600);
+      if(mode==="document"&&frame===40){
+        const region=await page.evaluate(()=>{
+          const target=document.querySelector('[data-wv-evidence-target="plan-synthetique"]');
+          return target?{visible:Number(getComputedStyle(target).opacity),rect:target.getBoundingClientRect().toJSON()}:null;
+        });
+        if(!region||region.visible<.1||region.rect.width<30||region.rect.height<20)
+          throw Error("Document region is not visible at inspection beat: "+JSON.stringify(region));
+        console.log("[player-smoke] authentic-pixel evidence highlight validated",region);
+      }
+      if(mode==="document"&&frame===102){
+        const titleVisible=await page.evaluate(()=>{
+          const title=document.querySelector('[data-wv-title="plan-synthetique"]');
+          return title?Number(getComputedStyle(title.parentElement).opacity):null;
+        });
+        if(titleVisible===null||titleVisible<.85)
+          throw Error("Authored context not visible after document camera emphasis: "+titleVisible);
+      }
       if(mode==="film"&&frame===100){
         const incomingHeadlineOpacity=await page.evaluate(()=>{
           const title=document.querySelector('[data-wv-title="contexte-synthetique"]');
@@ -99,7 +116,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     }
     const report={
       test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
-      input:mode==="clip"?"locally supplied synthetic H.264 video as blob": "original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
       composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
       screen:{width:390,height:844},
       frames_in_composition:expectedDuration,
@@ -107,7 +124,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       screenshots,
       warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":"player-browser-smoke.report.json");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":"player-browser-smoke.report.json");
     fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
@@ -130,7 +147,9 @@ async function main(){
     await testCase(browser,{mode:"film",frames:[0,100,145],expectedDuration:165,expectVoice:true});
     console.log("[player-smoke] verifying imported H.264 MP4 clip from local file");
     await testCase(browser,{mode:"clip",frames:[0,74],expectedDuration:105,expectVoice:false});
-    console.log("[player-smoke] all three real Player paths passed");
+    console.log("[player-smoke] examining directed documentary inspection without fabricating quotes");
+    await testCase(browser,{mode:"document",frames:[0,40,102,130],expectedDuration:140,expectVoice:false});
+    console.log("[player-smoke] all four real Player paths passed");
   }finally{
     await browser.close();
   }
