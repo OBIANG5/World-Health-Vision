@@ -6,13 +6,9 @@ La première décision du 19/11 imposant 11 « portes » éditoriales et Vivienn
 
 ---
 
-## PRIORITÉ MÉDIA RÉVISÉE — 19 NOVEMBRE 2026
+### Archive de la première interprétation du 19/11 — ANNULÉE
 
-**Décision directe du propriétaire** : BAOCOM ne doit ni être relié à World-Vision ni publié sur GitHub maintenant. S'inspirer seulement des meilleures idées d'interface/processus. Les modules Content OS/blog attendent la fin du travail d'intégration GDELT dans le logiciel ; à présent on se concentre exclusivement sur **produire des vidéos journalistiques de qualité visuelle/sonore bien supérieure**.
-
-**Travail réellement effectué** : la [PR brouillon #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) introduit sur une branche indépendante un **conducteur cinéma à 11 portes** avec validations, hash scripts/assets, voix Vivienne continue, correspondance des plans aux preuves, maquettes et prototypes motion, montage calé sur la voix, QA mobile. CI Python sans clé API. Le [plan complet](../media/WORLDVISION_CINEMATIC_DIRECTOR_PRODUCTION_V1_2026-11-19.md) décrit les standards et les priorités. **Pas de nouvel export ni de motion design approuvé par cet ajout**.
-
-**Première action suivante :** construire et examiner **un vrai artboard 9:16** de la scène la plus forte d'un sujet vérifié, ensuite une micro-animation Remotion 3–6 secondes, puis deux prises Vivienne continues (et un travail sur le mix, pas une voix segmentée ou accélérée). Retenir chaque décision explicite de l'utilisateur, et conserver les plans déjà validés.
+Les anciennes contraintes de onze portes, script/recherche dans le code et voix Vivienne imposée ont été explicitement retirées. Voir la correction prioritaire ci-dessus.
 
 ---
 
