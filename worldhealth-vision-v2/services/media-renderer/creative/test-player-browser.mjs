@@ -69,6 +69,16 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
       await sleep(600);
+      if(mode==="film"&&frame===100){
+        const incomingHeadlineOpacity=await page.evaluate(()=>{
+          const title=document.querySelector('[data-wv-title="contexte-synthetique"]');
+          return title?Number(getComputedStyle(title).opacity):null;
+        });
+        if(incomingHeadlineOpacity===null||incomingHeadlineOpacity>.02){
+          throw Error("Incoming headline overlaps the outgoing title during dissolve: opacity="+incomingHeadlineOpacity);
+        }
+        console.log("[player-smoke] transition typography gate validated");
+      }
       const fallback=await page.$("#smoke-error");
       if(fallback)throw Error("Player fallback: "+(await page.evaluate(el=>el.textContent,fallback)));
       const file=path.join(output,prefix+frame+".png");
