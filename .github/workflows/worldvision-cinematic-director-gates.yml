@@ -86,6 +86,10 @@ jobs:
         run: |
           node creative/audit-voice.mjs /tmp/worldvision-fixture-assets/synthetic-tone.wav 5.2 > output/creative/audit-voice.json
           node --input-type=module -e "import fs from 'node:fs';import crypto from 'node:crypto';const r=JSON.parse(fs.readFileSync('output/creative/audit-voice.json','utf8'));const sha=crypto.createHash('sha256').update(fs.readFileSync('/tmp/worldvision-fixture-assets/synthetic-tone.wav')).digest('hex');if(r.original_sha256!==sha||r.input_unmodified!==true||Math.abs(r.duration_seconds-5.2)>.1)process.exit(1);console.log(r);"
+      - name: Prove intentionally bad narration silence is actually detected
+        run: |
+          node creative/audit-voice.mjs /tmp/worldvision-fixture-assets/synthetic-tone-with-gap.wav 5.2 > output/creative/audit-with-gap.json
+          node --input-type=module -e "import fs from 'node:fs';const r=JSON.parse(fs.readFileSync('output/creative/audit-with-gap.json','utf8'));if(!r.flags.some(f=>f.code==='long_pause_for_listening_review'&&f.length_seconds>=1))process.exit(1);console.log('Confirmed real, flagged silence',r.flags);"
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
         with:
@@ -98,6 +102,7 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/audit-voice.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/audit-with-gap.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
