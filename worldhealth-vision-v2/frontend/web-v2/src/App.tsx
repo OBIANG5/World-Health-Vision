@@ -842,7 +842,7 @@ function AppContent() {
         onClose={closeVisionHub} onAction={handleVisionAction} />
 
       {route.kind === "search" && (
-        <WorldDiscovery language={lang} countries={countries}
+        <WorldDiscovery language={lang} onToggleLanguage={toggleLang} countries={countries}
           loading={countriesLoading} unavailable={isOffline}
           onClose={closeWorldDiscovery}
           onCountry={handleCountryClick}
