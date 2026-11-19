@@ -280,6 +280,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           const source=document.querySelector('[data-wv-data-provenance]');
           const caption=document.querySelector('[data-wv-data-caption]');
           const value=document.querySelector('[data-wv-data-key-metric]');
+          const chart=document.querySelector('[data-wv-data-chart-boundary]');
           const viewport=document.querySelector('#smoke-preview');
           return {
             chartMode,scaleText:scale?.textContent??"",
@@ -292,6 +293,10 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             maxMobileBottom:viewport?viewport.getBoundingClientRect().top+
               viewport.getBoundingClientRect().height*.79:NaN,
             metricText:value?.textContent??"",
+            chartBottom:chart?.getBoundingClientRect().bottom??NaN,
+            metricTop:value?.getBoundingClientRect().top??NaN,
+            metricBottom:value?.getBoundingClientRect().bottom??NaN,
+            captionTop:caption?.getBoundingClientRect().top??NaN,
             chartLine:Boolean(document.querySelector('[data-wv-data-line-path]')),
             chartRank:Boolean(document.querySelector('[data-wv-data-ranking]')),
             chartHeat:Boolean(document.querySelector('[data-wv-data-heatmap]')),
@@ -312,7 +317,9 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
         if(frame===145&&(!state.sourceText.includes("SIMULATION CI")||
           state.sourceOpacity<.95||!state.metricText.includes("TEST")||
           !Number.isFinite(state.sourceBottom)||state.sourceBottom>state.maxMobileBottom||
-          !Number.isFinite(state.captionBottom)||state.captionBottom>state.sourceTop-7))
+          !Number.isFinite(state.captionBottom)||state.captionBottom>state.sourceTop-7||
+          !Number.isFinite(state.chartBottom)||state.chartBottom>state.metricTop-4||
+          !Number.isFinite(state.metricBottom)||state.metricBottom>state.captionTop-4))
           throw Error("DATA chronology/unit/source mobile readability failed: "+JSON.stringify(state));
         console.log("[player-smoke] DATA source/scale/animation mobile contract",state);
       }
