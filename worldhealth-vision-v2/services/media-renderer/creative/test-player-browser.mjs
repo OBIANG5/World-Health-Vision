@@ -233,6 +233,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             metric:Boolean(number),source:source?.textContent??'',
             title:Boolean(label?.textContent),
             metricBottom:number?.getBoundingClientRect().bottom??null,
+            sourceHeight:source?.getBoundingClientRect().height??null,
             captionTop:caption?.getBoundingClientRect().top??null,
             captionBottom:caption?.getBoundingClientRect().bottom??null,
             maxCaptionBottom:viewport?viewport.getBoundingClientRect().top+viewport.getBoundingClientRect().height*.79:null
@@ -246,7 +247,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
         if(frame===40&&(state.reveal<=.1||state.reveal>=.98||state.subject<=0))
           throw Error("Photo mask and cutout do not move independently on their scheduled beats: "+JSON.stringify(state));
         if(frame===85&&(!state.focusCenter||!state.metric||
-          !state.source.includes("synthétique")||
+          !state.source.includes("synthétique")||!state.sourceHeight||state.sourceHeight<10||
           !state.metricBottom||!state.captionTop||state.metricBottom>=state.captionTop-5))
           throw Error("Photo human-directed focus/metric overlays missing or overlapping: "+JSON.stringify(state));
         if(frame===145&&(state.reveal!==1||
