@@ -18,6 +18,7 @@ from ingestion_service.acquisition_journal import (
 )
 from ingestion_service.models import IndicatorObservation
 from ingestion_service.population_comparability import (
+    ComparableStatus, PopulationComparabilityAssessment,
     PopulationMethod, PopulationSourceSpec, assess_population_comparability,
 )
 from ingestion_service.source_composite_receipt import IbgeCompositeReceiptStore
@@ -217,9 +218,53 @@ class PrivatePopulationReviewStore:
             or report.get("sourceDependence") != "NOT_PROVEN_INDEPENDENT"
             or report.get("scope") != {"countryIso3": "BRA", "year": 2022, "unit": "PERSONS"}):
             raise EvidenceIntegrityError("Method report publishing or scope gate compromised")
+        # Verify the *meaning* of a report as well as its content-addressed
+        # identity. A forged report with a self-consistent SHA must not invent
+        # a source agreement, release, normalized delta, or an upstream chain.
+        expected_keys = {
+            "schema", "status", "scope", "ibgeCompositeReceiptSha256",
+            "wdiResponseSha256", "ibgePopulationVersionSha256",
+            "sourceMetadataReferences", "assessment", "sourceDependence",
+            "ibgeDatasetRights", "worldBankReUse", "numericComparison",
+            "publicDisplayAuthorised", "timeseriesPublication",
+        }
+        if (set(report) != expected_keys
+            or report["status"] != "PRIVATE_METHODOLOGY_REVIEW_ONLY"
+            or report["ibgeDatasetRights"] != "NEEDS_PROVIDER_CLARIFICATION"
+            or report["worldBankReUse"] != "SEPARATE_REVIEW_REQUIRED"
+            or report["sourceMetadataReferences"] != {
+                "ibge": _IBGE_METHOD, "worldBank": _WDI_METHOD,
+            }):
+            raise EvidenceIntegrityError("Method review document or rights fields altered")
+        try:
+            assessment = PopulationComparabilityAssessment.model_validate(report["assessment"])
+        except ValueError as exc:
+            raise EvidenceIntegrityError("Methodological assessment was not valid") from exc
+        if (assessment.status is not ComparableStatus.INCOMPATIBLE_POPULATION_CONCEPT
+            or assessment.source_ids != ("IBGE", "WORLD_BANK")
+            or assessment.source_response_sha256s != (
+                report["ibgePopulationVersionSha256"], report["wdiResponseSha256"],
+            )
+            or assessment.country_iso3 != "BRA"
+            or assessment.requested_year != 2022
+            or assessment.first_reference != "2022-07-31_CENSUS"
+            or assessment.second_reference != "2022_MIDYEAR_ESTIMATE"
+            or assessment.independent_corroboration_established is not False
+            or assessment.numeric_difference_percent is not None
+            or assessment.numeric_delta_persons is not None
+            or assessment.commercial_display_authorized is not False):
+            raise EvidenceIntegrityError("Unreviewed source differences cannot become publication or consensus")
         checked = self._ibge_composite.verify(report["ibgeCompositeReceiptSha256"])
         if checked["publicDisplayAuthorised"] is not False:
             raise EvidenceIntegrityError("Referenced IBGE composite unapproved")
+        composite_path = self._root / "ibge" / "_composite_receipts" / (
+            report["ibgeCompositeReceiptSha256"] + ".json"
+        )
+        composite = json.loads(composite_path.read_bytes())
+        if (not isinstance(composite.get("evidenceParts"), list)
+            or composite["evidenceParts"][0].get("responseSha256") != report["ibgePopulationVersionSha256"]):
+            raise EvidenceIntegrityError("IBGE population version does not match composite evidence")
+
         wdi = self._revisions.verify("WORLD_BANK", _WDI_DATASET, report["wdiResponseSha256"])
         if wdi.notes.get("publicationStatus") != "BRONZE_ONLY_UNREVIEWED":
             raise EvidenceIntegrityError("WDI source publication gate changed")
