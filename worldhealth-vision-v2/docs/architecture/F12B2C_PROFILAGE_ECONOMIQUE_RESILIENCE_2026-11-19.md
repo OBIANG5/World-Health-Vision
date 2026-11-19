@@ -51,6 +51,8 @@ Test : arrêter Analytics, GET catalogue doit rester 200, GET synthèse doit êt
 ## 4. Prochaines investigations pour une vraie baisse de latence (sous-étapes à traiter séparément)
 
 ### F1.2b.2c-2 : compter et profiler les dépendances
+
+**Issue de suivi indépendante :** https://github.com/OBIANG5/World-Health-Vision/issues/42 — requêtes SQL, nombre d'appels, batch et équivalence sémantique.
 - Instrumenter le nombre de requêtes timeseries/catalogue par type et leur durée, **labels limités** (endpoint canonique, status) ; ne pas capturer codes pays, utilisateur, jetons ni données statistiques dans la télémétrie.
 - Vérifier DB `EXPLAIN (ANALYZE, BUFFERS)` avec jeu de données synthétique non trompeur, index sur `(country, indicator, period, source)` adaptés aux requêtes constatées.
 - Comparer coûts de sérialisation, parsing JSON, contrôle de provenance, source metadata, série historique alignée.
