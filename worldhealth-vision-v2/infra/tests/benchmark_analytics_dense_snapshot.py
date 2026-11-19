@@ -8,6 +8,7 @@ Runs only inside disposable analytics-service and accesses loopback.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 from collections import defaultdict
 from time import perf_counter
@@ -62,11 +63,24 @@ async def main() -> int:
             payload = response.json()
             if payload.get("lensCount") != 54 or len(payload.get("lenses", [])) != 54:
                 raise ValueError("Canonical 54-indicator response changed")
-            source_perspectives = sum(
-                len(lens.get("overview", {}).get("sourcePerspectives", []))
+            # CountryEconomicLens exposes sourceAudit, not an overview object.
+            source_comparison_count = sum(
+                lens.get("sourceAudit", {}).get("comparableSourceCount", 0)
                 for lens in payload["lenses"]
-                if isinstance(lens, dict)
             )
+            evidence_item_count = sum(
+                len(lens.get("sourceAudit", {}).get("evidence", []))
+                for lens in payload["lenses"]
+            )
+            # Covers every lens, value, period, source audit, confidence and
+            # narrative; only the intentionally time-varying top timestamp
+            # is omitted. We archive the digest, never synthetic values.
+            semantic_payload = {key: value for key, value in payload.items()
+                                if key != "generatedAtUtc"}
+            semantic_sha256 = hashlib.sha256(
+                json.dumps(semantic_payload, sort_keys=True, ensure_ascii=False,
+                           separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
             after = await metrics()
             keys = set(before) | set(after)
             delta = {
@@ -78,7 +92,9 @@ async def main() -> int:
                 "iteration": iteration,
                 "elapsed_ms": elapsed,
                 "lens_count": payload["lensCount"],
-                "source_perspectives_count": source_perspectives,
+                "comparable_source_count_sum": source_comparison_count,
+                "source_audit_evidence_item_count": evidence_item_count,
+                "complete_snapshot_semantic_sha256": semantic_sha256,
                 "http_dependency_calls": delta,
                 "total_reviewed_http_calls": sum(delta.values()),
             })
@@ -88,6 +104,9 @@ async def main() -> int:
                   f"metadata source={delta.get('catalog.source',0)}, "
                   f"dataset={delta.get('catalog.dataset',0)}, "
                   f"runs={delta.get('timeseries.source_runs',0)}", file=sys.stderr)
+
+    if snapshots[0]["complete_snapshot_semantic_sha256"] != snapshots[1]["complete_snapshot_semantic_sha256"]:
+        raise ValueError("Two consecutive unmodified snapshots changed their values or evidence")
 
     report = {
         "mode": "CI-only, private analytics loopback",
