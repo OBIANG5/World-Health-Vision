@@ -90,6 +90,12 @@ for(let i=0;i<samples;i++){
   wav.writeInt16LE(Math.round(signal),44+i*2);
 }
 fs.writeFileSync(path.join(assetsDir,"synthetic-tone.wav"),wav);
+const gap=Buffer.from(wav);
+for(let i=Math.floor(sampleRate*2.0);i<Math.floor(sampleRate*3.3);i++){
+  gap.writeInt16LE(0,44+i*2);
+}
+fs.writeFileSync(path.join(assetsDir,"synthetic-tone-with-gap.wav"),gap);
+
 const here=path.dirname(fileURLToPath(import.meta.url));
 const p=JSON.parse(fs.readFileSync(path.join(here,"project.example.json"),"utf8"));
 p.id="wv-fixture-with-image-video-audio";
