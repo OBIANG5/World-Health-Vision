@@ -90,3 +90,20 @@ Les trois PNG ont été **ouverts et inspectés** : le fondu est bien présent, 
 **Ajustement UX ultérieur du 19 novembre** : la largeur de visionnage sur téléphone a été augmentée (jusqu'à **360 px en 9:16**) et les précédents plafonds de 235 px sur mobile et 420 px en hauteur ont été retirés. **Contrôler le build du HEAD actualisé via son CI** avant de déclarer cette correction de présentation totalement validée.
 
 **Cette documentation décrit ce qui est réellement présent dans la branche, pas une fonctionnalité déjà déployée sur Vercel.**
+
+
+## 8. Correction de direction artistique du fondu : titres non superposés
+
+Après inspection réelle des captures `player-film-frame-100.png` du run vert #44540102940, un défaut était visible : **le titre du deuxième plan apparaissait sous le titre du premier pendant la transition `dissolve`**, ce qui rendait l'image moins lisible et plus amateur.
+
+**Correction codée dans `CreativeEdit.tsx`, la SOURCE UNIQUE du Player et du rendu MP4** :
+- La scène sortante continue de dissoudre son image, mais son texte éditorial s'atténue pendant les images de chevauchement.
+- Le titre et le sous-titre de la scène entrante commencent **après le chevauchement** au lieu de s'afficher simultanément.
+- La chronologie et la transition officielles Remotion restent inchangées ; on ne fabrique pas une seconde animation CSS, et les fichiers médias de départ ne sont pas modifiés.
+- Les attributs de test `data-wv-title` permettent au navigateur de **vérifier l'opacité exacte du titre entrant** pendant le fondu (frame 100 du test : proche de 0).
+- Le fichier `creative/test-player-browser.mjs` bloque explicitement le test si un titre entrant devient visible trop tôt.
+
+La conséquence recherchée est une **transition d'image continue, mais sans collision des légendes** ; elle devra être contrôlée visuellement sur des photographies authentiques avant de figer un style éditorial global.
+
+**Validation** : [workflow #44541690295](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44541690295), commencé après la correction. **Ne pas déclarer ce changement vert avant succès effectif des deux jobs et inspection du nouvel artefact.**
+
