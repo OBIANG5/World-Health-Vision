@@ -17,7 +17,7 @@ declare global{
   interface Window{
     __wvSmokeSeek?:(frame:number)=>void;
     __wvSmokeReady?:boolean;
-    __wvSmokeMode?:"shot"|"film"|"clip"|"document";
+    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo";
     __wvSmokeFrames?:number;
     __wvSmokeHasVoice?:boolean;
   }
@@ -27,6 +27,7 @@ const mode=new URLSearchParams(window.location.search).get("mode");
 const isFilm=mode==="film";
 const isClip=mode==="clip";
 const isDocument=mode==="document";
+const isGeo=mode==="geo";
 function Smoke(){
   const playerRef=useRef<PlayerRef>(null);
   const [assets,setAssets]=useState<SmokeAssets|null>(null);
@@ -49,15 +50,21 @@ function Smoke(){
   const props=useMemo<CreativeEditProps|null>(()=>{
     if(!assets)return null;
     const opener:CreativeShot={
-      id:"plan-synthetique",durationFrames:isDocument?140:105,template:isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
+      id:"plan-synthetique",durationFrames:isGeo?150:isDocument?140:105,template:isGeo?"geo_story":isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
       media:assets.clip?{kind:"video",src:assets.clip}:{kind:"image",src:assets.photo},
-      title:isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
-      subtitle:isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
-      eyebrow:isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
+      title:isGeo?"LE MONDE EN MOUVEMENT":isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
+      subtitle:isGeo?"Cartographie et animations simultanées, test synthétique.":isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
+      eyebrow:isGeo?"GEO MOTION · AUCUNE ACTUALITÉ":isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
       motion:"dolly",transitionAfter:isFilm?"dissolve":"cut",
       transitionFrames:isFilm?10:0,
       focus:{x:.5,y:.46},
-      ...(isDocument?{documentRegion:{x:.30,y:.40,width:.45,height:.20}}:{})
+      ...(isDocument?{documentRegion:{x:.30,y:.40,width:.45,height:.20}}:{}),
+      ...(isGeo?{geo:{
+        center:{lon:10,lat:12},spinDegrees:12,
+        target:{lon:12,lat:-2,label:"POINT FICTIF"},
+        route:{from:{lon:-9,lat:40},to:{lon:12,lat:-2}},
+        metric:{label:"VALEUR DE TEST",value:42,unit:" TEST",precision:0}
+      }}:{})
     };
     const continuation:CreativeShot={
       id:"contexte-synthetique",durationFrames:70,template:"kinetic",
@@ -80,7 +87,7 @@ function Smoke(){
     if(!props)return;
     window.__wvSmokeSeek=(n:number)=>playerRef.current?.seekTo(n);
     window.__wvSmokeReady=true;
-    window.__wvSmokeMode=isFilm?"film":isClip?"clip":isDocument?"document":"shot";
+    window.__wvSmokeMode=isFilm?"film":isClip?"clip":isDocument?"document":isGeo?"geo":"shot";
     window.__wvSmokeFrames=creativeDuration(props);
     window.__wvSmokeHasVoice=Boolean(props.narration);
     return ()=>{
