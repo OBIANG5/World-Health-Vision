@@ -136,3 +136,17 @@ La revue visuelle a identifié deux problèmes qui ne sont PAS des erreurs de co
 
 **Nouvelle vérification** : [GitHub Actions #44545458500](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44545458500) — **vérifier les deux jobs et inspecter les captures après exécution**. Ne pas inventer un succès avant le résultat. Un test de géométrie ne garantit pas la beauté ; les photos authentiques et les plateformes de diffusion restent le juge final.
 
+
+
+## 8. Échec utile du nouveau contrôle géométrique — corriger, ne pas masquer
+
+Le second contrôle [#44545458500](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44545458500) a détecté un **vrai défaut de composition** :
+- Builder V2 : **SUCCESS**.
+- Tests de contrat, rendu MP4 du document et détection des pauses : réussis jusqu'au test navigateur.
+- Test Chromium documentaire : **FAILURE** car `cardBottom=420px` mais `captionTop=406.53px` dans l'aperçu 360×640, soit environ **13,5 pixels de recouvrement** du document par le bloc de texte. `captionBottom=498.33px` restait pourtant sous le seuil du bas de l'écran (`514.2px`).
+- Le contrôle du plan initial visible et celui du cadre surligné à frame 40 passaient.
+
+**Correction justifiée par les mesures, pas par un nombre arbitraire de lignes de code :** conserver la position du bloc de texte (pour ne pas dépasser les marges inférieures TikTok) et diminuer la hauteur du cadre documentaire de 900 à **830 images-pixels Remotion**. Mettre à jour en même temps l'aperçu du document dans `CinematicProductionBoard.css` afin d'éviter un décalage UI/master. La CI doit désormais vérifier le nouveau rendu, puis les PNG doivent être comparés visuellement.
+
+**Ne jamais qualifier ce deuxième contrôle d'échec mineur à ignorer** : il prouve que la prévisualisation et le test de lecture sont utiles à notre direction artistique.
+
