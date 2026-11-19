@@ -11,6 +11,10 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CountryFocus.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.d.mts'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CountrySelector10m.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/Root.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/package.json'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
@@ -31,6 +35,10 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CountryFocus.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.d.mts'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CountrySelector10m.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/Root.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/package.json'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
@@ -120,6 +128,14 @@ jobs:
             --shot geo-intro \
             --output output/creative/geo-motion-intro.mp4
           node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/geo-motion-intro.mp4');const r=JSON.parse(fs.readFileSync('output/creative/geo-motion-intro.mp4.report.json','utf8'));if(m.width!==1080||m.height!==1920||r.duration_frames!==150||r.shot_id!=='geo-intro'||r.media.length!==0||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('Real atlas globe motion, metadata and stills verified');"
+      - name: Render real 10m-country 50m-context multilayer video from explicitly synthetic fixtures
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-country-focus-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --shot country-gabon \
+            --output output/creative/country-focus-gabon-synthetic.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/country-focus-gabon-synthetic.mp4');const r=JSON.parse(fs.readFileSync('output/creative/country-focus-gabon-synthetic.mp4.report.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==165||r.media.length!==2||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('GEO-2 country focus genuine synthetic asset render successful');"
       - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Analyze supplied audio without modifying or regenerating it
@@ -159,6 +175,11 @@ jobs:
           test -s output/creative/player-clip-smoke.report.json
           test -s output/creative/player-document-frame-0.png
           test -s output/creative/player-document-frame-40.png
+          test -s output/creative/player-country-frame-0.png
+          test -s output/creative/player-country-frame-60.png
+          test -s output/creative/player-country-frame-115.png
+          test -s output/creative/player-country-frame-155.png
+          test -s output/creative/player-country-smoke.report.json
           test -s output/creative/player-document-frame-102.png
           test -s output/creative/player-document-frame-68.png
           test -s output/creative/player-document-smoke.report.json
@@ -207,6 +228,14 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-frame-96.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-frame-138.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/country-focus-gabon-synthetic.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/country-focus-gabon-synthetic.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/country-focus-gabon-synthetic.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-60.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-115.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-155.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error

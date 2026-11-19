@@ -14,6 +14,8 @@ export default defineConfig({
     // from a shared renderer source file. Atlas stays a build-time dependency.
     alias: {
       'world-atlas/countries-110m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-110m.json'),
+      'world-atlas/countries-50m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-50m.json'),
+      'world-atlas/countries-10m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-10m.json'),
     },
     dedupe: ['react', 'react-dom', 'remotion', '@remotion/transitions', '@remotion/layout-utils', '@remotion/three', '@react-three/fiber', 'three', 'd3-geo', 'topojson-client'],
   },

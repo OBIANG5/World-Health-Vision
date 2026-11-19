@@ -1,5 +1,43 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — GEO-2 / SPRINT 9 FINAL TECHNICAL EVIDENCE (19 NOV. 2026)
+
+**PR #74 toujours DRAFT, non fusionnée/non déployée.** Le commit du moteur `b553f7d38c4111ec8de02e43e1a2dbbf1f614c82` a été testé par [CI #44624747361 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361) sur les **deux jobs** : tests Node, build frontend V2, MP4 synthétique H.264 1080x1920/165 images et vrai Player Chromium. Artefact téléchargé **14578693543** ; 7 frames réellement examinées (Player 0/60/115/155, master 0/82/164). Pays Gabon 10m, contexte 50m, marker, photo fictive, compteur fictif, titres/captions coexistants.
+
+**QA visuelle concrète :** ancien run #44623703278 a échoué sur seulement **3,82 px** de séparation titre/carte sur Player 360px. La version corrigée donne **17,48 px** (seuil 12px), pays entier non couvert par photo, première frame amorcée non vide. Région 50m ~84 114 caractères vs 709 064 auparavant (~88% moins), silhouette 10m intacte. **Reste** : beaucoup de bas de cadre sous-utilisé, photogrammes de fiction non publiables, pas de droits d'actu, pas de test iPhone Safari/Android, pas de garantie de qualité artistique mondiale. Voir [Sprint 9 §8](worldhealth-vision-v2/docs/media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md).
+
+**Ensuite, priorité PHOTO MULTILAYER : UNE photographie source vérifiée + 3–6 pistes d'animation indépendantes** (caméra, détourage externe 2,5D, masquage, lumière, chiffres fournis, texte et sound cues), puis DATA graphes finance, puis vrai reportage globe→pays→photo. Ne pas relancer des retouches infinies du globe/pays. Scripts/sources ChatGPT pour le moment, voix interchangeable, BAOCOM séparé, blog/GDELT différés, pas de publication.
+
+---
+
+
+## WORLD-VISION MEDIA — SPRINT 9 GEO-2 CERTIFIÉ TECHNIQUEMENT (19 NOV. 2026)
+
+État fiable et contrôlé : [PR #74](https://github.com/OBIANG5/World-Health-Vision/pull/74) code `country_focus` 10m/50m, carte/pays/média/donnée/texte multicouches. **Dernier code fonctionnel vérifié : `b553f7d38c4111ec8de02e43e1a2dbbf1f614c82`** ; [run #44624747361](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361) **2 jobs SUCCESS, 19 tests Node PASS, six parcours Chromium PASS**. Vérification vraie vidéo 5,5 s 1080×1920 H.264 et photogrammes : l'espace titre→carte est passé de 3,8 à **17,48 px**, le bas de la carte est au-dessus du cartouche photo, contour 10m source Natural Earth et contexte 50m visibles. Artefact #14578693543 conserve toutes les preuves.
+
+**Attention** : qualité artistique mondiale, médias éditorialement sourcés/licenciés et Safari/Android NON certifiés. La PR reste DRAFT, aucune fusion/déploiement/publication. Le cap directeur depuis les vidéos Bourse Express et géopolitique demeure **UNE même image avec plusieurs mouvements indépendants et chorégraphiés**. La suite prioritaire est PHOTO Motion multi-pistes, puis DATA, puis séquence globe→pays→photo/document avec voix/mix. Lire le rapport détaillé [Sprint 9 §8](worldhealth-vision-v2/docs/media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md). BAOCOM reste séparé, recherche/script dans ChatGPT, narrateur libre, blog/GDELT différés.
+
+---
+
+
+## WORLD-VISION MEDIA — SPRINT 9 / AUDIT VISUEL ET CORRECTIONS (19 NOV. 2026)
+
+**Reprise prioritaire** : PR #74, branche `feature/worldvision-country-focus-10m-multilayer-2026-11-19`. Lire le [rapport complet GEO-2 §7](worldhealth-vision-v2/docs/media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md). Contrairement aux premiers builds, nous avons téléchargé et **inspecté les vraies captures Player/MP4** de la CI #44621299587 : carte Gabon 10m, contexte 50m, photo synthétique, compteur et titre réellement animés en même temps. **Deux défauts graphiques avérés** : image 0 trop vide et bas du pays recouvert par la photo. Ils ont été corrigés dans le code (emprise carte déplacée et portrait séparé, base visuelle dès frame 0) et des tests de non-régression ajoutés. Rayon des pays voisins passé de 1,25 rad constant à un choix adaptatif à la taille de la géométrie pour réduire les 709 064 caractères de path observés. Tests Fidji/Russie ajoutés. **Ne PAS annoncer correction artistique définitive sans relire le run #44622728753 et ses images.**
+
+Statut : PR #74 en brouillon, ni merge dans V2 ni déploiement, aucune actualité inventée. Ensuite PHOTO multicouche (image unique, 3–6 motions) et DATA, après analyse film + iOS. Sources et script dans ChatGPT; voix libre; BAOCOM complètement séparé; pas de GDELT/blog dans cette PR.
+
+---
+
+## WORLD-VISION MEDIA — GEO-2 / SPRINT 9 COUNTRY FOCUS (19 NOV. 2026)
+
+**Continuité du besoin initial** : références Bourse Express (finance), vidéo géopolitique et globe-œil lumineux ; nécessité centrale = plusieurs animations de qualité en parallèle sur UN plan / une seule image, pas une succession de diapositives. Base vérifiée : PR #72 (GEO Director Sprint 8), dernière CI avant départ #44617612706 SUCCESS, mais pays trop petit sur l'œil.
+
+**Nouvelle branche isolée :** `feature/worldvision-country-focus-10m-multilayer-2026-11-19`, empilée sur PR #72 ; **nouveau `country_focus` 1080×1920**, vrai polygone Natural Earth/World Atlas 10m, contexte 50m, caméra de carte, reveal contour, média/alpha cutout importés, marqueur appartenant au pays, chiffre fourni, titre et sous-titre chorégraphiés. Source de vérité et checklist : [WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md). **CI et rendu de cette nouvelle branche à vérifier, ne présumer aucun succès.** Pas de merge, déploiement, diffusion ou licence accordée.
+
+**Prochaines étapes obligatoires :** réconcilier tests+pixels, tester petits pays/archipels et géopolitiques disputées, créer continuité `geo_story -> country_focus -> photo`, puis pack PHOTO (UNE image + 3–6 mouvements utiles) et DATA (courbes/heatmap/ranking). Script/sources restent ChatGPT+utilisateur ; Vivienne optionnelle ; BAOCOM séparé ; GDELT/blog hors du Studio.
+
+---
+
 ## WORLD-VISION MEDIA — SPRINT 8 / GEO DIRECTOR + BIBLIOTHÈQUE DE MOTIONS (19 NOV. 2026)
 
 **Reprise à partir des références utilisateurs** : deux vidéos verticales (finance/graphes, géopolitique/cartes) + image de l'œil/globe ; objectif **plusieurs animations sophistiquées simultanées sur la même image** et véritable motion design international, et non multiplication de maquettes simples. La direction est le pack GEO puis DATA, PHOTO 2,5D multi-couches, EDITORIAL, documentaire et AUDIO.
