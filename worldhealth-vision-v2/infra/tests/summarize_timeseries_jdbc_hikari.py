@@ -36,6 +36,28 @@ def summarize(records: list[dict], minimum_count: int = 60) -> dict:
         }
 
     final = meaningful[-1]
+    # Hikari pool-acquire and connection-usage metrics separate wait from
+    # holding a connection. They include ALL pool activity, not only batches.
+    pool_timers = []
+    for name in ("acquire", "usage"):
+        values = final.get("hikari_pool_timers", {}).get(name)
+        if not isinstance(values, dict):
+            raise ValueError(f"Missing Hikari {name} timing")
+        count, total = values.get("count"), values.get("sum")
+        if not isinstance(count, (float, int)) or count < minimum_count:
+            raise ValueError(f"Insufficient Hikari {name} observations")
+        if not isinstance(total, (float, int)) or total < 0:
+            raise ValueError(f"Invalid Hikari {name} total duration")
+        sampled_max = max(
+            item.get("hikari_pool_timers", {}).get(name, {}).get("max", 0.0)
+            for item in meaningful
+        )
+        pool_timers.append({
+            "metric": name,
+            "calls_all_pool_users": int(count),
+            "mean_duration_ms": round(total * 1000 / count, 3),
+            "sampled_max_ms": round(sampled_max * 1000, 3),
+        })
     jdbc_summary = []
     for operation in OPERATIONS:
         metric = final["jdbc"].get(operation)
@@ -60,6 +82,8 @@ def summarize(records: list[dict], minimum_count: int = 60) -> dict:
         "samples": len(meaningful),
         "method": "Micrometer JDBC timers include Hikari waiting + query + Java result mapping; excludes HTTP serialization. Hikari gauges are sampled, not guaranteed peaks.",
         "hikari": gauge_summary,
+        "hikari_pool_timers": pool_timers,
+        "hikari_timeouts_reported": final.get("hikari_timeouts"),
         "batch_jdbc_timers": jdbc_summary,
     }
 
@@ -73,6 +97,10 @@ def main():
     summary = summarize(records)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    for item in summary["hikari_pool_timers"]:
+        print(f"OBSERVED Hikari {item['metric']}: "
+              f"{item['calls_all_pool_users']} acquisitions/uses, "
+              f"mean={item['mean_duration_ms']}ms")
     for item in summary["batch_jdbc_timers"]:
         print(f"OBSERVED {item['operation']} JDBC+mapping: {item['calls']} calls, "
               f"mean={item['mean_jdbc_and_mapping_ms']}ms")
