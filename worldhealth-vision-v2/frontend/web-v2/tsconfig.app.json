@@ -18,7 +18,10 @@
       "@remotion/transitions": ["./node_modules/@remotion/transitions"],
       "@remotion/transitions/fade": ["./node_modules/@remotion/transitions/dist/presentations/fade.d.ts"],
       "@remotion/transitions/slide": ["./node_modules/@remotion/transitions/dist/presentations/slide.d.ts"],
-      "@remotion/layout-utils": ["./node_modules/@remotion/layout-utils"]
+      "@remotion/layout-utils": ["./node_modules/@remotion/layout-utils"],
+      "d3-geo": ["./node_modules/d3-geo"],
+      "topojson-client": ["./node_modules/topojson-client"],
+      "world-atlas/*": ["./node_modules/world-atlas/*"]
     },
 
     /* Bundler mode */
