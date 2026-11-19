@@ -340,7 +340,7 @@ export default function ProductionJourney({
         Examiner les 6 plans du globe · noter plan par plan ↗
       </button>
     </section>
-    {current==="overview" && <CinematicProductionBoard story={story}/>}\n    <div className="wvj-controls">
+    {current==="overview" && <CinematicProductionBoard/>}\n    <div className="wvj-controls">
       <div className="wvj-switch"><button type="button" className={current==="overview"?"active":""} onClick={()=>setCurrent("overview")}>Vue d'ensemble</button><button type="button" className={current!=="overview"?"active":""} onClick={()=>setCurrent(current==="overview"?"radar":current)}>Explorer les étapes</button></div>
       <div className="wvj-subject"><label htmlFor="wvj-story">DOSSIER</label><select id="wvj-story" value={story?.id||selectedId||""} onChange={e=>onSelectStory(e.target.value)}>{stories.map(s=><option value={s.id} key={s.id}>{s.title}</option>)}</select></div>
     </div>
