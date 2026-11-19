@@ -1,5 +1,17 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## NOUVEAU POINT DE REPRISE — MEDIA SPRINT 5 : PREUVE VISUELLE AUTHENTIQUE (19 NOV. 2026)
+
+**Relire d'abord [WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md) (§ 7–8)**, puis la [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) toujours DRAFT, non fusionnée, non déployée.
+
+La suite du Sprint 4 a créé `document_focus`, une véritable mise en scène Remotion de **l'image documentaire originale** et d'un **rectangle x/y/largeur/hauteur explicitement choisi** : arrivée de la page, zone surlignée, rapprochement optique limité, texte fourni ici, sans citation ni chiffre fabriqués. Même composition pour l'export MP4 et le Player V2. Contrat vérifié par `validate-project.mjs`, interface avec 4 curseurs et page complète non retapée. Aucun lien BAOCOM, aucune voix obligatoire, aucun GDELT/blog ; recherche/script demeurent ici avec ChatGPT.
+
+**Preuve positive initiale** [CI #44544197428 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44544197428), 12 tests Node, rendu H.264, 4 captures Chromium et source synthétique. **La revue des captures a identifié un début noir et un titre empiétant sur le document ; correction réalisée.** [CI #44545458500](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44545458500) a volontairement **échoué** sur la géométrie : recouvrement mesuré de **13,5 px** au format 360×640, malgré un build frontend vert. Le cadre documentaire a alors été raccourci à 830px Remotion en conservant les légendes dans la zone sûre. **Contrôler le nouveau run [#44546198363](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363) pour le verdict du HEAD de code, puis ouvrir les quatre images et le MP4.**
+
+**À venir** : corriger si le nouveau contrôle échoue, préserver l'état et les preuves ; ensuite une vraie vidéo World‑Vision avec script et médias authentiques autorisés, direction artistique A/B, versioning par plan, son professionnel, tests iPhone/Safari, Content OS audiovisuel limité. Aucun test technique ne garantit viralité ni « qualité mondiale ».
+
+---
+
 ## WORLD-VISION MEDIA — SPRINT 4 VALIDÉ TECHNIQUEMENT (19 NOVEMBRE 2026)
 
 **PR #44 DRAFT / NON MERGÉE / NON DÉPLOYÉE**. Le document de reprise le plus complet est [WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md), surtout **sections 7 à 9**.
