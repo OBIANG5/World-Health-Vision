@@ -1,0 +1,43 @@
+name: World-Vision UX-1A — public iPhone preview URL smoke
+
+on:
+  push:
+    branches:
+      - preview-worldvision-ux1-2026-11-19
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# The site is a previously built, transparent OFFLINE UX PREVIEW.
+# Never claims to provide live World-Vision API data or verified statistics.
+# Never releases production Vercel or modifies video/media code.
+jobs:
+  verify-public-mobile-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Smoke check original exact compiled UX-1A commit on GitHack
+        env:
+          UX1_SHA: "1d4a6e392b6e102f3e6ea9a26b9c0cff4b4a311b"
+        run: |
+          set -euo pipefail
+          root="https://raw.githack.com/OBIANG5/World-Health-Vision/$UX1_SHA"
+          echo "Preview candidate: $root/index.html"
+          curl --fail --location --silent --show-error --max-time 25 \
+            "$root/index.html" -o /tmp/wv-ux1-index.html
+          grep -F 'assets/index-IEGl_X2i.js' /tmp/wv-ux1-index.html >/dev/null
+          grep -F 'preview-bootstrap.js' /tmp/wv-ux1-index.html >/dev/null
+          grep -F 'noindex,nofollow' /tmp/wv-ux1-index.html >/dev/null
+          curl --fail --location --silent --show-error --max-time 25 \
+            "$root/assets/index-5f6JZ06A.css" -o /tmp/wv-ux1.css
+          curl --fail --location --silent --show-error --max-time 25 \
+            "$root/assets/index-IEGl_X2i.js" -o /tmp/wv-ux1.js
+          curl --fail --location --silent --show-error --max-time 25 \
+            "$root/preview-bootstrap.js" -o /tmp/wv-ux1-bootstrap.js
+          test "$(wc -c < /tmp/wv-ux1.css)" -gt 30000
+          test "$(wc -c < /tmp/wv-ux1.js)" -gt 100000
+          grep -F 'aucune donnée économique mondiale simulée' /tmp/wv-ux1-bootstrap.js >/dev/null
+          echo "PASS: Public HTML, React JS, stylesheet and transparent offline bootstrap are reachable"
+          echo "PUBLIC IPHONE URL: $root/index.html"
+          rm /tmp/wv-ux1-index.html /tmp/wv-ux1.css /tmp/wv-ux1.js /tmp/wv-ux1-bootstrap.js
