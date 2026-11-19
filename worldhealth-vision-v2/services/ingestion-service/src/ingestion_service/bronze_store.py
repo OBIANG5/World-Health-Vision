@@ -10,6 +10,15 @@ class BronzeStore:
     def __init__(self, bronze_root: Path) -> None:
         self._bronze_root = bronze_root
 
+    def private_acquisition_journal(self):
+        """Isolated private event log for the IBGE research pilot only.
+
+        Other legacy ingestion flows retain their existing behaviour.
+        The journal and quarantined bytes share one private Bronze root.
+        """
+        from ingestion_service.acquisition_journal import AcquisitionJournal
+        return AcquisitionJournal(self._bronze_root)
+
     def persist_dataset(
         self,
         *,

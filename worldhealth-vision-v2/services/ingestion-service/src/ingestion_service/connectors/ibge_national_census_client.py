@@ -10,7 +10,7 @@ levels, years and rights require explicit review before expansion.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 import hashlib
 import json
@@ -44,6 +44,9 @@ class IbgeNationalPopulation:
     source_url: str
     source_variable_label: str
     source_unit_label: str
+    http_status: int | None = None
+    etag: str | None = None
+    last_modified: str | None = None
 
 
 def parse_ibge_national_population(
@@ -131,6 +134,8 @@ class IbgeNationalCensusClient:
         ) as client:
             with client.stream("GET", IBGE_DATA_PATH, params=IBGE_QUERY) as response:
                 response.raise_for_status()
+                response_etag = response.headers.get("etag")
+                response_last_modified = response.headers.get("last-modified")
                 content_type = response.headers.get("content-type", "").lower()
                 if "application/json" not in content_type:
                     raise ValueError("IBGE returned non-JSON content")
@@ -149,4 +154,6 @@ class IbgeNationalCensusClient:
             payload = json.loads(body)
         except (ValueError, UnicodeDecodeError) as exc:
             raise ValueError("IBGE JSON invalid") from exc
-        return parse_ibge_national_population(payload, original_http_bytes=bytes(body))
+        parsed = parse_ibge_national_population(payload, original_http_bytes=bytes(body))
+        return replace(parsed, http_status=200, etag=response_etag,
+                       last_modified=response_last_modified)

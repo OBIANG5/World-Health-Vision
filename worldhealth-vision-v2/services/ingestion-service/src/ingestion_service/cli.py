@@ -80,6 +80,47 @@ def capture_ibge_census2022_metadata():
     }, indent=2))
 
 
+@ibge_app.command("audit-private-acquisitions")
+def audit_private_ibge_acquisitions():
+    """Audit FETCH EVENTS, separately from immutable dataset revisions."""
+    from ingestion_service.acquisition_journal import AcquisitionJournal
+    journal = AcquisitionJournal(get_settings().bronze_root)
+    datasets = ("CENSO2022_4714", "CENSO2022_4714_METADATA", "CENSO2022_4714_PERIODS")
+    typer.echo(json.dumps({
+        "source": "IBGE",
+        "publicationStatus": "BLOCKED_PENDING_RIGHTS_REVIEW",
+        "timeseriesPublication": "NOT_ATTEMPTED",
+        "datasets": {dataset: journal.audit("IBGE", dataset) for dataset in datasets},
+    }, ensure_ascii=False, indent=2))
+
+
+@ibge_app.command("assemble-private-evidence-receipt")
+def assemble_private_ibge_evidence_receipt(
+    population_sha: str = typer.Option(..., "--population-sha", help="Exact original HTTP SHA-256"),
+    metadata_sha: str = typer.Option(..., "--metadata-sha", help="Exact official metadata HTTP SHA-256"),
+    periods_sha: str = typer.Option(..., "--periods-sha", help="Exact official periods HTTP SHA-256"),
+):
+    """Explicitly bind 3 captured revisions; NO implicit latest or public export."""
+    from ingestion_service.source_composite_receipt import IbgeCompositeReceiptStore
+    receipt = IbgeCompositeReceiptStore(get_settings().bronze_root).create(
+        population_sha256=population_sha, metadata_sha256=metadata_sha,
+        periods_sha256=periods_sha,
+    )
+    typer.echo(json.dumps(receipt, ensure_ascii=False, indent=2))
+
+
+@ibge_app.command("verify-private-evidence-receipt")
+def verify_private_ibge_evidence_receipt(
+    receipt_sha: str = typer.Option(..., "--receipt-sha", help="Exact immutable receipt SHA-256"),
+):
+    """Fail closed if any historical link, audit event or rights snapshot differs."""
+    from ingestion_service.source_composite_receipt import IbgeCompositeReceiptStore
+    typer.echo(json.dumps(
+        IbgeCompositeReceiptStore(get_settings().bronze_root).verify(receipt_sha),
+        ensure_ascii=False, indent=2,
+    ))
+
+
 @ibge_app.command("review-census-2022-rights")
 def review_ibge_census2022_rights():
     """Show an unapproved dataset-specific rights dossier; NOT legal approval."""
