@@ -5,6 +5,7 @@ import {fade} from "@remotion/transitions/fade";
 import {slide} from "@remotion/transitions/slide";
 import {fitTextOnNLines} from "@remotion/layout-utils";
 import {GeoStory} from "./GeoStory";
+import {CountryFocus} from "./CountryFocus";
 import type {GeoDirection} from "./GeoStory";
 
 /**
@@ -21,7 +22,7 @@ export type CreativeMedia = {
 export type CreativeShot = {
   id:string;
   durationFrames:number;
-  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story";
+  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus";
   title?:string;
   subtitle?:string;
   eyebrow?:string;
@@ -346,6 +347,7 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
   if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="document_focus")return <DocumentFocus shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="geo_story")return <GeoStory shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
+  if(shot.template==="country_focus")return <CountryFocus shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   const opacity=reveal(frame,enterOverlapFrames,17);
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
   const subtitleFade=reveal(frame,enterOverlapFrames+15,18);
