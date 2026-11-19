@@ -39,7 +39,7 @@ docker compose -f "$compose_file" exec -T whv-timescaledb \
   pg_restore --list < "$temporary" >/dev/null
 chmod 0600 "$temporary"
 mv -- "$temporary" "$backup"
-sha256sum "$backup" > "$backup.sha256"
+sha256sum "$backup" | awk '{print $1}' > "$backup.sha256"
 chmod 0600 "$backup.sha256"
 echo "Backup validated locally: $backup"
 echo "IMPORTANT: perform restore drill and encrypted off-host copies separately."
