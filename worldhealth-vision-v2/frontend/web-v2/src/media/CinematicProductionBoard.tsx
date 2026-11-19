@@ -172,7 +172,7 @@ const buildData=(s:Shot):DataMotion=>{
 const validData=(s:Shot)=>{
   if(s.template!=="data_story")return true;
   const d=s.dataDraft;
-  const dateOK=(x:string)=>/^\\d{4}-\\d{2}-\\d{2}$/.test(x)&&
+  const dateOK=(x:string)=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&
     !Number.isNaN(Date.parse(x+"T00:00:00Z"))&&
     new Date(x+"T00:00:00Z").toISOString().slice(0,10)===x;
   const numeric=(x:string)=>x.trim()!==""&&Number.isFinite(Number(x))&&Math.abs(Number(x))<=1e12;
