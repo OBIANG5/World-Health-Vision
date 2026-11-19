@@ -134,7 +134,7 @@ try {
     // nearly invisible. Fail this release check if the problem returns.
     const failedContrast = await page.evaluate(() => {
       const rgb = (s) => {
-        const parts = s.match(/[\\d.]+/g)?.slice(0, 3).map(Number);
+        const parts = s.match(/[0-9.]+/g)?.slice(0, 3).map(Number);
         if (!parts || parts.length !== 3) throw new Error("Unparseable CSS color: " + s);
         return parts;
       };
