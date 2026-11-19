@@ -167,6 +167,32 @@ body .whv-tools-menu.whv-domain-menu{
  .adv-panel,.prf-panel,.pp-panel,.watchlist-panel){
  color:#0f2a4a;background:#fff;border:1px solid #c8dfef;box-shadow:0 22px 65px #051c3840
 }
+/* Favorites inherited pale-blue-on-navy text from eye.css, while Electric
+   Earth turned the panel surface white. Keep every child legible on PAPER. */
+.whv-page .watchlist-panel{background:#fff;color:#102f50;border-color:#c8dfef}
+.whv-page .watchlist-panel-header{background:#f0f8ff;border-bottom:1px solid #d4e5f3}
+.whv-page .watchlist-panel-title{color:#092a4e}
+.whv-page .watchlist-panel-subtitle{color:#365a78}
+.whv-page .watchlist-panel-close{
+  color:#0a5389;background:#e1f2ff;border:1px solid #bad9ee;
+  min-width:30px;min-height:30px
+}
+.whv-page .watchlist-panel-close:hover{color:#062c52;background:#cfeaff}
+.whv-page .watchlist-empty-text{color:#123d62}
+.whv-page .watchlist-empty-hint{color:#3a5a76}
+.whv-page .watchlist-item{border-bottom-color:#e3eef6}
+.whv-page .watchlist-item:hover{background:#f2faff}
+.whv-page .watchlist-item-name{color:#0c2d50}
+.whv-page .watchlist-item-currency{color:#285b82;background:#e8f5ff}
+.whv-page .watchlist-item-btn--open{
+  color:#07518a;background:#e6f4ff;border-color:#b8daf2
+}
+.whv-page .watchlist-item-btn--open:hover{color:#053966;background:#d5ecff}
+.whv-page .watchlist-item-btn--remove{
+  color:#97323c;background:#fff;border-color:#eebbc0
+}
+.whv-page .watchlist-item-btn--remove:hover{color:#7b1826;background:#fff0f1;border-color:#de8a94}
+
 .whv-page :is(.rt-header,.ds-header,.tv-header,.re-header,.cur-header,
  .al-header,.adv-header,.prf-header){background:#f0f8ff;border-bottom:1px solid #d7eafa}
 .whv-page :is(.rt-title,.ds-title,.tv-header-title,.re-title,.cur-header-title,
