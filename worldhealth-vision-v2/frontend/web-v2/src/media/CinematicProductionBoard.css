@@ -211,3 +211,34 @@
   .wvc-preview{display:flex}
   .wvc-device{max-width:min(360px,100%);max-height:none}
 }
+
+
+/* DOCUMENT FOCUS / source geometry matches real renderer (x=92/1080,
+   y=353/1920, width=896/1080, height=1138/1920).
+   This is a still comparison only — the Remotion Player renders real motion. */
+.wvc-document-source{
+  position:absolute;inset:0;background:#071520;color:#cee8f5;
+  overflow:hidden
+}
+.wvc-document-page{
+  position:absolute;left:8.52%;top:18.39%;
+  width:82.96%;height:59.27%;
+  background:#e9edef;
+  border:1px solid #6690a2;
+  border-radius:2.3%;box-shadow:0 14px 22px rgba(0,0,0,.42);
+  overflow:hidden
+}
+.wvc-document-page img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain!important;object-position:center center!important;
+}
+.wvc-document-region{
+  position:absolute;border:2px solid #70d8ee;
+  background:rgba(104,207,236,.055);
+  box-shadow:0 0 0 500px rgba(3,16,27,.35);
+  border-radius:2px;pointer-events:none
+}
+.wvc-document-source small{
+  position:absolute;left:8.52%;bottom:10.4%;right:13%;
+  color:#bed7e4;line-height:1.35;font-size:11px;font-weight:700
+}
