@@ -219,7 +219,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
     {/* Level 6: optional authentic supplied photographic card.
         If absent the composition stays entirely cartographic. */}
     {hasPhoto&&shot.media&&<div data-wv-geo-photo="true" style={{
-      position:"absolute",top:1128,left:89,width:902,height:314,
+      position:"absolute",top:772,left:91,width:465,height:298,
       overflow:"hidden",borderRadius:22,
       border:"1px solid rgba(166,222,244,.5)",
       boxShadow:"0 20px 50px rgba(0,0,0,.53)",
@@ -237,13 +237,18 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
     </div>}
     {/* Level 7: numerics are editorial values, NOT market data invented by AI. */}
     {m&&<div data-wv-geo-metric="true" style={{
-      position:"absolute",right:100,top:hasPhoto?1230:1168,
-      width:375,display:"flex",flexDirection:"column",alignItems:"flex-end",
+      position:"absolute",
+      left:hasPhoto?114:undefined,
+      right:hasPhoto?undefined:100,
+      top:hasPhoto?866:1017,
+      width:hasPhoto?414:375,
+      display:"flex",flexDirection:"column",
+      alignItems:hasPhoto?"flex-start":"flex-end",
       opacity:metricIn*fadeOut
     }}>
       <div style={{fontSize:23,color:"#b8dfef",letterSpacing:".08em",
         textTransform:"uppercase",fontWeight:720}}>{m.label}</div>
-      <div style={{fontSize:94,lineHeight:1.04,fontWeight:860,
+      <div style={{fontSize:hasPhoto?76:94,lineHeight:1.04,fontWeight:860,
         color:"#c7fbff",letterSpacing:"-.06em",
         textShadow:"0 0 32px rgba(0,188,242,.3)"}}>
         {displayNumber}<span style={{fontSize:40,marginLeft:9}}>{m.unit??""}</span>
@@ -263,7 +268,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
     {/* Level 8: headlines enter after cartographic context. */}
     <div data-wv-geo-copy="true" style={{
       position:"absolute",left:89,right:173,
-      bottom:hasPhoto?240:350,
+      top:1162,
       opacity:titleIn*fadeOut,
       transform:"translateY("+Math.round((1-titleIn)*45)+"px)"
     }}>
