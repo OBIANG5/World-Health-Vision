@@ -148,7 +148,7 @@ async function main(){
     console.log("[player-smoke] verifying imported H.264 MP4 clip from local file");
     await testCase(browser,{mode:"clip",frames:[0,74],expectedDuration:105,expectVoice:false});
     console.log("[player-smoke] examining directed documentary inspection without fabricating quotes");
-    await testCase(browser,{mode:"document",frames:[0,40,102,130],expectedDuration:140,expectVoice:false});
+    await testCase(browser,{mode:"document",frames:[0,40,68,102],expectedDuration:140,expectVoice:false});
     console.log("[player-smoke] all four real Player paths passed");
   }finally{
     await browser.close();
