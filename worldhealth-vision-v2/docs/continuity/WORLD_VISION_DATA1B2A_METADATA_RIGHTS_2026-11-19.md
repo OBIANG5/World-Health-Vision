@@ -67,7 +67,7 @@ Les preuves cryptographiques sont des empreintes locales de l'acquisition ; aucu
 - Censo 2022, contexte et politique de révisions : https://www.ibge.gov.br/estatisticas/sociais/populacao/2098-np-censo-demografico/22827-censo-demografico-2022.html.
 - Un contrat IBGE cartographique BC250 de 2017 peut imposer des conditions spéciales ; **ne pas en déduire les droits du recensement 2022**, car il concerne un produit différent.
 
-**Décision :** aucun droit public/commercial/API redistribution accordé ou inféré. Il faut trouver et sauvegarder les textes propres au jeu de données SIDRA 4714/93, identité de l'émetteur, clauses précises, droits par action, attribution, dates, version, preuve et décision datée. Si manque ou ambiguïté : demander confirmation institutionnelle / avis juridique, garder BROZE_ONLY_UNREVIEWED et LICENSE REVIEW_REQUIRED.
+**Décision :** aucun droit public/commercial/API redistribution accordé ou inféré. Il faut trouver et sauvegarder les textes propres au jeu de données SIDRA 4714/93, identité de l'émetteur, clauses précises, droits par action, attribution, dates, version, preuve et décision datée. Si manque ou ambiguïté : demander confirmation institutionnelle / avis juridique, garder BRONZE_ONLY_UNREVIEWED et LICENSE REVIEW_REQUIRED.
 
 ## 4 — RISQUES ET LIMITES NON ENCORE RÉSOLUS
 
