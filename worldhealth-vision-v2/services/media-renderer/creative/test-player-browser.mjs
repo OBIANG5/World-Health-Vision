@@ -69,6 +69,6 @@ async function main(){
     };
     fs.writeFileSync(path.join(output,"player-browser-smoke.report.json"),JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
-  }finally{await browser.close();}
+  }finally{await browser.close({silent:true});}
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
