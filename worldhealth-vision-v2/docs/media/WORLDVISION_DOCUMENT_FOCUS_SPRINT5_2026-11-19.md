@@ -115,3 +115,24 @@ L'implémentation a déclenché un test GitHub Actions :
 6. Documenter les bugs constatés, les tests réels, les compromis techniques, les choix créatifs et les actions à reprendre ; pas de fusion vers `v2` ni de déploiement public à ce stade.
 
 **Le succès d'une mise en scène de document authentique doit être jugé dans le film réel, pas déduit du nombre de lignes de code.**
+
+
+## 7. Revue humaine des quatre images — défauts détectés et corrigés
+
+**Premier rendu : [GitHub Actions #44544197428](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44544197428) — SUCCESS**, deux jobs verts, maintenant **12 tests Node réussis**, 0 erreur de navigateur, vrai `document-focus-only.mp4` de 140 frames et captures Chromium `0/40/68/102` issues d'une source *strictement synthétique*. L'artefact initial `14541110191` a été téléchargé et les quatre images ont été **visuellement inspectées**.
+
+La revue visuelle a identifié deux problèmes qui ne sont PAS des erreurs de compilation :
+1. **Image d'ouverture vide** : à `frame 0`, le document était presque complètement invisible (`opacity=0`). Inacceptable pour un premier instant censé accrocher le public.
+2. **Titre sur la page** : à `frame 68/102`, le cartouche de titre couvrait la partie inférieure du document synthétique, rendant sa lecture difficile. Le passage sélectionné était néanmoins visible ; le résultat restait visuellement trop amateur.
+
+**Correction en code** : `CreativeEdit.tsx` rend immédiatement visible l'image source (`opacity` initiale ≥ 0,93), ajuste son entrée et place le document dans un cadre plus court, tandis que le cartouche des légendes se situe dans le tiers inférieur avec un fond de contraste. `CinematicProductionBoard.css` reproduit la nouvelle géométrie dans l'aperçu de positionnement de la zone. Le titre entre plus tard pour laisser le temps d'inspecter la zone mise en évidence.
+
+**Nouveaux critères CI dans `test-player-browser.mjs`** :
+- image source perceptible dès **frame 0** : opacité ≥ 0,90 et dimensions suffisantes ;
+- fenêtre de sélection effectivement visible à **frame 40** ;
+- caméra en mouvement sur l'extrait à **frame 68** ;
+- titre visible à **frame 102** ;
+- au moment du titre, bloc de texte **sans recouvrir la carte du document**, ni descendre dans la zone jugée dangereuse pour les overlays des plateformes.
+
+**Nouvelle vérification** : [GitHub Actions #44545458500](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44545458500) — **vérifier les deux jobs et inspecter les captures après exécution**. Ne pas inventer un succès avant le résultat. Un test de géométrie ne garantit pas la beauté ; les photos authentiques et les plateformes de diffusion restent le juge final.
+
