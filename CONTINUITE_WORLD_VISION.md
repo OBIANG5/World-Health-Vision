@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — GEO-2 / SPRINT 9 COUNTRY FOCUS (19 NOV. 2026)
+
+**Continuité du besoin initial** : références Bourse Express (finance), vidéo géopolitique et globe-œil lumineux ; nécessité centrale = plusieurs animations de qualité en parallèle sur UN plan / une seule image, pas une succession de diapositives. Base vérifiée : PR #72 (GEO Director Sprint 8), dernière CI avant départ #44617612706 SUCCESS, mais pays trop petit sur l'œil.
+
+**Nouvelle branche isolée :** `feature/worldvision-country-focus-10m-multilayer-2026-11-19`, empilée sur PR #72 ; **nouveau `country_focus` 1080×1920**, vrai polygone Natural Earth/World Atlas 10m, contexte 50m, caméra de carte, reveal contour, média/alpha cutout importés, marqueur appartenant au pays, chiffre fourni, titre et sous-titre chorégraphiés. Source de vérité et checklist : [WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md). **CI et rendu de cette nouvelle branche à vérifier, ne présumer aucun succès.** Pas de merge, déploiement, diffusion ou licence accordée.
+
+**Prochaines étapes obligatoires :** réconcilier tests+pixels, tester petits pays/archipels et géopolitiques disputées, créer continuité `geo_story -> country_focus -> photo`, puis pack PHOTO (UNE image + 3–6 mouvements utiles) et DATA (courbes/heatmap/ranking). Script/sources restent ChatGPT+utilisateur ; Vivienne optionnelle ; BAOCOM séparé ; GDELT/blog hors du Studio.
+
+---
+
 ## WORLD-VISION MEDIA — SPRINT 8 / GEO DIRECTOR + BIBLIOTHÈQUE DE MOTIONS (19 NOV. 2026)
 
 **Reprise à partir des références utilisateurs** : deux vidéos verticales (finance/graphes, géopolitique/cartes) + image de l'œil/globe ; objectif **plusieurs animations sophistiquées simultanées sur la même image** et véritable motion design international, et non multiplication de maquettes simples. La direction est le pack GEO puis DATA, PHOTO 2,5D multi-couches, EDITORIAL, documentaire et AUDIO.
