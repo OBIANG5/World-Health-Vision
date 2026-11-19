@@ -16,7 +16,11 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-leaflet": "^5.0.0",
-    "recharts": "^3.8.1"
+    "recharts": "^3.8.1",
+    "remotion": "4.0.542",
+    "@remotion/player": "4.0.542",
+    "@remotion/transitions": "4.0.542",
+    "@remotion/layout-utils": "4.0.542"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
