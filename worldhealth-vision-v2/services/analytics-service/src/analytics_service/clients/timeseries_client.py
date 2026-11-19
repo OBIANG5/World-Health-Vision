@@ -1,5 +1,7 @@
 import httpx
 
+from analytics_service.metrics import timed_dependency_http
+
 from analytics_service.models import (
     CountryLatestComparisonItem,
     DependencyReadiness,
@@ -24,12 +26,18 @@ class TimeseriesClient:
             transport=transport,
         )
 
+    async def _get(self, operation: str, path: str, *, params=None) -> httpx.Response:
+        # Only internal reviewed operation names reach the fixed-cardinality metrics.
+        with timed_dependency_http("timeseries", operation):
+            response = await self._client.get(path, params=params)
+            response.raise_for_status()
+        return response
+
     async def aclose(self) -> None:
         await self._client.aclose()
 
     async def get_readiness(self) -> DependencyReadiness:
-        response = await self._client.get("/api/timeseries/readiness")
-        response.raise_for_status()
+        response = await self._get("readiness", "/api/timeseries/readiness")
         return DependencyReadiness(
             dependency="timeseries-service",
             reachable=True,
@@ -61,8 +69,7 @@ class TimeseriesClient:
         if period_granularity:
             params["periodGranularity"] = period_granularity
 
-        response = await self._client.get("/api/timeseries/series", params=params)
-        response.raise_for_status()
+        response = await self._get("series", "/api/timeseries/series", params=params)
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [TimeseriesObservation.model_validate(item) for item in payload.items]
 
@@ -87,8 +94,7 @@ class TimeseriesClient:
         if period_granularity:
             params["periodGranularity"] = period_granularity
 
-        response = await self._client.get("/api/timeseries/series/latest", params=params)
-        response.raise_for_status()
+        response = await self._get("latest_by_source", "/api/timeseries/series/latest", params=params)
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [LatestSourceObservation.model_validate(item) for item in payload.items]
 
@@ -113,8 +119,7 @@ class TimeseriesClient:
         if period_granularity:
             params["periodGranularity"] = period_granularity
 
-        response = await self._client.get("/api/timeseries/series/availability", params=params)
-        response.raise_for_status()
+        response = await self._get("availability", "/api/timeseries/series/availability", params=params)
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [SeriesAvailability.model_validate(item) for item in payload.items]
 
@@ -141,8 +146,7 @@ class TimeseriesClient:
         if period_granularity:
             params.append(("periodGranularity", period_granularity))
 
-        response = await self._client.get("/api/timeseries/compare/countries/latest", params=params)
-        response.raise_for_status()
+        response = await self._get("country_comparison", "/api/timeseries/compare/countries/latest", params=params)
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [CountryLatestComparisonItem.model_validate(item) for item in payload.items]
 
@@ -161,8 +165,7 @@ class TimeseriesClient:
         if status:
             params["status"] = status
 
-        response = await self._client.get("/api/timeseries/source-runs", params=params)
-        response.raise_for_status()
+        response = await self._get("source_runs", "/api/timeseries/source-runs", params=params)
         payload = TimeseriesListEnvelope.model_validate(response.json())
         return [SourceRunSummary.model_validate(item) for item in payload.items]
 
