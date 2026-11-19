@@ -1,5 +1,15 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## MEDIA SPRINT 5 — DERNIER ÉTAT AVEC QA GÉOMÉTRIQUE (19 NOV. 2026)
+
+[Source canonique : WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md](../media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md). [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) DRAFT, aucun merge ni déploiement.
+
+**Nouveau code** : `document_focus` dans le véritable Remotion partagé, fondé sur une **image documentaire réellement fournie** et une **zone cible choisie par x/y/largeur/hauteur** en session V2. Pas de transcription, d'OCR ou de preuve reconstituée. Export sécurisé, JSON, validations d'image et coordonnées, quatre captures Chromium pour le début, surlignage, zoom et titre. **Le premier test a réussi** [#44544197428](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44544197428) (12 tests, H.264, Player). Mais revue humaine : premier frame noir et texte recouvrant le document. Un contrôle plus strict a ensuite **échoué à juste titre** [#44545458500](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44545458500) car le cadre dépassait le cartouche de **13,5 px** au format 360×640. Correctifs : page visible immédiatement, cartouche remonté, cadre raccourci à 830px, aperçu source V2 synchronisé.
+
+**PROCHAINE ACTION IMMÉDIATE** : [examiner la CI #44546198363](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363), surtout le test Chromium `document` à frame102, et inspecter le MP4 corrigé. Si vert : enregistrer le run final et photos dans ce registre. Ne jamais confondre un test sur document artificiel avec une vidéo journalistique publiable. Ensuite, produire une ouverture haut de gamme avec **script et vraie photographie/vidéo fournis et autorisés** et analyser le rendu iPhone. Recherche/écriture ici ; voix totalement libre ; BAOCOM séparé ; pas de raccord blog/GDELT/Content OS global.
+
+---
+
 ## POINT DE REPRISE : MEDIA SPRINT 4 TERMINÉ CÔTÉ TECHNIQUE (19 NOVEMBRE 2026)
 
 [PR #44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). Le détail est dans [le rapport Sprint 4 §7–9](../media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md). [Actions #44541690295 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44541690295) et [#44540638541 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540638541). Le frontend V2 compile, la vraie prévisualisation du film entier existe (2 scènes de CI, fondu, piste audio importée), 11 tests Node passent, et les titres ne se chevauchent plus en transition (opacité entrante contrôlée à frame 100). Les captures ont été ouvertes et examinées.
