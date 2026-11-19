@@ -119,7 +119,7 @@ export function inspectProject(project) {
         bad(errors,p+".title","Country focus requires a concise human-authored title <=90 characters.");
       if(scene.subtitle!==undefined&&!isText(scene.subtitle,180))
         bad(errors,p+".subtitle","Country focus subtitle must fit in 180 characters.");
-      if(typeof id!=="string"||!/^\\d{3}$/.test(id)||!DETAILED_IDS.has(id))
+      if(typeof id!=="string"||!/^\d{3}$/.test(id)||!DETAILED_IDS.has(id))
         bad(errors,p+".geo.spotlight","Choose a 10m Natural Earth country ID actually present in the versioned atlas.");
       if(geo?.camera!==undefined||geo?.route!==undefined)
         bad(errors,p+".geo","Country focus is a dedicated local projection. Use a separate preceding geo_story for globe travel or route.");
