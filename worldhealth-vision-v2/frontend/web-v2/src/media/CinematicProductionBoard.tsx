@@ -5,7 +5,7 @@ import type {CreativeEditProps, CreativeMedia} from "../../../../services/media-
 const RealCreativePreview = lazy(() => import("./CreativeCompositionPreview"));
 import "./CinematicProductionBoard.css";
 
-type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal";
+type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus";
 type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
@@ -15,10 +15,11 @@ type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
   mediaName:string;foregroundName:string;focusX:number;focusY:number;
+  documentX:number;documentY:number;documentW:number;documentH:number;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
   documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
-  evidence:"Focus sur un document",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
+  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
 };
 const MOTION_LABELS:Record<Motion,string>={
   locked:"Cadre fixe",dolly:"Approche de caméra",drift:"Mouvement latéral",push:"Révélation progressive"
@@ -35,7 +36,8 @@ const typesByExt=(name:string):MediaType|null=>{
 };
 const initialShot=():Shot=>({
   id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,
-  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",foregroundName:"",focusX:0.5,focusY:0.5
+  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",foregroundName:"",focusX:0.5,focusY:0.5,
+  documentX:.25,documentY:.32,documentW:.5,documentH:.22
 });
 const mkSlug=(value:string)=>("wv-"+value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60))||"wv-projet";
 const path="https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-cinematic-director-gates-2026-11-19/worldhealth-vision-v2/docs/media/WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md";
@@ -59,9 +61,10 @@ export default function CinematicProductionBoard() {
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const foregroundAsset=files.find(f=>f.name===active.foregroundName);
-  const needsRealMedia=["documentary","evidence","clean_video","focus_reveal"].includes(active.template);
+  const needsRealMedia=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(active.template);
   const previewCanRender=(!needsRealMedia||Boolean(activeAsset&&activeAsset.kind!=="audio"))&&
-    (active.template!=="focus_reveal"||Boolean(active.title.trim()&&active.title.length<=90&&active.durationFrames>=90));
+    (active.template!=="focus_reveal"||Boolean(active.title.trim()&&active.title.length<=90&&active.durationFrames>=90))&&
+    (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115));
   // Exact props type of the REAL server-rendered Remotion compositor; object
   // URLs only exist in this browser session and never reach GitHub or an API.
   const previewProps=useMemo<CreativeEditProps>(()=>{
@@ -83,7 +86,8 @@ export default function CinematicProductionBoard() {
         motion:active.motion,
         transitionAfter:"cut",
         transitionFrames:0,
-        focus:{x:active.focusX,y:active.focusY}
+        focus:{x:active.focusX,y:active.focusY},
+        ...(active.template==="document_focus"?{documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH}}:{})
       }],
       narration:null,
       soundtrack:null,
@@ -92,11 +96,18 @@ export default function CinematicProductionBoard() {
     };
   },[active,activeAsset,foregroundAsset,projectName,script,accent]);
   const canExport=script.trim().length>0&&shots.every(shot=>{
-    const requires=["documentary","evidence","clean_video","focus_reveal"].includes(shot.template);
+    const requires=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(shot.template);
     const hasMedia=!requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
     const validFocus=shot.template!=="focus_reveal"||Boolean(shot.title.trim()&&shot.title.length<=90&&shot.durationFrames>=90);
+    const validDocument=shot.template!=="document_focus"||Boolean(
+      shot.title.trim()&&shot.title.length<=90&&shot.durationFrames>=115&&
+      files.some(f=>f.name===shot.mediaName&&f.kind==="image")&&
+      shot.documentX>=0&&shot.documentY>=0&&shot.documentW>=.12&&shot.documentW<=.85&&
+      shot.documentH>=.08&&shot.documentH<=.8&&
+      shot.documentX+shot.documentW<=1.0000001&&shot.documentY+shot.documentH<=1.0000001
+    );
     const validForeground=!shot.foregroundName||Boolean(shot.mediaName&&files.some(f=>f.name===shot.foregroundName&&f.kind==="image"));
-    return hasMedia&&validFocus&&validForeground;
+    return hasMedia&&validFocus&&validDocument&&validForeground;
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
@@ -129,7 +140,8 @@ export default function CinematicProductionBoard() {
         motion:shot.motion,
         transitionAfter:i===shots.length-1?"cut":shot.transitionAfter,
         transitionFrames:i===shots.length-1||shot.transitionAfter==="cut"?0:shot.transitionFrames,
-        focus:{x:shot.focusX,y:shot.focusY}
+        focus:{x:shot.focusX,y:shot.focusY},
+        ...(shot.template==="document_focus"?{documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH}}:{})
       };
     }),
     narration:voiceFile&&files.find(f=>f.name===voiceFile)
@@ -189,6 +201,7 @@ export default function CinematicProductionBoard() {
         id:s.id,durationFrames:s.durationFrames,template:s.template,
         title:s.title,subtitle:s.subtitle,eyebrow:s.eyebrow,
         focus:{x:s.focusX,y:s.focusY},
+        ...(s.template==="document_focus"?{documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH}}:{}),
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
         ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName}}:{}),
@@ -273,7 +286,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
           <div className="wvc-two-col">
-            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
+            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
@@ -289,6 +302,32 @@ export default function CinematicProductionBoard() {
           </label>
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
+          {active.template==="document_focus"&&<div className="wvc-focus-control" aria-label="Sélection de la zone du document à inspecter">
+            <div className="wvc-focus-heading">
+              <strong>ZONE DU DOCUMENT À METTRE EN LUMIÈRE</strong>
+              <span>Les coordonnées s'appliquent à la feuille affichée en entier, et non à une reconstitution IA. Vérifie les mots et chiffres avant diffusion.</span>
+            </div>
+            <label>GAUCHE · {Math.round(active.documentX*100)} %
+              <input type="range" min="0" max={Math.round((1-active.documentW)*100)} step="1"
+                value={Math.round(active.documentX*100)}
+                onChange={e=>updateShot({documentX:Number(e.target.value)/100})}/>
+            </label>
+            <label>HAUT · {Math.round(active.documentY*100)} %
+              <input type="range" min="0" max={Math.round((1-active.documentH)*100)} step="1"
+                value={Math.round(active.documentY*100)}
+                onChange={e=>updateShot({documentY:Number(e.target.value)/100})}/>
+            </label>
+            <label>LARGEUR · {Math.round(active.documentW*100)} %
+              <input type="range" min="12" max="85" step="1"
+                value={Math.round(active.documentW*100)}
+                onChange={e=>{const width=Number(e.target.value)/100;updateShot({documentW:width,documentX:Math.min(active.documentX,1-width)});}}/>
+            </label>
+            <label>HAUTEUR · {Math.round(active.documentH*100)} %
+              <input type="range" min="8" max="80" step="1"
+                value={Math.round(active.documentH*100)}
+                onChange={e=>{const height=Number(e.target.value)/100;updateShot({documentH:height,documentY:Math.min(active.documentY,1-height)});}}/>
+            </label>
+          </div>}
           <div className="wvc-focus-control" aria-label="Cadrage précis de l’image source">
             <div className="wvc-focus-heading"><strong>CADRAGE ET POINT D’INTÉRÊT</strong><span>Sauvegardé dans le projet Remotion</span></div>
             <label>HORIZONTAL · {Math.round(active.focusX*100)} %
@@ -326,7 +365,7 @@ export default function CinematicProductionBoard() {
             Média original
           </button>
         </div>
-        {previewMode==="source"&&<button type="button" className="wvc-crop-toggle" onClick={()=>setCroppedPreview(x=>!x)}>
+        {previewMode==="source"&&active.template!=="document_focus"&&<button type="button" className="wvc-crop-toggle" onClick={()=>setCroppedPreview(x=>!x)}>
           {croppedPreview?"Afficher la source complète":"Visualiser le cadrage 9:16"}
         </button>}
         <div className="wvc-device">
@@ -339,7 +378,18 @@ export default function CinematicProductionBoard() {
               <RealCreativePreview props={fullFilmProps} previewId="film-complet" label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"/>
             </Suspense> : <div className="wvc-player-loading">Le film complet exige un script, des plans valides et leurs médias. Maximum 10 minutes dans ce profil.</div>
           ) : <>
-          {activeAsset?.kind==="image"&&<img src={activeAsset.url} alt={"Média source : "+activeAsset.name} style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
+          {active.template==="document_focus"&&activeAsset?.kind==="image"
+            ? <div className="wvc-document-source" aria-label="Aperçu de l'intégralité du document avec région sélectionnée">
+                <div className="wvc-document-page">
+                  <img src={activeAsset.url} alt={"Document source, inchangé : "+activeAsset.name}/>
+                  <div className="wvc-document-region" style={{
+                    left:(active.documentX*100)+"%",top:(active.documentY*100)+"%",
+                    width:(active.documentW*100)+"%",height:(active.documentH*100)+"%"
+                  }} aria-label="Rectangle de mise au point défini par l'utilisateur"/>
+                </div>
+                <small>Zone choisie : contenu réel seulement</small>
+              </div>
+            :activeAsset?.kind==="image"&&<img src={activeAsset.url} alt={"Média source : "+activeAsset.name} style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
           {activeAsset?.kind==="video"&&<video src={activeAsset.url} controls playsInline preload="metadata" style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
           {!activeAsset&&<div className="wvc-no-preview"><span>WORLD—VISION</span><strong>TON MÉDIA<br/>ICI</strong><small>L'image d'actualité doit être fournie ou choisie explicitement.</small></div>}
           </>}
@@ -348,6 +398,8 @@ export default function CinematicProductionBoard() {
           ? "Timeline Remotion réelle : plans, raccords, narration et musique importées. Ce n'est pas encore un export MP4 ; la lecture des codecs et la fluidité dépendent du téléphone. Vérifie toujours le master avant diffusion."
           : previewMode==="shot"
           ? "Même composition que le moteur de rendu, sur le plan seul. La narration et les raccords des autres plans ne sont pas inclus dans ce mode."
+          : active.template==="document_focus"
+          ? "Aperçu de la page originale et de la région choisie. Aucune citation n'est reconstituée ; la caméra et le titre apparaissent uniquement dans le vrai Player."
           : (croppedPreview?"Cadrage source 9:16 uniquement, sans titres ni animation.":"Fichier source complet, sans recadrage.")}</p>
         <label className="wvc-accent">ACCENT GRAPHIQUE <input type="color" value={accent} onChange={e=>setAccent(e.target.value)}/></label>
       </aside>
