@@ -2,7 +2,7 @@ name: WHV V2 - secure staging contract and restore proof
 
 on:
   pull_request:
-    branches: [v2]
+    branches: [v2, 'feature/v2-gateway-public-private-contract-2026-11-19']
     paths:
       - 'worldhealth-vision-v2/infra/**'
       - 'worldhealth-vision-v2/services/*/Dockerfile'
@@ -10,6 +10,7 @@ on:
   push:
     branches:
       - 'security/v2-secure-staging-*'
+      - 'security/v2-jwt-signature-audience-scopes-*'
     paths:
       - 'worldhealth-vision-v2/infra/**'
       - 'worldhealth-vision-v2/services/*/Dockerfile'
@@ -54,13 +55,13 @@ jobs:
       - name: Fail closed when critical variables are absent
         run: |
           set -eu
-          for name in WHV_DB_PASSWORD_FILE WHV_OIDC_ISSUER_URI WHV_TIMESCALE_IMAGE; do
+          for name in WHV_DB_PASSWORD_FILE WHV_OIDC_ISSUER_URI WHV_OIDC_JWKS_URI WHV_SECURITY_AUDIENCE WHV_TIMESCALE_IMAGE; do
             if env -u "$name" docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml config --quiet >/dev/null 2>&1; then
               echo "FAILED: $name is not mandatory" >&2
               exit 1
             fi
           done
-          echo "PASS: all three required settings fail closed"
+          echo "PASS: all five required settings fail closed"
       - name: Validate host preflight rejects mutable image tags and accepts guarded metadata
         run: |
           mkdir -p "$WHV_BACKUP_DIR"
@@ -70,6 +71,7 @@ jobs:
           chmod 0440 "$host_secret"
           export WHV_DB_PASSWORD_FILE="$host_secret"
           export WHV_OIDC_ISSUER_URI="https://ci-identity.internal.test/realms/worldvision"
+          export WHV_OIDC_JWKS_URI="https://ci-identity.internal.test/realms/worldvision/jwks"
           if bash worldhealth-vision-v2/infra/ops/preflight-host.sh >/dev/null 2>&1; then
             echo "FAILED: mutable TimescaleDB image passed host preflight" >&2
             exit 1
