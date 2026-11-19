@@ -52,11 +52,9 @@ jobs:
             --project creative/project.example.json \
             --assets /tmp/worldvision-assets \
             --output output/creative/example.mp4
-      - name: Install ffprobe for independent output inspection
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
-      - name: Inspect actual output
+      - name: Independently inspect the real encoded output using Remotion's existing metadata reader
         run: |
-          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate -show_entries format=duration,size -of json output/creative/example.mp4
+          node --input-type=module -e "import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/example.mp4');console.log(JSON.stringify(m));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||Math.abs(m.durationInSeconds-151/30)>.15)process.exit(1);"
           test -s output/creative/example.mp4
           test -s output/creative/example.mp4.report.json
       - name: Preserve real demo render for review
