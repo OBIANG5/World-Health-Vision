@@ -114,8 +114,9 @@ class GatewaySignedJwtIntegrationTest {
     @Test
     void validSignedRsaTokenWithExpectedAudienceReachesProductFacade() throws Exception {
         int before = forwarded.get();
+        String signedToken = token(issuer, AUDIENCE, "read", 0, 3600, trustedKey);
         client.get().uri("/api/product/countries/GAB/overview")
-                .headers(h -> h.setBearerAuth(token(issuer, AUDIENCE, "read", 0, 3600, trustedKey)))
+                .headers(h -> h.setBearerAuth(signedToken))
                 .exchange().expectStatus().isOk();
         assertThat(forwarded.get()).isEqualTo(before + 1);
     }
