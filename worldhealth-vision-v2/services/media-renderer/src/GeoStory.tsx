@@ -78,8 +78,8 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
   },[route?.from.lon,route?.from.lat,route?.to.lon,route?.to.lat,path]);
   const accent=shot.accent??globalStyle.accent;
   const atmosphere=1+Math.sin(local/22)*.025;
-  const titleIn=easing(norm(local,41,68));
-  const captionIn=easing(norm(local,65,88));
+  const titleIn=easing(norm(local,10,31));
+  const captionIn=easing(norm(local,32,55));
   const metricIn=easing(norm(local,72,100));
   const pointIn=easing(norm(local,17,40));
   const arcIn=easing(norm(local,24,91));
@@ -261,9 +261,9 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
       }}>{shot.eyebrow}</div>}
     </div>
     {/* Level 8: headlines enter after cartographic context. */}
-    <div style={{
+    <div data-wv-geo-copy="true" style={{
       position:"absolute",left:89,right:173,
-      bottom:hasPhoto?270:350,
+      bottom:hasPhoto?240:350,
       opacity:titleIn*fadeOut,
       transform:"translateY("+Math.round((1-titleIn)*45)+"px)"
     }}>
