@@ -110,6 +110,7 @@ jobs:
           mkdir -p ../../frontend/web-v2/public/smoke
           cp /tmp/worldvision-fixture-assets/synthetic-landscape.png ../../frontend/web-v2/public/smoke/synthetic-landscape.png
           cp /tmp/worldvision-fixture-assets/synthetic-tone.wav ../../frontend/web-v2/public/smoke/synthetic-tone.wav
+          cp /tmp/worldvision-fixture-assets/synthetic-clip.mp4 ../../frontend/web-v2/public/smoke/synthetic-clip.mp4
           npm --prefix ../../frontend/web-v2 run dev -- --host 127.0.0.1 --port 5173 --strictPort > /tmp/wv-player-vite.log 2>&1 &
           echo $! > /tmp/wv-player-vite.pid
       - name: Inspect real Remotion Player pixels in Chromium browser
@@ -126,6 +127,9 @@ jobs:
           test -s output/creative/player-film-frame-100.png
           test -s output/creative/player-film-frame-145.png
           test -s output/creative/player-film-smoke.report.json
+          test -s output/creative/player-clip-frame-0.png
+          test -s output/creative/player-clip-frame-74.png
+          test -s output/creative/player-clip-smoke.report.json
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
         with:
@@ -146,6 +150,9 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-film-frame-100.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-film-frame-145.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-film-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-frame-74.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-clip-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
