@@ -133,7 +133,7 @@ const validPhoto=(s:Shot)=>{
       within(f.radius,35,190)))&&
     (!s.photoUseMetric||(beats(m,25)&&m.label.trim()&&m.label.length<=55&&
       Number.isFinite(m.value)&&Math.abs(m.value)<=1e12&&
-      m.unit.length<=12&&m.sourceLabel.trim()&&m.sourceLabel.length<=160&&
+      m.unit.length<=12&&m.sourceLabel.trim()&&m.sourceLabel.length<=85&&
       Number.isInteger(m.precision)&&m.precision>=0&&m.precision<=2))
   );
 };
@@ -510,7 +510,7 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updatePhotoTrack("metric",{value:Number(e.target.value)})}/></label>
               <label>UNITÉ <input maxLength={12} value={active.photoSettings.metric.unit}
                 onChange={e=>updatePhotoTrack("metric",{unit:e.target.value})}/></label>
-              <label>LIBELLÉ DE SOURCE <input maxLength={160} value={active.photoSettings.metric.sourceLabel}
+              <label>LIBELLÉ DE SOURCE <input maxLength={85} value={active.photoSettings.metric.sourceLabel}
                 onChange={e=>updatePhotoTrack("metric",{sourceLabel:e.target.value})}/></label>
               <label>DÉBUT (s) <input type="number" step=".1" value={active.photoSettings.metric.startFrame/30}
                 onChange={e=>updatePhotoTrack("metric",{startFrame:Math.round(Number(e.target.value)*30)})}/></label>
