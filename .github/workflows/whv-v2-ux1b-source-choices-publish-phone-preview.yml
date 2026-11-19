@@ -1,0 +1,131 @@
+name: World-Vision UX-1B — source pluralism, mobile acceptance and isolated phone preview
+
+on:
+  push:
+    branches:
+      - 'product/world-vision-ux1b-source-choices-mobile-*'
+  workflow_dispatch:
+
+permissions:
+  contents: write # Exclusively for a NEW non-production static preview branch.
+
+concurrency:
+  group: whv-ux1b-source-choices-${{ github.ref }}
+  cancel-in-progress: true
+
+# Reuse the exact React/Vite V2, original interactive globe, and archived preview
+# fixtures. DO NOT touch Vercel production or claim the sources were ingested.
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - name: Checkout exact candidate frontend SHA
+        uses: actions/checkout@v4
+        with:
+          path: source
+          persist-credentials: true
+
+      - name: Reuse existing labelled country/source fixtures read-only
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: evidence
+          persist-credentials: false
+
+      - name: Node 22 and npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/worldhealth-vision-v2/frontend/web-v2/package-lock.json
+
+      - name: Typecheck and build real frontend, strictly lint changed files
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-fund --no-audit
+          npx eslint src/App.tsx src/components/country/CountryLocalEvidencePanel.tsx
+          npx tsc -b --pretty false
+          VITE_WHV_PREVIEW_MODE=true npx vite build --base=./
+
+      - name: Assemble isolated static preview, with no fake numbers or backend
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from shutil import copy2,copytree
+          source=Path('source/worldhealth-vision-v2/frontend/web-v2/dist')
+          target=Path('preview')
+          assert (source/'index.html').is_file()
+          assert (source/'assets').is_dir()
+          copytree(source,target)
+          fixtures=('preview-countries.js','preview-sources.js',
+                    'preview-local-catalog.js','preview-bootstrap.js')
+          for name in fixtures:
+              assert (Path('evidence')/name).is_file(), name
+              copy2(Path('evidence')/name,target/name)
+          html=(target/'index.html').read_text(encoding='utf-8')
+          insert='<meta name="robots" content="noindex,nofollow">\n'
+          insert+=''.join(f'<script src="./{name}"></script>\n' for name in fixtures)
+          assert '<head>' in html
+          (target/'index.html').write_text(html.replace('<head>','<head>\n'+insert,1),encoding='utf-8')
+          (target/'.nojekyll').write_text('',encoding='utf-8')
+          assert (target/'countries.geojson').is_file()
+          print('Real V2 compiled, existing globe assets and archived data fixtures retained')
+          PY
+
+      - name: Install headless Chromium ONLY for browser release gate
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Run previous mobile and desktop regressions without rewriting them
+        env:
+          WHV_PREVIEW_DIRECTORY: ${{ github.workspace }}/preview
+        run: |
+          node source/worldhealth-vision-v2/frontend/web-v2/preview-smoke.mjs
+          node source/worldhealth-vision-v2/frontend/web-v2/vision-hub-smoke.mjs
+          node source/worldhealth-vision-v2/frontend/web-v2/ux1-discovery-smoke.mjs
+
+      - name: Accept ACTUAL 320px/iPhone/tablet/desktop source plurality UI
+        env:
+          WHV_PREVIEW_DIRECTORY: ${{ github.workspace }}/preview
+        run: node source/worldhealth-vision-v2/frontend/web-v2/ux1b-sources-smoke.mjs
+
+      - name: Publish ONLY new isolated static preview branch after ALL tests pass
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          cd source
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          # Existing UX-1A preview, v2, and all Vercel aliases are untouched.
+          if git ls-remote --exit-code origin refs/heads/preview-worldvision-ux1b-sources-2026-11-19 >/dev/null 2>&1; then
+            echo 'Refusing to overwrite an existing published preview. Review first.' >&2
+            exit 1
+          fi
+          git worktree add --detach ../published "$EXPECTED_SOURCE_SHA"
+          cd ../published
+          git switch --orphan preview-worldvision-ux1b-sources-2026-11-19
+          git rm -r --cached . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -a ../preview/. .
+          printf 'WORLD-VISION V2 OFFLINE PREVIEW — NOT PRODUCTION.\nSource SHA: %s\nReal catalog snapshots are not live ingest/verified observations.\nNo source is ranked as truth by default.\n' "$EXPECTED_SOURCE_SHA" > PREVIEW_METADATA.txt
+          git add -A
+          git -c user.name='world-vision-ci' -c user.email='actions@users.noreply.github.com' \
+            commit -m "preview(ux1b): mobile source choices from verified V2 $EXPECTED_SOURCE_SHA"
+          git push origin HEAD:refs/heads/preview-worldvision-ux1b-sources-2026-11-19
+          echo 'PASS: isolated preview branch published. Vercel public and media branches unchanged.'
+
+      - name: Save actual iPhone, 320px, tablet and desktop screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-ux1b-multisource-mobile-qa
+          path: |
+            preview-artifacts/
+            vision-hub-artifacts/
+            ux1-artifacts/
+            ux1b-artifacts/
+          if-no-files-found: warn
+          retention-days: 30

@@ -54,6 +54,16 @@ const COPY = {
     internationalEstimated: "Estimation",
     internationalHeading: "Organismes internationaux : données réellement enregistrées",
     methodologicalWarning: "Même pour une année commune, un recensement et une estimation ne prouvent pas un accord ou une contradiction.",
+    compareTitle: "Comparer deux sources librement",
+    compareIntro: "Sélectionnez jusqu'à deux organisations. Comparez leur origine, leur statut de connexion, leur méthode et leurs restrictions.",
+    comparePick: "Choisir pour comparer",
+    compareMissing: "Choisissez deux sources ci-dessus pour les consulter côte à côte.",
+    compareSecond: "Une source choisie : sélectionnez une deuxième organisation.",
+    compareConnection: "État de connexion",
+    compareMethod: "Méthode et périmètre",
+    compareRights: "Conditions de réutilisation",
+    compareOpen: "Ouvrir la publication originale",
+    compareCaveat: "Comparer les organismes n'établit ni l'exactitude d'une information, ni l'équivalence de deux chiffres. Pour confronter des faits, vérifiez articles, périodes et définitions.",
 
   },
   en: {
@@ -96,6 +106,16 @@ const COPY = {
     internationalEstimated: "Estimated",
     internationalHeading: "International institutions: actually stored observations",
     methodologicalWarning: "Even for a common year, a census and an estimate do not by themselves establish agreement or conflict.",
+    compareTitle: "Compare two sources of your choice",
+    compareIntro: "Select up to two organizations. Compare origin, connection status, methods and reuse restrictions.",
+    comparePick: "Select for comparison",
+    compareMissing: "Choose two sources above to inspect them side by side.",
+    compareSecond: "One source selected: choose a second organization.",
+    compareConnection: "Connection status",
+    compareMethod: "Method and scope",
+    compareRights: "Reuse conditions",
+    compareOpen: "Open original publication",
+    compareCaveat: "Comparing organizations does not establish whether a report is true or two statistics are comparable. Verify articles, periods and definitions.",
 
   },
 } as const;
@@ -115,12 +135,37 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   const [comparisons, setComparisons] = useState<CountryNationalComparisons | null>(null);
   const [comparisonStatus, setComparisonStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const copy = lang === "fr" ? COPY.fr : COPY.en;
+  // One source never becomes the privileged default. The visitor explicitly
+  // chooses at most two; changing country cannot carry an old comparison over.
+  const [sourceSelection, setSourceSelection] = useState<{ countryIso3: string; codes: string[] }>({
+    countryIso3: iso3, codes: [],
+  });
+  const selectedSourceCodes = sourceSelection.countryIso3 === iso3 ? sourceSelection.codes : [];
+  const chosenSources = data?.localSources.filter((source) => selectedSourceCodes.includes(source.sourceCode)) ?? [];
+
+  const sourceTypeLabel = (type: string | undefined) => type === "NATIONAL_OFFICIAL"
+    ? copy.official
+    : type === "REGIONAL_OFFICIAL" ? copy.regional
+      : type === "LOCAL_MEDIA" ? copy.press : copy.other;
+  const sourceConnectionLabel = (state: string | undefined) => state === "INGESTION_VERIFIED"
+    ? copy.connectionVerified
+    : state === "CONNECTOR_IN_REVIEW" ? copy.connectionInReview : copy.catalogueOnly;
+
+  function toggleCompareSource(code: string) {
+    setSourceSelection((previous) => {
+      const codes = previous.countryIso3 === iso3 ? previous.codes : [];
+      const next = codes.includes(code)
+        ? codes.filter((value) => value !== code)
+        : codes.length < 2 ? [...codes, code] : codes;
+      return { countryIso3: iso3, codes: next };
+    });
+  }
 
   useEffect(() => {
     if (!enabled || !/^[A-Z]{3}$/.test(iso3)) return;
     let active = true;
-    setData(null);
-    setStatus("loading");
+    // CountryDrawer keys this component by ISO3; the initial state is
+    // already loading. Avoid effect-synchronous setState and extra renders.
     fetchCountryLocalContext(iso3)
       .then((value) => {
         if (!active) return;
@@ -140,8 +185,8 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   useEffect(() => {
     if (!enabled || data?.countryIso3 !== iso3 || !data.documentedReleases.length) return;
     let active = true;
-    setComparisons(null);
-    setComparisonStatus("loading");
+    // Loading is derived while the first remote comparison is outstanding;
+    // no setState-synchronously-in-effect or misleading stale-source reset.
     fetchCountryNationalComparisons(iso3)
       .then((result) => {
         if (!active) return;
@@ -156,6 +201,10 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   }, [iso3, enabled, data]);
 
   if (!enabled || !/^[A-Z]{3}$/.test(iso3)) return null;
+
+  const comparisonDisplayStatus = comparisonStatus === "idle"
+    && status === "ready" && !!data?.documentedReleases.length
+    ? "loading" : comparisonStatus;
 
   const numberFormatter = new Intl.NumberFormat(lang === "fr" ? "fr-FR" : "en-US", {
     maximumFractionDigits: 0,
@@ -182,15 +231,8 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
             <div className="whv-national-evidence-sources">
               {data.localSources.map((source) => {
                 const url = validExternalUrl(source.evidenceUrl);
-                const sourceKind = source.sourceType === "NATIONAL_OFFICIAL"
-                  ? copy.official
-                  : source.sourceType === "REGIONAL_OFFICIAL"
-                    ? copy.regional
-                    : source.sourceType === "LOCAL_MEDIA" ? copy.press : copy.other;
-                const connection = source.connectionState === "INGESTION_VERIFIED"
-                  ? copy.connectionVerified
-                  : source.connectionState === "CONNECTOR_IN_REVIEW"
-                    ? copy.connectionInReview : copy.catalogueOnly;
+                const sourceKind = sourceTypeLabel(source.sourceType);
+                const connection = sourceConnectionLabel(source.connectionState);
                 return (
                   <div className="whv-national-evidence-source" key={source.sourceCode}>
                     <span className="whv-national-evidence-kind">{sourceKind}</span>
@@ -212,10 +254,42 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
                     {url && <a href={url} target="_blank" rel="noopener noreferrer">
                       {lang === "fr" ? "Consulter la source" : "Open source"}
                     </a>}
+                    <label className="whv-source-compare-picker">
+                      <input type="checkbox"
+                        checked={selectedSourceCodes.includes(source.sourceCode)}
+                        disabled={!selectedSourceCodes.includes(source.sourceCode) && selectedSourceCodes.length >= 2}
+                        onChange={() => toggleCompareSource(source.sourceCode)}
+                      />
+                      <span>{copy.comparePick}</span>
+                    </label>
                   </div>
                 );
               })}
             </div>
+            <section className="whv-source-compare-panel" aria-label={copy.compareTitle}>
+              <h4>{copy.compareTitle}</h4>
+              <p>{copy.compareIntro}</p>
+              {chosenSources.length < 2 ? (
+                <p className="whv-source-compare-wait" role="status">
+                  {chosenSources.length === 1 ? copy.compareSecond : copy.compareMissing}
+                </p>
+              ) : (
+                <div className="whv-source-compare-grid">
+                  {chosenSources.map((source) => {
+                    const url = validExternalUrl(source.evidenceUrl);
+                    return <article key={source.sourceCode} className="whv-source-compare-item">
+                      <span className="whv-national-evidence-kind">{sourceTypeLabel(source.sourceType)}</span>
+                      <h5>{source.displayName}</h5>
+                      <p><strong>{copy.compareConnection} :</strong> {sourceConnectionLabel(source.connectionState)}</p>
+                      <p><strong>{copy.compareMethod} :</strong> {source.methodologyCaveat}</p>
+                      <p><strong>{copy.compareRights} :</strong> {source.reuseRightsNote}</p>
+                      {url && <a href={url} target="_blank" rel="noopener noreferrer">{copy.compareOpen}</a>}
+                    </article>;
+                  })}
+                </div>
+              )}
+              <small>{copy.compareCaveat}</small>
+            </section>
             {data.documentedReleases.map((item) => {
               const official = validExternalUrl(item.primaryEvidenceUrl);
               const corroboration = item.corroborationUrl ? validExternalUrl(item.corroborationUrl) : null;
@@ -248,9 +322,9 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
                   <p><strong>{copy.methodology} :</strong> {item.methodologyCaveat}</p>
                   <div className="whv-national-comparison" aria-live="polite">
                     <strong className="whv-national-comparison-title">{copy.internationalHeading}</strong>
-                    {comparisonStatus === "loading" && <p role="status">{copy.comparisonLoading}</p>}
-                    {comparisonStatus === "unavailable" && <p role="status">{copy.comparisonUnavailable}</p>}
-                    {comparisonStatus === "ready" && (
+                    {comparisonDisplayStatus === "loading" && <p role="status">{copy.comparisonLoading}</p>}
+                    {comparisonDisplayStatus === "unavailable" && <p role="status">{copy.comparisonUnavailable}</p>}
+                    {comparisonDisplayStatus === "ready" && (
                       <>
                         <p className="whv-national-evidence-caution">{comparisonLabel}</p>
                         {live?.internationalLatest.map((external) => (
