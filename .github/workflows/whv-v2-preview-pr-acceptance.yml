@@ -95,7 +95,7 @@ jobs:
           npm install --no-save --no-package-lock --no-audit --no-fund playwright
           npx playwright install --with-deps chromium
 
-      - name: Verify iPhone and desktop: interactive globe, country, tools, truthful preview
+      - name: 'Verify iPhone and desktop: interactive globe, country, tools, truthful preview'
         env:
           WHV_PREVIEW_DIRECTORY: ${{ github.workspace }}/preview
         run: node source/worldhealth-vision-v2/frontend/web-v2/preview-smoke.mjs
