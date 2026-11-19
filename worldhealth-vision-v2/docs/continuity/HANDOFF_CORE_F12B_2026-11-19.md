@@ -422,3 +422,38 @@ Branche `perf/v2-batch-timeseries-availability-2026-11-19`, créée au-dessus de
 
 ### Puis F1.2b.2c-3C2 : séries historiques
 Ce sera la partie la plus risquée, car la limite de préchargement historique `min(600,max(96,seriesLimit*10))` doit rester **une limite PAR INDICATEUR** et non une limite totale. Il faudra conserver des années communes entre éditeurs, latest run avec révisions, statuts estimés/manquants, périodes disjointes, et comparer intégralement `sourceAudit`, tendance et divergence. #48 et #42 restent ouvertes jusqu'aux validations. Ensuite sécurité, anti-abus, vraie ingestion locale/internationale, Watch, plateformes Money/Price/Tourisme/Trading/BRVM et radar GDELT avec licences. Documents maîtres de stratégie internationale et monétisation PR #41 préservés. Aucune dépense, déploiement, fusion ni changement aux branches média/voix ou V0/V1.
+
+
+---
+
+## 16. F1.2b.2c-3C2 — historique Timeseries groupé, limites et années communes (19/11/2026)
+
+### Situation de référence, vérifiée sur GitHub
+
+- La PR **#51** (`perf/v2-batch-timeseries-availability-2026-11-19`) reste DRAFT et non fusionnée. SHA final testé `b49ef19888c17bc8c1cc48641373873a1751d4c2`.
+- **Trois pipelines SUCCESS sur ce SHA** : canonique https://github.com/OBIANG5/World-Health-Vision/actions/runs/44529625537 ; Gateway panne HTTP 503/récupération https://github.com/OBIANG5/World-Health-Vision/actions/runs/44529625541 ; SQL + diff complet https://github.com/OBIANG5/World-Health-Vision/actions/runs/44529625579 .
+- Artefact SQL/HTTP `14533650211` : 54 indicateurs × quatre sources sur données 100 % SYNTHÉTIQUES ; disponibilité regroupée 54 GET → 1 POST, pour **123 → 70 appels HTTP**. SHA-256 du JSON économique entier hors seul `generatedAtUtc` identique, 200 comparaisons et 270 éléments de preuve pour FRA/GAB.
+- Décomptage à ce stade : Catalog pays **1**, Catalog 54 indicateurs groupés **1**, latest-by-source **1**, availability **1**, séries historiques **54**, provenance source/dataset/run **12** = **70**.
+- Chaîne de branches NON fusionnées : #36 → #38 → #39 → #40 → #41 → #45 → #46 → #47 → #49 → #50 → #51. PR #35 UI indépendante. Les références stratégiques GDELT/EarlyForge/produits/revenus restent celles de #41 ; ne les supprimer ni les remplacer.
+
+### Sous-étape candidate 3C2
+
+- Branche : `perf/v2-batch-timeseries-historical-2026-11-19`, **basée sur le SHA final de #51**, jamais directement `v2`.
+- Endpoint POST **PRIVÉ** : `/internal/timeseries/series/history/batch` ; JSON `countryIso3`, `indicatorCodes`, filtres source/dataset/granularité/périodes, `includeMissing`, `sortDirection` ASC/DESC, `limitPerIndicator`.
+- JDBC : **une requête** sur `timeseries.latest_observation`, qui conserve les révisions, statuts, valeurs nulles, années et métadonnées. `row_number() OVER (PARTITION BY indicator_code ORDER BY period_start,source_code,dataset_code,...)` puis limite **PAR indicateur**, jamais globale. Le GET historique reçoit le même tie-break déterministe `period_granularity, period_end, run_key` pour dates égales, autrement l'ordre de deux fréquences un même premier janvier était ambigu.
+- Bornes : 1–128 codes distincts et validés, `limitPerIndicator` 1–1000, `n_codes * limitPerIndicator <= 40000`, dates ordonnées, sort direction validée ; un indicateur absent retourne une liste vide sans inventer zéro statistique.
+- Python : `TimeseriesClient.list_series_history_batch` refuse toute réponse mal ordonnée, incomplète, hors budget, et toute observation portant le code d'un autre indicateur. Erreurs HTTP conservées (pas de repli silencieux).
+- Activation candidate : `WHV_ANALYTICS_TIMESERIES_HISTORY_BATCH_ENABLED=true` ; **false par défaut**. Les flags Catalog/Latest/Availability restent indépendants et **désactivés par défaut hors CI**. L'API publique existante n'est pas remplacée.
+- `get_country_economic_snapshot` charge Catalog/latest/availability/historique groupés en parallèle seulement avec les flags CI ; le préchargement `min(600,max(96,series_limit*10))` reste **individualisé à chaque indicateur** pour ne pas masquer l'année commune entre pays/éditeurs.
+- Attente structurelle : **70 → 17 appels HTTP** (1+1+1+1+1+12) pour 54 indicateurs / quatre sources, soit 53 appels de moins ; la preuve dépend de la CI. Il s'agit d'appels interservices, **pas** d'une réduction promise du temps SQL ni du coût total.
+- Tests Java supplémentaires : données hétérogènes OBSERVED/ESTIMATED/MISSING, annual/monthly même période, 2 indicateurs simultanément remplis, code réellement vide, inclMissing true/false, ASC/DESC, `limitPerIndicator` 1/2/5, filtre IMF et dates ; parité champ-à-champ ancien GET/batch. Tests Python : dates, statut manquant, source run, réponse mal ordonnée/hors budget, erreurs 503.
+- Benchmark 12 snapshots FRA/GAB sur fixture SYNTHÉTIQUE (12 pays, 54 codes institutionnels du produit, 4 sources, 24 périodes annuelles, 2 révisions, 124 416 lignes), cas normal, includeMissing, sériesLimit 2/12/24, filtre source IMF. Empreinte complète du snapshot **sauf generatedAtUtc** et mêmes preuves entre ancien/nouveau.
+
+### Validation / suite à ne PAS oublier
+
+1. Lire les résultats des **trois CI sur le SHA final** de la nouvelle PR ; réparer tous les échecs de compilation, test, SQL, JSON, sécurité et panne 503/récupération. Si un commit documentaire est ajouté, vérifier encore la CI sur ce dernier commit.
+2. Ne déclarer 17 appels ou gain démontré qu'après affichage du rapport et des compteurs. Conserver **la PR en DRAFT**, non fusionnée, sans modification du site Vercel ni des branches média/voix/V0/V1.
+3. Préserver l'artefact JSON complet des tests différentiel sans exporter les valeurs synthétiques comme statistiques réelles.
+4. Ne pas fermer #42 ou #48 sur une fixture de seulement quatre sources. Ensuite **stress test international** : 217 pays/territoires SYNTHÉTIQUES, géographies locales incomplètes, millions de révisions, daily/monthly, Hikari JDBC/pool/SQL, CPU/RAM, largeur JSON, réseau inter-régions, montée en charge concurrente, quotas/anti-abus et 503/récupération. Étudier aussi une API paginée/streaming si le POST de 54 × 600 lignes dépasse les budgets.
+5. Véritables ingestions institutionnelles F1.3 seulement une fois provenance, licences, source locale et fraîcheur vérifiées. GDELT n'est pas source de chiffres officiels ; radar de mentions et contrôle factuel séparés des véritables valeurs économiques.
+6. Maintenir la vision produit internationale : Atlas et pays, Watch, Money-Vision, Price/Panier-Vision, Tourisme/Transport-Vision, Trading-Vision, BRVM-Vision, média et monétisation Pub/Affiliation/Premium/B2B (droits/qualité d'abord). Documenter chaque étape sur GitHub, sans acheter ni déployer de backend externe sans décision.
