@@ -63,3 +63,11 @@ Objectif de qualité : un plan photo authentique qui garde un sujet lisible, une
 - PR #44 (atelier cinéma) → PR #72 (globe/contours) → PR #74 (country-focus) → **PR Sprint 10** (photo multi-tracks). Toujours des **drafts empilés**, non fusionnés sur `v2`.
 - Recherche/source/script dans ChatGPT pour le moment; voix libre (Vivienne possible, non obligatoire); BAOCOM strictement indépendant; blog et GDELT hors de cette branche. Aucun hébergement/publication/autorisation de droits déclenché.
 - Au prochain chat, **lire HEAD + dernier GitHub Actions + artefacts**, jamais présumer du succès d'une révision différente ; poursuivre les priorités PHOTO, puis DATA, puis montage journalistique complet.
+
+## 7. Retour explicite du propriétaire (dans la reprise du 19 novembre)
+
+**« La vidéo du Gabon est belle, très belle. »** C'est une approbation artistique explicite du **rendu de démonstration GEO-2 Gabon** observé dans la conversation, pas une validation journalistique ni une autorisation de diffusion. **Préserver** le contraste, la composition territoire détaillé + photographie + grande typographie, la relation visuelle cyan/fond sombre et le rythme du rendu Gabon comme *référence appréciée* pour les prochains plans. Ne pas « améliorer » le pays en cassant cette direction artistique.
+
+La bonne stratégie n'est plus de repousser GEO-2 en boucle ; elle est de bâtir PHOTO/DATA et de les raccorder au plan Gabon apprécié. Reste à tester l'ensemble sur vrais médias et sur téléphone, puis valider par des critiques comparatives et la provenance des contenus.
+
+**État exact de la branche PHOTO au moment de cette note** : la PR #80 a détecté un MP4 figé à trois empreintes identiques dans le run #44627516211, bien que le composant navigateur ait reçu les pistes. **Cause identifiée et corrigée** : le mapping du serveur `creative/render-project.mjs` avait omis `photo:shot.photo`. Commit `7fa3d73b92a784665e11c3059b446e10999d3529`. Vérifier le résultat du run #44628224032 et regarder ses vraies images avant tout verdict. La PR #79 a une version concurrente `photo_layers` techniquement verte ; elle doit être comparée puis convergée, sans fusionner deux templates redondants.
