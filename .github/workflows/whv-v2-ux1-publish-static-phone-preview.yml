@@ -1,0 +1,123 @@
+name: World-Vision UX-1A — publish verified phone preview to isolated GitHack branch
+
+on:
+  push:
+    branches:
+      - 'product/world-vision-ux1-discovery-routing-*'
+
+permissions:
+  contents: write # Only for committing compiled static assets on a NEW preview branch.
+
+concurrency:
+  group: whv-static-phone-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-phone-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact UX-1A source with Git write for candidate branch only
+        uses: actions/checkout@v4
+        with:
+          path: source
+          persist-credentials: true
+
+      - name: Checkout existing archival test fixtures read-only
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: evidence
+          persist-credentials: false
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/worldhealth-vision-v2/frontend/web-v2/package-lock.json
+
+      - name: Typecheck and build exact candidate with offline preview label
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-fund --no-audit
+          npx eslint src/App.tsx src/components/layout/VisionHub.tsx src/components/layout/WorldDiscovery.tsx src/product/visionProducts.ts src/navigation/worldRoute.ts
+          npx tsc -b --pretty false
+          VITE_WHV_PREVIEW_MODE=true npx vite build --base=./
+
+      - name: Assemble genuine V2 and existing public-fixture assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from shutil import copy2, copytree
+          src=Path('source/worldhealth-vision-v2/frontend/web-v2/dist')
+          dest=Path('preview')
+          assert (src/'index.html').is_file()
+          copytree(src,dest)
+          names=('preview-countries.js','preview-sources.js','preview-local-catalog.js','preview-bootstrap.js')
+          for name in names:
+              f=Path('evidence')/name
+              assert f.is_file(),name
+              copy2(f,dest/name)
+          html=(dest/'index.html').read_text(encoding='utf-8')
+          assert '<head>' in html
+          scripts=''.join(f'<script src="./{name}"></script>\n' for name in names)
+          meta='<meta name="robots" content="noindex,nofollow">\n'
+          html=html.replace('<head>','<head>\n'+meta+scripts,1)
+          (dest/'index.html').write_text(html,encoding='utf-8')
+          (dest/'.nojekyll').write_text('',encoding='utf-8')
+          assert 'src="./preview-bootstrap.js"' in html
+          assert 'preview-countries.js' in html
+          print('PASS: exact Vite candidate + archived preview data; no live-stat claim')
+          PY
+
+      - name: Install browser for real mobile/desktop smoke BEFORE publishing
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Verify original globe and new global discovery on phone/desktop
+        env:
+          WHV_PREVIEW_DIRECTORY: ${{ github.workspace }}/preview
+        run: |
+          node source/worldhealth-vision-v2/frontend/web-v2/preview-smoke.mjs
+          node source/worldhealth-vision-v2/frontend/web-v2/vision-hub-smoke.mjs
+          node source/worldhealth-vision-v2/frontend/web-v2/ux1-discovery-smoke.mjs
+
+      - name: Publish ONLY a new isolated static preview Git branch
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          cd source
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          # The preview branch should NOT be connected to any production aliases.
+          if git ls-remote --exit-code origin 'refs/heads/preview-worldvision-ux1-2026-11-19' >/dev/null 2>&1; then
+            echo 'Refusing to overwrite an already-published preview branch' >&2
+            exit 1
+          fi
+          git worktree add --detach ../published "$EXPECTED_SOURCE_SHA"
+          cd ../published
+          git switch --orphan preview-worldvision-ux1-2026-11-19
+          git rm -r --cached . >/dev/null 2>&1 || true
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -a ../preview/. .
+          printf 'WORLD-VISION OFFLINE TEST PREVIEW. NOT PRODUCTION.\nSource SHA: %s\nCatalog != ingested statistics.\n' "$EXPECTED_SOURCE_SHA" > PREVIEW_METADATA.txt
+          git add -A
+          git -c user.name='world-vision-ci' -c user.email='actions@users.noreply.github.com' \
+            commit -m "preview(ux1): verified offline iPhone and desktop from $EXPECTED_SOURCE_SHA"
+          git push origin HEAD:refs/heads/preview-worldvision-ux1-2026-11-19
+          echo 'Published isolated static branch; production Vercel unchanged.'
+
+      - name: Preserve QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-ux1-phone-preview-qa
+          path: |
+            preview-artifacts/
+            vision-hub-artifacts/
+            ux1-artifacts/
+          if-no-files-found: warn
+          retention-days: 30
