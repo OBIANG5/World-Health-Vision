@@ -217,3 +217,17 @@ def test_symlinked_parent_directory_rejected_before_writes(tmp_path):
     with pytest.raises(EvidenceIntegrityError, match="Symlinked"):
         capture(private_root, body_for())
     assert not list(external.rglob("manifest.json"))
+
+
+def test_oversized_corrupt_original_refused_before_unbounded_file_read(tmp_path):
+    receipt = capture(tmp_path, body_for())
+    receipt.raw_payload_path.write_bytes(b"X" * 1_000_001)
+    with pytest.raises(EvidenceIntegrityError, match="size budget"):
+        ledger(tmp_path).verify("IBGE", "CENSO2022_4714", receipt.notes["httpBodySha256"])
+
+
+def test_invalid_utf8_normalized_payload_fails_closed(tmp_path):
+    receipt = capture(tmp_path, body_for())
+    receipt.normalized_payload_path.write_bytes(b"\xff\xfe")
+    with pytest.raises(EvidenceIntegrityError):
+        ledger(tmp_path).verify("IBGE", "CENSO2022_4714", receipt.notes["httpBodySha256"])
