@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## WORLD-VISION MEDIA — SPRINT 11 DATA MOTION (19 NOVEMBRE)
+
+Nouvelle branche `feature/worldvision-data-motion-sourced-2026-11-19`, enfant de PHOTO #80. Le moteur `data_story` donne quatre compositions visuelles (courbe, comparaison, classement et heatmap), des chiffres fournis et source/datation/méthode obligatoires, points chronologiques à positions temporelles exactes, zéro explicite et aucun nombre inventé. Studio V2 permet saisie structurée et sérialisation identique Player/MP4. Tests H.264 et vrai Chromium ajoutés mais **CI à certifier sur le dernier HEAD**. Voir [rapport DATA Sprint 11](../media/WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md).
+
+**Règles de reprise :** préserver Gabon GEO-2 que le propriétaire a trouvé « très belle » et le cap d'une seule image à plusieurs animations. Garder PHOTO #79 comme prototype historique tant que #80 est candidat canonique ; ne pas fusionner doublons. Après code/films/pixels DATA : reportage cinématique GEO→PHOTO→DATA→DOCUMENT + voix et mix, validation humaine, source/licence et mobile international. PRs non fusionnées, aucun déploiement V2.
+
+---
+
 ## MEDIA — SPRINT 10 PHOTO MULTILAYER (19 NOVEMBRE)
 
 Branche active `feature/worldvision-photo-multilayer-motion-tracks-2026-11-19`, enfant de PR #74, non fusionnée/non déployée. Nouveau template `photo_story` : la **même** image importée, six animations déterministes indépendantes, détourage transparent externe si fourni, focus lié à la caméra, compteur avec source, masque révélation et titres. Contrôles exposés au Studio et validation de données/échelles; suite de tests + rendu H.264 à exécuter et inspecter. [Rapport détaillé](../media/WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md). Ne pas confondre « codé » et « certifié ». Après preuves visuelles PHOTO : pack DATA, puis raccord narratif globe/pays/photo et mixage/audio. Scripts et sources ChatGPT+utilisateur; pas de publication automatique; voix libre; BAOCOM séparé; blog/GDELT différés.
