@@ -2,10 +2,14 @@ package com.worldhealthvision.catalog;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -222,4 +226,74 @@ class CatalogControllerIntegrationTest {
                 .andExpect(jsonPath("$.displayName").value("Euro"))
                 .andExpect(jsonPath("$.countryCount").value(greaterThanOrEqualTo(1)));
     }
+
+    @Test
+    void internalIndicatorBatchReturnsSameFullDetailsInRequestedOrder() throws Exception {
+        String first = mockMvc.perform(get("/api/catalog/indicators/FP.CPI.TOTL.ZG"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String second = mockMvc.perform(get("/api/catalog/indicators/NY.GDP.MKTP.CD"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String batch = mockMvc.perform(post("/internal/catalog/indicators/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                          {"codes":["fp.cpi.totl.zg","NY.GDP.MKTP.CD"]}
+                          """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(2))
+                .andExpect(jsonPath("$.items[0].code").value("FP.CPI.TOTL.ZG"))
+                .andExpect(jsonPath("$.items[1].code").value("NY.GDP.MKTP.CD"))
+                .andReturn().getResponse().getContentAsString();
+        ObjectMapper mapper = new ObjectMapper();
+        var node = mapper.readTree(batch);
+        assertEquals(mapper.readTree(first), node.get("items").get(0),
+                "Batch must not lose methodology, unit, dataset or core fields");
+        assertEquals(mapper.readTree(second), node.get("items").get(1));
+    }
+
+    @Test
+    void internalIndicatorBatchRejectsUnknownCodesInsteadOfPartialResults() throws Exception {
+        mockMvc.perform(post("/internal/catalog/indicators/batch")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"codes":["NY.GDP.MKTP.CD","SYNTHETIC.UNKNOWN.INDICATOR"]}
+                    """))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void internalIndicatorBatchRejectsDuplicatesAfterNormalization() throws Exception {
+        mockMvc.perform(post("/internal/catalog/indicators/batch")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"codes":["NY.GDP.MKTP.CD","ny.gdp.mktp.cd"]}
+                    """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void internalIndicatorBatchRejectsInvalidMissingOrOversizedPayloads() throws Exception {
+        for (String content : new String[] {
+                "{\"codes\":[]}",
+                "{\"codes\":[\"BAD;DROP TABLE\"]}",
+                "{\"codes\":[null]}",
+                "{\"codes\":null}",
+                "{\"missing\":[]}",
+                "{\"codes\":[\"NY.GDP.MKTP.CD\",\"\"]}"
+        }) {
+            mockMvc.perform(post("/internal/catalog/indicators/batch")
+                    .contentType(MediaType.APPLICATION_JSON).content(content))
+                    .andExpect(status().isBadRequest());
+        }
+        StringBuilder json = new StringBuilder("{\"codes\":[");
+        for (int i = 0; i < 129; i++) {
+            if (i > 0) json.append(",");
+            json.append("\"TEST.IND.").append(i).append("\"");
+        }
+        json.append("]}");
+        mockMvc.perform(post("/internal/catalog/indicators/batch")
+                .contentType(MediaType.APPLICATION_JSON).content(json.toString()))
+                .andExpect(status().isBadRequest());
+    }
+
+
 }

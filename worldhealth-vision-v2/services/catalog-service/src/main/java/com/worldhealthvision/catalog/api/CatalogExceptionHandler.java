@@ -21,6 +21,7 @@ import java.time.OffsetDateTime;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -38,7 +39,8 @@ public class CatalogExceptionHandler {
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
             ConstraintViolationException.class,
-            CatalogBadRequestException.class
+            CatalogBadRequestException.class,
+            HttpMessageNotReadableException.class
     })
     public ResponseEntity<ApiErrorResponse> handleBadRequest(
             Exception exception,
