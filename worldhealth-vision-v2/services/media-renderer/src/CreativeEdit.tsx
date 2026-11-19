@@ -4,6 +4,8 @@ import {TransitionSeries, linearTiming} from "@remotion/transitions";
 import {fade} from "@remotion/transitions/fade";
 import {slide} from "@remotion/transitions/slide";
 import {fitTextOnNLines} from "@remotion/layout-utils";
+import {GeoStory} from "./GeoStory";
+import type {GeoDirection} from "./GeoStory";
 
 /**
  * A real Remotion composition for supplied scripts, images, clips, voices and
@@ -19,7 +21,7 @@ export type CreativeMedia = {
 export type CreativeShot = {
   id:string;
   durationFrames:number;
-  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus";
+  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story";
   title?:string;
   subtitle?:string;
   eyebrow?:string;
@@ -33,6 +35,8 @@ export type CreativeShot = {
   focus?:{x:number;y:number};
   /** Region is in 0..1 COORDINATES OF THE VISIBLE DOCUMENT VIEWPORT. */
   documentRegion?:{x:number;y:number;width:number;height:number};
+  /** Editor-approved geographic inputs, not inferred data. */
+  geo?:GeoDirection;
 };
 export type CreativeEditProps = {
   version:1;
@@ -341,6 +345,7 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
   const move=spring({frame:frame-enterOverlapFrames,fps,config:{mass:1,damping:24,stiffness:90}});
   if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="document_focus")return <DocumentFocus shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
+  if(shot.template==="geo_story")return <GeoStory shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   const opacity=reveal(frame,enterOverlapFrames,17);
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
   const subtitleFade=reveal(frame,enterOverlapFrames+15,18);
