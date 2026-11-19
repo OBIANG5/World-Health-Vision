@@ -77,8 +77,10 @@ export function DataMotionStory({shot,globalStyle,enterOverlapFrames}:{
         {values.map((v,i)=>{
           const top=525+i*94;
           const target=left+valueCoordinate(v.value,d,width);
-          const barX=Math.min(target,zero);
           const barW=Math.abs(target-zero)*pose.bars[i];
+          // Both signs grow FROM true zero. A negative value must travel left;
+          // drawing from the final negative endpoint is visually misleading.
+          const barX=target<zero?zero-barW:zero;
           return <g key={i} data-wv-data-bar={i} opacity={.28+.72*pose.bars[i]}>
             <text x="112" y={top+38} fontSize={data.kind==="ranking"?34:31} fill={colors.white}
               fontWeight={data.kind==="ranking"?780:620}>
