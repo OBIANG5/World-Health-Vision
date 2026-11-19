@@ -69,6 +69,17 @@ jobs:
         run: |
           node --input-type=module -e "import {getVideoMetadata} from '@remotion/renderer';import fs from 'node:fs';const m=await getVideoMetadata('output/creative/with-imported-media.mp4');const r=JSON.parse(fs.readFileSync('output/creative/with-imported-media.mp4.report.json','utf8'));console.log(JSON.stringify({video:m,report:r.media}));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.media.length!==3||r.track_voice!=='TEST SINE TONE — NOT A VOICE')process.exit(1);"
           test -s output/creative/with-imported-media.mp4
+      - name: Inspect exact screenshots from the rendered external-media film
+        run: |
+          node --input-type=module -e "import fs from 'node:fs';const r=JSON.parse(fs.readFileSync('output/creative/with-imported-media.mp4.report.json','utf8'));if(r.actual_rendered_stills.length<3||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size<2)process.exit(1);console.log(r.actual_rendered_stills);"
+      - name: Render only the new focus-reveal shot without changing the source film
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-external-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --shot plan-01 \
+            --output output/creative/focus-reveal-only.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const r=JSON.parse(fs.readFileSync('output/creative/focus-reveal-only.mp4.report.json','utf8'));const m=await getVideoMetadata('output/creative/focus-reveal-only.mp4');if(r.mode!=='single_shot_preview'||r.shot_id!=='plan-01'||r.track_voice!=='no_narration'||r.duration_frames!==105||m.width!==1080||m.height!==1920||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size<2)process.exit(1);console.log('focus-reveal preview validated',r.duration_frames);"
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
         with:
@@ -78,6 +89,9 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/with-imported-media.mp4
             worldhealth-vision-v2/services/media-renderer/output/creative/with-imported-media.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
 
