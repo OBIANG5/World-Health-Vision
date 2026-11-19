@@ -82,3 +82,19 @@ Si un test échoue, noter le message, corriger la cause et re-exécuter. **Une c
 Dans tout nouveau chat, ouvrir la PR #44 et ce fichier puis examiner **le HEAD**, les résultats CI et les captures. Ne pas repartir de zéro. Ne pas confondre une démonstration cartographique avec un vrai reportage. Ne pas adopter automatiquement une voix, une IA narrative ou une version de globe plus faible sans le dire. Garder le niveau cible **international** : esthétique exigeante, journalistes et sources authentiques, vidéos où plusieurs animations coexistent dans le même plan.
 
 **Aucune promesse de résultat « meilleur au monde » sans comparaison visuelle et sonore effective.**
+
+
+## 8. Premier audit de pixels 3D — détection d'un vrai problème de rendu et correction
+
+**Première CI NASA réellement réussie :** [GitHub Actions #44567135931](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44567135931), **deux jobs SUCCESS**, compilation Studio V2, **14 tests Node, 0 échec**, rendu H.264 1080×1920 et test Chromium des cinq chemins. Artefact `worldvision-creative-compositor-demo`, id **14553635432**, téléchargé, extrait, revu visuellement. **SHA NASA mesuré** : `dc059529b8ed1cfcdd59747a7c3f259c93c1322bf88ca1ec8bab1dd71fcc57f5`, 1 692 239 octets, image officielle 5400×2700. Ce SHA est désormais **pinné dans `prepare-earth-texture.mjs`** pour éviter un remplacement non contrôlé de source.
+
+**Défaut artistique majeur objectivement détecté** sur `player-geo-frame-96.png` : la Terre apparaissait comme un **disque bleu cyan presque uniforme**, malgré le vrai modèle 3D et la présence de la texture NASA. Causes identifiées dans `GeoStory.tsx` : les deux **anciens cercles de fond SVG du mode vectoriel** (`r=418` cyan 35 % et `r=405` cyan 70 %, floutés) étaient encore peints **PAR-DESSUS la Terre 3D**. L'ancien code cachait donc les vrais déserts, forêts et océans ! Un test de présence de `<canvas>` ne détectait pas cette erreur : la revue des vrais pixels était nécessaire.
+
+**Correction en code** : en mode `geo.look="photo"`, les anciens disques SVG sont désormais **`fill="none"`** et deviennent seulement des **liserés lumineux** avec `stroke`, tandis que les formes D3 des pays ne repeignent pas les textures NASA. L'aperture de l'œil blanc/cyan se situe derrière la sphère. Les contours, marqueurs, trajets et valeurs gardent leurs animations indépendantes.
+
+**Deuxième correction artistique** : la Terre photographique et la carte D3 sont agrandies de **r=399 à r=463** et recentrées à **(540,690)** ; `GeoPhotorealEarth.tsx` et tous les tracés de `GeoStory.tsx` utilisent les mêmes nouvelles dimensions. Les ellipses bleu-cyan sont également redimensionnées pour approcher le globe-œil de la référence et remplir beaucoup mieux la largeur 9:16, sans avoir recours à une fausse perspective.
+
+**Limite critique** : ce correctif est codé mais **la nouvelle sortie 3D doit encore être reconstruite et visuellement revue** (source, profil colorimétrique, qualité des océans, alignement NASA-D3, cadrage des textes, occultation du globe, performance). Ne pas déclarer le rendu photoréaliste final accepté tant que les nouvelles captures ne le prouvent pas. Les tests art automatisés vérifieront encore la présence 3D, mais la *justesse esthétique* nécessite aussi un jugement sur les pixels.
+
+**Définitions de qualité non négociables** : pas de fausse image d'événement, pas de chiffres supposés, pas de données actuelles présentées comme issues d'une NASA 2004 ; couleurs lumineuses et relief lisible avec géographie réelle ; titres lisibles à la taille réelle iPhone, sans masques de plateformes ; un seul code Remotion partagé pour Player & MP4 ; BAOCOM indépendant, aucune voix imposée.
+
