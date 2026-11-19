@@ -127,15 +127,17 @@ class IbgeNationalCensusClient:
             timeout=self._timeout,
             follow_redirects=False,
             transport=self._transport,
-            headers={"Accept": "application/json", "User-Agent": "World-Vision-DataResearch/1.0"},
+            headers={"Accept": "application/json", "Accept-Encoding": "identity", "User-Agent": "World-Vision-DataResearch/1.0"},
         ) as client:
             with client.stream("GET", IBGE_DATA_PATH, params=IBGE_QUERY) as response:
                 response.raise_for_status()
                 content_type = response.headers.get("content-type", "").lower()
                 if "application/json" not in content_type:
                     raise ValueError("IBGE returned non-JSON content")
+                if response.headers.get("content-encoding", "identity").lower() not in ("identity", ""):
+                    raise ValueError("Compressed IBGE response cannot be archived as plain JSON bytes")
                 body = bytearray()
-                for chunk in response.iter_bytes():
+                for chunk in response.iter_raw():
                     body.extend(chunk)
                     if len(body) > MAX_BODY_BYTES:
                         raise ValueError("IBGE response exceeds bounded-size contract")
