@@ -104,6 +104,7 @@ async function run(argv){
         transitionAfter:shot.transitionAfter,transitionFrames:shot.transitionFrames,
         focus:shot.focus,
         documentRegion:shot.documentRegion,
+        geo:shot.geo,
       });
     }
     const props={
