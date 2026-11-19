@@ -72,7 +72,7 @@ export function DataMotionStory({shot,globalStyle,enterOverlapFrames}:{
     const left=430,width=480,zero=left+valueCoordinate(0,d,width);
     chart=<svg width="1080" height="1200" viewBox="0 0 1080 1200"
       style={{position:"absolute",top:0,left:0}}>
-      <g data-wv-data-graph={data.kind}>
+      <g data-wv-data-graph={data.kind} data-wv-data-zero={zero.toFixed(3)}>
         <line x1={zero} x2={zero} y1={515} y2={1116} stroke={colors.aqua} strokeWidth="3" strokeOpacity=".62"/>
         {values.map((v,i)=>{
           const top=525+i*94;
