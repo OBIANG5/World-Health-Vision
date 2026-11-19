@@ -152,7 +152,11 @@ def inspect_reuse_claim(
 
 def ibge_census_4714_initial_review(*, observed_at: datetime | None = None) -> RightsReviewDossier:
     """Context-only registry: never claim that the exact table is licensed."""
-    now = observed_at or datetime.now(UTC)
+    # This is a recorded research snapshot dated 2026-11-19, NOT a new
+    # provider/license recheck every time the CLI is invoked.
+    # The 00:00 UTC convention represents a date-only historical snapshot,
+    # not a claim of a real provider inspection at midnight.
+    now = observed_at if observed_at is not None else datetime(2026, 11, 19, tzinfo=UTC)
     return RightsReviewDossier(
         institution_code="IBGE",
         dataset_code="CENSO2022_4714",
