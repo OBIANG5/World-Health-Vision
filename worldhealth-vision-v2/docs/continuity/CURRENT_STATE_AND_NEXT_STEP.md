@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## MEDIA — SPRINT 3 / SOURCE DE VÉRITÉ (19 NOVEMBRE 2026)
+
+Voir [WORLDVISION_CREATIVE_PLAYER_SPRINT3_2026-11-19.md](../media/WORLDVISION_CREATIVE_PLAYER_SPRINT3_2026-11-19.md). PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44), toujours DRAFT, aucun merge/deploy. Le vrai Player Remotion du plan a été branché à l'atelier V2 par un composant partagé avec le renderer H.264, avec object URLs locales, fichiers fournis, cadrage, titre, mouvement, source d'origine commutable et chargement différé. Dépendances exactes/lockfile prêts, frontend CI compilé.
+
+**CONDITION** : contrôler le job `Inspect real Remotion Player pixels in Chromium browser` sur [Actions #44534781424](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44534781424) pour vérifier que le lecteur s'exécute visuellement, au-delà du build. Il est actuellement un test de conformité qui ne garantit pas iOS. En cas d'échec, corriger avant de clore le sprint. **Suivant** : test iPhone/Safari, vraie composition de film entier/voix/sous-titres, fichiers privés authentifiés, cache/versions et première séquence artistique remarquable avec médias réels autorisés. Recherche/scripts via ChatGPT, voix interchangeable, BAOCOM distinct.
+
+---
+
 ## POINT VÉRIFIÉ — LE CONTRÔLE AUDIO EST TERMINÉ (19 NOV 2026)
 
 [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) en brouillon. La reprise après le blocage s'est achevée par une vérification complète : [Actions #44530170278 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278) pour le code `04399843d2af6106d7158b7ffa33652dd960a693`. 11 tests Node réussis, build V2 réussi, vidéos Remotion 9:16 et plans individuels rendus, couche alpha testée ; **silence intentionnel de 1,3 s détecté** par FFmpeg sur WAV synthétique, sans altérer l'empreinte de la piste. Documentation complète : [Motion Director Sprint 2 §7](../media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md).
