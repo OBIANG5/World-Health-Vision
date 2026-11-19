@@ -61,6 +61,7 @@ jobs:
           mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
           python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_gateway.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/report_upstream_metrics.py
+          python3 -m unittest discover -s worldhealth-vision-v2/infra/tests -p 'test_report_upstream_metrics.py' -v
 
       - name: Fail if CI overlay exposes databases or disables JWT
         run: |
