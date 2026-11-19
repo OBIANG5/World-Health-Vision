@@ -13,6 +13,7 @@ export type DataPose={intro:number;grid:number;plot:number;number:number;notes:n
 export function dataClamp(n:number):number;
 export function dataEase(n:number):number;
 export function dataBeat(frame:number,start:number,end:number):number;
+export function dataStagger(progress:number,index:number,total:number,window?:number):number;
 export function dataPose(frame:number,durationFrames:number):DataPose;
 export function valueLabel(value:number,precision?:number,locale?:string):string;
 export function dataPointGeometry(data:DataDirection):Array<DataPoint&{x:number;y:number}>;
