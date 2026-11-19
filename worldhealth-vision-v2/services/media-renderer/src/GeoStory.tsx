@@ -120,6 +120,27 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
       transform:"rotate("+((local*.14)%360)+"deg) scale(1.25)"
     }}/>
 
+    {/* Luminous WHITE aperture is the major visual gap from the original
+        vector test to the owner's eye/globe reference. It sits BEHIND Earth,
+        not over the actual NASA pixels or documentary captions. */}
+    {isPhoto&&<svg viewBox="0 0 1080 1920" width="100%" height="100%"
+      style={{position:"absolute",inset:0,pointerEvents:"none"}}>
+      <defs>
+        <radialGradient id="wv-geo-aperture-white" cx="50%" cy="48%" r="70%">
+          <stop offset="0%" stopColor="#ffffff"/>
+          <stop offset="79%" stopColor="#f3fdff"/>
+          <stop offset="100%" stopColor="#c7f7ff"/>
+        </radialGradient>
+        <filter id="wv-geo-aperture-halo" x="-50%" y="-80%" width="200%" height="260%">
+          <feGaussianBlur stdDeviation="21"/>
+        </filter>
+      </defs>
+      <ellipse cx="540" cy="750" rx="646" ry="491"
+        fill="url(#wv-geo-aperture-white)" opacity=".98"/>
+      <ellipse cx="540" cy="750" rx="650" ry="493"
+        fill="none" stroke="#00afff" strokeWidth="40" opacity=".76"
+        filter="url(#wv-geo-aperture-halo)"/>
+    </svg>}
     {/* The photographic sphere is rendered before the D3 world borders.
         D3 remains the canonical geometry for political/route overlays. */}
     {isPhoto&&<GeoPhotorealEarth
@@ -251,6 +272,11 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
       <div style={{position:"absolute",inset:0,
         background:"linear-gradient(0deg,rgba(2,12,22,.4),transparent 45%)"}}/>
     </div>}
+    {/* A lower matte protects long captions from the bright eye,
+        independent of the geographic layer's movement. */}
+    {isPhoto&&<AbsoluteFill style={{pointerEvents:"none",
+      background:"linear-gradient(180deg,transparent 0%,transparent 58%,rgba(2,10,24,.89) 72%,#04111e 91%)"
+    }}/>}
     {/* Level 7: numerics are editorial values, NOT market data invented by AI. */}
     {m&&<div data-wv-geo-metric="true" style={{
       position:"absolute",
