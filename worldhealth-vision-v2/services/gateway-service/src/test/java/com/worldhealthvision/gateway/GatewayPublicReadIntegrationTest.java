@@ -157,7 +157,12 @@ class GatewayPublicReadIntegrationTest {
 
     @Test
     void publicHealthProbeIsNotADataOrMetricsBackdoor() {
-        client.get().uri("/actuator/health").exchange().expectStatus().isOk();
+        client.get().uri("/actuator/health")
+                .exchange().expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.status").exists()
+                .jsonPath("$.components").doesNotExist()
+                .jsonPath("$.details").doesNotExist();
         client.get().uri("/actuator/prometheus").exchange().expectStatus().isUnauthorized();
         client.mutateWith(mockJwt()).get().uri("/actuator/prometheus")
                 .exchange().expectStatus().isForbidden();
