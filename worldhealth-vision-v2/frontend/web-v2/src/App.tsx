@@ -7,7 +7,8 @@ import type { CountrySummary } from "./api/types";
 import EyeLayout from "./components/layout/EyeLayout";
 import EyeMapFrame from "./components/layout/EyeMapFrame";
 import {WorldIcon} from "./components/ui/WorldIcon";
-import { VISION_PRODUCTS, type VisionAction } from "./product/visionProducts";
+import { VISION_PRODUCTS, type VisionAction, type VisionId } from "./product/visionProducts";
+import { useWorldNavigation } from "./navigation/worldRoute";
 import { LanguageProvider, useLang, useToggleLang } from "./context/LanguageContext";
 import { UserProfileProvider, useUserProfile } from "./context/UserProfileContext";
 import { useCountryCatalog } from "./hooks/useCountryCatalog";
@@ -19,6 +20,7 @@ import { t } from "./i18n/labels";
 // carte affichée plus vite (Recharts/jsPDF ne sont plus dans le bundle de départ).
 const CountryDrawer = lazy(() => import("./components/country/CountryDrawer"));
 const VisionHub = lazy(() => import("./components/layout/VisionHub"));
+const WorldDiscovery = lazy(() => import("./components/layout/WorldDiscovery"));
 const RegionDrawer = lazy(() => import("./components/region/RegionDrawer"));
 const SourceMethodologyModal = lazy(() => import("./components/layout/SourceMethodologyModal"));
 const WatchlistPanel = lazy(() => import("./components/layout/WatchlistPanel"));
@@ -36,6 +38,7 @@ import "./styles/mobile.css";
 import "./styles/world-editorial.css";
 import "./styles/world-electric.css";
 import "./styles/vision-hub.css";
+import "./styles/world-discovery.css";
 
 // ---------- Sélecteur de pays (popover) ----------
 
@@ -112,6 +115,7 @@ type NavDomain = "explore" | "markets" | "travel" | "safety" | "all";
 
 function AppContent() {
   const lang = useLang();
+  const { route, navigate } = useWorldNavigation();
   const toggleLang = useToggleLang();
   const { watchlist, toggle: toggleWatch, isWatched } = useWatchlist();
 
@@ -130,36 +134,39 @@ function AppContent() {
   const [showAdvisor, setShowAdvisor] = useState(false);
   const [showCurrencyPanel, setShowCurrencyPanel] = useState(false);
   const [showToolsMenu, setShowToolsMenu] = useState(false);
-  const [showVisionHub, setShowVisionHub] = useState(false);
+  const showVisionHub = route.kind === "visions";
   const [navDomain, setNavDomain] = useState<NavDomain>("all");
   const toolsButtonRef = useRef<HTMLButtonElement>(null);
-  const closeVisionHub = useCallback(() => setShowVisionHub(false), []);
+  const closeVisionHub = useCallback(() => navigate({ kind: "home" }), [navigate]);
+  const closeWorldDiscovery = useCallback(() => navigate({ kind: "home" }), [navigate]);
   const [toolsAnchor, setToolsAnchor] = useState({ top: 80, left: 16 });
   const [countryAnchor, setCountryAnchor] = useState({ top: 80, left: 16 });
-  const [selectedCountryIso3, setSelectedCountryIso3] = useState("FRA");
+  const [selectedCountryIso3, setSelectedCountryIso3] = useState(() => route.kind === "country" ? route.iso3 : "FRA");
   const { profile, hasProfile } = useUserProfile();
   const { countries, loading: countriesLoading, error: countriesError } = useCountryCatalog();
   const isOffline = !countriesLoading && !!countriesError && countries.length === 0;
   const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
 
+  const activeIso3 = route.kind === "country" ? route.iso3 : selectedCountryIso3;
+  const routedCountryMissing = route.kind === "country"
+    && !countriesLoading && countries.length > 0
+    && !countries.some((country) => country.iso3 === route.iso3 && country.active && !country.aggregate);
+  const activeCountryDrawerOpen = (drawerOpen || route.kind === "country") && !routedCountryMissing;
   const selectedCountry = useMemo<CountrySummary | null>(
-    () => countries.find((c) => c.iso3 === selectedCountryIso3) ?? null,
-    [countries, selectedCountryIso3],
+    () => countries.find((country) => country.iso3 === activeIso3) ?? null,
+    [countries, activeIso3],
   );
 
   const handleCountryClick = useCallback((iso3: string) => {
     setRegionDrawerOpen(false);
     setShowCountrySelector(false);
+    setShowToolsMenu(false);
     setSelectedCountryIso3(iso3);
-    setDrawerOpen(true);
-  }, []);
+    setDrawerOpen(false);
+    navigate({ kind: "country", iso3 });
+  }, [navigate]);
 
-  function handleSelectFromPopover(iso3: string) {
-    setSelectedCountryIso3(iso3);
-    setDrawerOpen(true);
-    setRegionDrawerOpen(false);
-    setShowCountrySelector(false);
-  }
+  function handleSelectFromPopover(iso3: string) { handleCountryClick(iso3); }
 
   function handleOpenRegions() {
     setDrawerOpen(false);
