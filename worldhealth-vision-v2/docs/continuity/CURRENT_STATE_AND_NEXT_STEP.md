@@ -1,5 +1,15 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## MEDIA SPRINT 8 — GEO DIRECTOR / REPRISE MULTI-ANIMATIONS (19 NOVEMBRE 2026)
+
+**Nouvelle branche de travail isolée :** `feature/worldvision-geo-camera-country-spotlight-2026-11-19` (issue de PR #44, pas fusionnée dans V2). **Document de référence** : [WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md](../media/WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md). Le module ajoute mouvement de caméra à destination géographique fournie, arrivée maintenue, zoom mesuré, contour pays sourcé Natural Earth ; same pose D3 + vrai NASA globe Three. Tests unitaire, validation de contrats et contrôles Chromium ajoutés. Le code est committé, **la CI et les véritables photogrammes Sprint 8 restent à vérifier avant déclaration de succès**.
+
+**Directive de reprise :** objectif issu des vidéos Bourse Express + géopolitique et de la référence œil/globe = composition riche, avec plusieurs couches indépendantes animées sur une image ; pas une collection de petits slides. Ne pas s'arrêter au globe : packs GEO (country detail), DATA, PHOTO multi-animations, TEXTE, DOCUMENT, AUDIO. Après vérification et corrections éventuelles de ce sprint, prioriser plans pays/région et vrais médias autorisés, puis photo 2,5D multicouche et chiffres animés. BAOCOM indépendant ; scripts dans ChatGPT ; voix non imposée ; blog/GDELT différés. Aucune modification publique ni publication automatique.
+
+**Sprint 8 — preuve vérifiée** : [Actions #44615478166](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44615478166) (code `f34ae7c`) a réussi 2 jobs, 16 tests Node, MP4 H.264 5 secondes/150 frames, quatre vrais screenshots Chromium et zéro erreur JS. Les photos du Player et trois stills du master ont été inspectées visuellement : globe réaliste, marqueur et textes visibles, mais contours du Gabon trop peu distinctifs et zoom pays insuffisant. **Ne pas confondre ce résultat avec l'approbation artistique**. Rapport [Sprint 8 §7](../media/WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md), PR #72 draft. Le contrôle des filtres CI sur `a149b225` est également **SUCCESS (2 jobs, [run #44616853136](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44616853136))**. Suivant : passer au véritable GEO-2 50m/10m + compositions PHOTO et DATA multilayers.
+
+---
+
 ## WORLD‑VISION MEDIA — SPRINT 7, PROBLÈME GLOBAL PHOTO IDENTIFIÉ (19 NOV. 2026)
 
 Reprendre depuis [WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md](../media/WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md) et [PR #44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). **Pas de fusion, pas de déploiement.** Les scripts et la recherche restent ChatGPT ici ; le code monte les meilleurs éléments (motion design image/photo/carte/chiffres/textes, audio/voix interchangeable, QA). BAOCOM séparé, GDELT/blog différés.

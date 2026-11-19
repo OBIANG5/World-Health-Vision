@@ -16,8 +16,8 @@
       "durationFrames": 150,
       "template": "geo_story",
       "title": "LE MONDE EN MOUVEMENT",
-      "subtitle": "Cartographie animée, données fictives clairement identifiées.",
-      "eyebrow": "DÉMONSTRATION TECHNIQUE · AUCUNE ACTUALITÉ",
+      "subtitle": "Camera geodesique et contour issu de l'atlas, exemple technique non journalistique.",
+      "eyebrow": "ESSAI GÉOGRAPHIQUE · AUCUNE ACTUALITÉ",
       "motion": "locked",
       "transitionAfter": "cut",
       "transitionFrames": 0,
@@ -49,6 +49,18 @@
           "value": 42,
           "unit": " TEST",
           "precision": 0
+        },
+        "camera": {
+          "to": {
+            "lon": 11.6,
+            "lat": -0.7
+          },
+          "startFrame": 15,
+          "endFrame": 102,
+          "zoom": 1.1
+        },
+        "spotlight": {
+          "countryId": "266"
         }
       }
     }

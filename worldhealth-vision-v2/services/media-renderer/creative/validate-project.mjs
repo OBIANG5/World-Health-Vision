@@ -5,6 +5,11 @@
  */
 import path from "node:path";
 import fs from "node:fs";
+import {createRequire} from "node:module";
+
+// Keep spotlight IDs bound to the exact Natural Earth atlas used by Remotion.
+const countryGeometry=createRequire(import.meta.url)("world-atlas/countries-110m.json").objects.countries.geometries;
+const COUNTRY_IDS=new Set(countryGeometry.map(g=>String(g.id).padStart(3,"0")));
 
 export const FORMAT = "worldvision-creative-project-v1";
 const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story"]);
@@ -116,6 +121,21 @@ export function inspectProject(project) {
           bad(errors,p+".geo.look","Use photo (NASA Blue Marble) or explicit vector cartography.");
         if(geo.spinDegrees!==undefined&&(!Number.isFinite(geo.spinDegrees)||Math.abs(geo.spinDegrees)>360))
           bad(errors,p+".geo.spinDegrees","Spin must be a finite degree angle between -360 and 360.");
+        if(geo.camera!==undefined){
+          const c=geo.camera;
+          if(!c||typeof c!=="object"||!point(c.to)||
+             !boundedInteger(c.startFrame,0,scene.durationFrames-40)||
+             !boundedInteger(c.endFrame,1,scene.durationFrames-18)||
+             c.endFrame-c.startFrame<30||
+             typeof c.zoom!=="number"||!Number.isFinite(c.zoom)||
+             c.zoom<1||c.zoom>1.15)
+            bad(errors,p+".geo.camera","Director camera needs a source-authorized destination, 30+ frames of motion, 18+ frames held at destination, and a 1-1.15 optical push.");
+        }
+        if(geo.spotlight!==undefined){
+          const id=geo.spotlight?.countryId;
+          if(typeof id!=="string"||!/^[0-9]{3}$/.test(id)||!COUNTRY_IDS.has(id))
+            bad(errors,p+".geo.spotlight","Choose an existing three-digit Natural Earth country feature ID, not a fabricated or inferred border.");
+        }
         if(geo.target!==undefined){
           if(!point(geo.target)||geo.target.label!==undefined&&!isText(geo.target.label,80))
             bad(errors,p+".geo.target","Target requires genuine numeric coordinates and optional label <=80 chars.");
