@@ -123,7 +123,6 @@ class DirectorContractTests(unittest.TestCase):
         result = validate(fixture())
         self.assertTrue(result["passed"], result)
         self.assertTrue(result["warnings"])
-        self.assertIn("fake", result["warnings"][0].lower()) if False else None
 
     def test_source_claim_must_have_two_urls(self):
         data = fixture()
