@@ -1,108 +1,119 @@
 #!/usr/bin/env node
 /**
- * A real browser smoke test using Remotion's own HeadlessBrowser + CDP session.
- * This is NOT Puppeteer: Remotion newPage(), goto() and CDP screenshot are used
- * with the options their 4.0.542 API actually expects.
+ * Browser-level MEDIA STUDIO smoke: actual Vite / React / @remotion/player.
+ * Uses public Puppeteer Core API (not private Remotion Browser/CDP methods).
+ * Remotion remains the SAME composition for Player and MP4.
  *
- * Test: Vite -> React -> shared CreativeEdit -> official Remotion Player,
- * with local blob URL -> visual screenshot at two different animation frames.
- * Synthetic imagery only; never depict a fake news event.
+ * - one-shot: synthetic user asset blob, two animation frames
+ * - full-film: 2 real Remotion scenes, actual dissolve, synthetic WAV track,
+ *   screenshot during transition and after the second shot
+ *
+ * No news imagery, no fabricated reports, no accounts or remote API calls.
  */
 import fs from "node:fs";
 import path from "node:path";
 import {createHash} from "node:crypto";
-import {openBrowser} from "@remotion/renderer";
+import puppeteer from "puppeteer-core";
 
 const url="http://127.0.0.1:5173/creative-player-smoke.html";
 const output=path.resolve("output/creative");
 fs.mkdirSync(output,{recursive:true});
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const chromeCandidates=[
+  process.env.WV_TEST_CHROME,process.env.PUPPETEER_EXECUTABLE_PATH,
+  "/usr/bin/google-chrome","/usr/bin/google-chrome-stable",
+  "/usr/bin/chromium","/usr/bin/chromium-browser"
+].filter(Boolean);
+const executablePath=chromeCandidates.find(p=>fs.existsSync(p));
 
 async function serverReady(){
-  console.log("[player-smoke] waiting for local Vite server");
-  for(let i=0;i<25;i++){
-    try{const r=await fetch(url);if(r.ok)return;}catch{}
-    await sleep(450);
+  for(let i=0;i<45;i++){
+    try{const response=await fetch(url);if(response.ok)return;}catch{}
+    await sleep(350);
   }
   throw Error("Local Vite smoke page not reachable: "+url);
 }
-async function poll(page,probe,label){
-  console.log("[player-smoke] "+label);
-  for(let n=0;n<60;n++){
-    const value=await page.evaluate(probe);
-    if(value===true)return;
-    if(typeof value==="string"&&value.startsWith("ERROR:"))throw Error(label+": "+value);
-    await sleep(450);
-  }
-  throw Error("Timed out "+label+"; page may be loading a module or asset incorrectly.");
-}
-async function capture(page,frame){
-  const data=await page._client().send("Page.captureScreenshot",{
-    format:"png",fromSurface:true,captureBeyondViewport:false,
-    clip:{x:0,y:0,width:360,height:675,scale:1}
-  });
-  // CDP wrapper returns {value:{data}} in this Remotion release.
-  const base64=data?.value?.data??data?.data;
-  if(typeof base64!=="string")throw Error("No screenshot data in CDP response");
-  const buf=Buffer.from(base64,"base64");
-  if(buf.length<1000)throw Error("Screenshot was unexpectedly small");
-  const destination=path.join(output,"player-browser-frame-"+frame+".png");
-  fs.writeFileSync(destination,buf);
-  return {frame,path:destination,sha256:createHash("sha256").update(buf).digest("hex"),bytes:buf.length};
-}
-
-async function main(){
-  await serverReady();
-  console.log("[player-smoke] opening Remotion headless-shell");
-  const browser=await openBrowser("chrome",{logLevel:"error",shouldDumpIo:false});
+async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
+  const prefix=mode==="film"?"player-film-frame-":"player-browser-frame-";
+  const page=await browser.newPage();
   const errors=[];
-  let page=null;
+  page.on("pageerror",e=>errors.push(String(e)));
   try{
-    page=await browser.newPage({
-      context:()=>null,
-      logLevel:"error",indent:false,pageIndex:0,
-      onBrowserLog:log=>{if(log.type==="error")errors.push(log.text)},
-      onLog:()=>{},
-    });
     await page.setViewport({width:390,height:844,deviceScaleFactor:1});
-    console.log("[player-smoke] navigating using Remotion Page.goto API");
-    await page.goto({url,timeout:30000,options:{waitUntil:"load"}});
-    await poll(page,()=>window.__wvSmokeReady===true||
-      (document.getElementById("smoke-state")?.textContent||"").startsWith("Error:")
-        ? true : false,"React + Remotion Player mount");
-    const errorState=await page.evaluate(()=>{
-      const str=document.getElementById("smoke-state")?.textContent||"";
-      return str.startsWith("Error:")?str:null;
+    await page.goto(url+(mode==="film"?"?mode=film":""),{
+      waitUntil:"domcontentloaded",timeout:35000
     });
-    if(errorState)throw Error(errorState);
-    await poll(page,()=>Array.from(document.querySelectorAll("#smoke-preview img")).some(
-      im=>im.complete&&im.naturalWidth>0
-    ),"local synthetic blob: image paint");
-    console.log("[player-smoke] seeking and capturing exact Remotion frames");
-    const captures=[];
-    for(const frame of [0,74]){
+    await page.waitForFunction("window.__wvSmokeReady === true",{timeout:30000});
+    await page.waitForFunction(
+      "Array.from(document.querySelectorAll('#smoke-preview img')).some(im=>im.complete&&im.naturalWidth>0)",
+      {timeout:30000}
+    );
+    const state=await page.evaluate(()=>({
+      mode:window.__wvSmokeMode,frames:window.__wvSmokeFrames,
+      hasVoice:window.__wvSmokeHasVoice,
+      error:document.querySelector("#smoke-error")?.textContent||null
+    }));
+    if(state.error||state.mode!==mode||state.frames!==expectedDuration||state.hasVoice!==expectVoice)
+      throw Error("Player did not load intended composition: "+JSON.stringify(state));
+    const element=await page.$("#smoke-preview");
+    if(!element)throw Error("Missing Remotion Player viewport");
+
+    const screenshots=[];
+    for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
-      await sleep(550);
-      const state=await page.evaluate(()=>document.querySelector("#smoke-error")?.textContent||null);
-      if(state)throw Error("Player fallback: "+state);
-      captures.push(await capture(page,frame));
+      await sleep(600);
+      const fallback=await page.$("#smoke-error");
+      if(fallback)throw Error("Player fallback: "+(await page.evaluate(el=>el.textContent,fallback)));
+      const file=path.join(output,prefix+frame+".png");
+      const buffer=await element.screenshot({type:"png",path:file});
+      screenshots.push({
+        frame,path:file,sha256:createHash("sha256").update(buffer).digest("hex"),
+        size_bytes:buffer.length
+      });
     }
-    if(errors.length)throw Error("Browser console errors: "+errors.join(" | ").slice(0,1500));
-    if(captures[0].sha256===captures[1].sha256)throw Error("No visible motion between exact Player frames");
+    if(errors.length)throw Error("Browser page errors: "+errors.join(" | ").slice(0,2500));
+    if(new Set(screenshots.map(s=>s.sha256)).size!==screenshots.length)
+      throw Error("No actual visible motion between some "+mode+" frames");
+    if(mode==="film"){
+      const secondShotVisible=await page.evaluate(()=>
+        document.querySelector("#smoke-preview")?.textContent?.includes("LE RÉCIT CONTINUE.")??false
+      );
+      if(!secondShotVisible)throw Error("Second shot not mounted after transition");
+    }
     const report={
-      test:"shared-compositor-remotion-player-browser-smoke-v1",
-      source:"locally staged synthetic image converted to browser blob: URL",
-      component:"CreativeEdit.tsx shared by Remotion Player and MP4 renderer",
-      viewport:{width:390,height:844},
-      screenshots:captures,
-      no_browser_errors:true,
-      caveat:"Technical Chromium test only; Safari/iOS and exported MP4 must receive separate human QA."
+      test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
+      input:"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
+      screen:{width:390,height:844},
+      frames_in_composition:expectedDuration,
+      browser_errors:0,
+      screenshots,
+      warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    fs.writeFileSync(path.join(output,"player-browser-smoke.report.json"),JSON.stringify(report,null,2)+"\n");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":"player-browser-smoke.report.json");
+    fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
-    if(page)await page.close().catch(()=>{});
-    await browser.close({silent:true});
+    await page.close();
   }
 }
-main().catch(error=>{console.error("[player-smoke] "+String(error?.stack??error));process.exitCode=1});
+async function main(){
+  console.log("[player-smoke] waiting for Vite");
+  await serverReady();
+  if(!executablePath)throw Error("Chromium not found. Set WV_TEST_CHROME to its executable path.");
+  console.log("[player-smoke] starting system Chromium:",executablePath);
+  const browser=await puppeteer.launch({
+    executablePath,headless:true,
+    args:["--no-sandbox","--disable-setuid-sandbox","--disable-dev-shm-usage","--disable-gpu"]
+  });
+  try{
+    console.log("[player-smoke] checking single shot");
+    await testCase(browser,{mode:"shot",frames:[0,74],expectedDuration:105,expectVoice:false});
+    console.log("[player-smoke] checking real whole-film transitions and imported WAV");
+    await testCase(browser,{mode:"film",frames:[0,100,145],expectedDuration:165,expectVoice:true});
+    console.log("[player-smoke] both true Player paths passed");
+  }finally{
+    await browser.close();
+  }
+}
+main().catch(e=>{console.error("[player-smoke] "+String(e?.stack??e));process.exitCode=1;});
