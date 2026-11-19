@@ -180,6 +180,8 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             contextPoints:context?.getAttribute("d")?.length??0,
             outlineReveal:Number(detailed?.getAttribute("stroke-dashoffset")),
             cameraScale:Number(camera?.getAttribute("data-wv-country-scale")),
+            titleMapGap:(document.querySelector('[data-wv-country-map-boundary]')?.getBoundingClientRect().top??NaN)-
+              (document.querySelector('[data-wv-title]')?.getBoundingClientRect().bottom??NaN),
             hasFill:Boolean(fill),hasMarker:Boolean(document.querySelector('[data-wv-country-marker]')),
             hasPhoto:Boolean(document.querySelector('[data-wv-country-media]')),
             hasNumber:Boolean(document.querySelector('[data-wv-country-metric]'))
@@ -188,7 +190,8 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
         if(scene.country!=="266"||scene.outlinePoints<100||scene.contextPoints<200||
           !scene.hasFill||!scene.hasMarker||!scene.hasPhoto||!scene.hasNumber||
           scene.outlineReveal<=0||scene.outlineReveal>=1||
-          scene.cameraScale<.9||scene.cameraScale>1.08)
+          scene.cameraScale<.9||scene.cameraScale>1.08||
+          !Number.isFinite(scene.titleMapGap)||scene.titleMapGap<12)
           throw Error("Country-focus 10m/50m multilayer scene failed: "+JSON.stringify(scene));
         console.log("[player-smoke] detailed country-focus layers proven",scene);
       }
