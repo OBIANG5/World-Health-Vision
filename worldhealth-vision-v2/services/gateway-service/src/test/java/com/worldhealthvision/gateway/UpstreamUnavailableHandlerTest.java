@@ -45,7 +45,7 @@ class UpstreamUnavailableHandlerTest {
         var exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/api/anything"));
         ConnectException error = new ConnectException("local-error");
         assertThatThrownBy(() -> handler.handle(exchange, error).block())
-                .hasCause(null)
+                .isInstanceOf(ConnectException.class)
                 .hasMessageContaining("local-error");
         assertThat(exchange.getResponse().getStatusCode()).isNull();
     }
