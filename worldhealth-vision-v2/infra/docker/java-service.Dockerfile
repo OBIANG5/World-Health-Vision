@@ -25,11 +25,15 @@
 # 4. produit une image runtime simple
 # =============================================================================
 
-ARG MAVEN_VERSION=3.9.9
-ARG JDK_IMAGE=eclipse-temurin:21-jdk
+# Maven is preinstalled in the official builder image. The prior JDK-only
+# build executed mvnw, which changed ZIP to .tar.gz when unzip was absent and
+# could fail to fetch Maven before any project code was compiled.
+# Lock to the same Maven version as .mvn/wrapper/maven-wrapper.properties.
+# Pin this tag to a reviewed digest before a real production release.
+ARG MAVEN_BUILDER_IMAGE=maven:3.9.9-eclipse-temurin-21
 ARG JRE_IMAGE=eclipse-temurin:21-jre
 
-FROM ${JDK_IMAGE} AS build
+FROM ${MAVEN_BUILDER_IMAGE} AS build
 
 ARG SERVICE_MODULE
 
@@ -42,8 +46,7 @@ COPY pom.xml pom.xml
 COPY libs libs
 COPY services services
 
-RUN chmod +x mvnw
-RUN ./mvnw -q -pl ${SERVICE_MODULE} -am -DskipTests package
+RUN mvn -B -ntp -q -pl ${SERVICE_MODULE} -am -DskipTests package
 
 FROM ${JRE_IMAGE} AS runtime
 

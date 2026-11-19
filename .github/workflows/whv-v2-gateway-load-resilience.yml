@@ -1,0 +1,169 @@
+name: WHV V2 - disposable international Gateway load and resilience
+
+on:
+  pull_request:
+    branches:
+      - 'security/v2-jwt-signature-audience-scopes-2026-11-19'
+    paths:
+      - 'worldhealth-vision-v2/infra/tests/**'
+      - '.github/workflows/whv-v2-gateway-load-resilience.yml'
+      - 'worldhealth-vision-v2/docs/**'
+  push:
+    branches:
+      - 'test/v2-fullstack-gateway-load-resilience-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-gateway-load-${{ github.ref }}
+  cancel-in-progress: true
+
+# Fictional CI identity URLs are intentionally NOT reachable and can never be
+# copied into production. Only anonymous reviewed GET data APIs are probed.
+env:
+  WHV_TIMESCALE_IMAGE: timescale/timescaledb:2.15.3-pg16
+  WHV_OIDC_ISSUER_URI: https://ci-only.invalid/realms/worldvision
+  WHV_OIDC_JWKS_URI: https://ci-only.invalid/realms/worldvision/jwks
+  WHV_SECURITY_AUDIENCE: worldvision-ci-load
+  WHV_DB_PASSWORD_FILE: /tmp/whv_ci_load_password
+  WHV_GATEWAY_HOST_PORT: "18080"
+
+jobs:
+  full-stack-gateway:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact candidate SHA
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Prepare one-off DB secret and a metrics directory
+        run: |
+          openssl rand -hex 40 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0644 "$WHV_DB_PASSWORD_FILE"
+          mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_gateway.py
+
+      - name: Fail if CI overlay exposes databases or disables JWT
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            config --format json > "$RUNNER_TEMP/ci-compose-config.json"
+          python3 - "$RUNNER_TEMP/ci-compose-config.json" <<'PY'
+          import json,sys
+          services=json.load(open(sys.argv[1]))['services']
+          expected={'whv-timescaledb','catalog-service','timeseries-service',
+                    'analytics-service','ingestion-service','gateway-service'}
+          assert set(services)==expected
+          for name,service in services.items():
+              ports=service.get('ports') or []
+              if name!='gateway-service':
+                  assert not ports,(name,ports)
+              else:
+                  assert len(ports)==1 and ports[0]['host_ip']=='127.0.0.1'
+                  e=service['environment']
+                  assert e['WHV_SECURITY_ENABLED']=='true'
+                  assert e['WHV_PUBLIC_READ_ENABLED']=='true'
+                  assert e['WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS']=='false'
+          print('PASS: anonymous public-read test overlay is still isolated and JWT enabled')
+          PY
+
+      - name: Build and start true backend (Gateway, catalog, time series, analytics, ingestion, Timescale)
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            up -d --build --wait whv-timescaledb catalog-service timeseries-service analytics-service ingestion-service gateway-service
+
+      - name: Verify Gateway readiness and access isolation
+        run: |
+          ready=0
+          for n in $(seq 1 50); do
+            if curl -fsS --max-time 3 http://127.0.0.1:18080/actuator/health >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          test "$ready" = 1 || { echo "Gateway never became healthy" >&2; exit 1; }
+          public_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/catalog/countries?limit=2')"
+          private_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/timeseries/source-runs')"
+          advisor_code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+            -H 'Content-Type: application/json' \
+            -d '{"question":"test-only"}' \
+            'http://127.0.0.1:18080/api/analytics/advisor/chat')"
+          test "$public_code" = 200
+          test "$private_code" = 401
+          test "$advisor_code" = 401
+          echo "PASS: anonymous global data accessible; private source runs and Advisor denied"
+
+      - name: Collect idle full-stack memory/CPU (not production sizing)
+        run: |
+          set -eu
+          compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml)
+          ids="$("${compose[@]}" ps -q)"
+          test -n "$ids"
+          docker stats --no-stream --format '{{json .}}' $ids \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/idle-container-stats.jsonl
+          cat worldhealth-vision-v2/infra/benchmarks/artifacts/idle-container-stats.jsonl
+
+      - name: Measure p50/p95/p99 on bounded real Gateway GETs
+        run: |
+          python3 worldhealth-vision-v2/infra/tests/benchmark_gateway.py \
+            --path '/api/catalog/countries?limit=2' \
+            --path '/api/timeseries/sources/coverage' \
+            --path '/api/product/countries/FRA/economic-snapshot' \
+            --requests-per-path 40 --workers 4 \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/gateway-load.json
+
+      - name: Verify partial failure isolation and restoration
+        run: |
+          compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml)
+          "${compose[@]}" stop analytics-service
+          catalog_code="$(curl -sS --max-time 10 -o /dev/null -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/catalog/countries?limit=2' || true)"
+          product_code="$(curl -sS --max-time 35 -o /dev/null -w '%{http_code}' \
+            'http://127.0.0.1:18080/api/product/countries/FRA/economic-snapshot' || true)"
+          test "$catalog_code" = 200 || { echo "Unrelated catalogue failed during analytics outage" >&2; exit 1; }
+          case "$product_code" in
+            500|502|503|504) echo "PASS: unavailable analytics returns a real error, not fabricated data ($product_code)";;
+            *) echo "FAILED: unexpected status when analytics is offline: $product_code" >&2; exit 1;;
+          esac
+          "${compose[@]}" up -d --wait analytics-service
+          recovered=0
+          for n in $(seq 1 30); do
+            code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+              'http://127.0.0.1:18080/api/product/countries/FRA/economic-snapshot' || true)"
+            if [[ "$code" == 200 ]]; then recovered=1; break; fi
+            sleep 2
+          done
+          test "$recovered" = 1 || { echo "Analytics route did not recover after restart" >&2; exit 1; }
+          echo "PASS: catalogue isolation and economic endpoint recovery"
+
+      - name: Capture post-recovery memory and CPU
+        if: success()
+        run: |
+          compose=(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml)
+          ids="$("${compose[@]}" ps -q)"
+          docker stats --no-stream --format '{{json .}}' $ids \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/post-recovery-container-stats.jsonl
+
+      - name: Preserve metrics and component diagnostics if a test fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-v2-fullstack-load-and-resilience
+          path: worldhealth-vision-v2/infra/benchmarks/artifacts/
+          if-no-files-found: ignore
+
+      - name: Tear down ALL CI-only data and secrets
+        if: always()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            down --volumes --remove-orphans || true
+          rm -f "$WHV_DB_PASSWORD_FILE"

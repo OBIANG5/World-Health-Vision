@@ -1,0 +1,10 @@
+# CI TEST OVERLAY ONLY — never deploy or use as a production .env file.
+# The secure staging base stays JWT enabled; this enables ONLY its reviewed
+# anonymous 57 GET data routes for deterministic localhost benchmark probes.
+# Private routes (Advisor, source-runs, ingestion, metrics) remain blocked.
+services:
+  gateway-service:
+    environment:
+      WHV_SECURITY_ENABLED: "true"
+      WHV_PUBLIC_READ_ENABLED: "true"
+      WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS: "false"
