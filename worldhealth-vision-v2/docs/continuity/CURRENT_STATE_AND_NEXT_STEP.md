@@ -1,5 +1,15 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## MEDIAS WORLD‑VISION — ÉTAT DE CONTINUITÉ SPRINT 4 (19 NOVEMBRE 2026)
+
+Lire [le rapport complet du Sprint 4](../media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md). PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44) reste en brouillon, non fusionnée et non déployée. Dans `frontend/web-v2`, `CreativeCompositionPreview.tsx` et `CinematicProductionBoard.tsx` offrent désormais **source / plan animé / film entier**, avec le même composant React/Remotion que le rendu H.264. Le mode film inclut raccords, piste voix A choisie, musique et signature vidéo fournies. Les médias restent des URL locales et ne sont ni téléchargés dans le cloud ni poussés sur GitHub.
+
+**CI confirmé** [#44540102940 : SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540102940), 11 tests, build V2, 2 plans synthétiques et fondu sur 165 frames, contrôles Chromium 0/100/145, audio synthétique, SHA/captures. Correction de mise en page téléphone (max 360 px, aspect réel 9:16) : contrôler la CI [#44540638541](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540638541).
+
+**Ne pas repartir sur les anciennes 11 portes, Vivienne imposée, BAOCOM connecté ou blog/GDELT tant que non décidés.** Recherche et script aujourd'hui via ChatGPT. **Prochaine tâche artistique** : obtenir une ouverture de reportage haute qualité sur des fichiers authentiques, puis regarder les vrais MP4 et améliorer direction artistique, son et transitions. Validation iOS Safari réelle en parallèle ; pas de garantie « niveau mondial » donnée par un test synthétique.
+
+---
+
 ## MEDIA — SPRINT 3 / SOURCE DE VÉRITÉ (19 NOVEMBRE 2026)
 
 Voir [WORLDVISION_CREATIVE_PLAYER_SPRINT3_2026-11-19.md](../media/WORLDVISION_CREATIVE_PLAYER_SPRINT3_2026-11-19.md). PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44), toujours DRAFT, aucun merge/deploy. Le vrai Player Remotion du plan a été branché à l'atelier V2 par un composant partagé avec le renderer H.264, avec object URLs locales, fichiers fournis, cadrage, titre, mouvement, source d'origine commutable et chargement différé. Dépendances exactes/lockfile prêts, frontend CI compilé.
