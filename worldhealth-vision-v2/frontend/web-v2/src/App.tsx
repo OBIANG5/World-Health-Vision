@@ -290,6 +290,7 @@ function AppContent() {
 
 
   function openNavDomain(domain: NavDomain, trigger?: HTMLElement | null) {
+    if (route.kind !== "home") navigate({ kind: "home" });
     const rect = trigger?.getBoundingClientRect() ?? document.querySelector(".whv-nav")?.getBoundingClientRect();
     if (rect) {
       const menuWidth = Math.min(580, window.innerWidth - 24);
@@ -309,32 +310,43 @@ function AppContent() {
     setShowToolsMenu(false);
   }
 
-  function openVisionHub() {
-    setShowVisionHub(true);
+  function openVisionHub(product: VisionId = "atlas") {
+    navigate({ kind: "visions", product });
+    setDrawerOpen(false);
+    setShowCurrencyPanel(false);
+    setShowTravelPanel(false);
+    setShowToolsMenu(false);
+    setShowCountrySelector(false);
+    setShowSourcesModal(false);
+  }
+
+  function openWorldDiscovery() {
+    navigate({ kind: "search" });
+    setDrawerOpen(false);
     setShowToolsMenu(false);
     setShowCountrySelector(false);
     setShowSourcesModal(false);
   }
 
   function handleVisionAction(action: VisionAction) {
-    setShowVisionHub(false);
     setShowToolsMenu(false);
     switch (action) {
       case "country":
+        navigate({ kind: "home" });
         openCountrySearch();
         return;
       case "favorites":
+        navigate({ kind: "home" });
         if (!showWatchlist) openFavorites();
         return;
       case "currency":
-        if (!showCurrencyPanel) handleToggleCurrencyPanel();
+        navigate({ kind: "money" });
         return;
       case "travel":
-        if (!showTravelPanel) handleToggleTravel();
+        navigate({ kind: "tourism" });
         return;
       case "sources":
-        setShowSourcesModal(true);
-        setShowCountrySelector(false);
+        navigate({ kind: "sources" });
         return;
     }
   }
@@ -359,6 +371,39 @@ function AppContent() {
     window.addEventListener("keydown", onEscape);
     return () => window.removeEventListener("keydown", onEscape);
   }, [showToolsMenu, showCountrySelector]);
+
+
+  // Back/forward closes stale local menus; public route state is restored separately.
+  useEffect(() => {
+    const onHistoryChange = () => {
+      setDrawerOpen(false);
+      setShowToolsMenu(false);
+      setShowCountrySelector(false);
+      setRegionDrawerOpen(false);
+      setShowSourcesModal(false);
+      setShowCurrencyPanel(false);
+      setShowTravelPanel(false);
+    };
+    window.addEventListener("popstate", onHistoryChange);
+    return () => window.removeEventListener("popstate", onHistoryChange);
+  }, []);
+
+  useEffect(() => {
+    const onShortcut = (event: KeyboardEvent) => {
+      const el = event.target instanceof HTMLElement ? event.target : null;
+      const typing = !!el?.closest('input,textarea,select,[contenteditable="true"]');
+      const commandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      const slash = !event.altKey && !event.ctrlKey && !event.metaKey && event.key === "/";
+      if (!event.isComposing && !typing && (commandK || slash)) {
+        event.preventDefault();
+        navigate({ kind: "search" });
+        setShowCountrySelector(false);
+        setShowToolsMenu(false);
+      }
+    };
+    window.addEventListener("keydown", onShortcut);
+    return () => window.removeEventListener("keydown", onShortcut);
+  }, [navigate]);
 
   const headerActions = (
     <nav className="whv-nav" aria-label={lang === "fr" ? "Explorer World Health Vision" : "Explore World Health Vision"}>
