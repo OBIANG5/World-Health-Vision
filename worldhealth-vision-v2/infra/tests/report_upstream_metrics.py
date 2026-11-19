@@ -104,16 +104,52 @@ def verify_economic_observed(summary: dict) -> None:
             raise ValueError(f"Invalid histogram count: {key[0]} / {key[1]}")
 
 
+def verify_optimized_economic_observed(summary: dict, minimum_snapshots: int = 40) -> None:
+    """Prove the PUBLIC Gateway actually executed all four internal batch APIs.
+
+    An A/B unit test alone does not prove real service wiring. Reject a passing
+    Gateway benchmark that silently used the old 54x3 request pattern.
+    """
+    expected = (
+        ("catalog", "indicators_batch"),
+        ("timeseries", "latest_batch"),
+        ("timeseries", "availability_batch"),
+        ("timeseries", "series_batch"),
+    )
+    legacy = (
+        ("catalog", "indicator"),
+        ("timeseries", "latest_by_source"),
+        ("timeseries", "availability"),
+        ("timeseries", "series"),
+    )
+    found = {(v["dependency"], v["operation"]): v for v in summary["operations"]}
+    for key in expected:
+        item = found.get(key)
+        if item is None or item["outcomes"].get("success", 0) < minimum_snapshots:
+            raise ValueError(f"Missing active optimized batch evidence: {key}")
+        if item["http_round_trip_count"] < item["outcomes"]["success"]:
+            raise ValueError(f"Missing optimized batch latency data: {key}")
+    for key in legacy:
+        item = found.get(key)
+        if item is not None and item["outcomes"].get("success", 0):
+            raise ValueError(f"Legacy N+1 operation unexpectedly active: {key}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--require-economic", action="store_true")
+    parser.add_argument("--require-optimized-economic", action="store_true")
     args = parser.parse_args()
 
     summary = parse_metrics(args.input.read_text(encoding="utf-8"))
+    if args.require_economic and args.require_optimized_economic:
+        parser.error("Choose original OR optimized economic mode, never both")
     if args.require_economic:
         verify_economic_observed(summary)
+    if args.require_optimized_economic:
+        verify_optimized_economic_observed(summary)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     for item in summary["operations"]:

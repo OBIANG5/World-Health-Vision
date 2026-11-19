@@ -1,0 +1,10 @@
+# DISPOSABLE TEST ONLY. NEVER APPLY THIS OVERLAY IN PRODUCTION.
+# Verify actual FastAPI+Gateway traffic when all 4 batch flags are enabled.
+# No exposed ports, JWT changes, network changes or paid integrations.
+services:
+  analytics-service:
+    environment:
+      WHV_ANALYTICS_CATALOG_INDICATOR_BATCH_ENABLED: "true"
+      WHV_ANALYTICS_TIMESERIES_LATEST_BATCH_ENABLED: "true"
+      WHV_ANALYTICS_TIMESERIES_AVAILABILITY_BATCH_ENABLED: "true"
+      WHV_ANALYTICS_TIMESERIES_HISTORY_BATCH_ENABLED: "true"
