@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - 'data/v2-ibge-acquisition-journal-composite-*'
+    # Do not contact the external provider for a docs-only commit.
+    paths:
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/**'
+      - 'worldhealth-vision-v2/services/ingestion-service/tests/test_ibge_acquisition_composite.py'
+      - '.github/workflows/whv-v2-ibge-acquisition-composite-live-evidence.yml'
   workflow_dispatch:
 
 permissions:
