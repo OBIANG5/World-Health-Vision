@@ -5,6 +5,7 @@ import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.G
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.time.Instant;
@@ -52,7 +53,7 @@ public final class UpstreamUnavailableHandler implements WebExceptionHandler, Or
         if (routed && !networkFailure) {
             // Debug the CLASS chain only; never log full messages, tokens, body,
             // URL, country, user or secret. Helps catch new Netty wrapper types.
-            LOG.warn("Unmapped routed gateway exception classes: {}", exceptionClasses(failure));
+            LOG.debug("Unmapped routed gateway exception classes: {}", exceptionClasses(failure));
         }
         if (exchange.getResponse().isCommitted() || !routed || !networkFailure) {
             return Mono.error(failure);
