@@ -52,6 +52,8 @@ jobs:
             --project creative/project.example.json \
             --assets /tmp/worldvision-assets \
             --output output/creative/example.mp4
+      - name: Install ffprobe for independent output inspection
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Inspect actual output
         run: |
           ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate -show_entries format=duration,size -of json output/creative/example.mp4
