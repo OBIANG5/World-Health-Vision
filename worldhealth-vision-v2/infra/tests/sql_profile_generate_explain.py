@@ -84,13 +84,17 @@ def generate(java: str) -> str:
         "SET statement_timeout = '90s';",
         "SET lock_timeout = '5s';",
     ]
+    # One first-touch sample and five repeat samples per operation.
+    # These are within-run synthetic comparisons, NOT a production p99/SLO.
     for operation in METHODS:
         sql = extract_sql(java, operation)
-        output.extend([
-            f"\\echo WHV_PLAN_BEGIN_{operation}",
-            "EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) " + sql + ";",
-            f"\\echo WHV_PLAN_END_{operation}",
-        ])
+        for repetition in ("cold", "warm1", "warm2", "warm3", "warm4", "warm5"):
+            marker = operation + "__" + repetition
+            output.extend([
+                f"\\echo WHV_PLAN_BEGIN_{marker}",
+                "EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) " + sql + ";",
+                f"\\echo WHV_PLAN_END_{marker}",
+            ])
     return "\n".join(output) + "\n"
 
 
