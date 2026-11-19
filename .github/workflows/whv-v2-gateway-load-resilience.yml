@@ -17,6 +17,7 @@ on:
       - 'improve/v2-analytics-perf-and-global-vision-*'
       - 'perf/v2-provenance-singleflight-*'
       - 'perf/v2-batch-catalog-indicators-*'
+      - 'perf/v2-batch-timeseries-latest-*'
   workflow_dispatch:
 
 permissions:
