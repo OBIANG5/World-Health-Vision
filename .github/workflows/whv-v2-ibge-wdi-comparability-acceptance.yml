@@ -1,0 +1,73 @@
+name: World-Vision DATA-1B3 — population source methods and private WDI evidence
+
+on:
+  push:
+    branches:
+      - 'data/v2-ibge-wdi-population-comparability-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data1b3-${{ github.ref }}
+  cancel-in-progress: true
+
+# All tests offline and synthetic. No public figures, Timeseries, Atlas, rights
+# approvals, web/API routes, money expenditure or Vercel deployment.
+jobs:
+  source-comparability-and-ingestion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - name: Checkout source SHA without retaining credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: worldhealth-vision-v2/services/ingestion-service/pyproject.toml
+      - name: Static public rights and API gate
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('worldhealth-vision-v2/services/ingestion-service/src/ingestion_service')
+          api=(p/'api.py').read_text()
+          src=(p/'pipelines/worldbank_population_2022_research.py').read_text()
+          compare=(p/'population_comparability.py').read_text()
+          private=(p/'private_population_review.py').read_text()
+          assert '/runs/wdi-bra' not in api
+          assert 'TimeseriesClient' not in src + compare + private
+          assert 'BRONZE_ONLY_UNREVIEWED' in src
+          assert 'numeric_difference_percent: None' in compare
+          assert 'publicDisplayAuthorised' in private and 'NOT_COMPUTED' in private
+          print('PASS research only: public API, Timeseries and numeric conflict disabled')
+          PY
+      - name: Install real existing ingestion package; Python compilation
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pip install --disable-pip-version-check -e '.[dev]'
+          python -m compileall -q src/ingestion_service
+      - name: Target IBGE, WDI, adversarial provenance, rights and restore checks
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pytest -q \
+            tests/test_ibge_wdi_population_comparability.py \
+            tests/test_ibge_acquisition_composite.py \
+            tests/test_ibge_national_census.py \
+            tests/test_ibge_metadata_rights.py \
+            tests/test_source_evidence_revisions.py
+      - name: All ingestion regressions excluding explicitly network-only World Bank test
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m pytest -q tests --ignore=tests/test_worldbank_live_scope.py
+      - name: CLI keeps private WDI probe and multi-source comparison separate
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m ingestion_service.cli pilot --help > /tmp/whv-pilot-cli
+          grep -F 'capture-wdi-bra-2022-private' /tmp/whv-pilot-cli
+          grep -F 'review-bra-population-2022-private' /tmp/whv-pilot-cli
+          grep -F 'verify-bra-population-2022-review' /tmp/whv-pilot-cli
+          rm /tmp/whv-pilot-cli

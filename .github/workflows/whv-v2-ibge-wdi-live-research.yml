@@ -1,0 +1,113 @@
+name: World-Vision DATA-1B3 — official WDI/IBGE private method evidence
+
+on:
+  push:
+    branches:
+      - 'data/v2-ibge-wdi-population-comparability-*'
+    paths:
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/**'
+      - 'worldhealth-vision-v2/services/ingestion-service/tests/test_ibge_wdi_population_comparability.py'
+      - '.github/workflows/whv-v2-ibge-wdi-live-research.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data1b3-live-${{ github.ref }}
+  cancel-in-progress: true
+
+# EXACT 4 official endpoints, scoped to BRA/2022 only:
+# 1 IBGE value, 2 IBGE metadata resources, 1 World Bank WDI estimate.
+# All HTTP raw bytes, values, journal and reports stay in an ephemeral
+# TemporaryDirectory, NEVER as workflow artifact, CLI output, media or public API.
+jobs:
+  live-method-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - name: Checkout exact candidate without persistent GitHub token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install ONLY pinned research dependencies
+        run: python -m pip install --disable-pip-version-check 'httpx==0.27.2' 'pydantic>=2.8,<3'
+      - name: Acquire and compare 4 exact official endpoints, never output numeric data
+        env:
+          PYTHONPATH: worldhealth-vision-v2/services/ingestion-service/src
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+          import httpx
+          import time
+          from ingestion_service.bronze_store import BronzeStore
+          from ingestion_service.connectors.ibge_national_census_client import IbgeNationalCensusClient
+          from ingestion_service.connectors.ibge_census_metadata_client import IbgeCensusMetadataClient
+          from ingestion_service.connectors.worldbank_population_2022_research import WdiPopulation2022ResearchClient
+          from ingestion_service.pipelines.ibge_national_census import IbgeNationalCensusPilot
+          from ingestion_service.pipelines.ibge_census_metadata import IbgeCensusMetadataPilot
+          from ingestion_service.pipelines.worldbank_population_2022_research import WdiPopulation2022ResearchPilot
+          from ingestion_service.source_composite_receipt import IbgeCompositeReceiptStore
+          from ingestion_service.private_population_review import PrivatePopulationReviewStore
+          from ingestion_service.acquisition_journal import AcquisitionJournal
+          with TemporaryDirectory(prefix="wv-bra-2022-crosssource-private-") as temp:
+              root = Path(temp)
+              bronze = BronzeStore(root)
+              population = IbgeNationalCensusPilot(
+                  client=IbgeNationalCensusClient(timeout_seconds=25), bronze_store=bronze,
+              ).capture_population_2022()
+              metadata = IbgeCensusMetadataPilot(
+                  client=IbgeCensusMetadataClient(timeout_seconds=25), bronze_store=bronze,
+              ).capture_census2022_contract()
+              # A transient World Bank error is preserved as a FAILED event
+              # rather than silently substituted with a third-party value.
+              wdi_pilot = WdiPopulation2022ResearchPilot(
+                  client=WdiPopulation2022ResearchClient(timeout_seconds=25),
+                  bronze_store=bronze,
+              )
+              for attempt in range(3):
+                  try:
+                      wdi = wdi_pilot.capture()
+                      break
+                  except httpx.HTTPStatusError as exc:
+                      if exc.response.status_code not in (429, 500, 502, 503, 504) or attempt == 2:
+                          raise
+                      time.sleep(2 * (attempt + 1))
+              audit = AcquisitionJournal(root)
+              for source, dataset in (
+                  ("IBGE", "CENSO2022_4714"),
+                  ("IBGE", "CENSO2022_4714_METADATA"),
+                  ("IBGE", "CENSO2022_4714_PERIODS"),
+                  ("WORLD_BANK", "WDI_POP_TOTAL_BRA_2022"),
+              ):
+                  state = audit.audit(source, dataset)
+                  assert state["successCount"] == 1, (source, dataset, "no verified successful acquisition")
+                  assert state["versionCount"] == 1
+                  assert state["interruptedCount"] == 0
+              composite_store = IbgeCompositeReceiptStore(root)
+              ibge = composite_store.create(
+                  population_sha256=population.notes["httpBodySha256"],
+                  metadata_sha256=metadata.aggregate_receipt.notes["httpBodySha256"],
+                  periods_sha256=metadata.periods_receipt.notes["httpBodySha256"],
+              )
+              assert composite_store.verify(ibge["receiptSha256"])["publicDisplayAuthorised"] is False
+              researcher = PrivatePopulationReviewStore(root)
+              review = researcher.evaluate(
+                  ibge_composite_sha256=ibge["receiptSha256"],
+                  wdi_response_sha256=wdi.notes["httpBodySha256"],
+              )
+              validated = researcher.verify(review["reviewReceiptSha256"])
+              assert validated["publicDisplayAuthorised"] is False
+              assert validated["numericComparison"] == "NOT_COMPUTED"
+              assert review["publicDisplayAuthorised"] is False
+              assert not list(root.rglob("timeseries"))
+              print("PASS: 4 official resources, independent per-source journals and immutable verified byte receipts.")
+              print("PASS: IBGE census vs WDI estimate methodological differences recognized; no numerical disagreement.")
+              print("PASS: commercial reuse/Atlas/Timeseries blocked; no raw values or source bodies logged.")
+          print("PASS: temporary raw responses, research receipt, and all private journal events erased.")
+          PY
