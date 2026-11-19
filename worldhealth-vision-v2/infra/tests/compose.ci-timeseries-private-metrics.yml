@@ -1,0 +1,7 @@
+# CI ONLY: expose Micrometer/Hikari actuator to the PRIVATE Docker network.
+# The Timeseries service has NO host port and the Gateway never routes this path.
+# DO NOT use in production; service authentication/ACL are separate requirements.
+services:
+  timeseries-service:
+    environment:
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus"
