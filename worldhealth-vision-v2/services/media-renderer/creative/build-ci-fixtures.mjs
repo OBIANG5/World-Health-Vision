@@ -148,4 +148,29 @@ documentProject.music=null;
 documentProject.outro=null;
 const documentPath=path.join(path.dirname(outputJson),"worldvision-document-project.json");
 fs.writeFileSync(documentPath,JSON.stringify(documentProject,null,2)+"\n");
+// GEO-2 real 10m/50m country composition. Media is a synthetic geometric
+// landscape, never a photograph of Gabon or a claimed news event.
+const countryProject=structuredClone(p);
+countryProject.id="wv-country-focus-gabon-synthetic";
+countryProject.title="PAYS FOCUS 10m / 50m — TEST CARTOGRAPHIQUE";
+countryProject.script="Cas technique uniquement : cartographie sourcée, photographie fictive et nombre fictif.";
+countryProject.shots=[{
+  id:"country-gabon",template:"country_focus",durationFrames:165,
+  title:"GABON · UN PAYS EN FOCUS",
+  subtitle:"Cartographie détaillée, paysage abstrait de démonstration et valeur fictive.",
+  eyebrow:"DEMONSTRATION TECHNIQUE · AUCUNE ACTUALITÉ",
+  media:{kind:"image",file:"synthetic-landscape.png",credit:"CI generated abstract landscape, not real Gabon"},
+  foreground:{file:"synthetic-foreground.png",credit:"CI generated transparent synthetic mask, no real subject"},
+  geo:{
+    center:{lon:0,lat:10},
+    spotlight:{countryId:"266"},
+    target:{lon:11.6,lat:-.7,label:"POINT TEST"},
+    metric:{label:"CHIFFRE TEST",value:42,unit:" TEST",precision:0}
+  },
+  motion:"locked",transitionAfter:"cut",transitionFrames:0,
+  focus:{x:.5,y:.5}
+}];
+countryProject.voice=null;countryProject.music=null;countryProject.outro=null;
+const countryPath=path.join(path.dirname(outputJson),"worldvision-country-focus-project.json");
+fs.writeFileSync(countryPath,JSON.stringify(countryProject,null,2)+"\n");
 console.log("Synthetic image/video/audio/document fixtures created; not authentic news assets.");
