@@ -24,6 +24,8 @@ const destinations=[
 const nasaUrl="https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/june/world.200406.3x5400x2700.jpg";
 const attribution="NASA Earth Observatory — Blue Marble: Next Generation (June 2004), 5400×2700 seasonal composite";
 const maxBytes=25*1024*1024;
+// SHA-256 recorded from the actual official NASA download in green CI #44567135931.
+const pinnedSHA256="dc059529b8ed1cfcdd59747a7c3f259c93c1322bf88ca1ec8bab1dd71fcc57f5";
 const expectedDimensions={width:5400,height:2700};
 function imageDimensions(buffer){
   let i=2;
@@ -70,6 +72,7 @@ const dims=imageDimensions(raw);
 if(dims?.width!==expectedDimensions.width||dims.height!==expectedDimensions.height)
   throw new Error("NASA image resolution mismatch: "+JSON.stringify(dims));
 const sha256=createHash("sha256").update(raw).digest("hex");
+if(sha256!==pinnedSHA256)throw new Error("NASA Blue Marble digest changed; stop rather than silently replacing the licensed raster. Expected "+pinnedSHA256+" got "+sha256);
 for(const p of destinations){
   fs.mkdirSync(path.dirname(p),{recursive:true});
   fs.writeFileSync(p,raw);
