@@ -44,3 +44,12 @@ def observe_economic_phase(phase: str, elapsed_seconds: float) -> None:
     if phase not in {"country", "indicators", "series_provenance", "total"}:
         raise ValueError("Unknown economic snapshot phase")
     ECONOMIC_SNAPSHOT_PHASE_SECONDS.labels(phase=phase).observe(elapsed_seconds)
+
+
+@contextmanager
+def timed_economic_phase(phase: str):
+    start = perf_counter()
+    try:
+        yield
+    finally:
+        observe_economic_phase(phase, perf_counter() - start)
