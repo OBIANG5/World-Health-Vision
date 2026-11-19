@@ -105,6 +105,9 @@ async function run(argv){
         focus:shot.focus,
         documentRegion:shot.documentRegion,
         geo:shot.geo,
+        // Pass the SAME independently authored tracks to the H264 engine
+        // that CreativeCompositionPreview uses in the browser. Never freeze.
+        photo:shot.photo,
       });
     }
     const props={
