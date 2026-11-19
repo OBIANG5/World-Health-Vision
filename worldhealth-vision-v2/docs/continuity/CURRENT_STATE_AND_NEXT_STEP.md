@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## POINT VÉRIFIÉ — LE CONTRÔLE AUDIO EST TERMINÉ (19 NOV 2026)
+
+[PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) en brouillon. La reprise après le blocage s'est achevée par une vérification complète : [Actions #44530170278 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278) pour le code `04399843d2af6106d7158b7ffa33652dd960a693`. 11 tests Node réussis, build V2 réussi, vidéos Remotion 9:16 et plans individuels rendus, couche alpha testée ; **silence intentionnel de 1,3 s détecté** par FFmpeg sur WAV synthétique, sans altérer l'empreinte de la piste. Documentation complète : [Motion Director Sprint 2 §7](../media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md).
+
+**PROCHAINE PRIORITÉ** : aperçu de la véritable animation à l'intérieur du Studio, puis **une scène art-dirigée à partir de fichiers authentiques approuvés**. Ne pas confondre un test de montage synthétique avec une vidéo journalistique publiable. Scripts/recherche dans ChatGPT, voix interchangeable, aucun lien BAOCOM, Content OS audiovisuel seulement, pas de GDELT/blog avant intégration décidée. Aucun merge sur `v2` ni mise à jour du site.
+
+---
+
 ## SUITE MEDIA — MOTION DIRECTOR SPRINT 2 — 19 NOVEMBRE 2026
 
 Le nouveau [cahier de reprise précis](../media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md) fait autorité sur le chantier artistique courant. Il décrit les vrais fichiers `CreativeEdit.tsx`, `creative/render-project.mjs`, `creative/validate-project.mjs`, `CinematicProductionBoard.tsx/.css`, les tests Remotion, l'authenticité des sources et la prochaine tranche technique.
