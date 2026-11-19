@@ -396,3 +396,29 @@ Branche `perf/v2-batch-timeseries-latest-2026-11-19`, **basée directement sur l
 - #48 sous-phase 3C : batch `series/availability` et séries historiques. **LIMIT individuel PAR indicateur**, pas de limite globale ; conservation des périodes communes, estimés/observés/manquants et des révisions.
 - #42 : charge 217 pays sur fixtures **explicitement synthétiques** et distribution de sources hétérogène, métriques DB/JDBC/Hikari, CPU/RAM, p50/p95/p99 sur plusieurs workers, résilience et cost-control.
 - Puis quota/anti-abus, staging approuvé, véritables statistiques institutionnelles locales par pays, Watch, Money/Price/Tourisme/Trading/BRVM et GDELT avec droits, traçabilité et fact-check. Garder la grande vision et les deux stratégies produit/revenus enregistrées PR #41, ne jamais toucher aux branches média/voix, ni V0/V1 ; **aucune fusion/déploiement/achat sans décision**.
+
+
+---
+
+## 15. F1.2b.2c-3C1 — batch des disponibilités Timeseries, avec limite PAR indicateur
+
+### Chaîne de validation exacte
+- La PR #50 `perf/v2-batch-timeseries-latest-2026-11-19`, SHA `044592b6c062e5a34e9c631150e58c79a0f6eb61`, a passé **trois GitHub Actions SUCCESS sur le SHA final** :
+  - Audit Java/Python/frontend : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44528125121
+  - Gateway panne 503 et reprise : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44528124691
+  - SQL dense/A-B : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44528124671
+- France + Gabon : même SHA256 JSON entier hors `generatedAtUtc`, 54 indicateurs, 200 comparaisons, 270 preuves ; **176 → 123 appels HTTP** par snapshot grâce au batch latest-by-source (−53 appels). Ce n'est pas une performance de production internationale.
+- PR #50 reste brouillon et NON fusionnée ; flag `WHV_ANALYTICS_TIMESERIES_LATEST_BATCH_ENABLED=false` par défaut. Le rapport de validation a été ajouté directement à la conversation de la PR #50 (sans nouveau commit).
+
+### Nouveau lot candidate 3C1
+Branche `perf/v2-batch-timeseries-availability-2026-11-19`, créée au-dessus de #50. **Ne pas fusionner directement sur v2, ne pas déployer.**
+- `POST /internal/timeseries/series/availability/batch` : code pays ISO3, indicateurs (1–128) et filtres, `limitPerIndicator` 1–500, budget maximum **10 000 lignes** théoriques par batch.
+- SQL en une lecture de `timeseries.latest_observation` pour les indicateurs demandés : conserve la même agrégation `available/observed/estimated/suppressed/missing`, première et dernière période, valeur latest, run metadata et source. Ajoute le classement `row_number() partition by indicator_code order by source_code, dataset_code, granularity` pour **limiter chaque indicateur séparément**, jamais globalement.
+- Code Python `list_series_availability_batch` contrôle compte, ordre, codes de groupes et données de chaque ligne. Pas de fallback silencieux.
+- Activation candidate par `WHV_ANALYTICS_TIMESERIES_AVAILABILITY_BATCH_ENABLED=true` (**false par défaut**), uniquement dans les snapshots économiques, le batch latest par source et Catalog batch restant indépendants. En cas d'activation conjointe, les deux requêtes batch sont lancées en parallèle.
+- Tests Java/MockTransport Python : parité complète avec GET historique, filtre IMF, statut estimé/manquant et compte, groupe vide, limitPerIndicator=1, duplications, 129+ codes et plafond de 10 000 lignes.
+- Benchmark A/B sur **même fixture synthétique 124 416 observations, mêmes 54 profils réels** : Catalog batch + latest batch restent activés des deux côtés ; disponibilité 54 GET (123 HTTP global) versus **1 POST (70 HTTP global)**. Six snapshots FRA/GAB, SHA256 de la réponse entière hors generatedAtUtc, 54 lenses, 200 comparaisons, 270 preuves.
+- Trois workflows sur SHA final (canonique, Gateway 503/recovery, SQL/HTTP dense A-B) obligatoires. Ne déclarer le succès ou un gain de latence **qu'après preuve réelle**.
+
+### Puis F1.2b.2c-3C2 : séries historiques
+Ce sera la partie la plus risquée, car la limite de préchargement historique `min(600,max(96,seriesLimit*10))` doit rester **une limite PAR INDICATEUR** et non une limite totale. Il faudra conserver des années communes entre éditeurs, latest run avec révisions, statuts estimés/manquants, périodes disjointes, et comparer intégralement `sourceAudit`, tendance et divergence. #48 et #42 restent ouvertes jusqu'aux validations. Ensuite sécurité, anti-abus, vraie ingestion locale/internationale, Watch, plateformes Money/Price/Tourisme/Trading/BRVM et radar GDELT avec licences. Documents maîtres de stratégie internationale et monétisation PR #41 préservés. Aucune dépense, déploiement, fusion ni changement aux branches média/voix ou V0/V1.
