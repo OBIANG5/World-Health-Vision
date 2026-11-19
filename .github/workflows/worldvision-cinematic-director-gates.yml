@@ -228,6 +228,14 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-frame-96.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-frame-138.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-geo-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/country-focus-gabon-synthetic.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/country-focus-gabon-synthetic.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/country-focus-gabon-synthetic.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-60.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-115.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-155.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-country-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
