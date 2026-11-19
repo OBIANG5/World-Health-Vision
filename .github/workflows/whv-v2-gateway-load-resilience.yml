@@ -15,6 +15,7 @@ on:
     branches:
       - 'test/v2-fullstack-gateway-load-resilience-*'
       - 'improve/v2-analytics-perf-and-global-vision-*'
+      - 'perf/v2-provenance-singleflight-*'
   workflow_dispatch:
 
 permissions:

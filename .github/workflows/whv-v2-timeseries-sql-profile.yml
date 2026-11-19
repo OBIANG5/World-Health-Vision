@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'test/v2-sql-timeseries-dense-fixture-*'
+      - 'perf/v2-provenance-singleflight-*'
   pull_request:
     branches:
       - 'improve/v2-analytics-perf-and-global-vision-sql-profiling-*'
