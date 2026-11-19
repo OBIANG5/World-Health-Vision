@@ -7,7 +7,7 @@ import path from "node:path";
 import fs from "node:fs";
 
 export const FORMAT = "worldvision-creative-project-v1";
-const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video"]);
+const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal"]);
 const TRANSITIONS = new Set(["cut","dissolve","slide"]);
 const MOTIONS = new Set(["locked","dolly","drift","push"]);
 const IMAGE_EXT = new Set([".png",".jpg",".jpeg",".webp"]);
@@ -74,7 +74,11 @@ export function inspectProject(project) {
       if(scene[k]!==undefined&&!isText(scene[k],k==="title"?150:500))bad(errors,p+"."+k,"Invalid or excessive overlay text.");
     }
     if(scene.accent!==undefined&&!COLOR.test(scene.accent))bad(errors,p+".accent","Use six-digit hex color.");
-    const needsMedia=["documentary","evidence","clean_video"].includes(scene.template);
+    if(scene.template==="focus_reveal"&&scene.durationFrames<90)
+      bad(errors,p+".durationFrames","Cinematic focus reveal needs at least 90 frames to complete the composition.");
+    if(scene.template==="focus_reveal"&&(!isText(scene.title,90)||!scene.title?.trim()))
+      bad(errors,p+".title","Focus reveal requires a concise authored headline (max 90 characters).");
+    const needsMedia=["documentary","evidence","clean_video","focus_reveal"].includes(scene.template);
     if(needsMedia&&!scene.media)bad(errors,p+".media","This composition requires your real source image/clip; no fake fallback.");
     if(scene.media){
       const media=scene.media;
