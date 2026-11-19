@@ -1,0 +1,40 @@
+{
+  "schema_version": "worldvision-creative-project-v1",
+  "id": "wv-edit-example",
+  "title": "Exemple technique de composition — aucune actualité",
+  "script": "Ce texte n'est qu'un exemple de montage. Le vrai script sera fourni dans la conversation.",
+  "aspect_ratio": "9:16",
+  "fps": 30,
+  "style": {
+    "background": "#0b1721",
+    "ink": "#f6f8fa",
+    "accent": "#8bbecf"
+  },
+  "shots": [
+    {
+      "id": "plan-01",
+      "durationFrames": 75,
+      "template": "kinetic",
+      "title": "RACONTER",
+      "subtitle": "La force de chaque image.",
+      "eyebrow": "DÉMONSTRATION TECHNIQUE",
+      "motion": "locked",
+      "transitionAfter": "dissolve",
+      "transitionFrames": 8
+    },
+    {
+      "id": "plan-02",
+      "durationFrames": 84,
+      "template": "number",
+      "title": "01",
+      "subtitle": "Une décision visuelle à la fois.",
+      "eyebrow": "ATELIER DE MONTAGE",
+      "motion": "locked",
+      "transitionAfter": "cut",
+      "transitionFrames": 0
+    }
+  ],
+  "voice": null,
+  "music": null,
+  "outro": null
+}
