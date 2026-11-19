@@ -16,7 +16,8 @@
       "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"],
       "remotion": ["./node_modules/remotion"],
       "@remotion/transitions": ["./node_modules/@remotion/transitions"],
-      "@remotion/transitions/*": ["./node_modules/@remotion/transitions/*"],
+      "@remotion/transitions/fade": ["./node_modules/@remotion/transitions/dist/presentations/fade.d.ts"],
+      "@remotion/transitions/slide": ["./node_modules/@remotion/transitions/dist/presentations/slide.d.ts"],
       "@remotion/layout-utils": ["./node_modules/@remotion/layout-utils"]
     },
 
