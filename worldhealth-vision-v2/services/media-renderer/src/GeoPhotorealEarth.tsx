@@ -11,7 +11,7 @@ import {staticFile} from "remotion";
  * longitude / latitude / rotation. No substitute texture without disclosure.
  * Preparation: node creative/prepare-earth-texture.mjs
  */
-const radius=399;
+const radius=463;
 const textureFile="geo/nasa-blue-marble-june.jpg";
 const atmosphereVertex=[
 "varying vec3 vNorm;",
@@ -71,7 +71,7 @@ export function GeoPhotorealEarth({
   centerLongitude:number;centerLatitude:number;spinDegrees:number;
 }){
   return <div data-wv-geo-nasa-texture="NASA-BlueMarble-June-2004"
-    style={{position:"absolute",left:0,top:122,width:1080,height:1250,
+    style={{position:"absolute",left:0,top:65,width:1080,height:1250,
       pointerEvents:"none",overflow:"hidden"}}>
     <ThreeCanvas orthographic width={1080} height={1250}
       camera={{position:[0,0,2100],near:1,far:5000}}
