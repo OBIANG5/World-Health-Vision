@@ -80,6 +80,13 @@ export function inspectProject(project) {
       bad(errors,p+".title","Focus reveal requires a concise authored headline (max 90 characters).");
     const needsMedia=["documentary","evidence","clean_video","focus_reveal"].includes(scene.template);
     if(needsMedia&&!scene.media)bad(errors,p+".media","This composition requires your real source image/clip; no fake fallback.");
+    if(scene.foreground!==undefined&&scene.foreground!==null){
+      if(!scene.media)
+        bad(errors,p+".foreground","A cutout needs the corresponding original background media.");
+      if(typeof scene.foreground!=="object"||!isLocalPath(scene.foreground.file)||
+         !new Set([".png",".webp"]).has(path.extname(scene.foreground.file??"").toLowerCase()))
+        bad(errors,p+".foreground.file","Supply a local transparent PNG or WebP made by a specialist cutout tool.");
+    }
     if(scene.media){
       const media=scene.media;
       if(!["image","video"].includes(media.kind)||!isLocalPath(media.file))
