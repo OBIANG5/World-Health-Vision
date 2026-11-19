@@ -16,6 +16,8 @@ from ingestion_service.connectors.ibge_national_census_client import IBGE_BASE_U
 
 _METADATA_PATH = "/api/v3/agregados/4714/metadados"
 _PERIODS_PATH = "/api/v3/agregados/4714/periodos"
+IBGE_METADATA_URL = IBGE_BASE_URL + _METADATA_PATH
+IBGE_PERIODS_URL = IBGE_BASE_URL + _PERIODS_PATH
 _MAX_RESPONSE_BYTES = 1_000_000
 
 
