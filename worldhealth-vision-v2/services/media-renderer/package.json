@@ -18,13 +18,18 @@
     "redis": "6.3.1",
     "remotion": "4.0.542",
     "@remotion/transitions": "4.0.542",
-    "@remotion/layout-utils": "4.0.542"
+    "@remotion/layout-utils": "4.0.542",
+    "d3-geo": "3.1.1",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2"
   },
   "devDependencies": {
     "@types/node": "22.15.3",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "typescript": "5.9.3",
-    "puppeteer-core": "24.28.0"
+    "puppeteer-core": "24.28.0",
+    "@types/d3-geo": "3.1.1",
+    "@types/topojson-client": "3.1.5"
   }
 }
