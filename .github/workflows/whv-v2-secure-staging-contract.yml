@@ -27,6 +27,8 @@ concurrency:
 env:
   WHV_TIMESCALE_IMAGE: timescale/timescaledb:2.15.3-pg16
   WHV_OIDC_ISSUER_URI: https://ci-only.invalid/realms/worldvision
+  WHV_OIDC_JWKS_URI: https://ci-only.invalid/realms/worldvision/jwks
+  WHV_SECURITY_AUDIENCE: worldvision-api-ci
   WHV_DB_PASSWORD_FILE: /tmp/whv_ci_db_password
   WHV_BACKUP_DIR: /tmp/whv_ci_backups
 
