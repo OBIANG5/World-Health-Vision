@@ -11,6 +11,7 @@ on:
       - 'perf/v2-batch-timeseries-latest-*'
       - 'perf/v2-batch-timeseries-availability-*'
       - 'perf/v2-batch-timeseries-historical-*'
+      - 'perf/v2-dense-batch-sql-hikari-profiling-*'
   workflow_dispatch:
 
 permissions:
