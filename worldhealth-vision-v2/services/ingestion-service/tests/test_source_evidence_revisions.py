@@ -1,5 +1,6 @@
 """Adversarial DATA-1B1 tests. ALL numeric fixtures are SYNTHETIC, not IBGE values."""
 import json
+import shutil
 from concurrent.futures import ThreadPoolExecutor
 from hashlib import sha256
 
@@ -185,3 +186,34 @@ def test_two_concurrent_identical_captures_converge_on_one_verified_revision(tmp
 
 def test_empty_source_has_no_artificial_coverage(tmp_path):
     assert ledger(tmp_path).list_verified_revisions("IBGE", "CENSO2022_4714") == []
+
+
+def test_private_archive_survives_restore_to_different_root(tmp_path):
+    old_root = tmp_path / "staging-original"
+    restored_root = tmp_path / "staging-restored"
+    receipt = capture(old_root, body_for())
+    # The manifest must not leak original host absolute paths: restores may
+    # use another disk, container, operating system or mount point.
+    on_disk = json.loads(receipt.manifest_path.read_text(encoding="utf-8"))
+    assert on_disk["raw_payload_path"] == "original.http.json"
+    assert on_disk["normalized_payload_path"] == "observations.ndjson"
+    assert on_disk["manifest_path"] == "manifest.json"
+    shutil.copytree(old_root, restored_root)
+    recovered = ledger(restored_root).verify(
+        "IBGE", "CENSO2022_4714", receipt.notes["httpBodySha256"]
+    )
+    assert recovered.manifest_path.is_file()
+    assert recovered.raw_payload_path.is_file()
+    assert recovered.raw_payload_path != receipt.raw_payload_path
+    assert recovered.raw_payload_path.read_bytes() == receipt.raw_payload_path.read_bytes()
+
+
+def test_symlinked_parent_directory_rejected_before_writes(tmp_path):
+    external = tmp_path / "other-target"
+    external.mkdir()
+    private_root = tmp_path / "private"
+    private_root.mkdir()
+    (private_root / "ibge").symlink_to(external, target_is_directory=True)
+    with pytest.raises(EvidenceIntegrityError, match="Symlinked"):
+        capture(private_root, body_for())
+    assert not list(external.rglob("manifest.json"))
