@@ -84,7 +84,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
     </AbsoluteFill>
     {/* Only an external alpha mask prepared from this exact source is accepted;
         the renderer never invents or segments people itself. */}
-    {shot.foreground&&<AbsoluteFill data-wv-photo-foreground="true"
+    {photo.subject&&shot.foreground&&<AbsoluteFill data-wv-photo-foreground="true"
       data-wv-photo-subject-progress={pose.subject.progress.toFixed(4)}
       style={{pointerEvents:"none",overflow:"hidden"}}>
       <Img src={resolveCreativeSource(shot.foreground.src)} style={{
@@ -138,11 +138,11 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       textAlign:"right",opacity:pose.countProgress*fading,
       transform:"translateY("+Math.round(28*(1-pose.countProgress))+"px)"
     }}>
-      <div style={{fontSize:25,fontWeight:750,color:"#d5f2f7",
+      <div style={{fontSize:31,fontWeight:750,color:"#d5f2f7",
         textTransform:"uppercase",letterSpacing:".07em"}}>{number.label}</div>
       <div style={{fontSize:82,lineHeight:1.01,fontWeight:865,
         letterSpacing:"-.06em",color:"#c4fbff"}}>{shown}
-        <span style={{fontSize:28,marginLeft:10}}>{number.unit}</span>
+        <span style={{fontSize:34,marginLeft:10}}>{number.unit}</span>
       </div>
       <div data-wv-photo-metric-source="true" style={{
         fontSize:32,lineHeight:1.2,marginTop:12,color:"#c1e2eb"
