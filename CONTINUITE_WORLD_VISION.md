@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — SPRINT 10 PHOTO MOTION / UNE IMAGE SIX PISTES (19 NOV. 2026)
+
+**Nouvelle branche empilée sur PR #74 :** `feature/worldvision-photo-multilayer-motion-tracks-2026-11-19`, toujours **DRAFT, aucune fusion V2, aucun déploiement**. Référence centrale : [WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md). Suite directe des vidéos références Bourse Express/géopolitique : l'objectif est **UNE photographie réelle et plusieurs mouvements simultanés**. Template `photo_story`, moteur `photoTrackPose` déterministe, six pistes séparées (caméra, masque, premier plan transparent, focus lié à la caméra, compteur avec attribution, typographie) en même composition Remotion Player+MP4. L'atelier dispose de véritables réglages de chaque piste ; le validateur refuse les zooms, positions, durées et données incompatibles. Fixtures purement synthétiques, pas une actualité.
+
+**Validation à faire avant succès** : consulter Actions du HEAD précis de la future PR Sprint 10 (Node, rendu H.264, Player Chromium 0/40/85/145), télécharger vraie vidéo et captures puis inspecter les pixels, droits, lisibilité, performances mobile. Le Sprint 9 précédent est techniquement vert sur `b553f7d` (#44624747361, 19 tests et titre↔carte 17,48 px) ; ses limites artistiques ne sont PAS résolues par photo_story. Ne pas prétendre au niveau mondial sans essais comparatifs.
+
+**Étapes suivantes** : corriger PHOTO jusqu'au rendu convaincant, puis DATA (charts/heatmaps/ranking et sources/unités), séquence film `globe → pays → photo → chiffres`, audio/sous-titres/voix au choix, benchmark réel iOS/Android. Ne rien connecter à BAOCOM; script/actualité avec ChatGPT; pas de blog/GDELT dans cette PR.
+
+---
+
 
 ## WORLD-VISION MEDIA — SPRINT 9 GEO-2 CERTIFIÉ TECHNIQUEMENT (19 NOV. 2026)
 
