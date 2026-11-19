@@ -39,17 +39,17 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
   </AbsoluteFill>;
 
   const accent=shot.accent??"#5eeeff";
-  const intro=ease(between(local,0,28));
+  const intro=ease(between(local,0,22));
   const move=ease(between(local,15,115));
   const outline=ease(between(local,24,90));
   const photoIn=ease(between(local,46,81));
   const dataIn=ease(between(local,73,109));
-  const titleIn=ease(between(local,8,34));
+  const titleIn=.20+.80*ease(between(local,0,22));
   const subtitleIn=ease(between(local,100,136));
   const holdFade=shot.transitionAfter!=="cut"&&(shot.transitionFrames??0)>0
     ?1-ease(between(frame,shot.durationFrames-(shot.transitionFrames??0),shot.durationFrames)):1;
-  const cameraScale=.89+.15*move;
-  const cameraY=19*(1-move);
+  const cameraScale=.92+.08*move;
+  const cameraY=14*(1-move);
   const hasMedia=Boolean(shot.media);
   const metric=geo?.metric;
   const metricValue=metric?.value??0;
@@ -97,28 +97,29 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
           <feGaussianBlur stdDeviation="13"/>
         </filter>
         <clipPath id={"wv-country-mapclip-"+shot.id}>
-          <rect x="88" y="348" width="904" height="746" rx="23"/>
+          <rect x="88" y="340" width="904" height="529" rx="23"/>
         </clipPath>
       </defs>
-      <rect x="90" y="347" width="900" height="747" rx="24"
+      <rect data-wv-country-map-boundary="true" x="90" y="339" width="900" height="532" rx="24"
         fill="#071b2b" fillOpacity=".47"
         stroke="#2ccde9" strokeOpacity=".32" strokeWidth="2"/>
       <g clipPath={"url(#wv-country-mapclip-"+shot.id+")"}>
         <g data-wv-country-camera="true"
           data-wv-country-scale={cameraScale.toFixed(4)}
-          transform={"translate(540 710) scale("+cameraScale+") translate(-540 -710) translate(0 "+cameraY+")"}>
+          transform={"translate(540 599) scale("+cameraScale+") translate(-540 -599) translate(0 "+cameraY+")"}>
           {/* Natural Earth 50m near neighbors, explicitly context-only. */}
           <path data-wv-country-context="50m" d={map.contextPath} fill="none"
-            stroke="#6eb6c9" strokeOpacity={.28*intro}
+            stroke="#6eb6c9" strokeOpacity={.17+.28*intro}
             strokeWidth="1.7"/>
           {/* Large country form is true 10m shape, never AI hand-drawn. */}
           <path data-wv-country-fill="10m" d={map.detailPath}
             fill={"url(#wv-country-fill-"+shot.id+")"}
-            fillRule="evenodd" opacity={outline*.89}/>
+            fillRule="evenodd" opacity={.21+.71*outline}/>
           <path data-wv-country-bloom="true" d={map.detailPath}
             fill="none" stroke="#04ddff" strokeWidth="18"
             strokeLinejoin="round" opacity={outline*.28}
             filter={"url(#wv-country-bloom-"+shot.id+")"}/>
+          <path d={map.detailPath} fill="none" stroke="#8cdcf0" strokeWidth="2.5" opacity=".24"/>
           <path data-wv-country-outline="10m" d={map.detailPath} fill="none"
             stroke="#b4faff" strokeWidth="5.5" strokeLinejoin="round"
             pathLength={1} strokeDasharray="1" strokeDashoffset={1-outline}
@@ -132,7 +133,7 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
           </g>}
         </g>
       </g>
-      <path d="M 109 1094 L 975 1094" stroke="#2ba4c3" strokeOpacity=".38" strokeWidth="2"/>
+      <path d="M 109 882 L 975 882" stroke="#2ba4c3" strokeOpacity=".38" strokeWidth="2"/>
     </svg>
     {/* Brand stays subtle: no invented breaking-news or VERIFIED badge. */}
     <div style={{position:"absolute",top:154,left:92,right:91,
