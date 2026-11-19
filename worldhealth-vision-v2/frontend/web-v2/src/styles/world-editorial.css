@@ -387,3 +387,58 @@ body {font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-se
 }
 .whv-page .whv-offline-banner strong{color:#674b37}
 .whv-page .whv-offline-banner span{color:#967960}
+
+
+/* UX-1B source choice: reuse real country and source panels; no fake data. */
+.whv-story-perspectives{
+  display:grid;gap:10px;padding:14px 15px;margin:0 0 18px;
+  border:1px solid #dae8e9;border-left:3px solid #348daf;
+  border-radius:13px;background:linear-gradient(120deg,#edf7f8,#fffefa);
+  color:#263f45;
+}
+.whv-story-perspectives strong{display:block;font-size:13px;letter-spacing:-.015em}
+.whv-story-perspectives p{margin:5px 0 0;font-size:11px;line-height:1.55;color:#54676b}
+.whv-story-perspectives-actions{display:flex;flex-wrap:wrap;gap:8px}
+.whv-story-perspectives-actions button{
+  min-height:40px;border:1px solid #c2dbe1;border-radius:9px;
+  background:#fff;color:#245067;padding:8px 12px;font-size:11px;font-weight:750;
+  cursor:pointer
+}
+.whv-story-perspectives-actions button:hover{background:#e3f2f5}
+.whv-story-perspectives-actions button:focus-visible{outline:3px solid #4ea3cd;outline-offset:2px}
+
+.whv-mobile-perspectives{
+  display:flex;flex-direction:column;gap:9px;padding:15px;
+  border:1px solid #b8d8e0;border-radius:16px;
+  background:linear-gradient(135deg,#e8f5f8 0%,#f9fcfb 74%);
+  box-shadow:0 8px 24px #173e5014;color:#173c4d;
+}
+.whv-mobile-perspectives-label{
+  display:flex;align-items:center;gap:7px;
+  font-size:10px;font-weight:850;letter-spacing:.11em;color:#22748b
+}
+.whv-mobile-perspectives>strong{
+  font-size:19px;font-weight:820;letter-spacing:-.035em;line-height:1.2;color:#163949
+}
+.whv-mobile-perspectives>p{
+  margin:0;font-size:12px;line-height:1.55;color:#43636b
+}
+.whv-mobile-perspectives-actions{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+}
+.whv-mobile-perspectives-actions button{
+  display:flex;justify-content:center;align-items:center;gap:5px;
+  min-height:43px;min-width:0;padding:9px 7px;border:1px solid #b5d3de;border-radius:10px;
+  background:#fff;color:#225469;font-size:11px;font-weight:790;cursor:pointer
+}
+.whv-mobile-perspectives-actions button:first-child{
+  background:#175774;color:#fff;border-color:#175774
+}
+.whv-mobile-perspectives-actions button:hover{filter:brightness(.97)}
+.whv-mobile-perspectives-actions button:focus-visible{outline:3px solid #3e93bf;outline-offset:2px}
+.whv-mobile-perspectives>small{font-size:10px;line-height:1.45;color:#647d81}
+@media(max-width:340px){
+  .whv-mobile-perspectives{padding:12px}
+  .whv-mobile-perspectives>strong{font-size:17px}
+  .whv-mobile-perspectives-actions button{font-size:10px;gap:3px}
+}
