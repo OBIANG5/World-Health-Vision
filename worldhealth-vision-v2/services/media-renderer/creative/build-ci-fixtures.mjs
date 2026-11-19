@@ -173,4 +173,29 @@ countryProject.shots=[{
 countryProject.voice=null;countryProject.music=null;countryProject.outro=null;
 const countryPath=path.join(path.dirname(outputJson),"worldvision-country-focus-project.json");
 fs.writeFileSync(countryPath,JSON.stringify(countryProject,null,2)+"\n");
+// PHOTO multilayer demonstration made ONLY from an abstract image and mask.
+// It proves independent camera/reveal/parallax/spotlight/number/typography,
+// but must never be misrepresented as news photography.
+const photoProject=structuredClone(p);
+photoProject.id="wv-photo-layers-synthetic-only";
+photoProject.title="PHOTO MULTILAYER — TEST CINÉMATIQUE NON JOURNALISTIQUE";
+photoProject.script="Ceci est un exemple technique sans fait d'actualité ni photographie réelle.";
+photoProject.shots=[{
+  id:"photo-layer-test",template:"photo_layers",durationFrames:165,
+  title:"UNE IMAGE · PLUSIEURS RÉCITS",
+  subtitle:"Caméra, masque, profondeur, lumière et données fictives animées ensemble.",
+  eyebrow:"DÉMONSTRATION TECHNIQUE · AUCUNE ACTUALITÉ",
+  media:{kind:"image",file:"synthetic-landscape.png",credit:"Original geometric fixture, NOT photojournalism"},
+  foreground:{file:"synthetic-foreground.png",credit:"Generated alpha fixture from the SAME synthetic picture"},
+  photo:{
+    camera:{scaleStart:1.02,scaleEnd:1.11,panX:-22,panY:-8,startFrame:0,endFrame:130},
+    reveal:{startFrame:3,endFrame:68,direction:"left"},
+    highlight:{x:.56,y:.44,radius:.28,startFrame:38,endFrame:99},
+    metric:{label:"DONNÉE FICTIVE",value:42,unit:" TEST",precision:0,startFrame:68,endFrame:122}
+  },
+  focus:{x:.56,y:.46},motion:"locked",transitionAfter:"cut",transitionFrames:0
+}];
+photoProject.voice=null;photoProject.music=null;photoProject.outro=null;
+const photoPath=path.join(path.dirname(outputJson),"worldvision-photo-layers-project.json");
+fs.writeFileSync(photoPath,JSON.stringify(photoProject,null,2)+"\\n");
 console.log("Synthetic image/video/audio/document fixtures created; not authentic news assets.");
