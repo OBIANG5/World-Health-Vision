@@ -137,7 +137,11 @@ class IbgeNationalCensusClient:
                 if response.headers.get("content-encoding", "identity").lower() not in ("identity", ""):
                     raise ValueError("Compressed IBGE response cannot be archived as plain JSON bytes")
                 body = bytearray()
-                for chunk in response.iter_raw():
+                # httpx.MockTransport may return an already-buffered Response;
+                # a network response is streamed raw. Accept-Encoding identity
+                # means both paths retain the exact uncompressed entity bytes.
+                raw_chunks = (response.content,) if response.is_stream_consumed else response.iter_raw()
+                for chunk in raw_chunks:
                     body.extend(chunk)
                     if len(body) > MAX_BODY_BYTES:
                         raise ValueError("IBGE response exceeds bounded-size contract")
