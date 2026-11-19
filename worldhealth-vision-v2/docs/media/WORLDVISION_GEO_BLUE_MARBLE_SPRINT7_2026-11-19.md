@@ -98,3 +98,29 @@ Dans tout nouveau chat, ouvrir la PR #44 et ce fichier puis examiner **le HEAD**
 
 **Définitions de qualité non négociables** : pas de fausse image d'événement, pas de chiffres supposés, pas de données actuelles présentées comme issues d'une NASA 2004 ; couleurs lumineuses et relief lisible avec géographie réelle ; titres lisibles à la taille réelle iPhone, sans masques de plateformes ; un seul code Remotion partagé pour Player & MP4 ; BAOCOM indépendant, aucune voix imposée.
 
+
+
+## 9. Vérification réelle du 19/11 : troisième passe artistique (photo, contraste, cadrage)
+
+**Preuve réellement inspectée : [CI #44570563468](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44570563468), deux jobs SUCCESS, 14 tests Node passés (0 échec), MP4 H.264, Player Chromium sur vrai WebGL.** L'artefact `worldvision-creative-compositor-demo` ID **14554203898** a été téléchargé et décompressé. Les captures `player-geo-frame-96.png` et `geo-motion-intro.mp4.stills/frame-03-at-149.png` ont été ouvertes et comparées au globe-œil de référence de l'utilisateur.
+
+**Résultat constaté sur les VRAIS pixels, pas simplement la compilation :**
+- La photo NASA apparaît nettement : terres du Sahara, Europe, Afrique subsaharienne, mers et grands contours. Les anciens disques cyan qui la masquaient n'ont pas réapparu.
+- La planète est plus grande et recentrée, tout en gardant l’œil blanc/cyan et son contour lumineux derrière la sphère.
+- Le **bandeau supérieur** auparavant blanc/illisible sur l'aperture de l'œil est maintenant présenté dans un **rectangle sombre semi-transparent et contrasté**.
+- Le **compteur** auparavant visible en cyan clair sur une zone blanche est maintenant situé dans un **cartouche en verre sombre**, avec valeurs lisibles et bord cyan, sans empiéter sur le titre. Si un vrai média importé occupe la carte de gauche, le compteur reste dans cette carte et n'utilise pas le cartouche additionnel.
+- La matière NASA subit un **étalonnage artistique paramétrique contrôlé** (gamma léger et saturation) par le StandardMaterial de Three, sans modifier le JPG officiel sur disque ni inventer de continent. L'esthétique est plus vibrante, mais ne doit **pas** être revendiquée comme une colorimétrie scientifique.
+- Le titre « LE MONDE EN MOUVEMENT » reste lisible sous le globe. Les extraits de démo « VALEUR FICTIVE/POINT FICTIF » sont explicitement non journalistiques.
+
+**Limites constatées** : ce n'est pas encore une réplique exacte du globe fourni. Il manque en particulier des **nuages correctement sourcés**, des contrastes océaniques aussi profonds et certaines finitions photographiques. Pas de promesse de « meilleur motion design mondial » sur la seule base du test. Les frontières 110m sont simplifiées et ne valent pas des frontières officielles pour tous les territoires. La vidéo test ne contient ni narration ni prise de parole, puisque l'utilisateur choisira ses voix.
+
+**Correction finale de géométrie postérieure au rendu** : une ancienne interpolation de halo gardait `translate(-540 -747)` alors que le centre avait été déplacé à `[540,690]`. Le code a été corrigé pour centrer le halo exactement sur le globe. Les deux cercles de lumière portent désormais `data-wv-geo-rim` et `data-wv-geo-neon-rim`, et le test Chromium bloque tout retour de remplissages opaques `fill != none` ou de centre erroné.
+
+**Dernier contrôle après cette correction** : [GitHub Actions #44571505052](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44571505052) lancé sur le nouveau code. **Vérifier les conclusions des deux jobs et télécharger la dernière preuve avant de déclarer le HEAD totalement validé.**
+
+**Productivité de la revue créative** : un workflow spécialisé `.github/workflows/worldvision-geo-art-review.yml` rend désormais directement le globe NASA de 150 frames, vérifie le SHA officiel et conserve MP4/stills, au lieu de devoir attendre TOUS les tests multimédias à chaque ajustement de lumière. Le workflow historique demeure la preuve d'intégration globale Remotion/Player.
+
+### Suivi audiovisuel qui ne doit PAS être perdu
+
+Rien n'a été supprimé de la PR #44 : scripts fournis par ChatGPT/utilisateur, prises photo/vidéo, découpage non destructif, contrôle des visuels et titres, voix optionnelles et audition A/B, `focus_reveal` 2,5D, `document_focus`, `CreativeEdit` et `CreativeCompositionPreview` **partagés**, rendu de film complet, transitions, FFmpeg et audit audio, qualité par séquence. Après certification du globe, les **prochaines tâches artistiques** sont : météo/clouds uniquement avec source et date claires, *country zoom*, une photo avec plusieurs couches indépendantes, animations data/économie, audio/mastering, plusieurs montages d'un vrai reportage et contrôle iPhone/TikTok. **Content OS audiovisuel uniquement**, pas de BAOCOM intégré, pas de GDELT/blog global.
+
