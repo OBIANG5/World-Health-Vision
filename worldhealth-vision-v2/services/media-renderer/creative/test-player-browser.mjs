@@ -113,6 +113,11 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             atmosphereCentered:
               document.querySelector('[data-wv-geo-rim]')?.getAttribute('transform')?.includes("translate(-540 -690)")??false,
             nasaCanvas:Boolean(document.querySelector('[data-wv-geo-nasa-texture] canvas')),
+            countryId:document.querySelector('[data-wv-geo-country-spotlight]')?.getAttribute("data-wv-geo-country-spotlight")??null,
+            countryPathLength:document.querySelector('[data-wv-geo-country-spotlight]')?.getAttribute("d")?.length??0,
+            cameraArrival:Number(document.querySelector('[data-wv-geo-camera-arrival]')?.getAttribute("data-wv-geo-camera-arrival")),
+            cameraZoom:Number(document.querySelector('[data-wv-geo-camera-zoom]')?.getAttribute("data-wv-geo-camera-zoom")),
+            sphereZoom:Number(document.querySelector('[data-wv-geo-sphere-scale]')?.getAttribute("data-wv-geo-sphere-scale")),
             nasaSource:document.querySelector('[data-wv-geo-nasa-texture]')?.getAttribute('data-wv-geo-nasa-texture')??null
           };
         });
@@ -120,9 +125,28 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           scene.projectedBordersLength<1000||!scene.route||!Number.isFinite(scene.routeDashOffset)||
           scene.routeDashOffset>=.95||!scene.target||!scene.photo||
           !scene.nasaCanvas||!scene.photoRimsAreHollow||!scene.atmosphereCentered||
+          scene.countryId!=="266"||scene.countryPathLength<15||
+          scene.cameraArrival<=.1||scene.cameraArrival>=.9||
+          scene.cameraZoom<=1||Math.abs(scene.cameraZoom-scene.sphereZoom)>.002||
           scene.nasaSource!=="NASA-BlueMarble-June-2004")
           throw Error("Geo animation missing real projected multi-layer elements: "+JSON.stringify(scene));
         console.log("[player-smoke] Atlas projected geography / simultaneous animated layers",scene);
+      }
+      if(mode==="geo"&&frame===138){
+        const final=await page.evaluate(()=>{
+          const svg=document.querySelector('[data-wv-geo-camera-arrival]');
+          const sphere=document.querySelector('[data-wv-geo-sphere-scale]');
+          return {
+            arrival:Number(svg?.getAttribute("data-wv-geo-camera-arrival")),
+            zoom:Number(svg?.getAttribute("data-wv-geo-camera-zoom")),
+            sphereZoom:Number(sphere?.getAttribute("data-wv-geo-sphere-scale")),
+            center:svg?.getAttribute("data-wv-geo-camera-center")??""
+          };
+        });
+        if(final.arrival!==1||Math.abs(final.zoom-1.1)>.0001||
+           Math.abs(final.zoom-final.sphereZoom)>.001||
+           final.center!=="11.6000,-0.7000")
+          throw Error("GEO camera failed to reach/hold editor-approved focus: "+JSON.stringify(final));
       }
       if(mode==="document"&&frame===0){
         const entrance=await page.evaluate(()=>{
