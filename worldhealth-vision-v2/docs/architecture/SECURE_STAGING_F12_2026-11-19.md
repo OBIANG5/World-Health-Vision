@@ -18,6 +18,7 @@ Nous avons isolé une topologie de staging **sans Keycloak dev, Redis non indisp
 - `infra/compose.secure-staging.yml` : définition autonome et privée, **ne pas combiner** avec `docker-compose.yml` (les ports et configurations seraient fusionnés).
 - `infra/.env.secure-staging.example` : noms de variables uniquement ; jamais le véritable fichier de configuration.
 - `infra/tests/verify_secure_staging.py` : vérification de la configuration Docker Compose **résolue**.
+- `infra/ops/preflight-host.sh` : refuse un hébergement réel si le secret n'est pas protégé/lisible par UID 10001, si l'image est non épinglée par SHA-256, si OIDC est fictif, ou si les sauvegardes sont dans le dépôt.
 - `infra/ops/backup-db.sh` : archive logique atomique au format personnalisé, checksum SHA-256 et test de lisibilité.
 - `infra/ops/restore-drill.sh` : restauration dans une base temporaire, Timescale `pre_restore/post_restore`, puis suppression de cette base temporaire.
 - `.github/workflows/whv-v2-secure-staging-contract.yml` : tests de secrets absents, ports, réseau, runtime non-root et restauration réelle.
@@ -78,6 +79,8 @@ docker compose --env-file /etc/worldvision/staging.env \
 docker compose --env-file /etc/worldvision/staging.env \
   -f infra/compose.secure-staging.yml up -d --build --wait gateway-service
 ```
+
+**Avant tout démarrage réel sur une machine Linux**, charger les variables du fichier privé dans le shell opérateur (elles ne doivent pas apparaître dans Git ni dans les logs), puis lancer `bash infra/ops/preflight-host.sh`. Ce précontrôle refuse les références d'images mutables et les domaines OIDC d'exemple ; il ne constitue pas une autorisation de publication.
 
 Un premier contrôle `GET http://127.0.0.1:18080/actuator/health` pourra alors tester le Gateway. Une requête anonyme `GET /api/catalog/countries?limit=1` doit retourner **401** en mode JWT, sauf évolution volontaire et testée de la politique de routes. La collecte ne doit pas se déclencher automatiquement à la mise en service : il faut un contrôle de chaque connecteur et de ses quotas.
 
