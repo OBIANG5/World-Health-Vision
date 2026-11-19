@@ -296,7 +296,7 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
             objectPosition:"center center"
           }}
         />}
-        <div style={{
+        <div data-wv-evidence-target={shot.id} style={{
           position:"absolute",
           left:(r.x*100)+"%",top:(r.y*100)+"%",
           width:(r.width*100)+"%",height:(r.height*100)+"%",
