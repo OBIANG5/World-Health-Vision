@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## SPRINT 5 — RENDU DOCUMENTAIRE VALIDÉ (19 NOV. 2026) — REPRENDRE ICI
+
+**État exact :** [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) toujours **DRAFT**, sans fusion ni déploiement public. Lire en premier [WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md §7–9](worldhealth-vision-v2/docs/media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md). **GitHub Actions [#44546198363 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363)**, 12 tests Node, build V2 et vraie vidéo de document + 4 séquences de test Player Chromium. Le MP4 d'exemple et quatre captures du document ont été téléchargés et examinés.
+
+**Nouveauté concrète :** `document_focus` dans le même `CreativeEdit.tsx` pour V2 et master MP4, piloté par un rectangle x/y/largeur/hauteur sélectionné sur **l'image source fournie**, zoom optique et texte journalistique fourni ici, **aucun faux passage/citation**. La vidéo commence désormais avec le document visible ; le panneau de texte ne recouvre pas la page (mesure Chrome : **9,86 px de séparation** sur preview 360×640 ; **15,87 px de marge au-dessus du seuil inférieur**). Un premier run a révélé un recouvrement de 13,5 px, **corrigé** puis validé. Sources de test synthétiques (aucune actualité créée artificiellement).
+
+**Prochaine action à haute valeur ajoutée :** monter un vrai contenu d'actualité avec un script préparé ici, des médias authentiques autorisés et une narration choisie librement, réaliser 2 variantes de niveau éditorial exigeant puis regarder **les MP4 et l'écran TikTok réel**. Ensuite workflow de révision non destructif/cache par plan, vraie qualité voix/mix/alignement, droits, stockage privé et Content OS exclusivement audiovisuel. Ne pas revenir aux onze portes imposées, à Vivienne obligatoire ou à une connexion BAOCOM. GDELT/blog global différés.
+
+---
+
 ## NOUVEAU POINT DE REPRISE — MEDIA SPRINT 5 : PREUVE VISUELLE AUTHENTIQUE (19 NOV. 2026)
 
 **Relire d'abord [WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md) (§ 7–8)**, puis la [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44) toujours DRAFT, non fusionnée, non déployée.
