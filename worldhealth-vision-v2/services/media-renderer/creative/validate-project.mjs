@@ -6,13 +6,19 @@
 import path from "node:path";
 import fs from "node:fs";
 import {createRequire} from "node:module";
+import {feature} from "topojson-client";
+import {geoContains} from "d3-geo";
 
 // Keep spotlight IDs bound to the exact Natural Earth atlas used by Remotion.
-const countryGeometry=createRequire(import.meta.url)("world-atlas/countries-110m.json").objects.countries.geometries;
+const requireAtlas=createRequire(import.meta.url);
+const countryGeometry=requireAtlas("world-atlas/countries-110m.json").objects.countries.geometries;
+const DETAILED_ATLAS=requireAtlas("world-atlas/countries-10m.json");
+const DETAIL_COUNTRIES=DETAILED_ATLAS.objects.countries.geometries;
+const DETAILED_IDS=new Set(DETAIL_COUNTRIES.map(g=>String(g.id).padStart(3,"0")));
 const COUNTRY_IDS=new Set(countryGeometry.map(g=>String(g.id).padStart(3,"0")));
 
 export const FORMAT = "worldvision-creative-project-v1";
-const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story"]);
+const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus"]);
 const TRANSITIONS = new Set(["cut","dissolve","slide"]);
 const MOTIONS = new Set(["locked","dolly","drift","push"]);
 const IMAGE_EXT = new Set([".png",".jpg",".jpeg",".webp"]);
@@ -104,6 +110,41 @@ export function inspectProject(project) {
     // Geo storytelling is cartography, not geocoding. ALL coordinates, routes
     // and statistics must have been explicitly approved by the human editor.
     // No IP location, language inference or script-to-country guess is allowed.
+    if(scene.template==="country_focus"){
+      const geo=scene.geo;
+      const id=geo?.spotlight?.countryId;
+      if(!boundedInteger(scene.durationFrames,150,3600))
+        bad(errors,p+".durationFrames","Country focus needs 150-3600 frames for a readable map and independent documentary beats.");
+      if(!isText(scene.title,90)||!scene.title?.trim())
+        bad(errors,p+".title","Country focus requires a concise human-authored title <=90 characters.");
+      if(scene.subtitle!==undefined&&!isText(scene.subtitle,180))
+        bad(errors,p+".subtitle","Country focus subtitle must fit in 180 characters.");
+      if(typeof id!=="string"||!/^\\d{3}$/.test(id)||!DETAILED_IDS.has(id))
+        bad(errors,p+".geo.spotlight","Choose a 10m Natural Earth country ID actually present in the versioned atlas.");
+      if(geo?.camera!==undefined||geo?.route!==undefined)
+        bad(errors,p+".geo","Country focus is a dedicated local projection. Use a separate preceding geo_story for globe travel or route.");
+      if(geo?.target!==undefined){
+        const point=geo.target;
+        if(!point||typeof point.lon!=="number"||typeof point.lat!=="number"||
+          !Number.isFinite(point.lon)||!Number.isFinite(point.lat)||
+          point.lon< -180||point.lon>180||point.lat< -85||point.lat>85||
+          (point.label!==undefined&&!isText(point.label,80)))
+          bad(errors,p+".geo.target","Marker must be an explicitly supplied valid geographic coordinate.");
+        else if(DETAILED_IDS.has(id)){
+          const country=feature(DETAILED_ATLAS,DETAIL_COUNTRIES.find(g=>String(g.id).padStart(3,"0")===id));
+          if(!geoContains(country,[point.lon,point.lat]))
+            bad(errors,p+".geo.target","The marker is outside the selected 10m country polygon; do not place an ambiguous point.");
+        }
+      }
+      if(geo?.metric!==undefined){
+        const m=geo.metric;
+        if(!m||!isText(m.label,55)||!m.label?.trim()||
+          typeof m.value!=="number"||!Number.isFinite(m.value)||Math.abs(m.value)>1e12||
+          (m.unit!==undefined&&!isText(m.unit,12))||
+          (m.precision!==undefined&&!boundedInteger(m.precision,0,2)))
+          bad(errors,p+".geo.metric","Only a finite editor-supplied number with short label/unit is allowed.");
+      }
+    }
     if(scene.template==="geo_story"){
       const geo=scene.geo;
       const point=(p)=>p&&typeof p==="object"&&
