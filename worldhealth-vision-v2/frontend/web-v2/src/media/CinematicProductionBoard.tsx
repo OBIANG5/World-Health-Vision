@@ -7,7 +7,7 @@ const RealCreativePreview = lazy(() => import("./CreativeCompositionPreview"));
 const CountrySelector10m = lazy(() => import("./CountrySelector10m"));
 import "./CinematicProductionBoard.css";
 
-type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus";
+type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_layers";
 type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
@@ -28,13 +28,18 @@ type Shot = {
   geoShowCamera:boolean;geoToLon:number;geoToLat:number;
   geoCameraStart:number;geoCameraEnd:number;geoCameraZoom:number;
   geoShowCountry:boolean;geoCountryId:string;
+  photoScaleStart:number;photoScaleEnd:number;photoPanX:number;photoPanY:number;
+  photoCameraStart:number;photoCameraEnd:number;
+  photoRevealStart:number;photoRevealEnd:number;photoRevealDirection:"left"|"right"|"up";
+  photoHighlight:boolean;photoSpotX:number;photoSpotY:number;photoRadius:number;photoHighlightStart:number;photoHighlightEnd:number;
+  photoMetricStart:number;photoMetricEnd:number;
   geoShowTarget:boolean;geoTargetLon:number;geoTargetLat:number;geoTargetLabel:string;
   geoShowRoute:boolean;geoFromLon:number;geoFromLat:number;
   geoShowMetric:boolean;geoMetricLabel:string;geoMetricValue:string;geoMetricUnit:string;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
   documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
-  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",country_focus:"Pays en détail · carte 1:10m / média / données",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
+  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",country_focus:"Pays en détail · carte 1:10m / média / données",photo_layers:"Photo vivante · caméra / masque / profondeur / data / texte",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
 };
 const MOTION_LABELS:Record<Motion,string>={
   locked:"Cadre fixe",dolly:"Approche de caméra",drift:"Mouvement latéral",push:"Révélation progressive"
@@ -57,6 +62,11 @@ const initialShot=():Shot=>({
   geoShowCamera:false,geoToLon:0,geoToLat:0,
   geoCameraStart:15,geoCameraEnd:102,geoCameraZoom:1.1,
   geoShowCountry:false,geoCountryId:"",
+  photoScaleStart:1.02,photoScaleEnd:1.11,photoPanX:-22,photoPanY:-8,
+  photoCameraStart:0,photoCameraEnd:130,
+  photoRevealStart:3,photoRevealEnd:68,photoRevealDirection:"left",
+  photoHighlight:true,photoSpotX:.56,photoSpotY:.44,photoRadius:.28,photoHighlightStart:38,photoHighlightEnd:99,
+  photoMetricStart:68,photoMetricEnd:122,
   geoShowTarget:false,geoTargetLon:0,geoTargetLat:0,geoTargetLabel:"",
   geoShowRoute:false,geoFromLon:0,geoFromLat:0,
   geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:""
@@ -85,6 +95,41 @@ const buildGeo=(shot:Shot):CreativeShot["geo"]=>({
     unit:shot.geoMetricUnit,precision:0
   }}:{})
 });
+/** The same authored motion tracks are used by browser and server MP4. */
+const buildPhoto=(shot:Shot):CreativeShot["photo"]=>({
+  camera:{scaleStart:shot.photoScaleStart,scaleEnd:shot.photoScaleEnd,
+    panX:shot.photoPanX,panY:shot.photoPanY,
+    startFrame:shot.photoCameraStart,endFrame:shot.photoCameraEnd},
+  reveal:{startFrame:shot.photoRevealStart,endFrame:shot.photoRevealEnd,
+    direction:shot.photoRevealDirection},
+  ...(shot.photoHighlight?{highlight:{x:shot.photoSpotX,y:shot.photoSpotY,
+    radius:shot.photoRadius,startFrame:shot.photoHighlightStart,
+    endFrame:shot.photoHighlightEnd}}:{}),
+  ...(shot.geoShowMetric?{metric:{label:shot.geoMetricLabel,
+    value:Number(shot.geoMetricValue),unit:shot.geoMetricUnit,precision:0,
+    startFrame:shot.photoMetricStart,endFrame:shot.photoMetricEnd}}:{})
+});
+const validPhoto=(s:Shot)=>{
+  if(s.template!=="photo_layers")return true;
+  const beat=(a:number,b:number)=>Number.isInteger(a)&&Number.isInteger(b)&&a>=0&&b>a+11&&b<=s.durationFrames-10;
+  return Boolean(s.durationFrames>=150&&s.durationFrames<=3600&&
+    s.title.trim()&&s.title.length<=90&&s.subtitle.length<=180&&
+    beat(s.photoCameraStart,s.photoCameraEnd)&&
+    beat(s.photoRevealStart,s.photoRevealEnd)&&
+    s.photoScaleStart>=1&&s.photoScaleStart<=1.2&&
+    s.photoScaleEnd>=1&&s.photoScaleEnd<=1.4&&
+    Number.isFinite(s.photoPanX)&&Math.abs(s.photoPanX)<=120&&
+    Number.isFinite(s.photoPanY)&&Math.abs(s.photoPanY)<=120&&
+    ["left","right","up"].includes(s.photoRevealDirection)&&
+    (!s.photoHighlight||(s.photoSpotX>=0&&s.photoSpotX<=1&&
+      s.photoSpotY>=0&&s.photoSpotY<=1&&s.photoRadius>=.06&&s.photoRadius<=.65&&
+      beat(s.photoHighlightStart,s.photoHighlightEnd)))&&
+    (!s.geoShowMetric||(s.geoMetricLabel.trim()&&s.geoMetricLabel.length<=55&&
+      s.geoMetricValue.trim()!==""&&Number.isFinite(Number(s.geoMetricValue))&&
+      Math.abs(Number(s.geoMetricValue))<=1e12&&s.geoMetricUnit.length<=12&&
+      beat(s.photoMetricStart,s.photoMetricEnd)))
+  );
+};
 const inLon=(v:number)=>Number.isFinite(v)&&v>=-180&&v<=180;
 const inLat=(v:number)=>Number.isFinite(v)&&v>=-85&&v<=85;
 const validGeo=(s:Shot)=>{
@@ -136,10 +181,11 @@ export default function CinematicProductionBoard() {
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const foregroundAsset=files.find(f=>f.name===active.foregroundName);
-  const needsRealMedia=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(active.template);
+  const needsRealMedia=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_layers"].includes(active.template);
   const previewCanRender=(!needsRealMedia||Boolean(activeAsset&&activeAsset.kind!=="audio"))&&
     (active.template!=="focus_reveal"||Boolean(active.title.trim()&&active.title.length<=90&&active.durationFrames>=90))&&
-    (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115))&&validGeo(active);
+    (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115))&&
+    (active.template!=="photo_layers"||Boolean(activeAsset?.kind==="image"&&validPhoto(active)))&&validGeo(active);
   // Exact props type of the REAL server-rendered Remotion compositor; object
   // URLs only exist in this browser session and never reach GitHub or an API.
   const previewProps=useMemo<CreativeEditProps>(()=>{
@@ -163,6 +209,7 @@ export default function CinematicProductionBoard() {
         transitionFrames:0,
         focus:{x:active.focusX,y:active.focusY},
         ...(active.template==="document_focus"?{documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH}}:{}),
+        ...(active.template==="photo_layers"?{photo:buildPhoto(active)}:{}),
         ...((active.template==="geo_story"||active.template==="country_focus")?{geo:buildGeo(active)}:{})
       }],
       narration:null,
@@ -172,7 +219,7 @@ export default function CinematicProductionBoard() {
     };
   },[active,activeAsset,foregroundAsset,projectName,script,accent]);
   const canExport=script.trim().length>0&&shots.every(shot=>{
-    const requires=["documentary","evidence","clean_video","focus_reveal","document_focus"].includes(shot.template);
+    const requires=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_layers"].includes(shot.template);
     const hasMedia=!requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
     const validFocus=shot.template!=="focus_reveal"||Boolean(shot.title.trim()&&shot.title.length<=90&&shot.durationFrames>=90);
     const validDocument=shot.template!=="document_focus"||Boolean(
@@ -183,7 +230,8 @@ export default function CinematicProductionBoard() {
       shot.documentX+shot.documentW<=1.0000001&&shot.documentY+shot.documentH<=1.0000001
     );
     const validForeground=!shot.foregroundName||Boolean(shot.mediaName&&files.some(f=>f.name===shot.foregroundName&&f.kind==="image"));
-    return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot);
+    const photoMedia=shot.template!=="photo_layers"||files.some(f=>f.name===shot.mediaName&&f.kind==="image");
+    return hasMedia&&photoMedia&&validFocus&&validDocument&&validForeground&&validPhoto(shot)&&validGeo(shot);
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
@@ -218,6 +266,7 @@ export default function CinematicProductionBoard() {
         transitionFrames:i===shots.length-1||shot.transitionAfter==="cut"?0:shot.transitionFrames,
         focus:{x:shot.focusX,y:shot.focusY},
         ...(shot.template==="document_focus"?{documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH}}:{}),
+        ...(shot.template==="photo_layers"?{photo:buildPhoto(shot)}:{}),
         ...((shot.template==="geo_story"||shot.template==="country_focus")?{geo:buildGeo(shot)}:{})
       };
     }),
@@ -279,6 +328,7 @@ export default function CinematicProductionBoard() {
         title:s.title,subtitle:s.subtitle,eyebrow:s.eyebrow,
         focus:{x:s.focusX,y:s.focusY},
         ...(s.template==="document_focus"?{documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH}}:{}),
+        ...(s.template==="photo_layers"?{photo:buildPhoto(s)}:{}),
         ...((s.template==="geo_story"||s.template==="country_focus")?{geo:buildGeo(s)}:{}),
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
@@ -364,7 +414,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
           <div className="wvc-two-col">
-            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
+            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus"||e.target.value==="photo_layers")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
@@ -506,6 +556,45 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updateShot({geoMetricUnit:e.target.value})}/></label>
             </div>}
             <p className="wvc-hint">Un marqueur doit appartenir au pays sélectionné selon la géométrie de l'atlas. Le validateur serveur refuse les positions extérieures. Photo/vidéo et éventuel détourage transparent se choisissent dans les champs « Média source » et « Détourage » au-dessus. Aucun chiffre, droit d'image ou événement n'est vérifié automatiquement.</p>
+          </div>}
+
+          {active.template==="photo_layers"&&<div className="wvc-focus-control" aria-label="Réalisation PHOTO multi-animations">
+            <div className="wvc-focus-heading">
+              <strong>PHOTO DIRECTOR · UNE IMAGE, PLUSIEURS MOUVEMENTS INDÉPENDANTS</strong>
+              <span>Photo authentique importée et détourage PNG/WebP optionnel, puis 6 pistes : cadrage, reveal, profondeur, lumière, chiffre source, typographie. Le script original est inchangé.</span>
+            </div>
+            <div className="wvc-two-col">
+              <label>CAMÉRA · ÉCHELLE DÉBUT <input type="number" min="1" max="1.2" step=".01" value={active.photoScaleStart} onChange={e=>updateShot({photoScaleStart:Number(e.target.value)})}/></label>
+              <label>CAMÉRA · ÉCHELLE FIN <input type="number" min="1" max="1.4" step=".01" value={active.photoScaleEnd} onChange={e=>updateShot({photoScaleEnd:Number(e.target.value)})}/></label>
+              <label>CAMÉRA · PAN X (px) <input type="number" min="-120" max="120" step="1" value={active.photoPanX} onChange={e=>updateShot({photoPanX:Number(e.target.value)})}/></label>
+              <label>CAMÉRA · PAN Y (px) <input type="number" min="-120" max="120" step="1" value={active.photoPanY} onChange={e=>updateShot({photoPanY:Number(e.target.value)})}/></label>
+              <label>CAMÉRA · DÉBUT (s) <input type="number" min="0" step=".1" value={active.photoCameraStart/30} onChange={e=>updateShot({photoCameraStart:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>CAMÉRA · FIN (s) <input type="number" min=".5" step=".1" value={active.photoCameraEnd/30} onChange={e=>updateShot({photoCameraEnd:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>RÉVÉLATION · DIRECTION
+                <select value={active.photoRevealDirection} onChange={e=>updateShot({photoRevealDirection:e.target.value as Shot["photoRevealDirection"]})}>
+                  <option value="left">De gauche à droite</option><option value="right">De droite à gauche</option><option value="up">Du bas vers le haut</option>
+                </select>
+              </label>
+              <label>RÉVÉLATION · DÉBUT (s) <input type="number" min="0" step=".1" value={active.photoRevealStart/30} onChange={e=>updateShot({photoRevealStart:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>RÉVÉLATION · FIN (s) <input type="number" min=".5" step=".1" value={active.photoRevealEnd/30} onChange={e=>updateShot({photoRevealEnd:Math.round(Number(e.target.value)*30)})}/></label>
+            </div>
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.photoHighlight} onChange={e=>updateShot({photoHighlight:e.target.checked})}/>Lumière de mise au point sur un lieu de la photographie</label>
+            {active.photoHighlight&&<div className="wvc-two-col">
+              <label>POSITION X (0–1) <input type="number" min="0" max="1" step=".01" value={active.photoSpotX} onChange={e=>updateShot({photoSpotX:Number(e.target.value)})}/></label>
+              <label>POSITION Y (0–1) <input type="number" min="0" max="1" step=".01" value={active.photoSpotY} onChange={e=>updateShot({photoSpotY:Number(e.target.value)})}/></label>
+              <label>RAYON (0,06–0,65) <input type="number" min=".06" max=".65" step=".01" value={active.photoRadius} onChange={e=>updateShot({photoRadius:Number(e.target.value)})}/></label>
+              <label>LUMIÈRE · DÉBUT (s) <input type="number" min="0" step=".1" value={active.photoHighlightStart/30} onChange={e=>updateShot({photoHighlightStart:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>LUMIÈRE · FIN (s) <input type="number" min=".5" step=".1" value={active.photoHighlightEnd/30} onChange={e=>updateShot({photoHighlightEnd:Math.round(Number(e.target.value)*30)})}/></label>
+            </div>}
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.geoShowMetric} onChange={e=>updateShot({geoShowMetric:e.target.checked})}/>Animer une donnée chiffrée vérifiée</label>
+            {active.geoShowMetric&&<div className="wvc-two-col">
+              <label>LIBELLÉ <input maxLength={55} value={active.geoMetricLabel} onChange={e=>updateShot({geoMetricLabel:e.target.value})}/></label>
+              <label>VALEUR <input inputMode="decimal" value={active.geoMetricValue} onChange={e=>updateShot({geoMetricValue:e.target.value})}/></label>
+              <label>UNITÉ <input maxLength={12} value={active.geoMetricUnit} onChange={e=>updateShot({geoMetricUnit:e.target.value})}/></label>
+              <label>CHIFFRE · DÉBUT (s) <input type="number" min="0" step=".1" value={active.photoMetricStart/30} onChange={e=>updateShot({photoMetricStart:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>CHIFFRE · FIN (s) <input type="number" min=".5" step=".1" value={active.photoMetricEnd/30} onChange={e=>updateShot({photoMetricEnd:Math.round(Number(e.target.value)*30)})}/></label>
+            </div>}
+            <p className="wvc-hint">Tous les mouvements sont définis image par image, sans horloge CSS séparée. Le Studio n'extrait pas automatiquement les personnes et ne prétend pas vérifier une photo, une statistique ou des droits. Préparer le détourage du même cliché dans un logiciel spécialisé ; comparer les prises et auditer la vidéo avant publication.</p>
           </div>}
           {active.template==="document_focus"&&<div className="wvc-focus-control" aria-label="Sélection de la zone du document à inspecter">
             <div className="wvc-focus-heading">
