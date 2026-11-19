@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD‑VISION MEDIA — GLOBE NASA 3D / SPRINT 7 (19 NOV. 2026)
+
+**PR #44 DRAFT, non fusionnée/non déployée.** Fichier canonique à lire immédiatement : [WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md). Ne jamais oublier la continuité des Sprints 1–6 (ingestion script/médias, plan isolé, film entier, documentaire, voix libre/FFmpeg, QA des transitions, motion 2,5D, geo/D3). BAOCOM indépendant et NON connecté, GDELT/blog global différés, scripts/recherche préparés ici avec ChatGPT.
+
+**Correction majeure à ne jamais annuler :** le premier globe 3D photo NASA apparaissait cyan uniforme parce que deux **anciens cercles SVG pleins se superposaient au matériel photo**. Premier rendu entièrement testé [#44567135931 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44567135931), mais les pixels ont révélé cette erreur visuelle ; artefact 14553635432, frame96 inspecté. En mode `geo.look="photo"`, ces cercles sont désormais des **contours uniquement** et le disque photo NASA est visible. Terre agrandie de r399 à r463, centre [540,690], œil lumineux blanc/cyan derrière le globe, fonds de texte protégés. Points sur l'hémisphère arrière masqués explicitement. Matériau officiel : NASA Blue Marble NG juin 2004, **pas données satellites actuelles**, SHA-256 épinglé `dc059529b8ed1cfcdd59747a7c3f259c93c1322bf88ca1ec8bab1dd71fcc57f5`.
+
+**État** : le code est committé, le dernier rendu amélioré et son contrôle de latitudes/frontières/éclairage **doivent encore être inspectés** avant déclaration de résultat final. Prochainement : rendu MP4 + captures Chromium, comparaison à l'image fournie, alignement NASA-D3, lumières/nuages/océans, puis photo multi-animation/data motion/voix/sound design/Content OS audiovisuel. Ne jamais se satisfaire d'un test technique sans regarder la vidéo.
+
+---
+
 ## MEDIA WORLD‑VISION — SPRINT 6 / PACK GEO MULTI‑ANIMATIONS (19 NOV. 2026)
 
 **Nouvelle référence de reprise :** [WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md). PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44) toujours **DRAFT**, non fusionnée/non déployée. **Ne pas connecter BAOCOM, imposer Vivienne, écrire/rechercher automatiquement le script ou commencer le blog/GDELT dans le Studio.** Les scripts/recherches restent dans cette conversation ChatGPT ; le code réalise motion, montages, média, son, effets, export.
