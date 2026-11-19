@@ -57,3 +57,27 @@ Si échec : mentionner run, SHA, défaut et correction ; relancer, ne jamais eff
 ## 6. Passation hors chat
 
 Dans un nouveau chat : lire `CONTINUITE_WORLD_VISION.md`, ce rapport, `WORLDVISION_GEO_DIRECTOR_SPRINT8_2026-11-19.md` et `WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md`. Reprendre **le HEAD exact et le dernier run Actions** ; vérifier la PR Sprint 9 et la PR #72 par ordre. Ne jamais fusionner en bloc dans `v2`. Ne pas sacrifier la continuité photo/data/audio ou les exigences d'un média international.
+
+## 7. Vérification CI + audit VISUEL réel du premier rendu, puis corrections
+
+**Première exécution Sprint 9** : [GitHub Actions #44619873848](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44619873848) a échoué honnêtement : regex `/^\\d{3}$/` sur-échappée et alias Vite manquants 50m/10m. Les corrections ont été apportées ; **ne jamais effacer ces échecs du bilan**.
+
+**Première CI verte du compositeur** : [#44620191019](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44620191019), deux jobs SUCCESS sur `47f90923`, 18 tests Node/18, rendu H.264 synthétique `country-focus-gabon-synthetic.mp4` **165 images, 1080×1920, 5,5 s**, vrai Player Chromium et aucune erreur JS. Tests pays/50m/10m, marker, photo, compteur et textes réussis. **Problème du workflow** : artefact GitHub 14576658977 omettait les fichiers CountryFocus malgré les tests réussis.
+
+**Correction d'archivage** : commit `bce6aeb`, run [#44621299587](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44621299587) **SUCCESS**, artefact #14575734283 de 25 Mo téléchargé et inspecté : vrais screenshot Player `player-country-frame-0/60/115/155.png` en **360×640** et stills master `frame-01-at-0 / frame-02-at-82 / frame-03-at-164` en **1080×1920**. Les pixels inspectés, et non la compilation seule, ont révélé :
+
+1. **Défaut A : ouverture insuffisante**. Le frame 0 était pratiquement un rectangle vide sombre ; titre et contour étaient invisibles à cet instant. Impropre pour un reportage accrocheur.
+2. **Défaut B : cartographie couverte**. La carte allait jusqu'à ~y1094, tandis que la carte photo commençait à y900 et recouvrait le bas du pays. Un pays dont on ne voit pas l'ensemble n'est pas une bonne mise en scène de géographie.
+3. **Qualités vérifiées :** vers frames 60–155, le contour Gabon 10m apparaît net et grand, la photo abstraite, le chiffre et les textes coexistent avec mouvements. Aucune image d'actualité réelle ni personne n'est représentée par le fixture.
+4. **Dette de performance constatée :** contexte D3 50m = **709 064 caractères de tracé** sur ce cas, trop important pour viser un Player rapide sur iPhone. Atlas 10m dans un chunk lazy de **~3,66 Mo / ~986 Ko gzip**. Le simple build vert ne démontre pas la rapidité mobile.
+
+**Corrections apportées après revue (pas une validation finale présumée)** :
+- `mapBox` maintenant dans y356..838, bord du cadre y339..871, photo démarre y900 : le polygone est **censé rester visible intégralement** et la carte ne doit plus être couverte.
+- Silhouette et contexte faiblement visibles dès frame 0 ; entrée des titres plus rapide, puis reveal détaillé et animations autonomes.
+- Nouveau test Chromium aux frames 0/115 : le cadre pays doit être au moins 5 px au-dessus du média et le contour déjà visible.
+- Rayon de voisinage géographique déduit de la **superficie réelle du polygone source** via `geoArea`, borné ~0,36–1,10 rad au lieu d'un cercle systématique de 1,25 rad; pas de réduction ni invention de la précision du pays 10m.
+- Tests supplémentaires : rayon/contenu Gabon et deux géographies de contrôle, **Fidji (242)** et **Russie (643)**. Il s'agit d'épreuves de contrat, pas de validation artistique de toutes leurs projections.
+
+**Dernière action CI de contrôle à lire :** [#44622728753](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44622728753), sur commit `ffa0c44a` au moment du lancement. **Consulter son statut effectif, télécharger les nouveaux 0/60/115/155 et MP4, comparer au premier rendu et consigner les écarts avant d'annoncer que les deux défauts sont corrigés visuellement.** Le travail reste en PR draft.
+
+**Prochain verrou** : vraie photo d'actualité dont les droits sont prouvés, essai sur un petit territoire/archipel, benchmark du Player Safari et Android, et évaluation esthétique comparative avec les deux vidéos de référence, pas une seule image artistique.
