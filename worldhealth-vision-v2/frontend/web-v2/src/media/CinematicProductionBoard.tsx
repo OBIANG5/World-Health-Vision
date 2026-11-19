@@ -9,7 +9,7 @@ type Asset = {name:string;size:number;kind:MediaType;url:string};
 type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
-  mediaName:string;
+  mediaName:string;focusX:number;focusY:number;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
   documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
@@ -30,7 +30,7 @@ const typesByExt=(name:string):MediaType|null=>{
 };
 const initialShot=():Shot=>({
   id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,
-  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:""
+  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",focusX:0.5,focusY:0.5
 });
 const mkSlug=(value:string)=>("wv-"+value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60))||"wv-projet";
 const path="https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-cinematic-director-gates-2026-11-19/worldhealth-vision-v2/docs/media/WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md";
@@ -46,13 +46,16 @@ export default function CinematicProductionBoard() {
   const [outroFile,setOutroFile]=useState("");
   const [accent,setAccent]=useState("#8bbecf");
   const [feedback,setFeedback]=useState("");
+  const [croppedPreview,setCroppedPreview]=useState(true);
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const canExport=script.trim().length>0&&shots.every(shot=>{
     const requires=["documentary","evidence","clean_video","focus_reveal"].includes(shot.template);
-    return !requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
+    const hasMedia=!requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
+    const validFocus=shot.template!=="focus_reveal"||Boolean(shot.title.trim()&&shot.title.length<=90&&shot.durationFrames>=90);
+    return hasMedia&&validFocus;
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
@@ -102,6 +105,7 @@ export default function CinematicProductionBoard() {
       shots:shots.map(s=>({
         id:s.id,durationFrames:s.durationFrames,template:s.template,
         title:s.title,subtitle:s.subtitle,eyebrow:s.eyebrow,
+        focus:{x:s.focusX,y:s.focusY},
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
         ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName}}:{})
@@ -166,7 +170,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
           <div className="wvc-two-col">
-            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
+            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
@@ -175,6 +179,17 @@ export default function CinematicProductionBoard() {
           </select></label>
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
+          <div className="wvc-focus-control" aria-label="Cadrage précis de l’image source">
+            <div className="wvc-focus-heading"><strong>CADRAGE ET POINT D’INTÉRÊT</strong><span>Sauvegardé dans le projet Remotion</span></div>
+            <label>HORIZONTAL · {Math.round(active.focusX*100)} %
+              <input type="range" min="0" max="100" step="1" value={Math.round(active.focusX*100)}
+                onChange={e=>updateShot({focusX:Number(e.target.value)/100})}/>
+            </label>
+            <label>VERTICAL · {Math.round(active.focusY*100)} %
+              <input type="range" min="0" max="100" step="1" value={Math.round(active.focusY*100)}
+                onChange={e=>updateShot({focusY:Number(e.target.value)/100})}/>
+            </label>
+          </div>
           <div className="wvc-two-col">
             <label>MOUVEMENT<select value={active.motion} onChange={e=>updateShot({motion:e.target.value as Motion})}>{motions.map(m=><option key={m} value={m}>{MOTION_LABELS[m]}</option>)}</select></label>
             <label>RACCORD<select value={active.transitionAfter} onChange={e=>updateShot({transitionAfter:e.target.value as Transition,transitionFrames:e.target.value==="cut"?0:Math.max(active.transitionFrames,8)})}>{(Object.keys(TRANSITIONS) as Transition[]).map(t=><option key={t} value={t}>{TRANSITIONS[t]}</option>)}</select></label>
@@ -190,12 +205,15 @@ export default function CinematicProductionBoard() {
       </div>
       <aside className="wvc-preview">
         <div className="wvc-preview-title">APERÇU DU MÉDIA SOURCE</div>
+        <button type="button" className="wvc-crop-toggle" onClick={()=>setCroppedPreview(x=>!x)}>
+          {croppedPreview?"Afficher la source complète":"Visualiser le cadrage 9:16"}
+        </button>
         <div className="wvc-device">
-          {activeAsset?.kind==="image"&&<img src={activeAsset.url} alt={"Média source : "+activeAsset.name}/>}
-          {activeAsset?.kind==="video"&&<video src={activeAsset.url} controls playsInline preload="metadata"/>}
+          {activeAsset?.kind==="image"&&<img src={activeAsset.url} alt={"Média source : "+activeAsset.name} style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
+          {activeAsset?.kind==="video"&&<video src={activeAsset.url} controls playsInline preload="metadata" style={{objectFit:croppedPreview?"cover":"contain",objectPosition:Math.round(active.focusX*100)+"% "+Math.round(active.focusY*100)+"%"}}/>}
           {!activeAsset&&<div className="wvc-no-preview"><span>WORLD—VISION</span><strong>TON MÉDIA<br/>ICI</strong><small>L'image d'actualité doit être fournie ou choisie explicitement.</small></div>}
         </div>
-        <p>Prévisualisation du <strong>fichier original uniquement</strong>. Les animations, transitions et effets seront produits par Remotion : cet écran ne les simule pas trompeusement.</p>
+        <p>{croppedPreview?"Cadrage source 9:16 uniquement (sans les effets, titres ni animation).":"Fichier source complet sans recadrage."} Les animations finales sont calculées par Remotion, pas simulées ici.</p>
         <label className="wvc-accent">ACCENT GRAPHIQUE <input type="color" value={accent} onChange={e=>setAccent(e.target.value)}/></label>
       </aside>
     </div>
