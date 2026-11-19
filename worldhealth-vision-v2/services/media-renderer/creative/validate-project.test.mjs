@@ -5,6 +5,7 @@ import path from "node:path";
 import os from "node:os";
 import {fileURLToPath} from "node:url";
 import {FORMAT,inspectProject,durationFrames,resolveLocalFile} from "./validate-project.mjs";
+import {geoCameraPose} from "../src/geo-motion-camera.mjs";
 
 const here=path.dirname(fileURLToPath(import.meta.url));
 const sample=JSON.parse(fs.readFileSync(path.join(here,"project.example.json"),"utf8"));
@@ -185,4 +186,56 @@ test("geo story never guesses a numeric market value or coordinates from a photo
   assert.equal("metric" in shot.geo,false);
   assert.equal("route" in shot.geo,false);
   assert.equal("target" in shot.geo,false);
+});
+
+test("director camera is a deterministic great-circle move, with exact target hold",()=>{
+  const geo={center:{lon:179,lat:6},spinDegrees:16,
+    camera:{to:{lon:-179,lat:6},startFrame:30,endFrame:90,zoom:1.12}};
+  const initial=geoCameraPose(geo,0,150);
+  const midpoint=geoCameraPose(geo,60,150);
+  const final=geoCameraPose(geo,90,150);
+  const held=geoCameraPose(geo,145,150);
+  assert.equal(initial.centerLon,179);
+  assert.equal(initial.zoom,1);
+  assert.ok(Math.abs(midpoint.centerLon)>175,"Antimeridian should not rotate 358°");
+  assert.ok(midpoint.zoom>1.05&&midpoint.zoom<1.08);
+  assert.ok(Math.abs(final.centerLon+179)<1e-7);
+  assert.ok(Math.abs(final.centerLat-6)<1e-7);
+  assert.equal(final.spinDegrees,0);
+  assert.equal(final.zoom,1.12);
+  assert.deepEqual({lon:held.centerLon,lat:held.centerLat},
+    {lon:final.centerLon,lat:final.centerLat});
+  assert.deepEqual(geoCameraPose(geo,60,150),midpoint);
+  const legacy=geoCameraPose({center:{lon:0,lat:10},spinDegrees:12},75,150);
+  assert.equal(legacy.spinDegrees,6);
+  assert.equal(legacy.zoom,1);
+});
+
+test("geo camera and sourced country spotlight fail closed on unknown geometry or bad beats",()=>{
+  const p=clone(sample),shot=p.shots[0];
+  shot.template="geo_story";shot.durationFrames=150;
+  shot.title="TEST CARTOGRAPHIQUE UNIQUEMENT";
+  shot.geo={center:{lon:10,lat:12},look:"photo",spinDegrees:12,
+    camera:{to:{lon:11.6,lat:-.7},startFrame:15,endFrame:102,zoom:1.10},
+    spotlight:{countryId:"266"}};
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  shot.geo.spotlight.countryId="999";
+  assert.ok(reasons(p).includes("shots[0].geo.spotlight"));
+  shot.geo.spotlight.countryId="266";
+  shot.geo.camera.to={lon:190,lat:0};
+  assert.ok(reasons(p).includes("shots[0].geo.camera"));
+  shot.geo.camera.to={lon:11.6,lat:-.7};
+  shot.geo.camera.endFrame=145;
+  assert.ok(reasons(p).includes("shots[0].geo.camera"),"Destination must remain visible");
+  shot.geo.camera.endFrame=102;
+  shot.geo.camera.startFrame=90;
+  assert.ok(reasons(p).includes("shots[0].geo.camera"),"No abrupt 12-frame camera sweep");
+  shot.geo.camera.startFrame=15;
+  shot.geo.camera.zoom=1.7;
+  assert.ok(reasons(p).includes("shots[0].geo.camera"),"Zoom beyond readable iris");
+  shot.geo.camera.zoom=1.10;
+  assert.equal(inspectProject(p).ok,true);
+  delete shot.geo.camera;
+  delete shot.geo.spotlight;
+  assert.equal(inspectProject(p).ok,true,"Old GEO projects remain valid");
 });
