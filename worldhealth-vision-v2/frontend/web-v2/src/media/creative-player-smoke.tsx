@@ -60,7 +60,7 @@ function Smoke(){
       focus:{x:.5,y:.46},
       ...(isDocument?{documentRegion:{x:.30,y:.40,width:.45,height:.20}}:{}),
       ...(isGeo?{geo:{
-        center:{lon:10,lat:12},spinDegrees:12,
+        center:{lon:10,lat:12},spinDegrees:12,look:"photo",
         target:{lon:12,lat:-2,label:"POINT FICTIF"},
         route:{from:{lon:-9,lat:40},to:{lon:12,lat:-2}},
         metric:{label:"VALEUR DE TEST",value:42,unit:" TEST",precision:0}
