@@ -9,7 +9,7 @@ type Asset = {name:string;size:number;kind:MediaType;url:string};
 type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
-  mediaName:string;focusX:number;focusY:number;
+  mediaName:string;foregroundName:string;focusX:number;focusY:number;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
   documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
@@ -30,7 +30,7 @@ const typesByExt=(name:string):MediaType|null=>{
 };
 const initialShot=():Shot=>({
   id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,
-  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",focusX:0.5,focusY:0.5
+  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",foregroundName:"",focusX:0.5,focusY:0.5
 });
 const mkSlug=(value:string)=>("wv-"+value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60))||"wv-projet";
 const path="https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvision-cinematic-director-gates-2026-11-19/worldhealth-vision-v2/docs/media/WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md";
@@ -108,7 +108,8 @@ export default function CinematicProductionBoard() {
         focus:{x:s.focusX,y:s.focusY},
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
-        ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName}}:{})
+        ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName}}:{}),
+        ...(s.foregroundName?{foreground:{file:s.foregroundName}}:{})
       })),
       ...(voiceFile?{voice:{file:voiceFile,label:"Voix choisie ou enregistrée",volume:1}}:{}),
       ...(musicFile?{music:{file:musicFile,label:"Bande-son fournie",volume:0.10}}:{}),
@@ -177,6 +178,13 @@ export default function CinematicProductionBoard() {
             <option value="">Pas de média source</option>
             {files.filter(f=>f.kind!=="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select></label>
+          <label className="wvc-wide">DÉTOURAGE POUR EFFET DE PROFONDEUR
+            <select value={active.foregroundName} onChange={e=>updateShot({foregroundName:e.target.value})}>
+              <option value="">Aucun — composition classique</option>
+              {files.filter(f=>f.kind==="image"&&/\.(png|webp)$/i.test(f.name)).map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
+            </select>
+            <span className="wvc-hint">Utiliser uniquement un premier plan transparent préparé avec un outil spécialisé ; le studio effectue le compositing et le mouvement 2,5D sans inventer une image.</span>
+          </label>
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
           <div className="wvc-focus-control" aria-label="Cadrage précis de l’image source">
