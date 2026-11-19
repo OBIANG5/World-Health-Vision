@@ -115,6 +115,20 @@ Le modèle vierge doit **échouer** : c'est voulu. Le rapport `review.md` rend e
 
 **Limites transparentes :** SHA-256 déclarés, preuves et droits doivent être confrontés aux fichiers/contrats réels par un outil complémentaire. Le validateur ne peut pas, sans ces octets ni revue humaine, certifier que les images sont belles, historiquement correctes ou publiables. Les tests unitaires utilisent des **données entièrement synthétiques** qui ne sont pas de vraies approbations. Aucun MP4 ni micro-animation artistique n'est créé par cet incrément.
 
+## 4 bis. Interface de processus réellement codée et testée (même incrément)
+
+Le Media Studio V2 **existant** possède maintenant le panneau `CinematicProductionBoard.tsx` et sa feuille `CinematicProductionBoard.css`, importés par `ProductionJourney.tsx`.
+
+- **Onze étapes explorables** avec leur métier, le livrable exigé, l'erreur qualité à éviter et un brief de travail copiable vers ChatGPT.
+- **Aucun backend ChatGPT forcé** ; copier le brief est une action explicite utilisateur via le presse-papiers du navigateur.
+- **Aucune approbation fictive affichée** ; le panneau distingue la méthode documentée du vrai statut de production et n'envoie aucune demande de rendu ou de publication.
+- **Responsive** téléphone/ordinateur ; la grille de porte devient une navigation horizontale sur écran étroit, avec lecture du détail et geste de copie.
+- Les 14 étapes existantes de RADAR/VERIFY/... ne sont ni supprimées ni refondues. Ce nouveau panneau correspond à la *fabrication artistique* d'une vidéo, pas à un nouveau logiciel.
+- **CI technique confirmée** : workflow GitHub Actions `World-Vision cinematic director — structured quality gates`, [run #44516394112](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44516394112), deux jobs **success** : Python + tests de contrat ; compilation complète Vite/TypeScript du frontend V2. **Pas encore de capture iPhone ni de validation esthétique de l'interface** ; elle n'est pas encore déployée sur le site public.
+- En condition d'intégration réelle, les métadonnées de validation doivent provenir de manifestes authentifiés (ou d'un backend de revue) : le panneau se limite aujourd'hui aux consignes de production, sans tromper sur ce point.
+
+**État suivant inchangé** : le premier véritable progrès de qualité visuelle nécessitera une planche fixe, un micro-clip Remotion et une revue humaine, pas seulement une nouvelle interface.
+
 ## 5. Chantier suivant — VOUS NE DEVEZ PAS LE SAUTER
 
 1. **Constituer une planche de références et un répertoire d'intentions de mouvement**, en distinguant les images inspirantes sous droit d'auteur des assets réutilisables.
