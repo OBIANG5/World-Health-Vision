@@ -47,6 +47,15 @@ const DEFAULT_BG="#0b1721";
 const DEFAULT_ACCENT="#8bbecf";
 const DEFAULT_FONT="'Helvetica Neue',Arial,sans-serif";
 const reveal=(f:number,delay:number,duration:number)=>interpolate(f,[delay,delay+duration],[0,1],clamp);
+/**
+ * Rendering and Player use the SAME React components. The renderer stages local
+ * assets under public/, while the browser Studio passes user-selected blob:
+ * object URLs; staticFile() would incorrectly rewrite those URLs.
+ * Remote URLs are only ever supplied explicitly (not auto-discovered).
+ */
+export const resolveCreativeSource=(src:string)=>
+  /^(blob:|data:|https?:\/\/)/i.test(src)?src:staticFile(src);
+
 
 function MediaPlate({shot}:{shot:CreativeShot}) {
   const f=useCurrentFrame();
@@ -63,7 +72,7 @@ function MediaPlate({shot}:{shot:CreativeShot}) {
     transformOrigin:Math.round(focus.x*100)+"% "+Math.round(focus.y*100)+"%",
   };
   if(!shot.media)return null;
-  const url=staticFile(shot.media.src);
+  const url=resolveCreativeSource(shot.media.src);
   return <AbsoluteFill style={{overflow:"hidden"}}>
     {shot.media.kind==="image"
       ? <Img src={url} style={style}/>
@@ -174,7 +183,7 @@ function ForegroundPlate({shot}:{shot:CreativeShot}) {
   const progress=Math.max(0,Math.min(1,frame/duration));
   if(!shot.foreground)return null;
   return <AbsoluteFill style={{pointerEvents:"none",overflow:"hidden"}}>
-    <Img src={staticFile(shot.foreground.src)} style={{
+    <Img src={resolveCreativeSource(shot.foreground.src)} style={{
       width:"100%",height:"100%",objectFit:"cover",
       objectPosition:Math.round((shot.focus?.x??.5)*100)+"% "+Math.round((shot.focus?.y??.5)*100)+"%",
       transform:"translate3d("+Math.round(-16*progress)+"px,"+Math.round(-13*progress)+"px,0) scale("+(1.05+progress*.07)+")",
@@ -299,10 +308,10 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
   return <AbsoluteFill style={{background:base.background}}>
     <TransitionSeries>{children}</TransitionSeries>
     {props.narration&&<Sequence durationInFrames={timelineFrames} name="Voix choisie / fournie">
-      <Audio src={staticFile(props.narration.src)} volume={props.narration.volume??1}/>
+      <Audio src={resolveCreativeSource(props.narration.src)} volume={props.narration.volume??1}/>
     </Sequence>}
     {props.soundtrack&&<Sequence durationInFrames={timelineFrames} name="Ambiance avant signature">
-      <Audio src={staticFile(props.soundtrack.src)}
+      <Audio src={resolveCreativeSource(props.soundtrack.src)}
         volume={(frame)=> {
           const base=props.soundtrack?.volume??.1;
           const fadeIn=Math.max(0,Math.min(1,frame/12));
@@ -312,7 +321,7 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
       />
     </Sequence>}
     {props.brandOutro&&<Sequence from={timelineFrames} durationInFrames={props.brandOutro.durationFrames} name="G0 original ou signature fournie">
-      <AbsoluteFill><OffthreadVideo src={staticFile(props.brandOutro.src)} muted style={{width:"100%",height:"100%",objectFit:"cover"}}/></AbsoluteFill>
+      <AbsoluteFill><OffthreadVideo src={resolveCreativeSource(props.brandOutro.src)} muted style={{width:"100%",height:"100%",objectFit:"cover"}}/></AbsoluteFill>
     </Sequence>}
   </AbsoluteFill>;
 };
