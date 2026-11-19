@@ -69,7 +69,17 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
   const landPath=useMemo(()=>path(countryCollection)??"",[path]);
   const bordersPath=useMemo(()=>path(borderMesh)??"",[path]);
   const gridPath=useMemo(()=>path(graticule)??"",[path]);
-  const targetXY=geo.target?proj([geo.target.lon,geo.target.lat]):null;
+  // Projections can return numeric coordinates for a point that is actually
+  // BEHIND the Earth. A naked geographic marker must obey hemisphere occlusion.
+  const rad=Math.PI/180;
+  const centerLon=geo.center.lon-spin;
+  const targetFront=Boolean(geo.target&&(
+    Math.sin(geo.center.lat*rad)*Math.sin(geo.target.lat*rad)+
+    Math.cos(geo.center.lat*rad)*Math.cos(geo.target.lat*rad)*
+    Math.cos((geo.target.lon-centerLon)*rad)
+  )>.025);
+  const targetXY=geo.target&&targetFront
+    ?proj([geo.target.lon,geo.target.lat]):null;
   const route=geo.route;
   const arc=useMemo(()=>{
     if(!route)return "";
