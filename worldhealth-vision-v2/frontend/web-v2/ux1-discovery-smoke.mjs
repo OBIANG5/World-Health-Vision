@@ -49,6 +49,19 @@ try {
     await page.locator(".whv-nav .whv-global-search-trigger").click();
     await page.locator(".world-discovery[role='dialog']").waitFor({ state: "visible" });
     assert(new URL(page.url()).searchParams.get("wv") === "search");
+
+    // Both desktop and phone must be able to switch languages without losing a search.
+    if (device.name === "iphone") {
+      assert(await page.locator(".whv-nav .whv-nav-btn--lang").isVisible(),
+        "Mobile language selection was hidden by the old responsive navbar");
+    }
+    await page.locator(".world-discovery-language").click();
+    assert((await page.locator(".world-discovery-header h2").textContent())
+      .includes("What would you like to explore?"));
+    await page.locator(".world-discovery-language").click();
+    assert((await page.locator(".world-discovery-header h2").textContent())
+      .includes("Que souhaitez-vous explorer ?"));
+
     await page.locator(".world-discovery-input input").fill("GAB");
     await page.locator(".world-discovery-results .world-discovery-result").filter({ hasText: "GAB" }).first().click();
     await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 17000 });
