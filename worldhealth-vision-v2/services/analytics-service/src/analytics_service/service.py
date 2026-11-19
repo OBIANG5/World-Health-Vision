@@ -7,6 +7,7 @@ from statistics import median
 import httpx
 
 from analytics_service.clients.catalog_client import CatalogClient
+from analytics_service.metrics import timed_economic_phase
 from analytics_service.national_comparisons import (
     CountryNationalComparisons,
     compare_national_release,
@@ -369,41 +370,51 @@ class AnalyticsService:
         include_missing: bool,
         series_limit: int | None,
     ) -> CountryEconomicSnapshotResponse:
-        normalized_country_iso3 = self._normalize_required_code(country_iso3)
-        country = await self._call_catalog(lambda: self._catalog_client.get_country(normalized_country_iso3))
+        # Fixed phase labels only: no ISO3, username or source in monitoring.
+        # Preserve the complete source-alignment/provenance algorithms.
+        with timed_economic_phase("total"):
+            normalized_country_iso3 = self._normalize_required_code(country_iso3)
+            with timed_economic_phase("country"):
+                country = await self._call_catalog(
+                    lambda: self._catalog_client.get_country(normalized_country_iso3)
+                )
 
-        resolution_cache = ResolutionCache()
-        indicator_details = await asyncio.gather(*[
-            self._call_catalog(lambda code=profile.indicator_code: self._catalog_client.get_indicator(code))
-            for profile in ECONOMIC_LENS_PROFILES
-        ])
+            resolution_cache = ResolutionCache()
+            with timed_economic_phase("indicators"):
+                indicator_details = await asyncio.gather(*[
+                    self._call_catalog(
+                        lambda code=profile.indicator_code: self._catalog_client.get_indicator(code)
+                    )
+                    for profile in ECONOMIC_LENS_PROFILES
+                ])
 
-        overview_items = await asyncio.gather(*[
-            self._build_indicator_overview(
+            with timed_economic_phase("series_provenance"):
+                overview_items = await asyncio.gather(*[
+                    self._build_indicator_overview(
+                        country=country,
+                        indicator=indicator,
+                        source_code=self._normalize_optional_code(source_code),
+                        dataset_code=self._normalize_optional_code(dataset_code),
+                        period_granularity=self._normalize_optional_code(period_granularity),
+                        include_missing=include_missing,
+                        series_limit=series_limit or self._settings.default_country_overview_series_limit,
+                        resolution_cache=resolution_cache,
+                    )
+                    for indicator in indicator_details
+                ])
+
+            lenses = [
+                self._build_country_economic_lens(profile, overview)
+                for profile, overview in zip(ECONOMIC_LENS_PROFILES, overview_items, strict=True)
+            ]
+
+            return CountryEconomicSnapshotResponse(
                 country=country,
-                indicator=indicator,
-                source_code=self._normalize_optional_code(source_code),
-                dataset_code=self._normalize_optional_code(dataset_code),
-                period_granularity=self._normalize_optional_code(period_granularity),
-                include_missing=include_missing,
-                series_limit=series_limit or self._settings.default_country_overview_series_limit,
-                resolution_cache=resolution_cache,
+                generatedAtUtc=datetime.now(UTC),
+                lensCount=len(lenses),
+                highlights=self._build_snapshot_highlights(lenses),
+                lenses=lenses,
             )
-            for indicator in indicator_details
-        ])
-
-        lenses = [
-            self._build_country_economic_lens(profile, overview)
-            for profile, overview in zip(ECONOMIC_LENS_PROFILES, overview_items, strict=True)
-        ]
-
-        return CountryEconomicSnapshotResponse(
-            country=country,
-            generatedAtUtc=datetime.now(UTC),
-            lensCount=len(lenses),
-            highlights=self._build_snapshot_highlights(lenses),
-            lenses=lenses,
-        )
 
     async def get_country_relative_cost_snapshot(
         self,
