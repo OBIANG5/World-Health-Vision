@@ -97,16 +97,16 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
           <feGaussianBlur stdDeviation="13"/>
         </filter>
         <clipPath id={"wv-country-mapclip-"+shot.id}>
-          <rect x="88" y="382" width="904" height="489" rx="23"/>
+          <rect x="88" y="423" width="904" height="448" rx="23"/>
         </clipPath>
       </defs>
-      <rect data-wv-country-map-boundary="true" x="90" y="381" width="900" height="490" rx="24"
+      <rect data-wv-country-map-boundary="true" x="90" y="422" width="900" height="449" rx="24"
         fill="#071b2b" fillOpacity=".47"
         stroke="#2ccde9" strokeOpacity=".32" strokeWidth="2"/>
       <g clipPath={"url(#wv-country-mapclip-"+shot.id+")"}>
         <g data-wv-country-camera="true"
           data-wv-country-scale={cameraScale.toFixed(4)}
-          transform={"translate(540 620) scale("+cameraScale+") translate(-540 -620) translate(0 "+cameraY+")"}>
+          transform={"translate(540 641) scale("+cameraScale+") translate(-540 -641) translate(0 "+cameraY+")"}>
           {/* Natural Earth 50m near neighbors, explicitly context-only. */}
           <path data-wv-country-context="50m" d={map.contextPath} fill="none"
             stroke="#6eb6c9" strokeOpacity={.17+.28*intro}
