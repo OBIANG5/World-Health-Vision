@@ -7,6 +7,8 @@ import {fitTextOnNLines} from "@remotion/layout-utils";
 import {GeoStory} from "./GeoStory";
 import {CountryFocus} from "./CountryFocus";
 import {PhotoMultilayer} from "./PhotoMultilayer";
+import {DataMotion} from "./DataMotion";
+import type {DataDirection} from "./data-motion-engine.mjs";
 import type {PhotoMotion} from "./photo-motion-tracks.mjs";
 import type {GeoDirection} from "./GeoStory";
 
@@ -24,7 +26,7 @@ export type CreativeMedia = {
 export type CreativeShot = {
   id:string;
   durationFrames:number;
-  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_story";
+  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_story"|"data_story";
   title?:string;
   subtitle?:string;
   eyebrow?:string;
@@ -42,6 +44,8 @@ export type CreativeShot = {
   geo?:GeoDirection;
   /** Independently scheduled photo/cutout/mask/focus/metric tracks on one supplied still. */
   photo?:PhotoMotion;
+  /** Sourced numeric time-series, ranking or heatmap; no data inference in renderer. */
+  data?:DataDirection;
 };
 export type CreativeEditProps = {
   version:1;
@@ -353,6 +357,7 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
   if(shot.template==="geo_story")return <GeoStory shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="country_focus")return <CountryFocus shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="photo_story")return <PhotoMultilayer shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
+  if(shot.template==="data_story")return <DataMotion shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   const opacity=reveal(frame,enterOverlapFrames,17);
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
   const subtitleFade=reveal(frame,enterOverlapFrames+15,18);
