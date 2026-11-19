@@ -1,0 +1,3 @@
+WORLD-VISION OFFLINE TEST PREVIEW. NOT PRODUCTION.
+Source SHA: 677c8baa59d18c3ea2e8b31ee88b8c16582b023d
+Catalog != ingested statistics.
