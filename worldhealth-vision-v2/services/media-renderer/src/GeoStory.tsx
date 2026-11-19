@@ -6,6 +6,7 @@ import {feature,mesh} from "topojson-client";
 import atlasData from "world-atlas/countries-110m.json";
 import type {CreativeShot,CreativeEditProps} from "./CreativeEdit";
 import {resolveCreativeSource} from "./CreativeEdit";
+import {GeoPhotorealEarth} from "./GeoPhotorealEarth";
 
 /**
  * WORLD-VISION GEO STORY / international motion grammar, stage A.
@@ -30,6 +31,8 @@ export type GeoMetric={label:string;value:number;unit?:string;precision?:number}
 export type GeoDirection={
   center:GeoPoint;
   spinDegrees?:number;
+  /** Photo = NASA 2004 composite in real 3D. Vector is explicit alternate. */
+  look?:"photo"|"vector";
   target?:GeoPoint & {label?:string};
   route?:GeoRoute;
   metric?:GeoMetric;
@@ -52,6 +55,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
   const local=Math.max(0,frame-enterOverlapFrames);
   const progress=Math.min(1,local/Math.max(1,shot.durationFrames-enterOverlapFrames));
   const geo=shot.geo!;
+  const isPhoto=geo.look!=="vector";
   const enter=easing(norm(local,0,31));
   const mapOpacity=.6+.4*enter;
   const spin=(geo.spinDegrees??16)*progress;
@@ -116,6 +120,13 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
       transform:"rotate("+((local*.14)%360)+"deg) scale(1.25)"
     }}/>
 
+    {/* The photographic sphere is rendered before the D3 world borders.
+        D3 remains the canonical geometry for political/route overlays. */}
+    {isPhoto&&<GeoPhotorealEarth
+      centerLongitude={geo.center.lon}
+      centerLatitude={geo.center.lat}
+      spinDegrees={spin}
+    />}
     {/* Level 2: animated luminous World-Vision eye. Animated independently. */}
     <svg viewBox="0 0 1080 1920" width="100%" height="100%"
       style={{position:"absolute",inset:0,overflow:"visible"}}>
@@ -171,18 +182,23 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
         transform={"translate(540 747) scale("+atmosphere+") translate(-540 -747)"}/>
       <circle cx="540" cy="747" r="405" fill="#11caff" opacity=".7"
         filter="url(#wv-geo-neon-glow)"/>
-      <circle cx="540" cy="747" r="399" fill="url(#wv-geo-water)"
-        stroke="#a2f8ff" strokeWidth="4" opacity={mapOpacity}/>
+      <circle cx="540" cy="747" r="399"
+        fill={isPhoto?"transparent":"url(#wv-geo-water)"}
+        stroke="#a2f8ff" strokeWidth={isPhoto?2.2:4}
+        opacity={mapOpacity}/>
       <g clipPath="url(#wv-geo-sphere-clip)">
         <path d={gridPath} fill="none" stroke="#79c9f1" strokeWidth=".7"
           opacity=".17"/>
-        <path data-wv-geo-land="true" d={landPath} fill="url(#wv-geo-land)"
-          fillRule="evenodd" stroke="#defbbb" strokeWidth="1.35"
-          opacity={mapOpacity}/>
+        <path data-wv-geo-land="true" d={landPath}
+          fill={isPhoto?"none":"url(#wv-geo-land)"}
+          fillRule="evenodd"
+          stroke={isPhoto?"#d8ffff":"#defbbb"}
+          strokeWidth={isPhoto?0.7:1.35}
+          opacity={isPhoto?.32:mapOpacity}/>
         <path data-wv-geo-borders="true" d={bordersPath}
-          fill="none" stroke="#eafaff" strokeWidth="1.65"
-          opacity={.81*enter}/>
-        <circle cx="540" cy="747" r="399" fill="url(#wv-geo-sphere-gloss)"/>
+          fill="none" stroke="#f5fdff" strokeWidth={isPhoto?2.2:1.65}
+          opacity={(isPhoto?.91:.81)*enter}/>
+        {!isPhoto&&<circle cx="540" cy="747" r="399" fill="url(#wv-geo-sphere-gloss)"/>}
         {/* Level 4: great-circle route with SVG path-length reveal. */}
         {arc&&<path data-wv-geo-route="true" d={arc} fill="none"
           stroke="#4cecff" strokeWidth="5" strokeLinecap="round"
