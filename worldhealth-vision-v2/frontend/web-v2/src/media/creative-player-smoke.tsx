@@ -61,6 +61,8 @@ function Smoke(){
       ...(isDocument?{documentRegion:{x:.30,y:.40,width:.45,height:.20}}:{}),
       ...(isGeo?{geo:{
         center:{lon:10,lat:12},spinDegrees:12,look:"photo",
+        camera:{to:{lon:11.6,lat:-.7},startFrame:15,endFrame:102,zoom:1.10},
+        spotlight:{countryId:"266"},
         target:{lon:12,lat:-2,label:"POINT FICTIF"},
         route:{from:{lon:-9,lat:40},to:{lon:12,lat:-2}},
         metric:{label:"VALEUR DE TEST",value:42,unit:" TEST",precision:0}
