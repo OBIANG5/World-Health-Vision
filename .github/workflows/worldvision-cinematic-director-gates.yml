@@ -12,6 +12,9 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/CountryFocus.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/PhotoMultilayer.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.d.mts'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CountrySelector10m.tsx'
@@ -36,6 +39,9 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/GeoPhotorealEarth.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/CountryFocus.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/PhotoMultilayer.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/country-focus-geometry.d.mts'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CountrySelector10m.tsx'
@@ -136,6 +142,14 @@ jobs:
             --shot country-gabon \
             --output output/creative/country-focus-gabon-synthetic.mp4
           node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/country-focus-gabon-synthetic.mp4');const r=JSON.parse(fs.readFileSync('output/creative/country-focus-gabon-synthetic.mp4.report.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==165||r.media.length!==2||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('GEO-2 country focus genuine synthetic asset render successful');"
+      - name: Render authentic-pixel PHOTO multilayer from one explicitly synthetic image and alpha mask
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-photo-multilayer-project.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --shot photo-six-tracks \
+            --output output/creative/photo-multilayer-six-tracks.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/photo-multilayer-six-tracks.mp4');const r=JSON.parse(fs.readFileSync('output/creative/photo-multilayer-six-tracks.mp4.report.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==165||r.media.length!==2||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size<2)process.exit(1);console.log('PHOTO six-track true synthetic-media render verified');"
       - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Analyze supplied audio without modifying or regenerating it
@@ -151,6 +165,7 @@ jobs:
         run: |
           mkdir -p ../../frontend/web-v2/public/smoke
           cp /tmp/worldvision-fixture-assets/synthetic-landscape.png ../../frontend/web-v2/public/smoke/synthetic-landscape.png
+          cp /tmp/worldvision-fixture-assets/synthetic-foreground.png ../../frontend/web-v2/public/smoke/synthetic-foreground.png
           cp /tmp/worldvision-fixture-assets/synthetic-document.png ../../frontend/web-v2/public/smoke/synthetic-document.png
           cp /tmp/worldvision-fixture-assets/synthetic-tone.wav ../../frontend/web-v2/public/smoke/synthetic-tone.wav
           cp /tmp/worldvision-fixture-assets/synthetic-clip.mp4 ../../frontend/web-v2/public/smoke/synthetic-clip.mp4
@@ -180,6 +195,11 @@ jobs:
           test -s output/creative/player-country-frame-115.png
           test -s output/creative/player-country-frame-155.png
           test -s output/creative/player-country-smoke.report.json
+          test -s output/creative/player-photo-frame-0.png
+          test -s output/creative/player-photo-frame-40.png
+          test -s output/creative/player-photo-frame-85.png
+          test -s output/creative/player-photo-frame-145.png
+          test -s output/creative/player-photo-smoke.report.json
           test -s output/creative/player-document-frame-102.png
           test -s output/creative/player-document-frame-68.png
           test -s output/creative/player-document-smoke.report.json
@@ -236,6 +256,14 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-115.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-country-frame-155.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-country-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/photo-multilayer-six-tracks.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/photo-multilayer-six-tracks.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/photo-multilayer-six-tracks.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-photo-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-photo-frame-40.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-photo-frame-85.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-photo-frame-145.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-photo-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
