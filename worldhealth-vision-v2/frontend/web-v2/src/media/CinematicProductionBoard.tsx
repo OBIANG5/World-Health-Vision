@@ -383,6 +383,22 @@ export default function CinematicProductionBoard() {
   };
   const updateShot=(change:Partial<Shot>)=>setShots(old=>old.map(s=>s.id===selectedId?{...s,...change}:s));
   const updatePhotoTrack=(key:keyof PhotoSettings,change:Record<string,unknown>)=>updateShot({photoSettings:{...active.photoSettings,[key]:{...active.photoSettings[key],...change}}});
+  const updateDataDraft=(change:Partial<DataDraft>)=>updateShot({
+    dataDraft:{...active.dataDraft,...change}
+  });
+  const updateDataSource=(change:Partial<DataDraft["source"]>)=>updateDataDraft({
+    source:{...active.dataDraft.source,...change}
+  });
+  const updateDataPoint=(index:number,change:Partial<DataDraft["points"][number]>)=>
+    updateDataDraft({points:active.dataDraft.points.map((p,i)=>i===index?{...p,...change}:p)});
+  const updateMatrix=(change:Partial<DataDraft["matrix"]>)=>
+    updateDataDraft({matrix:{...active.dataDraft.matrix,...change}});
+  const updateMatrixColumn=(index:number,label:string)=>updateMatrix({
+    columns:active.dataDraft.matrix.columns.map((x,i)=>i===index?label:x)
+  });
+  const updateMatrixRow=(index:number,change:Partial<DataDraft["matrix"]["rows"][number]>)=>
+    updateMatrix({rows:active.dataDraft.matrix.rows.map((row,i)=>i===index?{...row,...change}:row)});
+
   const addShot=()=>{
     const existing=new Set(shots.map(x=>x.id));
     let n=shots.length+1;let id="plan-"+String(n).padStart(2,"0");
@@ -515,6 +531,108 @@ export default function CinematicProductionBoard() {
           </label>
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
+          {active.template==="data_story"&&<div className="wvc-focus-control" aria-label="DATA Motion — séries et provenance">
+            <div className="wvc-focus-heading">
+              <strong>DATA MOTION — CHIFFRES, COURBES, CLASSEMENTS ET HEATMAPS</strong>
+              <span>Chaque valeur est saisie par l'éditeur. La position des dates, le zéro des barres et la légende de chaleur sont contrôlés, sans interpolation des valeurs manquantes.</span>
+            </div>
+            <div className="wvc-two-col">
+              <label>TYPE DE REPRÉSENTATION<select value={active.dataDraft.kind}
+                onChange={e=>updateDataDraft({kind:e.target.value as DataMotion["kind"]})}>
+                <option value="trend">Courbe avec points d'observation</option>
+                <option value="comparison">Barres comparatives avec zéro</option>
+                <option value="ranking">Classement décroissant</option>
+                <option value="heatmap">Heatmap 2D avec échelle explicite</option>
+              </select></label>
+              <label>UNITÉ DE MESURE<input maxLength={12} placeholder="%, hab., USD…" value={active.dataDraft.unit}
+                onChange={e=>updateDataDraft({unit:e.target.value})}/></label>
+              <label>PRÉCISION<select value={active.dataDraft.precision}
+                onChange={e=>updateDataDraft({precision:Number(e.target.value)})}>
+                <option value="0">Entier</option><option value="1">1 décimale</option>
+                <option value="2">2 décimales</option>
+              </select></label>
+              {active.dataDraft.kind==="trend"&&<label>INTERPRÉTATION DE L'AXE X
+                <select value={active.dataDraft.xMode} onChange={e=>updateDataDraft({xMode:e.target.value as "category"|"date"})}>
+                  <option value="category">Catégories équidistantes, pas des intervalles temporels</option>
+                  <option value="date">Dates ISO exactes (espacement temporel réel)</option>
+                </select></label>}
+            </div>
+            {active.dataDraft.kind!=="heatmap"&&<div>
+              <div className="wvc-focus-heading"><strong>OBSERVATIONS FOURNIES</strong>
+                <span>2–6 barres, 3–6 rangs ou 3–10 points de courbe. Le classement doit déjà être trié.</span></div>
+              {active.dataDraft.points.map((point,i)=><div className="wvc-two-col" key={i}>
+                <label>{active.dataDraft.xMode==="date"&&active.dataDraft.kind==="trend"?"DATE YYYY-MM-DD":"LIBELLÉ"} #{i+1}
+                  <input maxLength={16} value={point.label}
+                    placeholder={active.dataDraft.xMode==="date"&&active.dataDraft.kind==="trend"?"2026-11-19":"Catégorie"}
+                    onChange={e=>updateDataPoint(i,{label:e.target.value})}/></label>
+                <label>VALEUR #{i+1}<input type="number" step="any" value={point.valueText} placeholder="Saisir une mesure"
+                  onChange={e=>updateDataPoint(i,{valueText:e.target.value})}/></label>
+              </div>)}
+              <div className="wvc-control-row">
+                <button type="button" disabled={active.dataDraft.points.length>=(active.dataDraft.kind==="trend"?10:6)}
+                  onClick={()=>updateDataDraft({points:[...active.dataDraft.points,{label:"",valueText:""}]})}>+ Observation</button>
+                <button type="button" disabled={active.dataDraft.points.length<=(active.dataDraft.kind==="trend"||active.dataDraft.kind==="ranking"?3:2)}
+                  onClick={()=>updateDataDraft({points:active.dataDraft.points.slice(0,-1)})}>− Dernière observation</button>
+              </div>
+            </div>}
+            {active.dataDraft.kind==="heatmap"&&<div>
+              <div className="wvc-focus-heading"><strong>MATRICE DE CHALEUR</strong>
+                <span>2 à 6 colonnes, 2 à 5 rangées, chaque valeur comprise dans la légende éditoriale.</span></div>
+              <div className="wvc-two-col">
+                <label>MINIMUM DE L'ÉCHELLE<input type="number" step="any" value={active.dataDraft.matrix.min}
+                  onChange={e=>updateMatrix({min:e.target.value})}/></label>
+                <label>MAXIMUM DE L'ÉCHELLE<input type="number" step="any" value={active.dataDraft.matrix.max}
+                  onChange={e=>updateMatrix({max:e.target.value})}/></label>
+              </div>
+              <div className="wvc-two-col">{active.dataDraft.matrix.columns.map((col,i)=><label key={i}>COLONNE {i+1}
+                <input maxLength={14} value={col} onChange={e=>updateMatrixColumn(i,e.target.value)}/>
+              </label>)}</div>
+              {active.dataDraft.matrix.rows.map((row,ri)=><div key={ri}>
+                <label>RANGÉE {ri+1}<input maxLength={14} value={row.label}
+                  onChange={e=>updateMatrixRow(ri,{label:e.target.value})}/></label>
+                <div className="wvc-two-col">
+                  {row.values.map((val,ci)=><label key={ci}>CELLULE {ri+1}/{ci+1}
+                    <input type="number" step="any" value={val}
+                      onChange={e=>updateMatrixRow(ri,{values:row.values.map((x,k)=>k===ci?e.target.value:x)})}/>
+                  </label>)}
+                </div>
+              </div>)}
+              <div className="wvc-control-row">
+                <button type="button" disabled={active.dataDraft.matrix.columns.length>=6}
+                  onClick={()=>updateMatrix({columns:[...active.dataDraft.matrix.columns,""],
+                    rows:active.dataDraft.matrix.rows.map(row=>({...row,values:[...row.values,""]}))})}>+ Colonne</button>
+                <button type="button" disabled={active.dataDraft.matrix.columns.length<=2}
+                  onClick={()=>updateMatrix({columns:active.dataDraft.matrix.columns.slice(0,-1),
+                    rows:active.dataDraft.matrix.rows.map(row=>({...row,values:row.values.slice(0,-1)}))})}>− Colonne</button>
+                <button type="button" disabled={active.dataDraft.matrix.rows.length>=5}
+                  onClick={()=>updateMatrix({rows:[...active.dataDraft.matrix.rows,{label:"",
+                    values:active.dataDraft.matrix.columns.map(()=>"")}]})}>+ Rangée</button>
+                <button type="button" disabled={active.dataDraft.matrix.rows.length<=2}
+                  onClick={()=>updateMatrix({rows:active.dataDraft.matrix.rows.slice(0,-1)})}>− Rangée</button>
+              </div>
+            </div>}
+            <div className="wvc-focus-heading"><strong>REGISTRE DE PROVENANCE — OBLIGATOIRE</strong>
+              <span>La présence d'un nom de source ne constitue jamais une vérification journalistique. Les sources doivent être consultées et approuvées avant diffusion.</span></div>
+            <div className="wvc-two-col">
+              <label>INSTITUTION / ÉDITEUR<input maxLength={55} value={active.dataDraft.source.publisher}
+                onChange={e=>updateDataSource({publisher:e.target.value})} placeholder="Organisme source"/></label>
+              <label>SÉRIE / RAPPORT<input maxLength={70} value={active.dataDraft.source.dataset}
+                onChange={e=>updateDataSource({dataset:e.target.value})} placeholder="Nom de la série"/></label>
+              <label>DATE DE RÉFÉRENCE / PUBLICATION<input type="date" value={active.dataDraft.source.asOf}
+                onChange={e=>updateDataSource({asOf:e.target.value})}/></label>
+              <label>URL HTTPS DE LA SOURCE<input type="url" value={active.dataDraft.source.url}
+                placeholder="https://..." onChange={e=>updateDataSource({url:e.target.value})}/></label>
+            </div>
+            <label className="wvc-wide">MÉTHODOLOGIE / DÉFINITION DE LA MESURE
+              <textarea maxLength={130} rows={2} value={active.dataDraft.source.methodology}
+                onChange={e=>updateDataSource({methodology:e.target.value})} placeholder="Population recensée, taux, devise, période, calcul utilisé…"/>
+            </label>
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.dataDraft.synthetic}
+              onChange={e=>updateDataDraft({synthetic:e.target.checked})}/>
+              Jeu de valeurs explicitement FICTIF (uniquement tests/démonstrations)
+            </label>
+            <p className="wvc-hint">Les dates irrégulières sont espacées selon le calendrier exact; une série catégorielle ne prétend pas être une série chronologique. Aucune valeur omise n'est inventée et le moteur ne certifie ni la statistique ni la licence d'une capture.</p>
+          </div>}
           {active.template==="photo_story"&&<div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
             <div className="wvc-focus-heading">
               <strong>PHOTO MOTION — UNE IMAGE, PLUSIEURS ANIMATIONS SIMULTANÉES</strong>
