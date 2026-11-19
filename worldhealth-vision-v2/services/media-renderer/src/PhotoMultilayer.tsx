@@ -119,7 +119,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       opacity:pose.headingProgress*fading,
       transform:"translateY("+Math.round((1-pose.headingProgress)*28)+"px)"
     }}>
-      {shot.eyebrow&&<div dir="auto" style={{fontSize:25,fontWeight:760,
+      {shot.eyebrow&&<div dir="auto" style={{fontSize:30,fontWeight:760,
         color:"#8ee8f8",letterSpacing:".095em",lineHeight:1.22,
         textTransform:"uppercase",marginBottom:19}}>{shot.eyebrow}</div>}
       <div data-wv-title={shot.id} dir="auto" style={{
@@ -145,7 +145,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
         <span style={{fontSize:28,marginLeft:10}}>{number.unit}</span>
       </div>
       <div data-wv-photo-metric-source="true" style={{
-        fontSize:18,lineHeight:1.17,marginTop:9,color:"#abd3df"
+        fontSize:32,lineHeight:1.2,marginTop:12,color:"#c1e2eb"
       }}>{number.sourceLabel}</div>
     </div>}
     {shot.subtitle&&<div data-wv-photo-caption="true" dir="auto"
