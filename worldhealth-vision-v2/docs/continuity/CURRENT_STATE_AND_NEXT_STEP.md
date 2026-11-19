@@ -1,5 +1,15 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## WORLD‑VISION MEDIA — REPRISE AVANCÉE SPRINT 6 GEO (19 NOV. 2026)
+
+**Lire d'abord** : [WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md](../media/WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md) puis PR [#44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). **Aucune fusion ni mise à jour publique.** À partir des deux vidéos utilisateurs finance (~94,57s) et géopolitique (~59,49s) + image de globe-œil turquoise, un nouveau **moteur de composition multi-layer** est codé : Terre cartographique réelle Natural Earth 110m animée par D3 Geo, frontières, rotation, œil cyan, route géodésique, point, image/video importée, nombre, titres dans **la même scène**. Pas de donnée géographique ou chiffre inventé dans un reportage : entrées éditoriales manuelles, validées par `validate-project`, même props pour Player + MP4.
+
+**Preuve render** : MP4 H.264 1080×1920, 150 frames, 4 captures Chromium analysées (artefact GitHub `14544782973`, run #44555931776 renderer succès, frontend échec de résolution de l'atlas). La résolution TS/Vite corrigée puis V2 build vert sur run #44556536807. L'aspect reste vectoriel, en deçà du globe-photographie référence ; une itération de disposition a regroupé photo/compteur sur la carte et avancé le titre vers les premières secondes. **Vérifier le run complet du HEAD** avant certification de cette dernière version.
+
+**NEXT :** réussir CI, revoir 4 captures géométriques et vidéo ; puis vrai globe 3D texturé NASA avec rendu professionnel, suivi pays/regions, data motion inspiré Bourse Express, templates photo multi-animation, vraie production à partir d'un script + rushes authentiques, performance mobile/iOS, qualité de la voix et mix, cache de plans et Content OS exclusivement audiovisuel. Recherche/script restent ChatGPT ; aucune voix Vivienne imposée ; BAOCOM indépendant, GDELT/blog différés.
+
+---
+
 ## REPRISE RÉELLEMENT VÉRIFIÉE : MEDIA SPRINT 5 (19 NOV. 2026)
 
 **PR #44 en brouillon ; pas de merge ni Vercel modifié.** [Rapport canonique Sprint 5 §9](../media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md). [Actions #44546198363 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363) ; **12 tests Node, 0 échec**, build frontend, H.264 et Chromium Player du document en 4 temps. Artefact `14540488994` inspecté : la page est visible au frame0, rectangle au frame40, zoom au frame68, légende au frame102. **Espace page/cartouche ≈ 9,86 px et marge en bas ≈ 15,87 px sur 360×640**. L'échec précédent de 13,5 px de recouvrement a été résolu.
