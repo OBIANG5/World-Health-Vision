@@ -49,7 +49,7 @@ JAVA_SAMPLE = """
     public List<X> followingMethod(String x) { return null; }
 
     private String seriesOrderBy(boolean sortDescending) {
-      return \"\"\" order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc \"\"\";
+      return \"\"\" order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc, lo.period_granularity asc, lo.period_end desc, lo.run_key asc \"\"\";
     }
 """
 

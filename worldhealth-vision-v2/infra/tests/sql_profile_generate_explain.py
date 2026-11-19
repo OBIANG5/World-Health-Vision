@@ -28,7 +28,8 @@ VALUES = {
     "limit": "100",
 }
 REPLACEMENT = re.compile(r"(?<!:):([A-Za-z][A-Za-z0-9_]*)")
-ORDER_BY_DESC = "order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc"
+ORDER_BY_DESC = "order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc,
+                             lo.period_granularity asc, lo.period_end desc, lo.run_key asc"
 
 
 def _method_fragment(java: str, method: str) -> str:
