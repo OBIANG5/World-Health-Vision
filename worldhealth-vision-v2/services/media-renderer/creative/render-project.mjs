@@ -99,6 +99,7 @@ async function run(argv){
         id:shot.id,durationFrames:shot.durationFrames,template:shot.template,
         title:shot.title,subtitle:shot.subtitle,eyebrow:shot.eyebrow,
         footnote:shot.footnote,media,
+        foreground:shot.foreground?{src:await stageFile(shot.foreground.file),credit:shot.foreground.credit}:null,
         accent:shot.accent,motion:shot.motion,
         transitionAfter:shot.transitionAfter,transitionFrames:shot.transitionFrames,
         focus:shot.focus,
