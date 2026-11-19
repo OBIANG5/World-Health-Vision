@@ -150,3 +150,31 @@ Le second contrôle [#44545458500](https://github.com/OBIANG5/World-Health-Visio
 
 **Ne jamais qualifier ce deuxième contrôle d'échec mineur à ignorer** : il prouve que la prévisualisation et le test de lecture sont utiles à notre direction artistique.
 
+
+
+## 9. Clôture de l'incrément technique après nouvelle revue visuelle — VALIDÉ, non publié
+
+**Run de référence vérifié : [GitHub Actions #44546198363](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44546198363)**, lancé sur le code incluant la hauteur documentaire de **830 px**. **Les deux jobs sont SUCCESS**. Le frontend V2 compile, **12 tests Node passent, 0 échec**, le vrai MP4 `document-focus-only.mp4` de **140 frames** est produit, et les **quatre modes** de test Player Chromium (plan, film entier, vidéo MP4 importée, document) terminent sans erreur JavaScript.
+
+**Artefact de preuve** : `worldvision-creative-compositor-demo`, GitHub artifact **`14540488994`** ; fichiers clés :
+- `document-focus-only.mp4` et `.report.json` : source synthétique d'essai, image originale enregistrée par SHA et export H.264 ;
+- `player-document-frame-0.png` : page visible **dès la première image** (plus de grand écran noir) ;
+- `player-document-frame-40.png` : région source effectivement sélectionnée, fond extérieur légèrement atténué ;
+- `player-document-frame-68.png` : la zone sélectionnée grossit avec une caméra en approche ;
+- `player-document-frame-102.png` : contexte lisible dans un cartouche **séparé de la page**, sans masquer le passage ;
+- `player-document-smoke.report.json` : absence d'erreur navigateur et SHA différents pour les quatre captures.
+
+**Preuve géométrique réelle dans Chrome sur scène 360×640** :
+- `cardBottom = 396,67 px`
+- `captionTop = 406,53 px`
+- **marge entre les deux ≈ 9,86 px**
+- `captionBottom = 498,33 px` et seuil inférieur de test `514,2 px` ; **marge basse ≈ 15,87 px**
+
+Les quatre captures de cet artefact ont été **ouvertes et inspectées réellement**. Les deux défauts qui avaient provoqué les itérations — ouverture noire et chevauchement document/titre — ont disparu sur cet exemple. Le contenu source est un **dessin géométrique abstrait**, jamais une fausse capture d'actualité. La qualité finale du graphisme est encore trop élémentaire pour comparer World‑Vision aux meilleurs studios de motion design ; le gain principal est la capacité contrôlée à examiner un **vrai passage fourni**, sans en inventer le texte.
+
+**État du produit :** PR #44 toujours DRAFT et non fusionnée, aucun changement Vercel public, aucun raccord BAOCOM, aucune voix imposée, aucune diffusion réelle. Ce n'est PAS une validation d'exploitation commerciale/éditoriale ou d'affichage iOS/TikTok réel.
+
+### Étape prioritaire après ce jalon
+
+Passer **de l'illustration synthétique à un film réel autorisé** : script d'actualité rédigé ici, 1–2 photographies/vidéos autorisées et éventuellement une source documentaire primaire, puis une narration librement choisie. Comparer les premières secondes avec plusieurs références audiovisuelles professionnelles et produire au moins deux variantes créatives complètes pour décider visuellement. Ensuite réutiliser les mêmes plans dans la timeline, affiner la direction artistique, le sound design et le mastering, puis ajouter versioning/cache par séquence et le Content OS audiovisuel. La phase documentaire ne doit pas devenir un prétexte pour multiplier 50 templates médiocres.
+
