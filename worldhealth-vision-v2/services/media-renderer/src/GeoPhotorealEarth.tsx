@@ -23,6 +23,21 @@ const atmosphereVertex=[
 " gl_Position=projectionMatrix*mv;",
 "}"
 ].join("\n");
+/**
+ * Reproducible CINEMATIC color treatment of original NASA surface pixels:
+ * mild shadow lift + perceptual chroma. No procedural land/ocean generation,
+ * added political contours or artificial weather imagery.
+ *
+ * StandardMaterial's official <map_fragment> is used; underlying JPEG stays
+ * byte-identical and verifiably NASA sourced. This is illustrative grading.
+ */
+const earthColorGrade=[
+"vec3 earthColor=clamp(diffuseColor.rgb,0.0,1.0);",
+"earthColor=pow(earthColor,vec3(0.85));",
+"float earthLuma=dot(earthColor,vec3(0.2126,0.7152,0.0722));",
+"earthColor=clamp(mix(vec3(earthLuma),earthColor,1.42),0.0,1.0);",
+"diffuseColor.rgb=earthColor;"
+].join("\\n");
 const atmosphereFragment=[
 "varying vec3 vNorm;",
 "varying vec3 vEye;",
@@ -53,7 +68,15 @@ function EarthMesh({longitude,latitude}:{longitude:number;latitude:number}){
         <sphereGeometry args={[radius,128,96]}/>
         <meshStandardMaterial map={map} color="#ffffff"
           roughness={.82} metalness={0}
-          emissive="#0b3d88" emissiveIntensity={.32} toneMapped={false}/>
+          emissive="#0b3d88" emissiveIntensity={.28} toneMapped={false}
+          onBeforeCompile={shader=>{
+            const marker="#include <map_fragment>";
+            if(!shader.fragmentShader.includes(marker))
+              throw new Error("Cannot grade NASA texture; Three.js map shader changed.");
+            shader.fragmentShader=shader.fragmentShader.replace(
+              marker,marker+"\\n"+earthColorGrade
+            );
+          }}/>
       </mesh>
     </group>
     {/* Atmosphere is camera-fixed optical scattering, not claimed clouds. */}
