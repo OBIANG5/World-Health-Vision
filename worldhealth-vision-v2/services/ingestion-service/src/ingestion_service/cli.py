@@ -146,6 +146,52 @@ def review_ibge_census2022_rights():
     }, indent=2, ensure_ascii=False))
 
 
+@pilot_app.command("capture-wdi-bra-2022-private")
+def capture_wdi_brazil_population_2022():
+    """Capture ONE official WDI BRA 2022 estimated population to private Bronze."""
+    from ingestion_service.runtime import build_wdi_population_2022_research_pilot
+    result = build_wdi_population_2022_research_pilot().capture()
+    typer.echo(json.dumps({
+        "source": "WORLD_BANK", "dataset": "WDI_POP_TOTAL_BRA_2022",
+        "responseSha256": result.notes["httpBodySha256"],
+        "rightsStatus": "REVIEW_REQUIRED",
+        "publicationStatus": "BRONZE_ONLY_UNREVIEWED",
+        "numericValuesDisplayed": False,
+    }, indent=2))
+
+
+@pilot_app.command("review-bra-population-2022-private")
+def review_brazil_population_2022_private(
+    ibge_composite_sha: str = typer.Option(
+        ..., "--ibge-composite-sha",
+        help="Explicit verified private IBGE 3-resource receipt SHA256",
+    ),
+    wdi_response_sha: str = typer.Option(
+        ..., "--wdi-response-sha",
+        help="Explicit verified WDI 2022 HTTP body SHA256",
+    ),
+):
+    """Make an immutable methodological review; no public values or delta."""
+    from ingestion_service.private_population_review import PrivatePopulationReviewStore
+    receipt = PrivatePopulationReviewStore(get_settings().bronze_root).evaluate(
+        ibge_composite_sha256=ibge_composite_sha,
+        wdi_response_sha256=wdi_response_sha,
+    )
+    typer.echo(json.dumps(receipt, indent=2))
+
+
+@pilot_app.command("verify-bra-population-2022-review")
+def verify_brazil_population_2022_private(
+    review_sha: str = typer.Option(
+        ..., "--review-sha", help="Verified private methodological review SHA256",
+    ),
+):
+    """Verify raw evidence links and audit history, but do not approve export."""
+    from ingestion_service.private_population_review import PrivatePopulationReviewStore
+    result = PrivatePopulationReviewStore(get_settings().bronze_root).verify(review_sha)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @worldbank_app.command("fetch-countries")
 def fetch_countries():
     manifest = build_worldbank_service().fetch_country_registry()
