@@ -45,7 +45,7 @@ const sampleData:Record<string,NonNullable<CreativeShot["data"]>>={
   comparison:{kind:"comparison",unit:"TEST",precision:0,synthetic:true,source:fakeSource,
     points:[{label:"ZONE A",value:45},{label:"ZONE B",value:-25},{label:"ZONE C",value:60}]},
   ranking:{kind:"ranking",unit:"TEST",precision:0,synthetic:true,source:fakeSource,
-    points:[{label:"A",value:72},{label:"B",value:51},{label:"C",value:24}]},
+    points:[{label:"A",value:72},{label:"B",value:72},{label:"C",value:24}]},
   heatmap:{kind:"heatmap",unit:"TEST",precision:0,synthetic:true,source:fakeSource,
     matrix:{min:0,max:100,columns:["S1","S2","S3"],rows:[
       {label:"R1",values:[25,40,85]},{label:"R2",values:[10,67,72]},{label:"R3",values:[50,5,93]}]}}
