@@ -27,6 +27,9 @@ def compare(original: dict, capped: dict, repeat: dict) -> dict:
     modes = {"baseline": original, "bounded_8": capped, "baseline_repeat": repeat}
     expected_tiers = [1, 2, 4, 8, 12]
     for name, data in modes.items():
+        intended_cap = 8 if name == "bounded_8" else 0
+        if data.get("batch_cap_configured_in_process") != intended_cap:
+            raise AssertionError(f"Wrong real Analytics container cap for {name}")
         tiers = data["results"]
         if [x.get("concurrency") for x in tiers] != expected_tiers:
             raise AssertionError(f"Wrong tier order in {name}")
