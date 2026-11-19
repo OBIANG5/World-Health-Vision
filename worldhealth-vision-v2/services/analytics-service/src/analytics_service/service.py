@@ -451,6 +451,25 @@ class AnalyticsService:
                             limit_per_indicator=100,
                         )
                     )
+                if self._settings.timeseries_series_batch_enabled:
+                    # Same 96..600 historical preview limit, but independently
+                    # for each indicator. Client chunks by 10k potential rows.
+                    batch_tasks["series"] = self._call_timeseries(
+                        lambda: self._timeseries_client.list_series_batch(
+                            country_iso3=country.iso3,
+                            indicator_codes=[item.code for item in indicator_details],
+                            source_code=self._normalize_optional_code(source_code),
+                            dataset_code=self._normalize_optional_code(dataset_code),
+                            period_granularity=self._normalize_optional_code(period_granularity),
+                            include_missing=include_missing,
+                            sort_direction="DESC",
+                            limit_per_indicator=min(
+                                600, max(96, (
+                                    series_limit or self._settings.default_country_overview_series_limit
+                                ) * 10)
+                            ),
+                        )
+                    )
                 fetched_batches = dict(zip(
                     batch_tasks,
                     await asyncio.gather(*batch_tasks.values()),
@@ -458,6 +477,7 @@ class AnalyticsService:
                 )) if batch_tasks else {}
                 latest_by_indicator = fetched_batches.get("latest")
                 availability_by_indicator = fetched_batches.get("availability")
+                series_by_indicator = fetched_batches.get("series")
 
                 overview_items = await asyncio.gather(*[
                     self._build_indicator_overview(
@@ -476,6 +496,10 @@ class AnalyticsService:
                         preloaded_availability=(
                             availability_by_indicator[indicator.code]
                             if availability_by_indicator is not None else None
+                        ),
+                        preloaded_series=(
+                            series_by_indicator[indicator.code]
+                            if series_by_indicator is not None else None
                         ),
                     )
                     for indicator in indicator_details
@@ -980,6 +1004,7 @@ class AnalyticsService:
         resolution_cache: ResolutionCache,
         preloaded_latest_by_source: list[LatestSourceObservation] | None = None,
         preloaded_availability: list[SeriesAvailability] | None = None,
+        preloaded_series: list[TimeseriesObservation] | None = None,
     ) -> IndicatorOverviewResponse:
         latest_by_source, availability, series = await asyncio.gather(
             self._call_timeseries(
@@ -1018,7 +1043,8 @@ class AnalyticsService:
                     # Avoid the previous 4x-preview limit that often omitted it.
                     limit=min(600, max(96, series_limit * 10)),
                 )
-            ),
+            ) if preloaded_series is None
+            else asyncio.sleep(0, result=preloaded_series),
         )
 
         primary_availability = self._select_primary_availability(availability)
