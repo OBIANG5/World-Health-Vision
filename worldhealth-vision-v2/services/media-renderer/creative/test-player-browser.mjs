@@ -212,6 +212,17 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           throw Error("Country caption is covered, late or clipped on mobile: "+JSON.stringify(scene));
         console.log("[player-smoke] country-focus mobile safe-area captions",scene);
       }
+      if(mode==="photo"&&frame===0){
+        const opening=await page.evaluate(()=>{
+          const h=document.querySelector('[data-wv-photo-heading]');
+          const title=h?.querySelector('[data-wv-title]');
+          return {opacity:h?Number(getComputedStyle(h).opacity):0,
+            headline:title?.textContent??""};
+        });
+        if(opening.opacity<.75||!opening.headline.includes("UNE IMAGE"))
+          throw Error("PHOTO video must communicate a headline from frame zero: "+JSON.stringify(opening));
+        console.log("[player-smoke] initial photo news hook visible from first frame",opening);
+      }
       if(mode==="photo"&&(frame===40||frame===85||frame===145)){
         const state=await page.evaluate(()=>{
           const photo=document.querySelector('[data-wv-photo-multilayer]');
@@ -234,6 +245,9 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             title:Boolean(label?.textContent),
             metricBottom:number?.getBoundingClientRect().bottom??null,
             sourceHeight:source?.getBoundingClientRect().height??null,
+            sourceFontMobile:source&&viewport
+              ?parseFloat(getComputedStyle(source).fontSize)*viewport.getBoundingClientRect().width/1080
+              :null,
             captionTop:caption?.getBoundingClientRect().top??null,
             captionBottom:caption?.getBoundingClientRect().bottom??null,
             maxCaptionBottom:viewport?viewport.getBoundingClientRect().top+viewport.getBoundingClientRect().height*.79:null
@@ -248,6 +262,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           throw Error("Photo mask and cutout do not move independently on their scheduled beats: "+JSON.stringify(state));
         if(frame===85&&(!state.focusCenter||!state.metric||
           !state.source.includes("synthétique")||!state.sourceHeight||state.sourceHeight<10||
+          !state.sourceFontMobile||state.sourceFontMobile<10||
           !state.metricBottom||!state.captionTop||state.metricBottom>=state.captionTop-5))
           throw Error("Photo human-directed focus/metric overlays missing or overlapping: "+JSON.stringify(state));
         if(frame===145&&(state.reveal!==1||
