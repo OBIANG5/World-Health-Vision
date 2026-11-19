@@ -242,8 +242,8 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
     config:{mass:1,damping:27,stiffness:105}
   });
   const lensOpacity=emphasis*(1-inspection*.35);
-  const titleIn=ease(beat(56,77))*holdOut;
-  const subtitleIn=ease(beat(73,97))*holdOut;
+  const titleIn=ease(beat(74,91))*holdOut;
+  const subtitleIn=ease(beat(88,113))*holdOut;
   const accent=shot.accent??globalStyle.accent;
   const titleSize=shot.title?fitTextOnNLines({
     text:shot.title,maxBoxWidth:818,maxLines:2,
@@ -272,15 +272,15 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
         lineHeight:1.25,color:"#c4e5f2",overflowWrap:"anywhere"
       }}>{shot.eyebrow}</div>}
     </div>
-    <div style={{
-      position:"absolute",top:353,left:92,width:896,height:1138,
+    <div data-wv-document-card={shot.id} style={{
+      position:"absolute",top:353,left:92,width:896,height:1000,
       border:"1px solid rgba(155,194,208,.28)",
       borderRadius:26,
       overflow:"hidden",
       background:"#ecf0f1",
       boxShadow:"0 28px 75px rgba(0,0,0,.44)",
-      opacity:enter,
-      transform:"translateY("+Math.round((1-documentEntrance)*67)+"px)"
+      opacity:.93+.07*enter,
+      transform:"translateY("+Math.round((1-documentEntrance)*28)+"px)"
     }}>
       <div style={{
         position:"absolute",inset:0,
@@ -308,12 +308,12 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
         }}/>
       </div>
     </div>
-    <div style={{
-      position:"absolute",left:89,right:162,bottom:372,
-      padding:"28px 0 0",
-      borderTop:"1px solid rgba(140,207,229,.45)",
-      background:"linear-gradient(90deg,rgba(4,16,27,.93),rgba(4,16,27,.73))",
-      boxShadow:"0 0 45px 24px rgba(4,16,27,.42)",
+    <div data-wv-document-caption={shot.id} style={{
+      position:"absolute",left:89,right:162,bottom:470,
+      padding:"30px 0 18px",
+      borderTop:"2px solid rgba(140,207,229,.6)",
+      background:"linear-gradient(180deg,rgba(4,16,27,.97),rgba(4,16,27,.96))",
+      boxShadow:"0 0 28px 11px rgba(4,16,27,.65)",
       opacity:titleIn
     }}>
       {shot.title&&<div data-wv-title={shot.id} dir="auto" style={{
