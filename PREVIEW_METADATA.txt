@@ -1,0 +1,4 @@
+WORLD-VISION V2 OFFLINE PREVIEW — NOT PRODUCTION.
+Source SHA: b650baed9003a012f8e8cef79751b5e8636cb99f
+Real catalog snapshots are not live ingest/verified observations.
+No source is ranked as truth by default.
