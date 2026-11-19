@@ -1,5 +1,13 @@
 # World-Vision — registre canonique des décisions humaines
 
+## DÉCISION MÉDIA — MISE EN SCÈNE DES DOCUMENTS SANS RECONSTITUTION (19 NOV. 2026)
+
+World‑Vision peut maintenant **animer une preuve visuelle originale** : source documentaire image fournie, région x/y/largeur/hauteur expressément choisie, caméra et cartouche issus du composant unique Remotion. **Ne jamais réécrire, inventer, « compléter » ou donner un statut « vérifié » à des extraits ou chiffres** au moyen d'un effet graphique. Le script, la vérification et le contexte sont faits ici dans ChatGPT avec l'utilisateur, puis présentés dans le Studio selon son accord. L'import d'un document est **un matériau graphique**, pas une validation journalistique. Voix TTS ou humaine interchangeable, pas de Vivienne imposée, BAOCOM indépendant, GDELT/blog différés. La composition et ses limites sont documentées dans [Sprint 5](../media/WORLDVISION_DOCUMENT_FOCUS_SPRINT5_2026-11-19.md).
+
+Toute progression doit être jugée sur des **rendus réels** (MP4 et captures sur mobile) et le respect des droits et des faits, pas sur le seul CI. Le contrôle de chevauchement document/légende a détecté un défaut de 13,5 pixels et **bloqué le workflow** : conserver cette pratique pour tout autre modèle de motion design.
+
+---
+
 ## CORRECTION PRIORITAIRE DU PROPRIÉTAIRE — 19 NOV. 2026 (PREND PRÉSÉANCE)
 
 La première décision du 19/11 imposant 11 « portes » éditoriales et Vivienne au pipeline a été explicitement **refusée et remplacée**. Les modules Python rigides ont été supprimés. **On fournit des scripts et des médias à World-Vision ; ChatGPT travaille la recherche/le récit dans cette conversation. Le logiciel excelle dans la direction artistique, les animations, le montage, la voix libre et la finition en réutilisant les meilleurs moteurs existants.** BAOCOM n'est ni connecté ni poussé, blog/GDELT attendent. Consulter le [nouveau cahier des charges](../media/WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md) (lien relatif depuis la racine) et la [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44).
