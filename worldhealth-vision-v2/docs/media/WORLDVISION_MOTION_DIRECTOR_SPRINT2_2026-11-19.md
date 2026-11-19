@@ -1,5 +1,24 @@
 # World‑Vision — Motion Director / Sprint 2 (19 novembre 2026)
 
+## 0. Validation finale de l'incrément — 19 novembre 2026
+
+**CI du HEAD technique contrôlée : [Actions #44530170278](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278) : 2 jobs SUCCÈS (rendu Remotion, tests import/voix, build frontend V2).**
+
+Détails vérifiés depuis **les vrais artefacts du run**, sans imaginer des résultats :
+- Trois MP4 H.264 de test : `example.mp4`, `with-imported-media.mp4` et `focus-reveal-only.mp4`, plus PNG exacts des frames 0/52/104 et rapports SHA-256.
+- `audit-voice.json` sur un WAV synthétique continu de **5,2 secondes** : `flags: []`, `input_unmodified: true`.
+- `audit-with-gap.json` sur le même WAV contenant une interruption volontaire : **silence détecté de 2,000 à 3,300 secondes, 1,301 seconde** ; `long_pause_for_listening_review` émis ; original SHA inchangé. Ceci est un **test négatif réel**, pas une affirmation que le détecteur fonctionne sans contre-exemple.
+- Le premier appel au détecteur Remotion avait échoué sur WAV ; la solution actuelle **réutilise `ffprobe` et `ffmpeg silencedetect`** déjà utilisés dans l'environnement de production, sans DSP maison ni mutation automatique du signal.
+- **Correction sonore supplémentaire** dans `CreativeEdit.tsx` : la musique d'ambiance est limitée au documentaire, s'ouvre et se ferme en fondu bref, pour **ne pas couvrir l'outro officiel G0 silencieux**. La narration facultative reste une piste séparée, fournisseur libre.
+- La vidéo demeure un **prototype visuel avec paysage abstrait synthétique et détourage de test**, et **NE DOIT PAS** être présentée comme vidéo d'actualité, motion design de niveau mondial ou travail artistique validé.
+
+**Artifact GitHub :** `worldvision-creative-compositor-demo`, ID `14532099664`, run ci-dessus. Il est temporaire ; le code, les preuves et la documentation resteront dans GitHub. Pour reprendre : obtenir une image/document/reportage réel avec droits, réaliser une véritable séquence, puis comparer et corriger.
+
+**État fusion/publication :** PR #44 **draft**, non fusionnée, aucune modification du site V2 déployé ; BAOCOM reste totalement indépendant.
+
+---
+
+
 **STATUT : incrément fonctionnel en PR #44 brouillon ; aucun merge, déploiement ni publication.**
 **Source de vérité initiale :** [WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md](WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md).
 Ce document est un incrément de continuité, pas un changement de la stratégie éditoriale.
