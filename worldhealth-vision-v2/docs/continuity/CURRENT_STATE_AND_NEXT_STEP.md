@@ -1,5 +1,15 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## WORLD‑VISION MEDIA — SPRINT 7, PROBLÈME GLOBAL PHOTO IDENTIFIÉ (19 NOV. 2026)
+
+Reprendre depuis [WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md](../media/WORLDVISION_GEO_BLUE_MARBLE_SPRINT7_2026-11-19.md) et [PR #44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). **Pas de fusion, pas de déploiement.** Les scripts et la recherche restent ChatGPT ici ; le code monte les meilleurs éléments (motion design image/photo/carte/chiffres/textes, audio/voix interchangeable, QA). BAOCOM séparé, GDELT/blog différés.
+
+**Nouveau moteur 3D** : `GeoPhotorealEarth.tsx`, NASA Blue Marble 2004 à source SHA pin, `@remotion/three`/Three.js/R3F, double rendu Remotion Player et MP4, projection D3 conservée pour frontières et trajets. `geo.look="photo"` ou vectoriel choisi explicitement. Le premier rendu NASA [#44567135931](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44567135931) avait réussi les CI (14 tests) mais était **artistiquement mauvais** : deux anciens remplissages cyan SVG masquaient la photo. Bug corrigé, nouveau cadrage r463/[540,690] et véritable aperture blanche, QA du marqueur au dos de la Terre. **Action immédiate : inspecter le nouveau run HEAD et quatre PNG/MP4, corriger encore jusqu'à qualité réellement visuelle.**
+
+**Pipeline pré-GEO intact** : films et plans, voice A/B, script non modifié, transition et document_focus, FFmpeg et preuve de rendu. Prochaine phase après globe : vrais plans d'actualité/script et média autorisés, plusieurs motions simultanées, data motion, voix et sound design professionnels, corrections non destructives, studio Content OS média seulement.
+
+---
+
 ## WORLD‑VISION MEDIA — REPRISE AVANCÉE SPRINT 6 GEO (19 NOV. 2026)
 
 **Lire d'abord** : [WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md](../media/WORLDVISION_GEO_MOTION_PACK_SPRINT6_2026-11-19.md) puis PR [#44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). **Aucune fusion ni mise à jour publique.** À partir des deux vidéos utilisateurs finance (~94,57s) et géopolitique (~59,49s) + image de globe-œil turquoise, un nouveau **moteur de composition multi-layer** est codé : Terre cartographique réelle Natural Earth 110m animée par D3 Geo, frontières, rotation, œil cyan, route géodésique, point, image/video importée, nombre, titres dans **la même scène**. Pas de donnée géographique ou chiffre inventé dans un reportage : entrées éditoriales manuelles, validées par `validate-project`, même props pour Player + MP4.
