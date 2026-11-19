@@ -61,6 +61,7 @@ jobs:
           python3 -m py_compile worldhealth-vision-v2/infra/tests/benchmark_optimized_dense_concurrency.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/monitor_timeseries_jdbc_hikari.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/summarize_timeseries_jdbc_hikari.py
+          python3 -m unittest discover -s worldhealth-vision-v2/infra/tests -p 'test_timeseries_jdbc_hikari.py' -v
           python3 -m py_compile worldhealth-vision-v2/infra/tests/report_upstream_metrics.py
           python3 -m py_compile worldhealth-vision-v2/infra/tests/sql_profile_build_fixture.py
           mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
