@@ -1,7 +1,9 @@
 """Contract tests for the CI-only private Analytics upstream report."""
 import unittest
 
-from report_upstream_metrics import parse_metrics, verify_economic_observed
+from report_upstream_metrics import (
+    parse_metrics, verify_economic_observed, verify_optimized_economic_observed,
+)
 
 
 def samples(dependency: str, operation: str, count: int) -> str:
@@ -33,6 +35,31 @@ class UpstreamMetricsReportTests(unittest.TestCase):
         summary = parse_metrics(samples("timeseries", "series", 53))
         with self.assertRaisesRegex(ValueError, "Missing 54-indicator"):
             verify_economic_observed(summary)
+
+    def test_optimized_gates_require_all_four_real_batch_paths(self):
+        raw = (
+            samples("catalog", "indicators_batch", 43)
+            + samples("timeseries", "latest_batch", 43)
+            + samples("timeseries", "availability_batch", 43)
+            + samples("timeseries", "series_batch", 43)
+        )
+        verify_optimized_economic_observed(parse_metrics(raw), minimum_snapshots=40)
+
+    def test_optimized_mode_rejects_fallback_to_any_old_N_plus_one(self):
+        raw = (
+            samples("catalog", "indicators_batch", 43)
+            + samples("timeseries", "latest_batch", 43)
+            + samples("timeseries", "availability_batch", 43)
+            + samples("timeseries", "series_batch", 43)
+            + samples("timeseries", "series", 1)
+        )
+        with self.assertRaisesRegex(ValueError, "Legacy N\\+1"):
+            verify_optimized_economic_observed(parse_metrics(raw))
+
+    def test_optimized_mode_rejects_unobserved_batch(self):
+        raw = samples("catalog", "indicators_batch", 43)
+        with self.assertRaisesRegex(ValueError, "Missing active optimized"):
+            verify_optimized_economic_observed(parse_metrics(raw))
 
     def test_rejects_unreviewed_parameter_label(self):
         text = (

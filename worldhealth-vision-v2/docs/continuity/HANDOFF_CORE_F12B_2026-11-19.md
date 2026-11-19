@@ -457,3 +457,32 @@ Ce sera la partie la plus risquée, car la limite de préchargement historique `
 4. Ne pas fermer #42 ou #48 sur une fixture de seulement quatre sources. Ensuite **stress test international** : 217 pays/territoires SYNTHÉTIQUES, géographies locales incomplètes, millions de révisions, daily/monthly, Hikari JDBC/pool/SQL, CPU/RAM, largeur JSON, réseau inter-régions, montée en charge concurrente, quotas/anti-abus et 503/récupération. Étudier aussi une API paginée/streaming si le POST de 54 × 600 lignes dépasse les budgets.
 5. Véritables ingestions institutionnelles F1.3 seulement une fois provenance, licences, source locale et fraîcheur vérifiées. GDELT n'est pas source de chiffres officiels ; radar de mentions et contrôle factuel séparés des véritables valeurs économiques.
 6. Maintenir la vision produit internationale : Atlas et pays, Watch, Money-Vision, Price/Panier-Vision, Tourisme/Transport-Vision, Trading-Vision, BRVM-Vision, média et monétisation Pub/Affiliation/Premium/B2B (droits/qualité d'abord). Documenter chaque étape sur GitHub, sans acheter ni déployer de backend externe sans décision.
+
+
+---
+
+## 17. F1.2b.2c-3D — quatre batchs actifs à travers le vrai Gateway, double panne et reprise
+
+**Reprise établie le 19/11/2026. Dernier état technique vérifié directement sur GitHub.**
+- PR #53 historique `perf/v2-batch-timeseries-historical-2026-11-19` : SHA `d72e1f2a91ac21f489d9147dc01dedd3308715a2` ; trois CI **SUCCESS** sur ce SHA (canonique `44532155659`, SQL dense/12 scénarios A/B `44532155678`, Gateway panne 503 `44532155721`). Sur **124 416 observations synthétiques**, quatre sources, 54 vrais codes profils, **70 → 17 HTTP** par synthèse quand le batch historique est activé ; SHA-256 du JSON économique entier sauf `generatedAtUtc` inchangé entre les méthodes. Les six chargements normalisés et filtrés FRA/GAB, includeMissing, sériesLimit 2/8/12/24, source IMF sont couverts. PR #53 **DRAFT / non fusionnée**.
+- PR #55 (branche `test/v2-optimized-batches-e2e-resilience-2026-11-19`) : https://github.com/OBIANG5/World-Health-Vision/pull/55, basée **directement sur #53**, et NON `v2`. Elle prouve ce qui manquait : *vrai* FastAPI + Gateway avec **les quatre flags ON simultanément**, sans réécrire la configuration de production.
+- GitHub Actions #55 : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44533729210 ; **SUCCESS attempt 2** sur `72cd8753fb51402c0bc3b6a75f075577b895258f`. Artefact `14535467010` (métriques CPU/RAM + latences et rapports des opérations HTTP).
+- L'échec initial provient d'une indentation de code dans le nouveau workflow CI : réparée. L'autre échec provenait du téléchargement externe indisponible de la dépendance Maven Spring Boot 3.3.2 : relance du job sur **le même SHA**, succès en attempt 2. Il ne faut **pas attribuer cette erreur réseau à l'optimisation SQL**.
+
+### Validation réelle du mode optimisé
+
+- Overlay GitHub CI `infra/tests/compose.ci-batch-optimized.yml` : quatre flags Analytics tous `true` seulement dans des conteneurs jetables, et `false` par défaut dans `config.py`. Le Gateway JWT et la protection des routes privées sont conservés, seul le Gateway est publié sur `127.0.0.1:18080`; DB/Catalog/Timeseries/Analytics sans port hôte.
+- 40 GET/route et 4 workers : Catalogue pays **40/40**, p50 32,14 ms/p95 47,02 ; couverture des sources **40/40**, p50 28,85/p95 51,32 ; synthèse économique France **40/40**, p50 **122,17 ms**, p95 **172,25**, p99 **174,63**. **ATTENTION : ce test Gateway est sur base économique presque vide, pas la fixture dense. Il ne prouve aucun SLA international.**
+- Compteurs sur les 43 appels économiques (40+3 warmups) : `catalog.indicators_batch` **43**, `timeseries.latest_batch` **43**, `timeseries.availability_batch` **43**, `timeseries.series_batch` **43**, tous succès ; le rapport exige zéro ancien appel N+1. Métriques à labels bornés, sans pays, utilisateur ou source.
+- **Analytics arrêté** : Catalogue continue 200 ; Gateway économique renvoie **503 JSON structuré**, `UPSTREAM_UNAVAILABLE` et `retryable=true`, sans chiffres inventés. Reprise 200 après redémarrage.
+- **Timeseries arrêté, Analytics actif** : Catalogue continue 200 ; économie renvoie **502 JSON**, sans chiffres économiques fabriqués. Reprise 200 après redémarrage. **Ne pas confondre 502 et 503** : l'harmonisation future de l'erreur dépend du contrat Gateway/Analytics.
+- Le POST `/internal/timeseries/series/history/batch` ne s'ouvre pas depuis le Gateway public ; cette absence de route **ne remplace PAS mTLS, identité machine, ACL et quotas nécessaires à la production**.
+
+### Chaîne exacte, choses non faites, décision suivante
+
+- Dépendances PR non fusionnées : **#36 → #38 → #39 → #40 → #41 → #45 → #46 → #47 → #49 → #50 → #51 → #53 → #55** ; #35 qualité UI indépendante. #42 et #48 continuent le suivi de performance ; aucune fusion de toute cette chaîne sans revue, rebase et preuve sur SHA final.
+- **Issue prioritaire #56** : https://github.com/OBIANG5/World-Health-Vision/issues/56 — capacité internationale réelle sur volumes/densité/sources hétérogènes, budgets de bytes/CPU/RAM/Hikari, p50/p95/p99 sous utilisateurs concurrents, sauvegarde, auth interne, anti-abus, source locale vérifiée et consentement. Le moteur 17 HTTP doit rester exact **quand la volumétrie augmente**, sans surcharge DB ni disparition d'années communes.
+- Distinction constante : référentiel des 217 pays/territoires ≠ données réellement ingérées, et données synthétiques de test ≠ chiffres officiels. Chaque valeur réelle doit avoir source primaire locale, période, unité, révision, date de collecte, licence et historique ; GDELT ne fournit que mentions/signalements, pas preuve statistique.
+- Préserver les documents maîtres `docs/product/STRATEGIE_INTERNATIONALE_WORLD_VISION_MASTER_2026-11-19.md` et `REGISTRE_PRODUITS_SOURCES_REVENUS_PRIORITES_2026-11-19.md` : World-Vision Core + Atlas, Watch, Money, Price/Panier, Tourisme/Transport, Trading, BRVM, Radar/GDELT et média éditorial. Revenus Pub/Affiliation/Premium/B2B ne sont que des hypothèses, pas du chiffre d'affaires réalisé.
+- **Interdits toujours en vigueur** : toucher V0/V1, fusionner les branches média/voix, déployer Vercel/site public sans accord, acheter données/VPS, annoncer backend international en production, supprimer ou masquer absence/estimations/statuts.
+- **Si le présent ajout documentaire modifie le SHA de #55, vérifier à nouveau la CI sur le NOUVEAU SHA**, pas seulement sur le SHA `72cd8753` démontré précédemment.
