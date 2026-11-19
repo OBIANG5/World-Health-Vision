@@ -10,7 +10,7 @@ import {deflateSync} from "node:zlib";
  * This is NOT photojournalism, stock footage, or an image of any real location.
  * A synthetic image is used so CI never depends on an external media website.
  */
-function makeSyntheticLandscape(filepath){
+function makeSyntheticLandscape(filepath,cutout=false){
   const width=540,height=960;
   const pixels=Buffer.alloc((width*4+1)*height);
   const frac=x=>Math.max(0,Math.min(1,x));
@@ -32,11 +32,12 @@ function makeSyntheticLandscape(filepath){
           b=mix(33,89,t)+110*glow+99*moon;
       if(farMountain){r=12+glow*13;g=41+glow*17;b=54+glow*22;}
       if(foreground){r=5+horizonRipple*110;g=27+horizonRipple*130;b=39+horizonRipple*141;}
+      if(cutout&&!foreground){r=0;g=0;b=0;}
       const at=row+1+x*4;
       pixels[at]=Math.round(Math.min(255,r));
       pixels[at+1]=Math.round(Math.min(255,g));
       pixels[at+2]=Math.round(Math.min(255,b));
-      pixels[at+3]=255;
+      pixels[at+3]=cutout?(foreground?255:0):255;
     }
   }
   const crcTable=new Uint32Array(256);
@@ -72,6 +73,7 @@ fs.mkdirSync(assetsDir,{recursive:true});
 const png="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4//8/AwAI/AL+XzzZAAAAAElFTkSuQmCC";
 fs.writeFileSync(path.join(assetsDir,"synthetic-pixel.png"),Buffer.from(png,"base64"));
 makeSyntheticLandscape(path.join(assetsDir,"synthetic-landscape.png"));
+makeSyntheticLandscape(path.join(assetsDir,"synthetic-foreground.png"),true);
 fs.copyFileSync(previousMaster,path.join(assetsDir,"synthetic-clip.mp4"));
 const sampleRate=48000,seconds=5.2,samples=Math.ceil(sampleRate*seconds),bits=16,channels=1;
 const pcmBytes=samples*channels*bits/8;
@@ -98,6 +100,7 @@ p.shots[0].title="L’IMAGE PREND PLACE";
 p.shots[0].subtitle="Atelier motion — exemple non journalistique";
 p.shots[0].eyebrow="COMPOSITION FOURNIE";
 p.shots[0].media={kind:"image",file:"synthetic-landscape.png",credit:"Original synthetic abstract CI landscape, not a news image"};
+p.shots[0].foreground={file:"synthetic-foreground.png",credit:"Synthetic cutout for compositing test only"};
 p.shots[1].template="clean_video";
 p.shots[1].media={kind:"video",file:"synthetic-clip.mp4"};
 p.voice={file:"synthetic-tone.wav",label:"TEST SINE TONE — NOT A VOICE",volume:1};
