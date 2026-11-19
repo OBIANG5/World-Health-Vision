@@ -1,5 +1,13 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## MÉDIA — REPRISE APRÈS INTERRUPTION : CONTRÔLES TERMINÉS (19 NOV 2026)
+
+**Source de vérité récente** : [Motion Director Sprint 2 / chapitre 7](worldhealth-vision-v2/docs/media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md). [PR #44 BROUILLON](https://github.com/OBIANG5/World-Health-Vision/pull/44), code vérifié au commit `04399843d2af6106d7158b7ffa33652dd960a693`, [GitHub Actions #44530170278 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278) : renderer et frontend V2 verts ; 11 tests, renders H.264 9:16, couche 2,5D, montage d'un plan, FFmpeg détectant une pause intentionnelle d'environ 1,3 s et préservant le SHA du WAV. Les modifications documentaires ultérieures ne changent pas le code testé.
+
+**Limite majeure :** c'est une fondation technique, non une vidéo de niveau mondial. Prochaines tâches : afficher une vraie **prévisualisation de la composition finale** dans le Studio, apporter des visuels réels autorisés, composer des plans haut de gamme sous direction humaine, cache de fragments, voix/sound design avec outils existants, Content OS limité à la production. Recherche/script dans ChatGPT ; voix choisie librement ; BAOCOM indépendant ; pas de GDELT/blog ni fusion/déploiement.
+
+---
+
 ## VALIDATION SPRINT 2 — 19 NOVEMBRE 2026 — LIRE AVANT DE REPRENDRE
 
 [**Actions GitHub #44530170278 : les 2 jobs ont réussi**](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44530170278) pour l'atelier vidéo de la PR #44. Les vrais MP4 avec image/MP4/alpha/audio synthétiques sont produits et vérifiés. `--shot` rend un seul plan et trois frames de contrôle. La **voix est libre**, avec audition A/B. Le contrôle de silences repose sur **FFmpeg/FFprobe existants** (le premier essai Remotion avait échoué et a été retiré), le WAV avec un silence artificiel **1,301 s** est correctement détecté, et le WAV original reste identique. Les musiques ne doivent pas dépasser l'outro G0 silencieux.
