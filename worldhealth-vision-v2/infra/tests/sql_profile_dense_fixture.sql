@@ -75,7 +75,15 @@ WITH
  ),
  indicators AS (
     SELECT code, row_number() OVER (ORDER BY code)::integer AS ordinal
-    FROM (SELECT code FROM catalog.indicator ORDER BY code LIMIT 54) t
+    FROM (
+       SELECT code FROM catalog.indicator WHERE code='NY.GDP.MKTP.CD'
+       UNION ALL
+       SELECT code FROM (
+         SELECT code FROM catalog.indicator
+         WHERE code <> 'NY.GDP.MKTP.CD'
+         ORDER BY code LIMIT 53
+       ) remaining
+    ) t
  ),
  years AS (SELECT generate_series(2000,2023)::integer AS yr),
  revisions AS (SELECT generate_series(1,2)::integer AS rev),
