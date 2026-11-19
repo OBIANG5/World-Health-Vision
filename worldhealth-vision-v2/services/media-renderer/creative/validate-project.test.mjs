@@ -302,3 +302,56 @@ test("international country focus loads independent 10m shapes for Fiji and Russ
   }
   // Island/datetime-rich countries still require a human visual map review.
 });
+
+test("PHOTO multilayer accepts only genuine user photo with six independently staged tracks",()=>{
+  const p=clone(sample),shot=p.shots[0];
+  shot.template="photo_layers";shot.durationFrames=165;
+  shot.title="UNE IMAGE, PLUSIEURS MOUVEMENTS";
+  shot.subtitle="Séquence originale de démonstration, aucun reportage.";
+  shot.media={kind:"image",file:"synthetic-landscape.png"};
+  shot.foreground={file:"synthetic-foreground.png"};
+  shot.photo={
+    camera:{scaleStart:1.02,scaleEnd:1.11,panX:-22,panY:-8,startFrame:0,endFrame:130},
+    reveal:{startFrame:3,endFrame:68,direction:"left"},
+    highlight:{x:.56,y:.44,radius:.28,startFrame:38,endFrame:99},
+    metric:{label:"VALEUR FICTIVE",value:42,unit:" TEST",precision:0,startFrame:68,endFrame:122}
+  };
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  shot.media={kind:"video",file:"false-footage.mp4"};
+  assert.ok(reasons(p).includes("shots[0].media"));
+  shot.media={kind:"image",file:"synthetic-landscape.png"};
+  shot.photo.camera.panX=Infinity;
+  assert.ok(reasons(p).includes("shots[0].photo.camera"));
+  shot.photo.camera.panX=-22;
+  shot.photo.reveal.endFrame=5;
+  assert.ok(reasons(p).includes("shots[0].photo.reveal"));
+  shot.photo.reveal.endFrame=68;
+  shot.photo.highlight.x=2;
+  assert.ok(reasons(p).includes("shots[0].photo.highlight"));
+  shot.photo.highlight.x=.56;
+  shot.photo.metric.value=NaN;
+  assert.ok(reasons(p).includes("shots[0].photo.metric"));
+  shot.photo.metric.value=42;
+  shot.photo.metric.startFrame=150;
+  assert.ok(reasons(p).includes("shots[0].photo.metric"));
+  shot.photo.metric.startFrame=68;
+  shot.durationFrames=65;
+  assert.ok(reasons(p).includes("shots[0].durationFrames"));
+  shot.durationFrames=165;
+  assert.equal(inspectProject(p).ok,true);
+});
+
+test("PHOTO multilayer never invents a missing image or a number",()=>{
+  const p=clone(sample),shot=p.shots[0];
+  shot.template="photo_layers";shot.durationFrames=165;
+  shot.title="IMAGE D'ORIGINE REQUISE";
+  shot.photo={
+    camera:{scaleStart:1,scaleEnd:1.08,panX:0,panY:0,startFrame:0,endFrame:120},
+    reveal:{startFrame:8,endFrame:65,direction:"right"}
+  };
+  assert.ok(reasons(p).includes("shots[0].media"));
+  shot.media={kind:"image",file:"synthetic-landscape.png"};
+  assert.equal(inspectProject(p).ok,true);
+  assert.equal("metric" in shot.photo,false);
+  assert.equal("foreground" in shot,false);
+});
