@@ -1,4 +1,4 @@
-import {useMemo, useRef, useState, type ChangeEvent} from "react";
+import {useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import "./CinematicProductionBoard.css";
 
 type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video";
@@ -47,6 +47,7 @@ export default function CinematicProductionBoard() {
   const [accent,setAccent]=useState("#8bbecf");
   const [feedback,setFeedback]=useState("");
   const createdUrls=useRef<string[]>([]);
+  useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const canExport=script.trim().length>0&&shots.every(shot=>{
