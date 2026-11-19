@@ -199,4 +199,44 @@ photoProject.shots=[{
 photoProject.voice=null;photoProject.music=null;photoProject.outro=null;
 const photoPath=path.join(path.dirname(outputJson),"worldvision-photo-multilayer-project.json");
 fs.writeFileSync(photoPath,JSON.stringify(photoProject,null,2)+String.fromCharCode(10));
+// DATA-1 three original abstract chart modes. All numbers are explicitly
+// fabricated, labelled DEMO, and must NEVER be shown as stock-market facts.
+const dataProject=structuredClone(p);
+dataProject.id="wv-data-motion-synthetic-only";
+dataProject.title="DATA MOTION — TROIS GRAMMAIRES VISUELLES D'ESSAI";
+dataProject.script="Courbes, classements et heatmaps purement fictifs, sans valeur d'actualité.";
+const fakeSource={publisher:"SIMULATION SYNTHÉTIQUE CI",dataset:"Exercice de motion design, valeurs fictives",
+  asOf:"2026-03-01",url:"https://example.invalid/no-real-feed"};
+const dataBase={
+  motion:"locked",transitionAfter:"cut",transitionFrames:0,
+  eyebrow:"DATA MOTION · AUCUNE ACTUALITÉ"
+};
+dataProject.shots=[
+  {...dataBase,id:"data-line",template:"data_story",durationFrames:165,
+    title:"ÉVOLUTION · ESSAI SYNTHÉTIQUE",
+    subtitle:"Courbe animée, série fictive et échelle explicitement affichée.",
+    data:{mode:"line",series:[
+      {date:"2026-01-01",label:"JAN",value:10},
+      {date:"2026-02-01",label:"FÉV",value:15},
+      {date:"2026-03-01",label:"MAR",value:12},
+    ],source:fakeSource,domain:{min:8,max:16},unit:" TEST",precision:0,locale:"fr-FR"}},
+  {...dataBase,id:"data-rank",template:"data_story",durationFrames:165,
+    title:"CLASSEMENT · ESSAI SYNTHÉTIQUE",
+    subtitle:"Barres comparatives sur axe zéro, sans classement réel.",
+    data:{mode:"ranking",series:[
+      {label:"CAT A",value:45},{label:"CAT B",value:80},
+      {label:"CAT C",value:30},{label:"CAT D",value:65},
+    ],source:fakeSource,domain:{min:0,max:100},unit:" TEST",precision:0,locale:"fr-FR"}},
+  {...dataBase,id:"data-heat",template:"data_story",durationFrames:165,
+    title:"HEATMAP · ESSAI SYNTHÉTIQUE",
+    subtitle:"Intensités graduées correspondant strictement aux valeurs fictives.",
+    data:{mode:"heatmap",series:[
+      {label:"ZONE A",value:12},{label:"ZONE B",value:54},
+      {label:"ZONE C",value:91},{label:"ZONE D",value:30},
+      {label:"ZONE E",value:68},{label:"ZONE F",value:5}
+    ],source:fakeSource,domain:{min:0,max:100},unit:" TEST",precision:0,locale:"fr-FR"}}
+];
+dataProject.voice=null;dataProject.music=null;dataProject.outro=null;
+const dataPath=path.join(path.dirname(outputJson),"worldvision-data-motion-project.json");
+fs.writeFileSync(dataPath,JSON.stringify(dataProject,null,2)+String.fromCharCode(10));
 console.log("Synthetic image/video/audio/document fixtures created; not authentic news assets.");
