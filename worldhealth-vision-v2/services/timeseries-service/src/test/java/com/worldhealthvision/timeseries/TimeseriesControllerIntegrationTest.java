@@ -311,7 +311,150 @@ class TimeseriesControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(greaterThanOrEqualTo(2)))
                 .andExpect(jsonPath("$.items[0].sourceDisplayName").exists())
+
                 .andExpect(jsonPath("$.items[0].datasetDisplayName").exists());
+
+        // Two POPULATED indicators and unequal source histories. Insert only
+        // AFTER all legacy readiness / coverage assertions above.
+        jdbcTemplate.update("""
+                insert into catalog.indicator (code, display_name)
+                values ('SP.POP.TOTL', 'Synthetic population for test')
+                on conflict (code) do nothing
+                """);
+        mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                              "sourceCode":"WORLD_BANK","datasetCode":"WDI",
+                              "runKey":"20260411_010101_synthetic_pop_history",
+                              "fetchedAtUtc":"2026-04-11T01:01:01Z",
+                              "bronzeRawPayloadPath":"/tmp/pop.synthetic.raw",
+                              "bronzeNormalizedPayloadPath":"/tmp/pop.synthetic.ndjson",
+                              "recordCount":4,
+                              "notes":{"syntheticTestOnly":true},
+                              "items":[
+                                {"indicatorCode":"SP.POP.TOTL","countryIso3":"FRA",
+                                 "periodGranularity":"ANNUAL","periodStart":"2022-01-01",
+                                 "periodEnd":"2022-12-31","periodLabel":"2022",
+                                 "numericValue":22.0,"valueStatus":"OBSERVED",
+                                 "sourceMetadata":{"syntheticTestOnly":true},"qualityFlags":[]},
+                                {"indicatorCode":"SP.POP.TOTL","countryIso3":"FRA",
+                                 "periodGranularity":"ANNUAL","periodStart":"2023-01-01",
+                                 "periodEnd":"2023-12-31","periodLabel":"2023",
+                                 "numericValue":23.0,"valueStatus":"ESTIMATED",
+                                 "sourceMetadata":{"syntheticTestOnly":true},"qualityFlags":[]},
+                                {"indicatorCode":"SP.POP.TOTL","countryIso3":"FRA",
+                                 "periodGranularity":"ANNUAL","periodStart":"2024-01-01",
+                                 "periodEnd":"2024-12-31","periodLabel":"2024",
+                                 "numericValue":null,"valueStatus":"MISSING",
+                                 "sourceMetadata":{"syntheticTestOnly":true},"qualityFlags":[]},
+                                {"indicatorCode":"SP.POP.TOTL","countryIso3":"FRA",
+                                 "periodGranularity":"MONTHLY","periodStart":"2024-01-01",
+                                 "periodEnd":"2024-01-31","periodLabel":"2024-01",
+                                 "numericValue":24.0,"valueStatus":"OBSERVED",
+                                 "sourceMetadata":{"syntheticTestOnly":true},"qualityFlags":[]}
+                              ]
+                            }
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itemCount").value(4));
+
+        // Explicitly test independent LIMIT and deterministic same-date tie
+        // order (2024 ANNUAL and MONTHLY), both ASC/DESC, and includeMissing.
+        for (String direction : new String[]{"ASC", "DESC"}) {
+            for (boolean includeMissing : new boolean[]{false, true}) {
+                for (int limit : new int[]{1, 2, 5}) {
+                    assertHistoricalBatchEqualsIndividual(
+                            direction, includeMissing, limit,
+                            null, null, null, null);
+                }
+            }
+        }
+        // Nonuniform source and period filters; a missing code is an empty group.
+        assertHistoricalBatchEqualsIndividual("DESC", true, 2, "IMF", null, null, null);
+        assertHistoricalBatchEqualsIndividual("DESC", true, 2, null, "MONTHLY", null, null);
+        assertHistoricalBatchEqualsIndividual(
+                "ASC", true, 2, null, "ANNUAL", "2022-01-01", "2023-01-01");
+    }
+
+    private void assertHistoricalBatchEqualsIndividual(
+            String direction, boolean includeMissing, int limit,
+            String source, String granularity, String fromDate, String toDate
+    ) throws Exception {
+        var request = new java.util.LinkedHashMap<String, Object>();
+        request.put("countryIso3", "FRA");
+        request.put("indicatorCodes", java.util.List.of(
+                "NY.GDP.MKTP.CD", "SP.POP.TOTL", "SYNTHETIC.NO.OBSERVATION"
+        ));
+        request.put("includeMissing", includeMissing);
+        request.put("sortDirection", direction);
+        request.put("limitPerIndicator", limit);
+        if (source != null) request.put("sourceCode", source);
+        if (granularity != null) request.put("periodGranularity", granularity);
+        if (fromDate != null) request.put("fromPeriodStart", fromDate);
+        if (toDate != null) request.put("toPeriodStart", toDate);
+        ObjectMapper mapper = new ObjectMapper();
+        String batchedJson = mockMvc.perform(post("/internal/timeseries/series/history/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(3))
+                .andExpect(jsonPath("$.items[2].count").value(0))
+                .andReturn().getResponse().getContentAsString();
+        var groups = mapper.readTree(batchedJson).get("items");
+        var requested = java.util.List.of(
+                "NY.GDP.MKTP.CD", "SP.POP.TOTL", "SYNTHETIC.NO.OBSERVATION"
+        );
+        for (int i = 0; i < requested.size(); i++) {
+            var get = get("/api/timeseries/series")
+                    .param("countryIso3", "FRA")
+                    .param("indicatorCode", requested.get(i))
+                    .param("includeMissing", Boolean.toString(includeMissing))
+                    .param("sortDirection", direction)
+                    .param("limit", Integer.toString(limit));
+            if (source != null) get.param("sourceCode", source);
+            if (granularity != null) get.param("periodGranularity", granularity);
+            if (fromDate != null) get.param("fromPeriodStart", fromDate);
+            if (toDate != null) get.param("toPeriodStart", toDate);
+            var legacy = mapper.readTree(mockMvc.perform(get)
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
+            assertEquals(requested.get(i), groups.get(i).get("indicatorCode").asText());
+            assertEquals(legacy.get("count").asInt(), groups.get(i).get("count").asInt());
+            assertEquals(legacy.get("items"), groups.get(i).get("items"),
+                    "Source runs, years, observed/estimated/missing values and ordering must be identical");
+            assertTrue(groups.get(i).get("count").asInt() <= limit,
+                    "Per-indicator SQL LIMIT must hold regardless of source-count");
+        }
+    }
+
+    @Test
+    void shouldRejectHistoricalBatchInvalidAndOverBudgetRequests() throws Exception {
+        for (String bad : new String[]{
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[],\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FR\",\"indicatorCodes\":[\"NY.GDP.MKTP.CD\"],\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"A\",\"a\"],\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"INVALID;DROP\"],\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[null],\"limitPerIndicator\":1}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"A\"],\"limitPerIndicator\":0}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"A\"],\"limitPerIndicator\":1001}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"A\"],\"limitPerIndicator\":1,\"sortDirection\":\"BAD\"}",
+                "{\"countryIso3\":\"FRA\",\"indicatorCodes\":[\"A\"],\"limitPerIndicator\":1,\"fromPeriodStart\":\"2024-01-01\",\"toPeriodStart\":\"2023-01-01\"}"
+        }) {
+            mockMvc.perform(post("/internal/timeseries/series/history/batch")
+                    .contentType(MediaType.APPLICATION_JSON).content(bad))
+                    .andExpect(status().isBadRequest());
+        }
+        StringBuilder huge = new StringBuilder(
+                "{\"countryIso3\":\"FRA\",\"limitPerIndicator\":600,\"indicatorCodes\":["
+        );
+        for (int i = 0; i < 128; i++) {
+            if (i > 0) huge.append(",");
+            huge.append("\"TEST.IND.").append(i).append("\"");
+        }
+        huge.append("]}");
+        mockMvc.perform(post("/internal/timeseries/series/history/batch")
+                .contentType(MediaType.APPLICATION_JSON).content(huge.toString()))
+                .andExpect(status().isBadRequest());
     }
     @Test
     void shouldRejectMalformedDuplicateAndOversizedInternalLatestBatch() throws Exception {
