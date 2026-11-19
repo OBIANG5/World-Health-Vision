@@ -130,6 +130,38 @@ try {
       throw new Error(device.name + ": tools menu did not close after selection");
     }
     await page.locator(".watchlist-panel").waitFor({ state: "visible", timeout: 15000 });
+    // Browser-computed WCAG contrast: a white panel with old pale text was
+    // nearly invisible. Fail this release check if the problem returns.
+    const failedContrast = await page.evaluate(() => {
+      const rgb = (s) => {
+        const parts = s.match(/[\\d.]+/g)?.slice(0, 3).map(Number);
+        if (!parts || parts.length !== 3) throw new Error("Unparseable CSS color: " + s);
+        return parts;
+      };
+      const luminance = (s) => {
+        const [r, g, b] = rgb(s).map((v) => {
+          const c = v / 255;
+          return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      return [
+        [".watchlist-panel-title", ".watchlist-panel-header"],
+        [".watchlist-panel-subtitle", ".watchlist-panel-header"],
+        [".watchlist-panel-close", ".watchlist-panel-close"],
+        [".watchlist-empty-text", ".watchlist-panel"],
+        [".watchlist-empty-hint", ".watchlist-panel"],
+      ].flatMap(([fgSel, bgSel]) => {
+        const fg = document.querySelector(fgSel);
+        const bg = document.querySelector(bgSel);
+        if (!fg || !bg) return [fgSel + ": missing DOM element"];
+        const l1 = luminance(getComputedStyle(fg).color);
+        const l2 = luminance(getComputedStyle(bg).backgroundColor);
+        const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+        return ratio < 4.5 ? [fgSel + ": insufficient contrast " + ratio.toFixed(2)] : [];
+      });
+    });
+    if (failedContrast.length) throw new Error(device.name + ": " + failedContrast.join("; "));
     await page.screenshot({ path: "preview-artifacts/" + device.name + "-tools.png", fullPage: true });
     if (pageErrors.length) throw new Error(device.name + " runtime errors: " + pageErrors.join("; "));
     console.log("PASS", device.name, "catalog", catalogSize, "single globe, country drill-down, 9 core tools, 4 navigation groups, preview honesty");
