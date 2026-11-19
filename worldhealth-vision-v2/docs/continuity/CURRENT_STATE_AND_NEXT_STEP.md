@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## POINT DE REPRISE : MEDIA SPRINT 4 TERMINÉ CÔTÉ TECHNIQUE (19 NOVEMBRE 2026)
+
+[PR #44 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/44). Le détail est dans [le rapport Sprint 4 §7–9](../media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md). [Actions #44541690295 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44541690295) et [#44540638541 : deux jobs SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540638541). Le frontend V2 compile, la vraie prévisualisation du film entier existe (2 scènes de CI, fondu, piste audio importée), 11 tests Node passent, et les titres ne se chevauchent plus en transition (opacité entrante contrôlée à frame 100). Les captures ont été ouvertes et examinées.
+
+**À ne jamais confondre** : fonctionnement technique ≠ meilleur montage artistique du monde. Les médias tests sont synthétiques et non journalistiques. Le site Vercel n'a pas été modifié. **Prochain chantier prioritaire** : réalisation audiovisuelle haut de gamme avec script fourni dans ChatGPT et photo/vidéo authentique sous droits, vraie comparaison de versions MP4, audition voix et mixage, tests sur iPhone/Android, puis préservation/cache des plans approuvés. Aucun « 11 portes » imposé, Vivienne pas obligatoire, BAOCOM pas connecté, pas de blog/GDELT global à ce stade.
+
+---
+
 ## MEDIAS WORLD‑VISION — ÉTAT DE CONTINUITÉ SPRINT 4 (19 NOVEMBRE 2026)
 
 Lire [le rapport complet du Sprint 4](../media/WORLDVISION_FULL_FILM_PLAYER_SPRINT4_2026-11-19.md). PR [#44](https://github.com/OBIANG5/World-Health-Vision/pull/44) reste en brouillon, non fusionnée et non déployée. Dans `frontend/web-v2`, `CreativeCompositionPreview.tsx` et `CinematicProductionBoard.tsx` offrent désormais **source / plan animé / film entier**, avec le même composant React/Remotion que le rendu H.264. Le mode film inclut raccords, piste voix A choisie, musique et signature vidéo fournies. Les médias restent des URL locales et ne sont ni téléchargés dans le cloud ni poussés sur GitHub.
