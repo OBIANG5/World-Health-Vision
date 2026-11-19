@@ -91,6 +91,19 @@ node creative/render-project.mjs \
 ```
 **Important** : l'exemple JSON sans média ne contient pas la version test du focus-reveal ; celle-ci est fabriquée dans le workflow CI par `creative/build-ci-fixtures.mjs`.
 
+### F. Voix libre : audition A/B + diagnostic technique sans TTS maison
+
+- `frontend/web-v2/src/media/CinematicProductionBoard.tsx` affiche deux lecteurs audio **réels** pour comparer deux prises externes du même texte. La piste A est celle qui sera enregistrée dans le projet de montage ; la piste B n'est qu'un comparateur et ne remplace rien automatiquement.
+- `services/media-renderer/creative/audit-voice.mjs` emploie **`getSilentParts()` déjà fourni par `@remotion/renderer`** : mesure de la durée de la narration, des plages de faible niveau, des pauses longues éventuelles et de l'écart avec la durée du film. L'audio source et son hash restent inchangés. Il ne génère pas de voix, ne change pas son débit et ne supprime pas les silences.
+- Les pauses marquées peuvent être volontaires ; seules les écoutes et corrections humaines décident. Ce contrôle n'évalue ni le naturel d'une synthèse, ni la prononciation, ni le ton, ni les droits commerciaux. **La vraie amélioration sonore** nécessite ensuite un traitement de mix/master avec les outils professionnels existants et validation au casque + téléphone.
+- Exemple :
+
+```bash
+node creative/audit-voice.mjs /chemin/absolu/ma-narration.wav 30
+```
+
+Cette commande sert à **inspecter une prise que l'utilisateur a déjà choisie**, jamais à décider à sa place quelle IA doit la lire.
+
 ## 4. Analyse artistique exigeante et limites
 
 Le rendu d'essai antérieur, examiné image par image, montre un départ en visuel encadré, une extension fluide, puis une accroche qui apparaît plus bas. Cela prouve la chorégraphie des couches. Son arrière-plan synthétique reste très **simple**, et n'établit aucune supériorité face aux meilleurs motion designers.
