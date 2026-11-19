@@ -92,7 +92,7 @@ def parse_wdi_brazil_2022_population(
     number = row.get("value")
     if isinstance(number, bool) or not isinstance(number, (int, float)):
         raise ValueError("Missing or non-numeric WDI population")
-    if not math.isfinite(number) or not number.is_integer() if isinstance(number, float) else False:
+    if isinstance(number, float) and (not math.isfinite(number) or not number.is_integer()):
         raise ValueError("WDI population cannot be fractional or non-finite")
     if not 100_000_000 <= number <= 400_000_000:
         raise ValueError("WDI Brazil population outside pilot review bounds")
