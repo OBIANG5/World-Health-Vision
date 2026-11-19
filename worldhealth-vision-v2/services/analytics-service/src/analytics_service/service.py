@@ -86,9 +86,37 @@ class SourceContext:
 
 @dataclass
 class ResolutionCache:
+    """Strictly per-snapshot evidence cache; never shared across users/countries.
+
+    Concurrent lens builders must reuse the same in-flight fetch per source or
+    (source,dataset) key. A plain result dict alone was not concurrency safe.
+    """
     sources: dict[str, SourceDetail | None] = field(default_factory=dict)
     datasets: dict[tuple[str, str], SourceDatasetDetail | None] = field(default_factory=dict)
     latest_runs: dict[tuple[str, str], SourceRunSummary | None] = field(default_factory=dict)
+    source_tasks: dict[str, asyncio.Task] = field(default_factory=dict)
+    dataset_tasks: dict[tuple[str, str], asyncio.Task] = field(default_factory=dict)
+    run_tasks: dict[tuple[str, str], asyncio.Task] = field(default_factory=dict)
+
+
+async def _shared_resolution(store: dict, tasks: dict, key, loader):
+    """Single-flight per key for one request, including negative None results.
+
+    No await happens between checking and recording a new task, so other
+    coroutines in the event loop cannot start duplicate requests for the key.
+    Shield the shared task from cancellation of any ONE waiting lens. Errors
+    propagate unchanged and remain failed within the same request, never
+    creating fabricated metadata or caching an outage across requests.
+    """
+    if key in store:
+        return store[key]
+    task = tasks.get(key)
+    if task is None:
+        task = asyncio.create_task(loader())
+        tasks[key] = task
+    value = await asyncio.shield(task)
+    store[key] = value
+    return value
 
 
 class _AsyncTTLCache:
@@ -1151,40 +1179,42 @@ class AnalyticsService:
         pair_keys: set[tuple[str, str]],
         resolution_cache: ResolutionCache,
     ) -> dict[tuple[str, str], SourceContext]:
-        source_codes_to_fetch = {
-            source_code
-            for source_code, _ in pair_keys
-            if source_code not in resolution_cache.sources
-        }
+        # Reuse the same task for an exact key across all 54 concurrent lenses.
+        # The cache exists only for the current snapshot, so no stale evidence
+        # is retained between different countries, ingestions or user requests.
+        source_codes = {source_code for source_code, _ in pair_keys}
+        await asyncio.gather(*[
+            _shared_resolution(
+                resolution_cache.sources, resolution_cache.source_tasks,
+                code,
+                lambda code=code: self._safe_optional_catalog(
+                    lambda: self._catalog_client.get_source(code)
+                ),
+            )
+            for code in source_codes
+        ])
 
-        if source_codes_to_fetch:
-            source_results = await asyncio.gather(*[
-                self._safe_optional_catalog(lambda code=source_code: self._catalog_client.get_source(code))
-                for source_code in source_codes_to_fetch
-            ])
-            for source_code, source_detail in zip(source_codes_to_fetch, source_results, strict=True):
-                resolution_cache.sources[source_code] = source_detail
+        await asyncio.gather(*[
+            _shared_resolution(
+                resolution_cache.datasets, resolution_cache.dataset_tasks,
+                (source_code, dataset_code),
+                lambda source_code=source_code, dataset_code=dataset_code:
+                    self._safe_optional_catalog(
+                        lambda: self._catalog_client.get_source_dataset(source_code, dataset_code)
+                    ),
+            )
+            for source_code, dataset_code in pair_keys
+        ])
 
-        dataset_keys_to_fetch = [pair_key for pair_key in pair_keys if pair_key not in resolution_cache.datasets]
-        if dataset_keys_to_fetch:
-            dataset_results = await asyncio.gather(*[
-                self._safe_optional_catalog(
-                    lambda source_code=source_code, dataset_code=dataset_code:
-                    self._catalog_client.get_source_dataset(source_code, dataset_code)
-                )
-                for source_code, dataset_code in dataset_keys_to_fetch
-            ])
-            for pair_key, dataset_detail in zip(dataset_keys_to_fetch, dataset_results, strict=True):
-                resolution_cache.datasets[pair_key] = dataset_detail
-
-        run_keys_to_fetch = [pair_key for pair_key in pair_keys if pair_key not in resolution_cache.latest_runs]
-        if run_keys_to_fetch:
-            run_results = await asyncio.gather(*[
-                self._safe_latest_source_run(source_code, dataset_code)
-                for source_code, dataset_code in run_keys_to_fetch
-            ])
-            for pair_key, latest_run in zip(run_keys_to_fetch, run_results, strict=True):
-                resolution_cache.latest_runs[pair_key] = latest_run
+        await asyncio.gather(*[
+            _shared_resolution(
+                resolution_cache.latest_runs, resolution_cache.run_tasks,
+                (source_code, dataset_code),
+                lambda source_code=source_code, dataset_code=dataset_code:
+                    self._safe_latest_source_run(source_code, dataset_code),
+            )
+            for source_code, dataset_code in pair_keys
+        ])
 
         return {
             pair_key: SourceContext(

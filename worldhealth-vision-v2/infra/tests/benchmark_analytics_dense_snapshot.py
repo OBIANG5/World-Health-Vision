@@ -116,10 +116,28 @@ async def main() -> int:
         "snapshots": snapshots,
     }
     print(json.dumps(report, indent=2, ensure_ascii=False))
-    if any(s["http_dependency_calls"].get("timeseries.series", 0) != 54
-           for s in snapshots):
-        print("FAIL: snapshot no longer reads all 54 series", file=sys.stderr)
-        return 1
+    # Fixed synthetic fixture contract: 4 unique provenance keys, not 54x4
+    # duplicate lookups. This deliberately fails if single-flight regresses.
+    expected_calls = {
+        "catalog.country": 1, "catalog.indicator": 54,
+        "timeseries.latest_by_source": 54,
+        "timeseries.availability": 54, "timeseries.series": 54,
+        "catalog.source": 4, "catalog.dataset": 4,
+        "timeseries.source_runs": 4,
+    }
+    for snap in snapshots:
+        if snap["http_dependency_calls"] != expected_calls:
+            print("FAIL: duplicate or missing synthetic provenance lookup", file=sys.stderr)
+            return 1
+        if (snap["comparable_source_count_sum"] != 200 or
+                snap["source_audit_evidence_item_count"] != 270):
+            print("FAIL: synthetic comparison or audit evidence count changed", file=sys.stderr)
+            return 1
+        if snap["total_reviewed_http_calls"] != 229:
+            print("FAIL: expected 229 exact reviewed HTTP operations", file=sys.stderr)
+            return 1
+    print("PASS: 54 lenses, 4+4+4 provenance single-flight, 200 source comparisons, "
+          "270 evidence items and stable full semantic SHA-256", file=sys.stderr)
     return 0
 
 

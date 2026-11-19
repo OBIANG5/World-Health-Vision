@@ -6,6 +6,7 @@ on:
       - 'audit/whv-v2-integral-2026-11-10'
       - 'v2'
       - 'improve/v2-*'
+      - 'perf/v2-provenance-singleflight-*'
   workflow_dispatch:
 
 permissions:
