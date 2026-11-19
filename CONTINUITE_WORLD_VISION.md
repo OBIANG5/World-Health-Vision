@@ -1,5 +1,15 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## WORLD-VISION MEDIA — SPRINT 10 / PHOTO MULTILAYER DIRECTOR (19 NOVEMBRE)
+
+**Priorité désormais PHOTO et non perfectionnement sans fin du globe.** Nouvelle branche indépendante `feature/worldvision-photo-multilayer-director-2026-11-19`, fondée sur PR #74 (GEO-2), elle-même sur #72/#44. L'utilisateur a fourni deux vidéos de référence (finance, géopolitique) et son image globe-œil ; le cœur de son exigence est **UNE image pouvant porter plusieurs motions indépendantes**.
+
+**Nouveau template réel `photo_layers` :** photo source obligatoire, caméra pan/zoom, reveal masqué de pixels originaux, détourage alpha du même fichier préparé hors logiciel, lumière/focus éditorial, compteur/chiffre du script si fourni, grands titres/sous-titres séquencés. Toutes les pistes sont des fonctions déterministes de frame Remotion, même moteur Player V2 et MP4 H264. Contrôles éditables dans `CinematicProductionBoard.tsx`, validation stricte, tests Node/Chromium et workflow préparés. **Lire [WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md)** et vérifier la PR Sprint10, HEAD et CI réelle avant toute affirmation de réussite. Média/valeur de test SYNTHÉTIQUES, pas une vidéo d'actualité ni droits accordés.
+
+**Acquis précédents** : PR #74 GEO-2 code `b553f7d` validé par [Actions #44624747361](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361), images réellement inspectées, titre/carte 17,48px de séparation mobile, pays/photo disjoints, toujours pas publiable ni niveau graphique mondial garanti. Puis viendront DATA graphes/heatmap/classements, un véritable reportage multi-plans avec photos et sources autorisées, QA son/iPhone/TikTok. **BAOCOM totalement indépendant**, scripts/sources ChatGPT pour le moment, voix libre, pas de GDELT/blog global dans ces PR.
+
+---
+
 ## WORLD-VISION MEDIA — GEO-2 / SPRINT 9 FINAL TECHNICAL EVIDENCE (19 NOV. 2026)
 
 **PR #74 toujours DRAFT, non fusionnée/non déployée.** Le commit du moteur `b553f7d38c4111ec8de02e43e1a2dbbf1f614c82` a été testé par [CI #44624747361 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361) sur les **deux jobs** : tests Node, build frontend V2, MP4 synthétique H.264 1080x1920/165 images et vrai Player Chromium. Artefact téléchargé **14578693543** ; 7 frames réellement examinées (Player 0/60/115/155, master 0/82/164). Pays Gabon 10m, contexte 50m, marker, photo fictive, compteur fictif, titres/captions coexistants.

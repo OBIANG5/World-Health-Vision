@@ -17,18 +17,19 @@ declare global{
   interface Window{
     __wvSmokeSeek?:(frame:number)=>void;
     __wvSmokeReady?:boolean;
-    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country";
+    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo";
     __wvSmokeFrames?:number;
     __wvSmokeHasVoice?:boolean;
   }
 }
-type SmokeAssets={photo:string;voice:string|null;clip:string|null};
+type SmokeAssets={photo:string;voice:string|null;clip:string|null;cutout:string|null};
 const mode=new URLSearchParams(window.location.search).get("mode");
 const isFilm=mode==="film";
 const isClip=mode==="clip";
 const isDocument=mode==="document";
 const isGeo=mode==="geo";
 const isCountry=mode==="country";
+const isPhoto=mode==="photo";
 function Smoke(){
   const playerRef=useRef<PlayerRef>(null);
   const [assets,setAssets]=useState<SmokeAssets|null>(null);
@@ -37,28 +38,35 @@ function Smoke(){
     let disposed=false;
     const urls:string[]=[];
     (async()=>{
-      const routes=isFilm?["/smoke/synthetic-landscape.png","/smoke/synthetic-tone.wav"]:isClip?["/smoke/synthetic-clip.mp4"]:isDocument?["/smoke/synthetic-document.png"]:["/smoke/synthetic-landscape.png"];
+      const routes=isPhoto?["/smoke/synthetic-landscape.png","/smoke/synthetic-foreground.png"]:isFilm?["/smoke/synthetic-landscape.png","/smoke/synthetic-tone.wav"]:isClip?["/smoke/synthetic-clip.mp4"]:isDocument?["/smoke/synthetic-document.png"]:["/smoke/synthetic-landscape.png"];
       const blobs=await Promise.all(routes.map(async route=>{
         const response=await fetch(route,{cache:"no-store"});
         if(!response.ok)throw Error("Missing synthetic fixture "+route+" ("+response.status+")");
         return response.blob();
       }));
       for(const blob of blobs)urls.push(URL.createObjectURL(blob));
-      if(!disposed)setAssets({photo:isClip?"":urls[0],voice:isFilm?urls[1]:null,clip:isClip?urls[0]:null});
+      if(!disposed)setAssets({photo:isClip?"":urls[0],voice:isFilm?urls[1]:null,clip:isClip?urls[0]:null,cutout:isPhoto?urls[1]:null});
     })().catch(e=>{if(!disposed)setError(String(e));});
     return ()=>{disposed=true;for(const url of urls)URL.revokeObjectURL(url);};
   },[]);
   const props=useMemo<CreativeEditProps|null>(()=>{
     if(!assets)return null;
     const opener:CreativeShot={
-      id:"plan-synthetique",durationFrames:isCountry?165:isGeo?150:isDocument?140:105,template:isCountry?"country_focus":isGeo?"geo_story":isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
+      id:"plan-synthetique",durationFrames:isPhoto?165:isCountry?165:isGeo?150:isDocument?140:105,template:isPhoto?"photo_layers":isCountry?"country_focus":isGeo?"geo_story":isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
       media:assets.clip?{kind:"video",src:assets.clip}:{kind:"image",src:assets.photo},
-      title:isCountry?"GABON · FOCUS CARTOGRAPHIQUE":isGeo?"LE MONDE EN MOUVEMENT":isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
-      subtitle:isCountry?"Source géographique réelle, paysage artificiel de test : aucune actualité.":isGeo?"Cartographie et animations simultanées, test synthétique.":isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
-      eyebrow:isCountry?"ATELIER 1:10m · NON JOURNALISTIQUE":isGeo?"GEO MOTION · AUCUNE ACTUALITÉ":isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
+      title:isPhoto?"UNE IMAGE. SIX MOUVEMENTS.":isCountry?"GABON · FOCUS CARTOGRAPHIQUE":isGeo?"LE MONDE EN MOUVEMENT":isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
+      subtitle:isPhoto?"Photo abstraite, masquage, profondeur, lumière et chiffres fictifs : essai seulement.":isCountry?"Source géographique réelle, paysage artificiel de test : aucune actualité.":isGeo?"Cartographie et animations simultanées, test synthétique.":isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
+      eyebrow:isPhoto?"PHOTO MULTILAYER · AUCUNE ACTUALITÉ":isCountry?"ATELIER 1:10m · NON JOURNALISTIQUE":isGeo?"GEO MOTION · AUCUNE ACTUALITÉ":isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
       motion:"dolly",transitionAfter:isFilm?"dissolve":"cut",
       transitionFrames:isFilm?10:0,
       focus:{x:.5,y:.46},
+       ...(isPhoto&&assets.cutout?{foreground:{src:assets.cutout}}:{}),
+       ...(isPhoto?{photo:{
+         camera:{scaleStart:1.02,scaleEnd:1.11,panX:-22,panY:-8,startFrame:0,endFrame:130},
+         reveal:{startFrame:3,endFrame:68,direction:"left"},
+         highlight:{x:.56,y:.44,radius:.28,startFrame:38,endFrame:99},
+         metric:{label:"DONNÉE FICTIVE",value:42,unit:" TEST",precision:0,startFrame:68,endFrame:122}
+       }}:{}),
       ...(isDocument?{documentRegion:{x:.30,y:.40,width:.45,height:.20}}:{}),
       ...(isCountry?{geo:{
         center:{lon:0,lat:10},spotlight:{countryId:"266"},
@@ -95,7 +103,7 @@ function Smoke(){
     if(!props)return;
     window.__wvSmokeSeek=(n:number)=>playerRef.current?.seekTo(n);
     window.__wvSmokeReady=true;
-    window.__wvSmokeMode=isFilm?"film":isClip?"clip":isDocument?"document":isCountry?"country":isGeo?"geo":"shot";
+    window.__wvSmokeMode=isFilm?"film":isClip?"clip":isDocument?"document":isCountry?"country":isPhoto?"photo":isGeo?"geo":"shot";
     window.__wvSmokeFrames=creativeDuration(props);
     window.__wvSmokeHasVoice=Boolean(props.narration);
     return ()=>{

@@ -6,6 +6,8 @@ import {slide} from "@remotion/transitions/slide";
 import {fitTextOnNLines} from "@remotion/layout-utils";
 import {GeoStory} from "./GeoStory";
 import {CountryFocus} from "./CountryFocus";
+import {PhotoLayers} from "./PhotoLayers";
+import type {PhotoLayersDirection} from "./PhotoLayers";
 import type {GeoDirection} from "./GeoStory";
 
 /**
@@ -22,7 +24,7 @@ export type CreativeMedia = {
 export type CreativeShot = {
   id:string;
   durationFrames:number;
-  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus";
+  template:"documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_layers";
   title?:string;
   subtitle?:string;
   eyebrow?:string;
@@ -38,6 +40,8 @@ export type CreativeShot = {
   documentRegion?:{x:number;y:number;width:number;height:number};
   /** Editor-approved geographic inputs, not inferred data. */
   geo?:GeoDirection;
+  /** Independently directed tracks over one AUTHENTIC photograph. */
+  photo?:PhotoLayersDirection;
 };
 export type CreativeEditProps = {
   version:1;
@@ -348,6 +352,7 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
   if(shot.template==="document_focus")return <DocumentFocus shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="geo_story")return <GeoStory shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="country_focus")return <CountryFocus shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
+  if(shot.template==="photo_layers")return <PhotoLayers shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   const opacity=reveal(frame,enterOverlapFrames,17);
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
   const subtitleFade=reveal(frame,enterOverlapFrames+15,18);

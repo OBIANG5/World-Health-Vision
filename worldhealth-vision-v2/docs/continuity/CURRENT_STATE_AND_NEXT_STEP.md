@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## MEDIA SPRINT10 / PHOTO MULTILAYER — NEXT ACTIVE (19 NOVEMBRE 2026)
+
+Branche `feature/worldvision-photo-multilayer-director-2026-11-19` empilée sur PR #74. Code nouveau `PhotoLayers.tsx` + template partagé Player/MP4 `photo_layers` : image source exigée, caméra et reveal indépendants, foreground PNG alpha extérieur, spotlight graphique, compteur fourni et typographie par beats, tous pilotables dans l'atelier. Validateur, fixture, test Node, Chromium 4 frames et CI de render préparés. **NE PAS affirmer réussite ou publication avant CI sur HEAD, MP4 et pixels réellement inspectés**. Documentation : [Sprint 10](../media/WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md).
+
+GEO-2 précédent : [CI #44624747361 SUCCESS](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361) sur code `b553f7d`, espace titre/carte 17,48px et artefacts revus, mais qualité éditoriale d'un vrai film encore à démontrer. Ensuite PHOTO avec vraie image sous droits, DATA finance, film complet, mastering voix au choix et QA mobile. Rien fusionné sur V2, BAOCOM indépendant, GDELT/blog différés.
+
+---
+
 ## MEDIA SPRINT 9 GEO-2 — TECHNIQUE VÉRIFIÉE, PHOTO NEXT (19 NOV. 2026)
 
 PR #74 pays 10m/contexte 50m, carte/média/chiffre/titre animés ensemble, source Natural Earth/Remotion, toujours **DRAFT**. Code `b553f7d`, [Actions #44624747361](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361) **2 jobs SUCCESS** ; artefact `14578693543` réellement inspecté. À 360px : espace titre-carte 17,48px >12px, photo n'occulte pas pays. Bas du cadre vide et photo synthétique = pas de validation artistique, publication, Safari/Android ni reportage. [Rapport détail Sprint 9](../media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md).
