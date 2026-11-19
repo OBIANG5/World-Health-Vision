@@ -159,8 +159,8 @@ function CinematicShot({shot,globalStyle}:{shot:CreativeShot;globalStyle:Require
   const numeric=shot.template==="number";
   const evidence=shot.template==="evidence";
   const clean=shot.template==="clean_video";
-  if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle}/>;
   const move=spring({frame,fps,config:{mass:1,damping:24,stiffness:90}});
+  if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle}/>;
   const opacity=reveal(frame,0,17);
   const startTextY=interpolate(move,[0,1],[70,0],clamp);
   const subtitleFade=reveal(frame,15,18);
