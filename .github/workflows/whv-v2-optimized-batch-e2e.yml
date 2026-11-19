@@ -92,7 +92,7 @@ jobs:
                   assert e['WHV_SECURITY_ENABLED']=='true'
                   assert e['WHV_PUBLIC_READ_ENABLED']=='true'
                   assert e['WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS']=='false'
-         required_flags=(
+          required_flags=(
               'WHV_ANALYTICS_CATALOG_INDICATOR_BATCH_ENABLED',
               'WHV_ANALYTICS_TIMESERIES_LATEST_BATCH_ENABLED',
               'WHV_ANALYTICS_TIMESERIES_AVAILABILITY_BATCH_ENABLED',
