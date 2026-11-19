@@ -61,7 +61,7 @@ def transport_for(*, meta=None, years=None, status=200, ctype="application/json"
             raise AssertionError("Unexpected external source path")
         return httpx.Response(
             status_code=status,
-            content=json.dumps(body, ensure_ascii=False, indent=2).encode("utf-8"),
+            stream=httpx.ByteStream(json.dumps(body, ensure_ascii=False, indent=2).encode("utf-8")),
             headers={"content-type": ctype, "content-encoding": encoding},
         )
     return httpx.MockTransport(respond)
