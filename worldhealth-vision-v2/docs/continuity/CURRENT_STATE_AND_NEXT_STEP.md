@@ -1,5 +1,14 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## SUITE MEDIA — MOTION DIRECTOR SPRINT 2 — 19 NOVEMBRE 2026
+
+Le nouveau [cahier de reprise précis](../media/WORLDVISION_MOTION_DIRECTOR_SPRINT2_2026-11-19.md) fait autorité sur le chantier artistique courant. Il décrit les vrais fichiers `CreativeEdit.tsx`, `creative/render-project.mjs`, `creative/validate-project.mjs`, `CinematicProductionBoard.tsx/.css`, les tests Remotion, l'authenticité des sources et la prochaine tranche technique.
+
+**Rappel : scripts/recherche ici dans ChatGPT ; montage/motion/son/cadrage/voix libre dans World‑Vision.** Aucune voix imposée, aucune résurrection des anciennes 11 portes, pas de connecteur BAOCOM, pas de Content OS global/blog/GDELT avant décision nouvelle. La PR #44 est toujours en brouillon, aucun déploiement. Nouveau `focus_reveal`, premier plan 2,5D, typographie mesurée, point focal, écoute A/B, `--shot` et trois captures de vrai rendu. La qualité de clip de test n'est pas une validation esthétique. **Ouvrir le run CI du HEAD le plus récent, lire les artefacts et corriger tout échec.**
+
+---
+
+
 ## CORRECTION PRIORITAIRE DU PROPRIÉTAIRE — 19 NOV. 2026 (PREND PRÉSÉANCE)
 
 La première décision du 19/11 imposant 11 « portes » éditoriales et Vivienne au pipeline a été explicitement **refusée et remplacée**. Les modules Python rigides ont été supprimés. **On fournit des scripts et des médias à World-Vision ; ChatGPT travaille la recherche/le récit dans cette conversation. Le logiciel excelle dans la direction artistique, les animations, le montage, la voix libre et la finition en réutilisant les meilleurs moteurs existants.** BAOCOM n'est ni connecté ni poussé, blog/GDELT attendent. Consulter le [nouveau cahier des charges](../media/WORLDVISION_CREATIVE_EDIT_HANDOFF_2026-11-19.md) (lien relatif depuis la racine) et la [PR #44](https://github.com/OBIANG5/World-Health-Vision/pull/44).
