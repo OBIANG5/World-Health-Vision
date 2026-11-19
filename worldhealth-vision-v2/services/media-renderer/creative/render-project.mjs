@@ -103,6 +103,7 @@ async function run(argv){
         accent:shot.accent,motion:shot.motion,
         transitionAfter:shot.transitionAfter,transitionFrames:shot.transitionFrames,
         focus:shot.focus,
+        documentRegion:shot.documentRegion,
       });
     }
     const props={
