@@ -34,3 +34,25 @@ Sur la base jetable de 124 416 observations synthétiques, le snapshot économiq
 6. Puis F1.2b.2c-4 quotas/anti-abus, staging sécurisé F1.2b.3, véritable ingestion institutionnelle F1.3, Watch, Money/Transport/Price/Trading/BRVM et radar GDELT sous licences. Les deux documents maîtres GDELT/EarlyForge/revenus du noyau World-Vision doivent rester intacts.
 
 **Interdits permanents :** données officielles synthétisées, source inventée, suppression de preuves, fusion d'anciennes V0/V1, changement média/voix/Vercel, acquisition payante ou déploiement sans décision.
+
+
+## Résultats expérimentaux vérifiés (SHA de code `941f0157`)
+
+Pipelines GitHub Actions tous **SUCCESS sur exactement le même SHA** :
+- `44526200023` audit canonique Java/Python/frontend/Docker ;
+- `44526200126` Gateway six conteneurs + panne Analytics HTTP 503 structuré et récupération ;
+- `44526200178` base SQL dense et comparaison A/B.
+Artefact téléchargeable via GitHub Actions : `14530265656` (`catalog-indicator-batch-ab.json`).
+
+**Les deux chemins produisent le même SHA-256 de réponse complète** (tout sauf `generatedAtUtc`) pour les deux pays synthétiques FRA et GAB. Sur chaque réponse : 54 lentes économiques, 200 comparaisons de sources et 270 éléments sourceAudit. Sur chaque A/B :
+- Ancien : **229** appels = 1 pays + 54 indicateurs + 162 séries + 12 provenance ;
+- Nouveau : **176** appels = 1 pays + 1 batch Catalog + 162 séries + 12 provenance ;
+- Gain structurel prouvé : **53 appels HTTP économisés** pour exactement les mêmes indicateurs, périodes, narratifs et preuves, soit 23,1 % des échanges de ce parcours. Ce taux n'est PAS un gain de temps ou CPU déclaré.
+
+Durées descriptives mesurées sur ce runner CI (ms) : France ancien 811,498/647,836 ; France batch 639,466/563,176 ; Gabon ancien 625,445 ; Gabon batch 545,338. Échantillon de six seulement, runners/cache dépendants ; aucune garantie de production, p95 ou généralisation mondiale.
+
+Le premier pipeline sur SHA antérieur avait trouvé un test excessivement sensible aux espaces JSON de HTTPX, corrigé en comparant le dictionnaire JSON réellement envoyé. **Pas de calcul économique modifié**. Code actuel flag OFF par défaut, pas de changement déployé.
+
+**Chantier suivant prioritaire : #48/F1.2b.2c-3B, Timeseries batch dernières valeurs par source, puis 3C disponibilité/années.** Le window function du SQL doit partitionner également par `indicator_code` lors du multi-indicateurs, sous peine de perdre des sources et périodes ; conserver les mêmes filtres et le même ordre par indicateur. Tests différentiels complets exigés et CI sur SHA final.
+
+**Attention :** le présent ajout documentaire produit un nouveau commit ; confirmer de nouveau les trois statuts CI de la PR après cet ajout. Ne pas fusionner automatiquement.

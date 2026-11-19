@@ -366,3 +366,19 @@ Le snapshot économique contient **54** profils. Après la déduplication de pro
 
 ### Suite après la PR 3A
 Issue #48 reste ouverte. F1.2b.2c-3B : batched `latest_by_source` dans Timeseries ; 3C : `availability` et séries historiques (LIMIT PAR INDICATEUR, jamais global), et parités de provenance/révisions. Puis charge grand volume, Hikari/SQL, quotas et F1.3 réelle.
+
+---
+
+### F1.2b.2c-3A — résultat validé et reporté, PR #49 (19/11/2026)
+
+**PR candidate DRAFT, non fusionnée :** https://github.com/OBIANG5/World-Health-Vision/pull/49, empilée sur #47. Base de code éprouvée SHA `941f0157b7c439bc6613e3be82ed66bac5c21c38`, 3 CI SUCCESS : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44526200023 (canonique), https://github.com/OBIANG5/World-Health-Vision/actions/runs/44526200126 (6 services/panne 503), https://github.com/OBIANG5/World-Health-Vision/actions/runs/44526200178 (SQL dense/équivalence A/B). Artefact complet : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44526200178/artifacts/14530265656 .
+
+**Observation stricte sur fixture synthétique 12 pays × 54 indicateurs × 4 sources × 24 années × deux révisions** :
+- Ancien chemin économique **229** HTTP / snapshot, nouveau batch Catalog **176** HTTP : 53 appels évités sans toucher aux 162 Timeseries ni 12 de provenance.
+- Empreinte cryptographique **identique** de la réponse complète hors `generatedAtUtc` pour FRA/GAB, 54 lenses, 200 comparaisons de sources, 270 preuves ; France deux A/B dans les deux ordres, Gabon un par mode.
+- Durées observées France ancien 811,498/647,836 ms, batch 639,466/563,176 ; Gabon ancien 625,445, batch 545,338. **Aucune promesse SLA ni pourcentage d'accélération commerciale** sur six mesures CI.
+- API `POST /internal/catalog/indicators/batch` interne uniquement, 1..128 codes, requête JDBC paramétrée ordonnée, 400 invalides, 404 code absent sans réponse partielle, erreur sur réponse Python incomplète/mal ordonnée. Flag `WHV_ANALYTICS_CATALOG_INDICATOR_BATCH_ENABLED=false` par défaut, site Vercel non modifié.
+
+**À lire impérativement** : `docs/architecture/F12B2C3A_CATALOG_INDICATOR_BATCH_2026-11-19.md` et issue ouverte https://github.com/OBIANG5/World-Health-Vision/issues/48 . Prochaine PR empilée depuis le SHA de #49 après vérification de son CI final : **F1.2b.2c-3B batch Timeseries dernière valeur/source (partition SQL par indicateur+source+dataset+granularité)**. Puis 3C availability et séries historiques **LIMIT PAR indicateur** et équivalence de toutes les années. Ensuite profils Hikari/SQL/Pydantic/CPU & mémoire, dimensions internationales, sécurité/quota, hébergement approuvé, vraie ingestion F1.3, Watch et produits liés au noyau GDELT/EarlyForge/revenus.
+
+Aucune fusion de V0/V1, des branches média/voix ni dépense/déploiement non autorisés. **Ce nouvel ajout documentaire appelle une nouvelle CI sur SHA final de PR #49.**
