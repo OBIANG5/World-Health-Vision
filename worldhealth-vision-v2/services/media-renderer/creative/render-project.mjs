@@ -105,6 +105,7 @@ async function run(argv){
         focus:shot.focus,
         documentRegion:shot.documentRegion,
         geo:shot.geo,
+        photo:shot.photo,
       });
     }
     const props={
