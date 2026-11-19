@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## MEDIA SPRINT 9 GEO-2 — TECHNIQUE VÉRIFIÉE, PHOTO NEXT (19 NOV. 2026)
+
+PR #74 pays 10m/contexte 50m, carte/média/chiffre/titre animés ensemble, source Natural Earth/Remotion, toujours **DRAFT**. Code `b553f7d`, [Actions #44624747361](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361) **2 jobs SUCCESS** ; artefact `14578693543` réellement inspecté. À 360px : espace titre-carte 17,48px >12px, photo n'occulte pas pays. Bas du cadre vide et photo synthétique = pas de validation artistique, publication, Safari/Android ni reportage. [Rapport détail Sprint 9](../media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md).
+
+Prochain travail prioritaire = **PHOTO MULTILAYER**, image unique animée avec 3–6 pistes, vrai composite photo/détourage/titrage/data/son, autorisations & QA. DATA finance puis film complet. Garder chaque chantier sur branche draft sans toucher la V2 publique.
+
+---
+
 ## SPRINT 9 MEDIA — GEO-2 COUNTRY FOCUS / MULTI-COUCHES (19 NOVEMBRE)
 
 Nouveau `country_focus` en branche indépendante `feature/worldvision-country-focus-10m-multilayer-2026-11-19` empilée sur PR #72. Détail pays Natural Earth 10m, voisins 50m, rendu Remotion 1080×1920 avec caméra/cartographie/annotation/média/alpha/metric/texte en animations distinctes ; sélecteur lazy dans Studio et validation anti-marqueur faux. Voir [rapport Sprint 9](../media/WORLDVISION_COUNTRY_FOCUS_GEO2_SPRINT9_2026-11-19.md).
