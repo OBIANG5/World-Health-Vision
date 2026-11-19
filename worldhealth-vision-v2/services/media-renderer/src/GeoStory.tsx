@@ -7,6 +7,7 @@ import atlasData from "world-atlas/countries-110m.json";
 import type {CreativeShot,CreativeEditProps} from "./CreativeEdit";
 import {resolveCreativeSource} from "./CreativeEdit";
 import {GeoPhotorealEarth} from "./GeoPhotorealEarth";
+import {geoCameraPose} from "./geo-motion-camera.mjs";
 
 /**
  * WORLD-VISION GEO STORY / international motion grammar, stage A.
@@ -34,6 +35,8 @@ export type GeoDirection={
   /** Photo = NASA 2004 composite in real 3D. Vector is explicit alternate. */
   look?:"photo"|"vector";
   target?:GeoPoint & {label?:string};
+  camera?:{to:GeoPoint;startFrame:number;endFrame:number;zoom:number};
+  spotlight?:{countryId:string};
   route?:GeoRoute;
   metric?:GeoMetric;
 };
@@ -56,26 +59,32 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
   const progress=Math.min(1,local/Math.max(1,shot.durationFrames-enterOverlapFrames));
   const geo=shot.geo!;
   const isPhoto=geo.look!=="vector";
+  const pose=geoCameraPose(geo,local,shot.durationFrames);
   const enter=easing(norm(local,0,31));
   const mapOpacity=.6+.4*enter;
-  const spin=(geo.spinDegrees??16)*progress;
   const proj=useMemo(()=>geoOrthographic()
-    .scale(463).translate([540,690]).rotate([
-      -geo.center.lon+spin,-geo.center.lat
+    .scale(463*pose.zoom).translate([540,690]).rotate([
+      -pose.centerLon+pose.spinDegrees,-pose.centerLat
     ]).clipAngle(89.999).precision(.7),[
-    geo.center.lon,geo.center.lat,spin
+    pose.centerLon,pose.centerLat,pose.spinDegrees,pose.zoom
   ]);
   const path=useMemo(()=>geoPath(proj),[proj]);
   const landPath=useMemo(()=>path(countryCollection)??"",[path]);
   const bordersPath=useMemo(()=>path(borderMesh)??"",[path]);
   const gridPath=useMemo(()=>path(graticule)??"",[path]);
+  const spotlightPath=useMemo(()=>{
+    if(!geo.spotlight)return "";
+    const features=(countryCollection as unknown as {features:Array<{id?:string|number}>}).features;
+    const country=features.find(f=>String(f.id).padStart(3,"0")===geo.spotlight?.countryId);
+    return country?path(country as never)??"":"";
+  },[path,geo.spotlight?.countryId]);
   // Projections can return numeric coordinates for a point that is actually
   // BEHIND the Earth. A naked geographic marker must obey hemisphere occlusion.
   const rad=Math.PI/180;
-  const centerLon=geo.center.lon-spin;
+  const centerLon=pose.centerLon-pose.spinDegrees;
   const targetFront=Boolean(geo.target&&(
-    Math.sin(geo.center.lat*rad)*Math.sin(geo.target.lat*rad)+
-    Math.cos(geo.center.lat*rad)*Math.cos(geo.target.lat*rad)*
+    Math.sin(pose.centerLat*rad)*Math.sin(geo.target.lat*rad)+
+    Math.cos(pose.centerLat*rad)*Math.cos(geo.target.lat*rad)*
     Math.cos((geo.target.lon-centerLon)*rad)
   )>.025);
   const targetXY=geo.target&&targetFront
@@ -96,6 +105,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
   const captionIn=easing(norm(local,32,55));
   const metricIn=easing(norm(local,72,100));
   const pointIn=easing(norm(local,17,40));
+  const spotlightIn=easing(norm(local,26,80));
   const arcIn=easing(norm(local,24,91));
   const fadeOut=shot.transitionAfter!=="cut"&&(shot.transitionFrames??0)>0
     ?1-easing(norm(frame,shot.durationFrames-(shot.transitionFrames??0),shot.durationFrames))
@@ -154,12 +164,16 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
     {/* The photographic sphere is rendered before the D3 world borders.
         D3 remains the canonical geometry for political/route overlays. */}
     {isPhoto&&<GeoPhotorealEarth
-      centerLongitude={geo.center.lon}
-      centerLatitude={geo.center.lat}
-      spinDegrees={spin}
+      centerLongitude={pose.centerLon}
+      centerLatitude={pose.centerLat}
+      spinDegrees={pose.spinDegrees}
+      zoom={pose.zoom}
     />}
     {/* Level 2: animated luminous World-Vision eye. Animated independently. */}
     <svg viewBox="0 0 1080 1920" width="100%" height="100%"
+       data-wv-geo-camera-arrival={pose.arrival.toFixed(4)}
+       data-wv-geo-camera-center={pose.centerLon.toFixed(4)+","+pose.centerLat.toFixed(4)}
+       data-wv-geo-camera-zoom={pose.zoom.toFixed(4)}
       style={{position:"absolute",inset:0,overflow:"visible"}}>
       <defs>
         <linearGradient id="wv-geo-eye" x1="0%" y1="20%" x2="100%" y2="80%">
@@ -195,7 +209,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
           <feGaussianBlur stdDeviation="7"/>
         </filter>
         <clipPath id="wv-geo-sphere-clip">
-          <circle cx="540" cy="690" r="463"/>
+          <circle cx="540" cy="690" r={463*pose.zoom}/>
         </clipPath>
       </defs>
       <ellipse cx="540" cy="690" rx="674" ry="528"
@@ -238,6 +252,12 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
         <path data-wv-geo-borders="true" d={bordersPath}
           fill="none" stroke="#f5fdff" strokeWidth={isPhoto?2.2:1.65}
           opacity={(isPhoto?.91:.81)*enter}/>
+        {/* Real Natural Earth geometry, selected by the editor, not invented pixels. */}
+        {spotlightPath&&<path data-wv-geo-country-spotlight={geo.spotlight?.countryId}
+          d={spotlightPath} fill="rgba(9,215,246,.13)" fillRule="evenodd"
+          stroke="#62f6ff" strokeWidth="7" strokeLinejoin="round"
+          opacity={spotlightIn*enter}
+          style={{filter:"drop-shadow(0 0 9px rgba(14,228,255,.55))"}}/>
         {!isPhoto&&<circle cx="540" cy="690" r="463" fill="url(#wv-geo-sphere-gloss)"/>}
         {/* Level 4: great-circle route with SVG path-length reveal. */}
         {arc&&<path data-wv-geo-route="true" d={arc} fill="none"
