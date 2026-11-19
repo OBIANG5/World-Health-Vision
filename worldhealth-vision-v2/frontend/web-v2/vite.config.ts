@@ -9,7 +9,7 @@ export default defineConfig({
   // The interactive Player imports the EXACT same CreativeEdit.tsx as the
   // server-side renderer. Both trees must use one React/Remotion runtime.
   resolve: {
-    dedupe: ['react', 'react-dom', 'remotion', '@remotion/transitions', '@remotion/layout-utils'],
+    dedupe: ['react', 'react-dom', 'remotion', '@remotion/transitions', '@remotion/layout-utils', 'd3-geo', 'topojson-client'],
   },
   build: {
     // Découpe les grosses libs en chunks séparés : le navigateur les met en cache
