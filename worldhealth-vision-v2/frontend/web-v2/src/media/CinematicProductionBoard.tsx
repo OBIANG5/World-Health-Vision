@@ -1,5 +1,6 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import type {CreativeEditProps, CreativeMedia, CreativeShot} from "../../../../services/media-renderer/src/CreativeEdit";
+import atlasData from "world-atlas/countries-110m.json";
 
 // Lazy: do not load the sizeable motion runtime until a user requests preview.
 const RealCreativePreview = lazy(() => import("./CreativeCompositionPreview"));
@@ -10,6 +11,12 @@ type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
 type PreviewMode = "source"|"shot"|"film";
+type AtlasGeometry={id?:string|number;properties?:{name?:string}};
+const COUNTRIES=((atlasData as unknown as {objects:{countries:{geometries:AtlasGeometry[]}}})
+  .objects.countries.geometries)
+  .map(g=>({id:String(g.id).padStart(3,"0"),name:g.properties?.name??"ID "+g.id}))
+  .sort((a,b)=>a.name.localeCompare(b.name,"fr"));
+const COUNTRY_IDS=new Set(COUNTRIES.map(c=>c.id));
 type Asset = {name:string;size:number;kind:MediaType;url:string};
 type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
@@ -17,6 +24,9 @@ type Shot = {
   mediaName:string;foregroundName:string;focusX:number;focusY:number;
   documentX:number;documentY:number;documentW:number;documentH:number;
   geoLon:number;geoLat:number;geoSpin:number;geoLook:"photo"|"vector";
+  geoShowCamera:boolean;geoToLon:number;geoToLat:number;
+  geoCameraStart:number;geoCameraEnd:number;geoCameraZoom:number;
+  geoShowCountry:boolean;geoCountryId:string;
   geoShowTarget:boolean;geoTargetLon:number;geoTargetLat:number;geoTargetLabel:string;
   geoShowRoute:boolean;geoFromLon:number;geoFromLat:number;
   geoShowMetric:boolean;geoMetricLabel:string;geoMetricValue:string;geoMetricUnit:string;
@@ -43,6 +53,9 @@ const initialShot=():Shot=>({
   template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",foregroundName:"",focusX:0.5,focusY:0.5,
   documentX:.25,documentY:.32,documentW:.5,documentH:.22,
   geoLon:0,geoLat:10,geoSpin:16,geoLook:"photo",
+  geoShowCamera:false,geoToLon:0,geoToLat:0,
+  geoCameraStart:15,geoCameraEnd:102,geoCameraZoom:1.1,
+  geoShowCountry:false,geoCountryId:"",
   geoShowTarget:false,geoTargetLon:0,geoTargetLat:0,geoTargetLabel:"",
   geoShowRoute:false,geoFromLon:0,geoFromLat:0,
   geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:""
@@ -53,6 +66,12 @@ const buildGeo=(shot:Shot):CreativeShot["geo"]=>({
   center:{lon:shot.geoLon,lat:shot.geoLat},
   look:shot.geoLook,
   spinDegrees:shot.geoSpin,
+  ...(shot.geoShowCamera?{camera:{
+    to:{lon:shot.geoToLon,lat:shot.geoToLat},
+    startFrame:shot.geoCameraStart,endFrame:shot.geoCameraEnd,
+    zoom:shot.geoCameraZoom
+  }}:{}),
+  ...(shot.geoShowCountry?{spotlight:{countryId:shot.geoCountryId}}:{}),
   ...(shot.geoShowTarget?{target:{
     lon:shot.geoTargetLon,lat:shot.geoTargetLat,label:shot.geoTargetLabel
   }}:{}),
@@ -69,7 +88,13 @@ const inLon=(v:number)=>Number.isFinite(v)&&v>=-180&&v<=180;
 const inLat=(v:number)=>Number.isFinite(v)&&v>=-85&&v<=85;
 const validGeo=(s:Shot)=>s.template!=="geo_story"||Boolean(
   s.durationFrames>=120&&s.title.trim()&&s.title.length<=90&&
-  inLon(s.geoLon)&&inLat(s.geoLat)&&Math.abs(s.geoSpin)<=360&&
+  inLon(s.geoLon)&&inLat(s.geoLat)&&Number.isFinite(s.geoSpin)&&Math.abs(s.geoSpin)<=360&&
+  (!s.geoShowCamera||(inLon(s.geoToLon)&&inLat(s.geoToLat)&&
+    Number.isInteger(s.geoCameraStart)&&Number.isInteger(s.geoCameraEnd)&&
+    s.geoCameraStart>=0&&s.geoCameraEnd<=s.durationFrames-18&&
+    s.geoCameraEnd-s.geoCameraStart>=30&&
+    Number.isFinite(s.geoCameraZoom)&&s.geoCameraZoom>=1&&s.geoCameraZoom<=1.15))&&
+  (!s.geoShowCountry||COUNTRY_IDS.has(s.geoCountryId))&&
   (!s.geoShowTarget||(inLon(s.geoTargetLon)&&inLat(s.geoTargetLat)&&s.geoTargetLabel.length<=80))&&
   (!s.geoShowRoute||(s.geoShowTarget&&inLon(s.geoFromLon)&&inLat(s.geoFromLat)&&
     (s.geoFromLon!==s.geoTargetLon||s.geoFromLat!==s.geoTargetLat)))&&
@@ -368,6 +393,46 @@ export default function CinematicProductionBoard() {
                   onChange={e=>updateShot({geoSpin:Number(e.target.value)})}/>
               </label>
             </div>
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.geoShowCamera}
+              onChange={e=>updateShot({geoShowCamera:e.target.checked})}/>
+              Caméra géographique dirigée · depuis le centre initial vers une destination choisie
+            </label>
+            {active.geoShowCamera&&<div className="wvc-two-col">
+              <label>DESTINATION · LONGITUDE
+                <input type="number" min="-180" max="180" step=".01" value={active.geoToLon}
+                  onChange={e=>updateShot({geoToLon:Number(e.target.value)})}/>
+              </label>
+              <label>DESTINATION · LATITUDE
+                <input type="number" min="-85" max="85" step=".01" value={active.geoToLat}
+                  onChange={e=>updateShot({geoToLat:Number(e.target.value)})}/>
+              </label>
+              <label>DÉBUT DU MOUVEMENT (s)
+                <input type="number" min="0" step=".1" value={active.geoCameraStart/30}
+                  onChange={e=>updateShot({geoCameraStart:Math.round(Number(e.target.value)*30)})}/>
+              </label>
+              <label>FIN DU MOUVEMENT (s)
+                <input type="number" min="1" step=".1" value={active.geoCameraEnd/30}
+                  onChange={e=>updateShot({geoCameraEnd:Math.round(Number(e.target.value)*30)})}/>
+              </label>
+              <label>APPROCHE OPTIQUE DE LA PLANÈTE
+                <input type="number" min="1" max="1.15" step=".01" value={active.geoCameraZoom}
+                  onChange={e=>updateShot({geoCameraZoom:Number(e.target.value)})}/>
+              </label>
+            </div>}
+            <p className="wvc-hint">La caméra suit un arc géodésique court puis reste orientée sur la destination. Le zoom optique est limité à 15 % dans l'œil ; un vrai zoom pleine carte/pays nécessitera une composition distincte. Vérifie la destination et le rendu avant tout reportage.</p>
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.geoShowCountry}
+              onChange={e=>updateShot({geoShowCountry:e.target.checked})}/>
+              Mettre en lumière le contour d'un pays (Natural Earth / World Atlas 110m)
+            </label>
+            {active.geoShowCountry&&<label>PAYS SÉLECTIONNÉ DANS L'ATLAS
+              <select value={active.geoCountryId} onChange={e=>updateShot({geoCountryId:e.target.value})}>
+                <option value="">Choisir explicitement un pays du référentiel</option>
+                {COUNTRIES.map(country=><option key={country.id} value={country.id}>
+                  {country.name} · {country.id}
+                </option>)}
+              </select>
+              <span className="wvc-hint">L'atlas 110m simplifie les frontières et omet des territoires. Ce dessin n'est pas une prise de position sur un différend territorial. Vérifier carte, source et période avant publication.</span>
+            </label>}
             <label className="wvc-geo-toggle"><input type="checkbox" checked={active.geoShowTarget}
               onChange={e=>updateShot({geoShowTarget:e.target.checked,geoShowRoute:e.target.checked?active.geoShowRoute:false})}/>
               Localiser un lieu explicitement indiqué
