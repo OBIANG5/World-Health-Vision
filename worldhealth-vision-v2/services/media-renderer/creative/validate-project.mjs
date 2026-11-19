@@ -118,7 +118,7 @@ export function inspectProject(project) {
         bad(errors,p+".data","Source-linked numerical data required; never infer numbers from a title or photo.");
       }else{
         const isFiniteBound=v=>typeof v==="number"&&Number.isFinite(v)&&Math.abs(v)<=1e12;
-        const isoDate=v=>typeof v==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(v)&&
+        const isoDate=v=>typeof v==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&
           !Number.isNaN(Date.parse(v+"T00:00:00Z"))&&new Date(v+"T00:00:00Z").toISOString().slice(0,10)===v;
         if(!["trend","comparison","ranking","heatmap"].includes(d.kind))
           bad(errors,p+".data.kind","Select trend, comparison, ranking or heatmap.");
