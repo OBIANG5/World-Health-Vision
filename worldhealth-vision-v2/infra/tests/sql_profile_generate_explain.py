@@ -28,8 +28,10 @@ VALUES = {
     "limit": "100",
 }
 REPLACEMENT = re.compile(r"(?<!:):([A-Za-z][A-Za-z0-9_]*)")
-ORDER_BY_DESC = "order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc,
-                             lo.period_granularity asc, lo.period_end desc, lo.run_key asc"
+ORDER_BY_DESC = (
+    "order by lo.period_start desc, lo.source_code asc, lo.dataset_code asc, "
+    "lo.period_granularity asc, lo.period_end desc, lo.run_key asc"
+)
 
 
 def _method_fragment(java: str, method: str) -> str:
@@ -51,7 +53,7 @@ def extract_sql(java: str, operation: str) -> str:
     if operation == "series":
         if len(parts) != 2 or "+ seriesOrderBy(sortDescending)" not in fragment:
             raise ValueError("listSeries SQL composition changed; review the actual Java code")
-        if ORDER_BY_DESC not in java:
+        if ORDER_BY_DESC not in " ".join(java.split()):
             raise ValueError("Descending series order changed; review the source")
         template = parts[0] + "\n" + ORDER_BY_DESC + "\n" + parts[1]
     else:
