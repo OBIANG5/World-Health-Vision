@@ -79,3 +79,8 @@ Aucune allégation de prix en direct, couverture 217 pays, statistiques officiel
 Le travail s'est poursuivi sur une **PR empilée en brouillon #70**, branche data/v2-ibge-byte-evidence-revision-ledger-2026-11-19, **base PR #69**, sans fusion ni déploiement. Elle distingue octets HTTP de JSON canonique, ajoute versions immuables, replay vérifié et archives privées restaurables. Voir https://github.com/OBIANG5/World-Health-Vision/pull/70 et le document détaillé **docs/continuity/WORLD_VISION_DATA1B1_BYTE_EVIDENCE_2026-11-19.md** sur cette nouvelle branche.
 
 La suite DATA-1B2 est **issue #71** https://github.com/OBIANG5/World-Health-Vision/issues/71 : métadonnées du dataset, droits de réutilisation spécifiques, journal des acquisitions, staging persistant sûr, backup/restauration, puis comparabilité WDI et publication contrôlée. Les résultats de la PR #70 sont d'abord des preuves privées : pas de valeurs officielles exposées dans l'Atlas, pas de licence approuvée ni de backend public. Les travaux UI #67/#64/#35, Vercel issue #68, Core #59 et backlog #63 restent indépendants. Média/voix/V0/V1 intacts.
+
+
+## 8. Développement après PR #70 — DATA-1B2A
+
+Le pilote de métadonnées IBGE est maintenant sur **PR #73** DRAFT (base #70) : https://github.com/OBIANG5/World-Health-Vision/pull/73 . Deux captures officielles distinctes table/periods, provenance SHA-256, contrôle de méthode et droits par dataset (NEEDS_PROVIDER_CLARIFICATION). Lire docs/continuity/WORLD_VISION_DATA1B2A_METADATA_RIGHTS_2026-11-19.md pour le dernier handoff. DATA-1B2B issue #71, puis comparabilité et Atlas. Aucune donnée nationale diffusée ni licence de commerce déclarée. Vercel public et branches média/voix restent intacts.

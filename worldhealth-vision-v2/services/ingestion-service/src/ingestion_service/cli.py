@@ -8,6 +8,7 @@ from ingestion_service.runtime import (
     build_unodc_service,
     build_worldbank_service,
     build_ibge_national_census_pilot,
+    build_ibge_census_metadata_pilot,
 )
 from ingestion_service.settings import get_settings
 
@@ -56,6 +57,52 @@ def audit_ibge_private_evidence():
             "recordCount": receipt.record_count,
         } for receipt in revisions],
     }, indent=2))
+
+
+@ibge_app.command("capture-census-2022-metadata")
+def capture_ibge_census2022_metadata():
+    """Archive the official aggregate metadata and periods in private quarantine."""
+    result = build_ibge_census_metadata_pilot().capture_census2022_contract()
+    typer.echo(json.dumps({
+        "source": "IBGE",
+        "dataset": "CENSO2022_4714",
+        "publicationStatus": "BRONZE_ONLY_UNREVIEWED",
+        "licenseReviewStatus": "REVIEW_REQUIRED",
+        "timeseriesPublication": "NOT_ATTEMPTED",
+        "metadata": {
+            "revisionSha256": result.aggregate_receipt.notes["httpBodySha256"],
+            "recordCount": result.aggregate_receipt.record_count,
+        },
+        "periods": {
+            "revisionSha256": result.periods_receipt.notes["httpBodySha256"],
+            "recordCount": result.periods_receipt.record_count,
+        },
+    }, indent=2))
+
+
+@ibge_app.command("review-census-2022-rights")
+def review_ibge_census2022_rights():
+    """Show an unapproved dataset-specific rights dossier; NOT legal approval."""
+    from ingestion_service.source_rights_review import (
+        ibge_census_4714_initial_review,
+        inspect_reuse_claim,
+        ReviewedRight,
+    )
+    from datetime import UTC, datetime
+    now = datetime.now(UTC)
+    dossier = ibge_census_4714_initial_review()
+    advice = inspect_reuse_claim(
+        dossier, institution_code="IBGE", dataset_code="CENSO2022_4714",
+        jurisdiction_iso3="BRA",
+        operation=ReviewedRight.PUBLIC_COMMERCIAL_DISPLAY,
+        evaluated_at=now,
+    )
+    typer.echo(json.dumps({
+        "review": dossier.model_dump(mode="json"),
+        "commercialDisplayAdvice": advice.model_dump(mode="json"),
+        "publicationsEnabled": False,
+        "warning": "This local review cannot grant publication permissions.",
+    }, indent=2, ensure_ascii=False))
 
 
 @worldbank_app.command("fetch-countries")

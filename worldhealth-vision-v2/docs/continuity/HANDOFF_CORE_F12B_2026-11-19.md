@@ -615,3 +615,14 @@ L'objectif produit a **progressé de F1.2b.2d vers de vraies données institutio
 **Document de reprise le plus récent (à lire avant de coder) :** docs/continuity/WORLD_VISION_DATA1B1_BYTE_EVIDENCE_2026-11-19.md sur branche data/v2-ibge-byte-evidence-revision-ledger-2026-11-19, PR https://github.com/OBIANG5/World-Health-Vision/pull/70 . Vérifier ses 2 workflows GitHub Actions sur le SHA final. Prochaine étape DATA-1B2 = https://github.com/OBIANG5/World-Health-Vision/issues/71, droits du dataset, métadonnées, suivi des révisions de source, conservation privée sur vrai volume durable et tests de récupération. Ne pas fusionner #70 en ignorant sa chaîne dépendante, ni mettre des données IBGE non autorisées dans le frontend public.
 
 **Rappels de continuité** : UI #67→#64→#35 (Vercel issue #68), Core jusqu'à #59 en DRAFT, performance issue #63, 11 Visions (Atlas, Watch, Money, Transport, Tourism, Price, Panier, Trading, BRVM, Radar, Média) et documents stratégie/revenus. Média/voix ne sont PAS modifiés. **Aucune dépense ni déploiement payant ou production effectué.**
+
+
+---
+
+## 22. Reprise DATA-1B2A — métadonnées institutionnelles vérifiées et réutilisation BLOQUÉE (19/11/2026)
+
+PR **#73** DRAFT : https://github.com/OBIANG5/World-Health-Vision/pull/73 (base PR #70 → #69 → Core #59). Deux endpoints officiels IBGE distincts : /api/v3/agregados/4714/metadados et /api/v3/agregados/4714/periodos, réponse live validée. Le champ fournisseur 'modificacao' n'est pas une date de publication vérifiée. Deux archives privées content-addressed, aucun service Timeseries public.
+
+**Document exact de reprise pour le chat suivant :** docs/continuity/WORLD_VISION_DATA1B2A_METADATA_RIGHTS_2026-11-19.md sur branche data/v2-ibge-metadata-rights-gates-2026-11-19. Source/méthode/droits et risque juridique : IBGE politique générale ouverte ≠ autorisation spécifique SIDRA 4714/93. Dossier rights = NEEDS_PROVIDER_CLARIFICATION, publication commerciale BLOCKED. La consultation publique IBGE du 04/11 au 04/12/2026 prépare le prochain plan de données ouvertes, ce n'est PAS une licence. Ancien PDA 2024-2025 historique.
+
+**Preuves CI initiales :** https://github.com/OBIANG5/World-Health-Vision/actions/runs/44617042088 et https://github.com/OBIANG5/World-Health-Vision/actions/runs/44617042183 étaient SUCCESS sur SHA 82723d41892594fbb5ffb49e71cbce035deeb248. Vérifier toujours le **SHA final** après tout nouveau commit. L'API live a été utilisée en CI temporaire privé, aucun payload stocké durablement ni publication. DATA-1B2B = issue #71 à poursuivre : journal append-only de captures, reçu composite, conditions exactes de droits, date de révision, volume durable privé et restauration avec budget approuvé. Puis DATA-1B3 comparabilité WDI, DATA-1C Atlas, Watch. Aucun changement aux branches média/voix ou site Vercel.

@@ -1,0 +1,80 @@
+name: World-Vision DATA-1B2A — live IBGE metadata and periods to ephemeral Bronze
+
+on:
+  push:
+    branches:
+      - 'data/v2-ibge-metadata-rights-gates-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-data1b2a-live-${{ github.ref }}
+  cancel-in-progress: true
+
+# 2 official GETs only: 4714/metadados + 4714/periodos. No population
+# observations, no service endpoint, no file artifacts, no publication.
+jobs:
+  live-metadata-provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - name: Checkout exact candidate without Git credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install bounded provider client transport
+        run: python -m pip install --disable-pip-version-check 'httpx==0.27.2' 'pydantic>=2.8,<3'
+      - name: Two official metadata requests, private evidence and rights checks
+        env:
+          PYTHONPATH: worldhealth-vision-v2/services/ingestion-service/src
+        run: |
+          python - <<'PY'
+          from datetime import UTC, datetime
+          from hashlib import sha256
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+
+          from ingestion_service.bronze_store import BronzeStore
+          from ingestion_service.connectors.ibge_census_metadata_client import IbgeCensusMetadataClient
+          from ingestion_service.pipelines.ibge_census_metadata import IbgeCensusMetadataPilot
+          from ingestion_service.source_evidence_store import QuarantinedJsonEvidenceStore
+          from ingestion_service.source_rights_review import (
+              ReviewedRight, ibge_census_4714_initial_review, inspect_reuse_claim,
+          )
+
+          with TemporaryDirectory(prefix="wv-data1b2-official-metadata-private-") as scratch:
+              root = Path(scratch)
+              receipts = IbgeCensusMetadataPilot(
+                  client=IbgeCensusMetadataClient(timeout_seconds=25),
+                  bronze_store=BronzeStore(root),
+              ).capture_census2022_contract()
+              store = QuarantinedJsonEvidenceStore(root)
+              for receipt in (receipts.aggregate_receipt, receipts.periods_receipt):
+                  assert receipt.source_code == "IBGE"
+                  assert receipt.record_count == 1
+                  assert receipt.notes["publicationStatus"] == "BRONZE_ONLY_UNREVIEWED"
+                  assert receipt.notes["licenseReviewStatus"] == "REVIEW_REQUIRED"
+                  assert receipt.notes["timeseriesPublication"] == "NOT_ATTEMPTED"
+                  assert receipt.notes["sourcePublishedAt"] is None
+                  assert receipt.notes["sourceRevisionAt"] is None
+                  assert sha256(receipt.raw_payload_path.read_bytes()).hexdigest() == receipt.notes["httpBodySha256"]
+                  assert store.verify("IBGE", receipt.dataset_code, receipt.notes["httpBodySha256"]).record_count == 1
+                  print("Verified quarantined resource:", receipt.notes["resource"],
+                        "HTTP SHA256:", receipt.notes["httpBodySha256"])
+              now = datetime.now(UTC)
+              rights = ibge_census_4714_initial_review()
+              advice = inspect_reuse_claim(
+                  rights, institution_code="IBGE", dataset_code="CENSO2022_4714",
+                  jurisdiction_iso3="BRA", operation=ReviewedRight.PUBLIC_COMMERCIAL_DISPLAY,
+                  evaluated_at=now,
+              )
+              assert advice.status == "BLOCKED"
+              print("Rights: BLOCKED; no dataset-specific commercial redistribution grant")
+          print("Private temporary evidence deleted. NO actual population data logged, NO Atlas, NO Timeseries.")
+          PY

@@ -124,3 +124,8 @@ Avant déverrouillage : récupérer et conserver une version datée des termes e
 - **Issue de continuation** : https://github.com/OBIANG5/World-Health-Vision/issues/71 (DATA-1B2). Ne pas créer de serveur ou étendre la publication avant décision de budget et droit. PR #70 = candidate DRAFT isolée.
 
 **Point de contrôle pour les prochains chats :** toujours retrouver le **SHA HEAD de PR #70**, regarder ses deux GitHub Actions (synthétique ET LIVE) sur le même SHA, puis lire cette note et l'issue #71. En cas de divergence, la CI et le code priment sur le texte historique. 
+
+
+## 8. Prochaine branche EFFECTIVEMENT créée : DATA-1B2A (ne pas reprendre à l'étape antérieure)
+
+**PR #73 :** https://github.com/OBIANG5/World-Health-Vision/pull/73 ; branche data/v2-ibge-metadata-rights-gates-2026-11-19, base PR #70. En plus du recensement IBGE déjà testé, les métadonnées officielles de la table 4714 et sa période 2022 ont été capturées, versionnées et testées sous forme de deux ressources distinctes. Le droit de diffusion demeure BLOQUÉ par la revue source/dataset/juridiction. Nouveau document principal : docs/continuity/WORLD_VISION_DATA1B2A_METADATA_RIGHTS_2026-11-19.md. État de preuve : two CI initialement vertes sur code SHA 82723d4, à revalider au SHA final. Ne pas confondre l'archive temporaire CI avec un volume de staging permanent, ni considérer 'modificacao' comme date de révision sans source.
