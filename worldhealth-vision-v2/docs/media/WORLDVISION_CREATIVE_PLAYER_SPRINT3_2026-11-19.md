@@ -84,3 +84,35 @@ Source canonique : `services/media-renderer/src/CreativeEdit.tsx` (Remotion 4.0.
 - [Test visuel du Player](../../services/media-renderer/creative/test-player-browser.mjs)
 
 **Objectif constant : produire un véritable journal audiovisuel international au niveau des meilleurs travaux de motion design, et non accumuler du code ou des interfaces inutiles.**
+
+## 6. Contrôle terminal — LE PLAYER RÉEL FONCTIONNE DANS CHROMIUM
+
+**GitHub Actions [#44538585351](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44538585351) : deux jobs `success` ; code de test [commit `0b9a55197e50cc2368f43f2149babdeb9d1f80cb`](https://github.com/OBIANG5/World-Health-Vision/commit/0b9a55197e50cc2368f43f2149babdeb9d1f80cb).**
+- `Real V2 mobile content workbench build` : **SUCCESS**, installation verrouillée `npm ci`, TypeScript/Vite, un seul modèle Remotion, chargement différé du Player.
+- `Actual Remotion MP4 and user-project validation` : **SUCCESS**, 11 tests Node, vrai MP4 H.264 1080×1920, imports photo/vidéo/alpha/WAV, scène isolée, JPG/PNG contrôle, analyse FFmpeg et tests de silence artificiel.
+- **NOUVELLE PREUVE** : `Inspect real Remotion Player pixels in Chromium browser` : **SUCCESS**. Test réel `creative/test-player-browser.mjs` démarrant Vite, chargeant le composant React `CreativeEdit.tsx` dans `@remotion/player`, une image abstraite synthétique comme `blob:`, puis effectuant un `seekTo(0)` et un `seekTo(74)` : captures PNG différentes, sans erreur console/runtime.
+- Capture 0 : SHA-256 `44374d912e71aff8cb996cb63bebe266cfeab9dd5a0cec740ddaa3a56f25ff65` ; capture 74 : SHA-256 `9efa53e4e2390107886fa44dcc7203c4c016a059fbacdc455ff9d280a78d54c9`. Les deux fichiers et le `player-browser-smoke.report.json` sont dans l'artifact GitHub Actions **`worldvision-creative-compositor-demo`** (artifact ID `14537715899`, conservation GitHub limitée à 7 jours à compter du run). Ces SHA prouvent qu'il s'agit de deux états visuels réellement distincts, **pas la beauté**.
+- **Inspection humaine des captures de test** : frame 0 affiche le visuel abstrait placé dans un cadre portrait, sans titre ; frame 74 montre son expansion plein écran, son overline et son texte. Le navigateur et le MP4 donnent une chorégraphie conceptuellement similaire. **Ils ne contiennent aucun rush journalistique, aucune voix humaine et ne peuvent être considérés comme des vidéos de niveau mondial.** Les differences potentielles de fontes et de rendu entre Chrome headless, iOS Safari et l'encodeur doivent être examinées sur un vrai projet.
+
+### Incidents techniques et résolutions — à ne plus recommencer
+
+1. Import direct `CreativeEdit.tsx` hors frontend : TypeScript ne retrouvait pas React/Remotion. Corrigé en associant des `paths` TypeScript précis + dédoublonnage Vite, sans réécriture du modèle.
+2. Sous-chemins de types `@remotion/transitions/fade` et `slide` : résolution TypeScript explicite des déclarations réellement exportées.
+3. Installation initiale sans nouveau lockfile : lockfile généré par npm CI, commité et **retour à `npm ci`**.
+4. **Piège API** : `@remotion/renderer.openBrowser()` renvoie **Remotion `HeadlessBrowser`**, pas l'API Puppeteer. Il faut `browser.newPage({context:()=>null, logLevel, indent, pageIndex, onBrowserLog,onLog})`, `page.goto({url,timeout,options})`, et `browser.close({silent:true})`. `page.waitForFunction` et `element.screenshot` n'existent pas ici. Le test utilise `page.evaluate` pour le polling et le CDP natif `page._client().send("Page.captureScreenshot",...)`. Deux anciens runs échouaient sur l'appel incorrect ; le run #44538585351 confirme la correction.
+5. Ne jamais réintroduire de fausses validations en copiant uniquement les états « green » d'un autre commit. Chaque évolution doit recevoir son propre contrôle.
+
+### Suite intelligente à privilégier
+
+**P0 — QUALITÉ** : produire une seule vraie scène haut de gamme sur un script et des médias journalistiques **réellement fournis/sourcés et autorisés** ; revoir sur iPhone et sur MP4 encodé. Le stade atteint est la preuve de la bonne architecture, pas la preuve de la qualité motion.
+
+**P1 — PARITÉ SUR VIDÉO** : étendre le test du navigateur à un véritable clip vidéo source `OffthreadVideo` dans le Player en plus de la photographie blob, puis tester explicitement les codecs susceptibles de poser problème sur Safari/iOS, avec génération de proxies FFmpeg.
+
+**P2 — LECTURE INTÉGRALE** : Player vidéo de toute la timeline avec raccords et narration approuvée, et annotations temporelles / versions, sans recharger les assets ni détruire les plans approuvés.
+
+**P3 — FICHIERS LOURDS** : stockage d'assets authentifié et persistant, provenance et licences, droit de suppression, preview proxy et contrôle des coûts.
+
+**P4 — MASTERING / SON** : améliorer avec outils existants plutôt que coder un faux DAW : mixage FFmpeg/DAW, voix libres A/B, alignement réel, colorimétrie, tests QA humains multi-plateformes.
+
+**N'OUBLIE PAS** : scripts et choix d'actualités ici avec ChatGPT, BAOCOM complètement séparé, GDELT/blog hors de ce sprint, aucune fusion `v2`, aucun déploiement/publication, pas d'outils dérisoires recréés à la place des standards professionnels.
+
