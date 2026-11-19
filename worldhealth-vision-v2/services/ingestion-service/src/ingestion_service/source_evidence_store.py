@@ -21,6 +21,8 @@ from ingestion_service.models import RunManifest
 
 _CODE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$")
 _SHA = re.compile(r"^[a-f0-9]{64}$")
+_MAX_NORMALIZED_BYTES = 8_000_000
+_MAX_MANIFEST_BYTES = 256_000
 _REQUIRED_QUARANTINE = {
     "publicationStatus": "BRONZE_ONLY_UNREVIEWED",
     "timeseriesPublication": "NOT_ATTEMPTED",
@@ -112,6 +114,8 @@ class QuarantinedJsonEvidenceStore:
             )).encode("utf-8")
         except (TypeError, ValueError) as exc:
             raise EvidenceIntegrityError("Normalized records are not JSON serializable") from exc
+        if len(ndjson) > _MAX_NORMALIZED_BYTES:
+            raise EvidenceIntegrityError("Normalized evidence exceeds bounded size")
         body_hash = sha256(raw_response_bytes).hexdigest()
         normalized_hash = sha256(ndjson).hexdigest()
         revisions = self._revisions(source_code, dataset_code)
@@ -204,6 +208,11 @@ class QuarantinedJsonEvidenceStore:
         )]
         if any(not p.is_file() or p.is_symlink() for p in paths):
             raise EvidenceIntegrityError("Incomplete or symlinked evidence revision")
+        for path, size_limit in zip(
+            paths, (self._max_bytes, _MAX_NORMALIZED_BYTES, _MAX_MANIFEST_BYTES), strict=True
+        ):
+            if not 1 <= path.stat().st_size <= size_limit:
+                raise EvidenceIntegrityError("Evidence file exceeds its verified size budget")
         raw, normalized = paths[0].read_bytes(), paths[1].read_bytes()
         if sha256(raw).hexdigest() != response_sha256:
             raise EvidenceIntegrityError("Original HTTP bytes were modified")
@@ -236,7 +245,10 @@ class QuarantinedJsonEvidenceStore:
             or manifest.notes.get("evidenceLayoutVersion") != "DATA-1B1"
         ):
             raise EvidenceIntegrityError("Provenance manifest inconsistent with bytes")
-        lines = normalized.decode("utf-8").splitlines()
+        try:
+            lines = normalized.decode("utf-8").splitlines()
+        except UnicodeDecodeError as exc:
+            raise EvidenceIntegrityError("Normalized evidence encoding corrupted") from exc
         if len(lines) != manifest.record_count:
             raise EvidenceIntegrityError("Normalized row count changed")
         try:
