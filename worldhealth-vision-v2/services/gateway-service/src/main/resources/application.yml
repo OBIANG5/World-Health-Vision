@@ -244,11 +244,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        # The public Gateway exposes only a non-diagnostic health check.
+        # Monitoring uses a private channel with separate credentials.
+        include: ${WHV_GATEWAY_ACTUATOR_EXPOSURE:health}
 
   endpoint:
     health:
-      show-details: always
+      show-details: never
+      show-components: never
 
 info:
   app:
@@ -257,4 +260,5 @@ info:
 
 whv:
   security:
-    enabled: ${WHV_SECURITY_ENABLED:false}
+    enabled: ${WHV_SECURITY_ENABLED:true}
+    public-read-enabled: ${WHV_PUBLIC_READ_ENABLED:false}

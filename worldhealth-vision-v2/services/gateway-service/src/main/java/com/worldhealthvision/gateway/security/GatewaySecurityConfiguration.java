@@ -1,6 +1,7 @@
 package com.worldhealthvision.gateway.security;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -10,13 +11,19 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
+/**
+ * Fail-closed Gateway access policy for World-Vision's international products.
+ * Public-read is a conscious opt-in: never expose all /api/** just because the
+ * application has a public homepage.
+ */
 @Configuration
 @EnableConfigurationProperties(GatewaySecurityProperties.class)
 public class GatewaySecurityConfiguration {
 
+    // Local development/test mode only. NEVER enabled by omission in production.
     @Bean
-    @ConditionalOnProperty(prefix = "whv.security", name = "enabled", havingValue = "false", matchIfMissing = true)
-    SecurityWebFilterChain openSecurityWebFilterChain(ServerHttpSecurity http) {
+    @ConditionalOnProperty(prefix = "whv.security", name = "enabled", havingValue = "false")
+    SecurityWebFilterChain localDevelopmentSecurityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll())
@@ -24,16 +31,35 @@ public class GatewaySecurityConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "whv.security", name = "enabled", havingValue = "true")
-    SecurityWebFilterChain jwtSecurityWebFilterChain(ServerHttpSecurity http) {
+    @ConditionalOnProperty(prefix = "whv.security", name = "enabled", havingValue = "true", matchIfMissing = true)
+    SecurityWebFilterChain securedSecurityWebFilterChain(
+            ServerHttpSecurity http,
+            GatewaySecurityProperties properties
+    ) {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/actuator/health", "/actuator/health/**", "/actuator/info", "/actuator/prometheus")
-                        .permitAll()
-                        .pathMatchers(GET, "/api/**").authenticated()
-                        .anyExchange().denyAll()
-                )
+                .authorizeExchange(exchanges -> {
+                    // Only readiness is public: never expose info/prometheus/details
+                    // through the public edge. Scrape metrics privately.
+                    exchanges.pathMatchers(GET, "/actuator/health", "/actuator/health/**").permitAll();
+                    exchanges.pathMatchers("/actuator/**").denyAll();
+
+                    // Same reviewed list in both modes. No accidental new endpoints
+                    // turn public when a future service adds a personal/user route.
+                    if (properties.publicReadEnabled()) {
+                        exchanges.pathMatchers(GET, PublicReadRoutes.PATHS).permitAll();
+                    } else {
+                        exchanges.pathMatchers(GET, PublicReadRoutes.PATHS).authenticated();
+                    }
+
+                    // Advisor requests are not public anonymous operations. Add a
+                    // real per-user quota and rate limiting before Internet launch.
+                    exchanges.pathMatchers(POST, "/api/analytics/advisor/chat").authenticated();
+
+                    // No ingestion mutation, source-run metadata, future personal
+                    // endpoints, arbitrary POST, WebSocket or unspecified routes.
+                    exchanges.anyExchange().denyAll();
+                })
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
     }

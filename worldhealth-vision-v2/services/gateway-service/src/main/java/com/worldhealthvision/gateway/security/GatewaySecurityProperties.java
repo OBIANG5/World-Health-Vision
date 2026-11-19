@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "whv.security")
 public record GatewaySecurityProperties(
-        boolean enabled
+        boolean enabled,
+        boolean publicReadEnabled
 ) {
 }

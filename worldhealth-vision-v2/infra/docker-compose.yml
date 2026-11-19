@@ -23,6 +23,7 @@ services:
     restart: unless-stopped
     environment:
       WHV_GATEWAY_PORT: 8080
+      WHV_SECURITY_ENABLED: "false" # Dev/CI ONLY; production defaults to secured
       WHV_CATALOG_BASE_URL: http://catalog-service:8080
       WHV_TIMESERIES_BASE_URL: http://timeseries-service:8080
       WHV_ANALYTICS_BASE_URL: http://analytics-service:8000
