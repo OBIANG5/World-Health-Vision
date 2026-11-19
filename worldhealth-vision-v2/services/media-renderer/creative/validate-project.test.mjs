@@ -360,6 +360,8 @@ test("photo STORY validates imported original, safe crop, foreground, timing and
   s.photo.focus.x=.5;
   s.photo.metric.sourceLabel="";
   assert.ok(reasons(p).includes("shots[0].photo.metric"));
+  s.photo.metric.sourceLabel="X".repeat(86);
+  assert.ok(reasons(p).includes("shots[0].photo.metric"),"Oversized provenance must not be hidden in mobile chart");
   s.photo.metric.sourceLabel="Simulation non journalistique";
   s.foreground=undefined;
   assert.ok(reasons(p).includes("shots[0].photo.subject"));
