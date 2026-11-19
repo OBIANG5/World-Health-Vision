@@ -1,5 +1,5 @@
 import {Player} from "@remotion/player";
-import {CreativeEdit} from "../../../../services/media-renderer/src/CreativeEdit";
+import {CreativeEdit, creativeDuration} from "../../../../services/media-renderer/src/CreativeEdit";
 import type {CreativeEditProps} from "../../../../services/media-renderer/src/CreativeEdit";
 
 /**
@@ -14,15 +14,16 @@ import type {CreativeEditProps} from "../../../../services/media-renderer/src/Cr
  * Always approve the actual exported MP4 before publishing.
  */
 export default function CreativeCompositionPreview({
-  props,shotId
+  props,previewId,label
 }:{
   props:CreativeEditProps;
-  shotId:string;
+  previewId:string;
+  label:string;
 }){
-  const frames=Math.max(1,props.shots[0]?.durationFrames??1);
-  return <div className="wvc-composition-preview" aria-label={"Véritable composition Remotion du plan "+shotId}>
+  const frames=Math.max(1,creativeDuration(props));
+  return <div className="wvc-composition-preview" aria-label={label}>
     <Player
-      key={shotId}
+      key={previewId}
       component={CreativeEdit}
       durationInFrames={frames}
       compositionWidth={1080}
@@ -36,7 +37,7 @@ export default function CreativeCompositionPreview({
       allowFullscreen
       style={{width:"100%",height:"100%",aspectRatio:"9 / 16"}}
       errorFallback={({error})=><div className="wvc-player-error" role="alert">
-        Le lecteur ne peut pas interpréter ce fichier ou ce codec dans ton navigateur. Le plan n'a pas été remplacé.
+        Le lecteur ne peut pas interpréter un des médias ou ce codec dans ton navigateur. Le projet original reste inchangé.
         <small>{error instanceof Error ? error.message : String(error)}</small>
       </div>}
     />
