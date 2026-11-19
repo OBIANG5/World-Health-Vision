@@ -53,6 +53,7 @@ export default function VisionHub({ open, language, onClose, onAction }: Props) 
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<VisionId>("atlas");
   const panelRef = useRef<HTMLElement>(null);
+  const detailRef = useRef<HTMLElement>(null);
 
   const visible = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase(language === "fr" ? "fr" : "en");
@@ -66,7 +67,20 @@ export default function VisionHub({ open, language, onClose, onAction }: Props) 
     });
   }, [family, language, query]);
 
-  const selected = VISION_PRODUCTS.find((product) => product.id === selectedId) ?? VISION_PRODUCTS[0];
+  const selected = visible.find((product) => product.id === selectedId)
+    ?? visible[0]
+    ?? VISION_PRODUCTS.find((product) => product.id === selectedId)
+    ?? VISION_PRODUCTS[0];
+
+  function chooseProduct(id: VisionId) {
+    setSelectedId(id);
+    if (window.matchMedia("(max-width: 760px)").matches) {
+      window.requestAnimationFrame(() => detailRef.current?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+        block: "start",
+      }));
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -144,7 +158,11 @@ export default function VisionHub({ open, language, onClose, onAction }: Props) 
           <div className="vision-hub-filters" role="group"
             aria-label={language === "fr" ? "Filtrer les univers" : "Filter products"}>
             {VISION_FAMILIES.map(({ id, title }) => (
-              <button key={id} type="button" onClick={() => setFamily(id)}
+              <button key={id} type="button" onClick={() => {
+                setFamily(id);
+                const next = VISION_PRODUCTS.find((product) => id === "all" || product.family === id);
+                if (next) setSelectedId(next.id);
+              }}
                 aria-pressed={family === id}
                 className={family === id ? "vision-filter active" : "vision-filter"}>
                 {title[language]}
@@ -161,9 +179,9 @@ export default function VisionHub({ open, language, onClose, onAction }: Props) 
             <div className="vision-hub-grid">
               {visible.map((product) => (
                 <button key={product.id} type="button"
-                  onClick={() => setSelectedId(product.id)}
-                  aria-pressed={selectedId === product.id}
-                  className={selectedId === product.id ? "vision-product active" : "vision-product"}>
+                  onClick={() => chooseProduct(product.id)}
+                  aria-pressed={selected.id === product.id}
+                  className={selected.id === product.id ? "vision-product active" : "vision-product"}>
                   <span className="vision-product-head">
                     <span className="vision-product-icon"><WorldIcon name={icons[product.id]} size={21}/></span>
                     <span className={"vision-product-stage stage-" + product.stage}>
@@ -186,7 +204,7 @@ export default function VisionHub({ open, language, onClose, onAction }: Props) 
             )}
           </div>
 
-          <aside className="vision-hub-detail" aria-live="polite">
+          <aside className="vision-hub-detail" aria-live="polite" ref={detailRef}>
             <span className="vision-hub-detail-kicker">{language === "fr" ? "FICHE PRODUIT" : "PRODUCT BRIEF"}</span>
             <h3>{selected.name}</h3>
             <p className={"vision-detail-stage stage-" + selected.stage}>{statusLabel(selected, language)}</p>

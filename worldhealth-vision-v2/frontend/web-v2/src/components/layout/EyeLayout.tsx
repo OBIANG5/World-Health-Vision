@@ -13,7 +13,7 @@ export default function EyeLayout({ children, headerActions }: EyeLayoutProps) {
       <header className="whv-header">
         <div className="whv-brand">
           <div className="whv-brand-logo" aria-hidden="true">
-            <svg viewBox="0 0 112 70" className="whv-brand-logo-svg" role="img" aria-label="World Vision — œil et Terre">
+            <svg viewBox="0 0 112 70" className="whv-brand-logo-svg" role="img" aria-label="World-Vision — œil et Terre">
               <defs>
                 <radialGradient id="wv-brand-sea" cx="35%" cy="22%" r="85%">
                   <stop offset="0" stopColor="#12aaf7"/>
@@ -43,7 +43,7 @@ export default function EyeLayout({ children, headerActions }: EyeLayoutProps) {
           </div>
 
           <div className="whv-brand-text">
-            <h1>World Health Vision</h1>
+            <h1>World-Vision</h1>
             <p>{lang === "fr" ? "Voir le monde, le comprendre." : "See the world, understand it."}</p>
           </div>
         </div>

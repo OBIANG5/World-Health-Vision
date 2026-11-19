@@ -135,3 +135,16 @@
  .vision-product{transition:none}
  .vision-product:hover{transform:none}
 }
+
+/* First-stage common entrypoint across the current globe-based home. */
+.whv-mobile-vision-entry{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:13px 14px;margin:12px 0 10px;border:1px solid #b9dfff;border-radius:13px;
+  background:linear-gradient(105deg,#e2f5ff,#f7fcff);color:#034e8e;text-align:left;
+  cursor:pointer;font:inherit;box-shadow:0 4px 15px rgba(0,84,161,.07);
+}
+.whv-mobile-vision-entry strong{font-size:12px;line-height:1.3;display:block;font-weight:810}
+.whv-mobile-vision-entry small{display:block;font-size:10px;line-height:1.35;margin-top:3px;color:#527592}
+.whv-mobile-vision-entry:hover{background:#d5efff}
+.whv-mobile-vision-entry:focus-visible{outline:3px solid #048af0;outline-offset:3px}
+@media(min-width:761px){.whv-mobile-vision-entry{display:none}}
