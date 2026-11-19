@@ -16,7 +16,7 @@ from pathlib import Path
 
 _WAIT = re.compile(
     r'^whv_analytics_economic_timeseries_batch_wait_seconds_'
-    r'(count|sum)\\{operation="(latest|availability|history)"\\} '
+    r'(count|sum)\\{operation="(latest|availability|history)"\\}\\s+'
     r'([0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)
     data = json.loads(path.read_text(encoding="utf-8"))
     if not data.get("not_real_country_economic_data"):
@@ -109,13 +109,13 @@ def main():
         "baseline_repeat": read_queue_wait(args.baseline_repeat_metrics),
     }
     for mode in ("baseline", "baseline_repeat"):
-        if any(queue_wait[mode][op]["total_wait_ms_across_all_requests"]
+        if any(queue_wait[mode][op]["total_wait_ms_across_all_requests"] != 0
                for op in ("latest", "availability", "history")):
             raise AssertionError("Uncapped baseline must have zero Analytics queue time")
     data["analytics_queue_wait"] = queue_wait
     data["queue_wait_interpretation"] = (
-        "sum is aggregate across requests of multiple concurrency tiers, NOT wall clock; "
-        "batch admission cap moves some waiting from Hikari to Analytics"
+        "Queue sums aggregate waiting across snapshots and five concurrency tiers; "
+        "they are NOT wall-clock time and are not savings in the total workload."
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(data, indent=2, ensure_ascii=False)+"\n",encoding="utf-8")
@@ -125,10 +125,11 @@ def main():
               f"p95={max_tier['p95_ms']}ms Hikari pending sampled "
               f"{max_tier['hikari_pending_max_sampled']} "
               f"checkout_mean={max_tier['hikari_checkout_mean_ms']}ms")
-    for op, item in queue_wait["bounded_8"].items():
-        print(f"OBSERVED bounded Analytics queue {op}: mean={item['mean_wait_ms_all_61_snapshots']}ms "
-              f"total across requests={item['total_wait_ms_across_all_requests']}ms")
-    print("PASS: 180 snapshots; same source evidence; Analytics queue wait measured separately from Hikari")
+    for operation, item in queue_wait["bounded_8"].items():
+        print(f"OBSERVED Analytics queue {operation}: "
+              f"mean={item['mean_wait_ms_all_61_snapshots']}ms "
+              f"sum-across-requests={item['total_wait_ms_across_all_requests']}ms")
+    print("PASS: 180 snapshots; exact evidence, fixed queue metrics and no fabricated data")
 
 
 if __name__ == "__main__":
@@ -138,38 +139,34 @@ if __name__ == "__main__":
 
 
 def read_queue_wait(path: Path) -> dict:
-    """Read privacy-bounded histogram count/sum for exactly the 3 operations.
-
-    A nonzero sum records wait moved to Analytics, never falsely counted as
-    time saved. This aggregated sum is NOT a wall-clock latency percentile.
-    """
-    series = {}
+    """Privacy-bounded, fail-closed Prometheus count/sum per operation."""
+    samples: dict[tuple[str, str], float] = {}
     for line in path.read_text(encoding="utf-8").splitlines():
         if not line.startswith("whv_analytics_economic_timeseries_batch_wait_seconds_"):
             continue
-        if line.startswith("#") or "_bucket{" in line or "_created{" in line:
+        if "_bucket{" in line or "_created{" in line:
             continue
-        match = _WAIT.fullmatch(line)
-        if not match:
-            raise ValueError("Unreviewed metric/label on private batch wait histogram")
-        kind, operation, value = match.groups()
+        match = _WAIT.fullmatch(line.strip())
+        if match is None:
+            raise ValueError("Unreviewed queue metric name, labels or value")
+        kind, operation, raw_number = match.groups()
         key = (operation, kind)
-        if key in series:
+        if key in samples:
             raise ValueError("Duplicate batch wait series")
-        number = float(value)
-        if not math.isfinite(number) or number < 0:
-            raise ValueError("Non-finite or negative queue metric")
-        series[key] = number
-    result = {}
-    for op in ("latest", "availability", "history"):
-        count = series.get((op, "count"))
-        total = series.get((op, "sum"))
+        value = float(raw_number)
+        if not math.isfinite(value) or value < 0:
+            raise ValueError("Non-finite or negative queue metric value")
+        samples[key] = value
+    result: dict[str, dict] = {}
+    for operation in ("latest", "availability", "history"):
+        count = samples.get((operation, "count"))
+        total = samples.get((operation, "sum"))
         if count != 61 or total is None:
-            raise ValueError(f"Missing or incorrectly counted batch wait observations for {op}")
-        result[op] = {
-            "count": int(count),
-            "total_wait_ms_across_all_requests": round(total * 1000, 3),
-            "mean_wait_ms_all_61_snapshots": round(total * 1000 / count, 3),
+            raise ValueError(f"Missing or incorrectly counted batch wait observations for {operation}")
+        result[operation] = {
+            "count": 61,
+            "total_wait_ms_across_all_requests": round(1000 * total, 3),
+            "mean_wait_ms_all_61_snapshots": round(1000 * total / count, 3),
         }
     return result
 
