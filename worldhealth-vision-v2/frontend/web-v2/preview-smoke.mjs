@@ -121,10 +121,15 @@ try {
       throw new Error(device.name + ": navigation categories/actions missing (" +
         await groups.count() + " groups, " + await items.count() + " actions)");
     }
+    // Save the actual OPEN tools menu, not a homepage screenshot disguised as
+    // proof that a menu existed. Then verify that selecting a tool opens its
+    // real lazy-loaded panel (closing the menu alone is insufficient).
+    await page.screenshot({ path: "preview-artifacts/" + device.name + "-menu.png", fullPage: true });
     await items.filter({ hasText: "Favoris" }).click();
     if (await page.locator(".whv-tools-menu").isVisible()) {
       throw new Error(device.name + ": tools menu did not close after selection");
     }
+    await page.locator(".watchlist-panel").waitFor({ state: "visible", timeout: 15000 });
     await page.screenshot({ path: "preview-artifacts/" + device.name + "-tools.png", fullPage: true });
     if (pageErrors.length) throw new Error(device.name + " runtime errors: " + pageErrors.join("; "));
     console.log("PASS", device.name, "catalog", catalogSize, "single globe, country drill-down, 9 core tools, 4 navigation groups, preview honesty");
