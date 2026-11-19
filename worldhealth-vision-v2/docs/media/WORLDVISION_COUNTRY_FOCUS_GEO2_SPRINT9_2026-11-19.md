@@ -81,3 +81,23 @@ Dans un nouveau chat : lire `CONTINUITE_WORLD_VISION.md`, ce rapport, `WORLDVISI
 **Dernière action CI de contrôle à lire :** [#44622728753](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44622728753), sur commit `ffa0c44a` au moment du lancement. **Consulter son statut effectif, télécharger les nouveaux 0/60/115/155 et MP4, comparer au premier rendu et consigner les écarts avant d'annoncer que les deux défauts sont corrigés visuellement.** Le travail reste en PR draft.
 
 **Prochain verrou** : vraie photo d'actualité dont les droits sont prouvés, essai sur un petit territoire/archipel, benchmark du Player Safari et Android, et évaluation esthétique comparative avec les deux vidéos de référence, pas une seule image artistique.
+
+## 8. Vérification finale de la géométrie et des pixels — 19 novembre
+
+**Commit exact du CODE contrôlé :** `b553f7d38c4111ec8de02e43e1a2dbbf1f614c82`.
+**Preuve : [GitHub Actions #44624747361](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44624747361)**, **deux jobs SUCCESS**, compilation et 19 tests Node (Gabon, Fidji et Russie), master réel country-focus H.264 1080×1920/165 frames, et captures du vrai Player Remotion Chrome. Artefact `worldvision-creative-compositor-demo` id **14578693543** (~25,1 Mo) effectivement téléchargé, extrait et revu. MP4 `country-focus-gabon-synthetic.mp4` (~940 Ko) et Player `player-country-frame-0/60/115/155.png` + master frames 0/82/164 tous présents, 0 erreur JavaScript.
+
+**Régression puis correction :** le run [#44623703278](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44623703278) a délibérément échoué au seuil d'espacement titre/carte : seulement **3,8177 pixels** sur viewport mobile 360px; code et MP4 avaient pourtant été rendus sans incident. Après séparation verticale et nouveau code du commit `b553f7d`, le Player réel mesure **17,4844 pixels**, au-delà du seuil strict **12 pixels**. La carte finit à y305,3px; carte média commence à y330px en début de séquence (marge 24,7px) puis y315px après entrée (9,7px), sans occlusion du pays.
+
+**Observations directes des sept frames** :
+- Au frame 0, le pays n'est plus absent : base silhouette visible et titre déjà amorcé ; volontairement discret, mais intérêt initial peut être renforcé pour un montage final.
+- Aux frames 60/115/155, la silhouette source Gabon est entière, suffisamment grande et animée avec contour cyan, marqueur, paysage de fixture, compteur fictif et sous-titre. Aucun recul vers l'ancienne maquette masquée.
+- Le tracé 50m de voisinage sur ce cas est **84 114 caractères** à frame60 contre **709 064** avant rayon de proximité adaptatif (environ 88% de réduction sans déformer/simplifier le pays 10m).
+- **Reste une dette ARTISTIQUE réelle** : une fraction importante du bas du 9:16 est inoccupée, le paysage de CI est abstrait, l'image n'est pas un vrai reportage, et ce montage isolé ne se compare pas encore favorablement aux vidéos de référence. L'espace libre peut protéger les commandes TikTok, mais dans la future vraie composition il devra être intentionnel (sous-titres, documentaire, shot plus ambitieux) plutôt qu'un vide par défaut.
+- La vidéo est **un test synthétique** : aucune vérité d'actualité, licence photo réelle, réputation journalistique, performance iPhone Safari ou approbation utilisateur ne découle de cette CI.
+
+**Verdict** : GEO-2 est **validé techniquement et les corrections de collision sont vérifiées sur pixels**, mais **pas encore approuvé artistiquement / publiable / intégré au site V2**. La PR #74 reste en brouillon empilée sur #72.
+
+**Prochaine étape intelligente** : arrêtons les itérations sur des cadres GEO isolés ; construire **PHOTO MULTILAYER** à partir d'une vraie image fournie (caméra, masque/reveal, profondeur par alpha cutout, étiquettes et informations/synchronisation, composition non destructive), ensuite pack DATA et une séquence reportage complète globe→pays→photo, sous droits et voix libre. Optimiser le poids du bundle atlas 10m (3,66Mo JS, 986Ko gzip sur Vite) et tester sur iOS avant un vrai déploiement.
+
+**Lecture prochaine session** : commencer par ce §8 et le HEAD PR #74, puis la nouvelle PR PHOTO si créée. Aucune fusion V2, ne pas forcer voix Vivienne, ne pas intégrer BAOCOM ou blog/GDELT dans l'atelier vidéo.
