@@ -154,7 +154,7 @@ export function inspectProject(project) {
           if(!timing(m,25)||!isText(m.label,55)||!m.label?.trim()||
             !within(m.value,-1e12,1e12)||!isText(m.unit,12)||
             !boundedInteger(m.precision,0,2)||
-            !isText(m.sourceLabel,160)||!m.sourceLabel?.trim())
+            !isText(m.sourceLabel,85)||!m.sourceLabel?.trim())
             bad(errors,p+".photo.metric","An editor-provided count needs a finite value, unit, readable source label and independent timing.");
         }
       }
