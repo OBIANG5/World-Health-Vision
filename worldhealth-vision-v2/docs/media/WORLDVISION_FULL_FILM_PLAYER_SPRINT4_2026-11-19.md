@@ -107,3 +107,19 @@ La conséquence recherchée est une **transition d'image continue, mais sans col
 
 **Validation** : [workflow #44541690295](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44541690295), commencé après la correction. **Ne pas déclarer ce changement vert avant succès effectif des deux jobs et inspection du nouvel artefact.**
 
+
+
+## 9. Validation finale de la correction des titres — SUCCESS
+
+**Preuve : [GitHub Actions #44541690295](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44541690295) — 2 jobs `SUCCESS`**, moteur et frontend. **11 tests Node réussis, 0 échec**. Les tests valident le MP4, les assets image/vidéo/alpha, l'audio synthétique, le plan isolé et le navigateur.
+
+Le contrôle navigateur a affiché : `[player-smoke] transition typography gate validated` à la frame **100** : l'opacité du **titre entrant était au plus 0,02**. Le texte n'est donc plus superposé sur la légende sortante pendant le fondu.
+
+**Artefact de preuve** : `worldvision-creative-compositor-demo` ID `14539367625`, avec `player-film-frame-100.png`, `player-film-frame-145.png` et le rapport complet. Ces deux captures ont été téléchargées et inspectées : à la frame 100, le titre sortant est assombri, l'entrant n'empiète plus ; à la frame 145, le titre « LE RÉCIT CONTINUE. » est lisible seul.
+
+**Mise en page téléphone** : le run précédent [#44540638541](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44540638541) a également terminé ses deux jobs **SUCCESS**, confirmant la compilation avec un visionnage portrait qui peut atteindre 360 px de large.
+
+**Ce qui reste non validé** : lecture Safari/iOS réelle, audio écouté au casque et sur téléphone, film à partir de photographie journalistique réelle, montages et effets d'un niveau artistique de référence, licences médias, productivité avec des rushes volumineux, accès multi-appareils. **Ce sprint ne doit pas être diffusé sur les réseaux sociaux tel quel : c'est un test technique synthétique.**
+
+**État de la PR #44** : toujours DRAFT, sans fusion ni déploiement, BAOCOM intact et indépendant.
+
