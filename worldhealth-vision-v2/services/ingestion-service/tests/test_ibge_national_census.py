@@ -88,7 +88,12 @@ def test_http_failure_or_non_json_never_generates_bronze(tmp_path: Path):
         pilot = IbgeNationalCensusPilot(client=client, bronze_store=BronzeStore(tmp_path))
         with pytest.raises((httpx.HTTPStatusError, ValueError)):
             pilot.capture_population_2022()
-    assert not list(tmp_path.glob("**/*.json"))
+    # A failed request is now deliberately journaled; no RAW VERSION may exist.
+    assert not list(tmp_path.rglob("manifest.json"))
+    from ingestion_service.acquisition_journal import AcquisitionJournal
+    audit = AcquisitionJournal(tmp_path).audit("IBGE", "CENSO2022_4714")
+    assert audit["failureCount"] == 2
+    assert audit["successCount"] == 0
 
 
 def test_invalid_json_or_large_payload_fails_before_persistence(tmp_path: Path):
