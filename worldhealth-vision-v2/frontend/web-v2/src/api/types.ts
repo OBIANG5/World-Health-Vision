@@ -477,6 +477,23 @@ export interface IndicatorRankResponse {
  * Reported by the real V2 timeseries store, NOT by catalog.source.
  * Observed and estimated values remain distinct; null dates mean no evidence.
  */
+/**
+ * Only active, legally publishable AND Bronze-attested observations in the
+ * current Timeseries database. Not the count of registered institutions.
+ * NO_PUBLICLY_ELIGIBLE_DATA never means worldwide data does not exist.
+ */
+export interface CountryPublishedCoverage {
+  countryIso3: string;
+  coverageStatus: "PUBLISHED_DATA_AVAILABLE" | "NO_PUBLICLY_ELIGIBLE_DATA";
+  availableObservationCount: number;
+  observedObservationCount: number;
+  estimatedObservationCount: number;
+  publishedIndicatorCount: number;
+  publishedSourceCount: number;
+  latestAvailablePeriodStart: string | null;
+  latestSourceFetchedAtUtc: string | null;
+}
+
 export interface SourceDataCoverage {
   sourceCode: string;
   sourceDisplayName: string;
