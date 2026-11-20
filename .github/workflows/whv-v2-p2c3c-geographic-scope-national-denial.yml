@@ -1,0 +1,82 @@
+name: World-Vision PRODUCT-P2C3C — independent geographic scope and national API denial
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2c3c-geographic-scope-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# REAL Java21, Postgres16/Flyway. Uses SYNTHETIC GDP-only tests.
+# Zero institutional values, zero INSEE auto-grants, no deployment.
+jobs:
+  national-geo-scope-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 36
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Static contract — no scope to ISO3 auto mapping or signed rights bypass
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("worldhealth-vision-v2")
+          mig=(root/"services/timeseries-service/src/main/resources/db/migration/V6__source_native_geography_scope_and_national_read_gate.sql").read_text()
+          gate=(root/"services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/service/ProtectedSourcePublicationGate.java").read_text()
+          repo=(root/"services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/persistence/JdbcTimeseriesRepository.java").read_text()
+          tests=(root/"services/timeseries-service/src/test/java/com/worldhealthvision/timeseries/GeographicScopeNationalReadIntegrationTest.java").read_text()
+          assert "create table timeseries.geographic_scope_registry" in mig
+          assert "source_metadata_sha256" in mig and "source_metadata_url" in mig
+          assert "unique (source_code, dataset_code, native_geo_code, native_geo_version)" in mig
+          assert "native_geo_version varchar(64)" in mig
+          assert "country_iso3 char(3) references catalog.country" in mig
+          assert "review_status = 'RESEARCH_ONLY'" in mig
+          assert "geographic_scope_id is null" in mig
+          assert "SOURCE-CODE FORGERY" in mig
+          assert "national_scope_read_eligible" in mig
+          assert "from timeseries.latest_observation" in repo
+          assert "and timeseries.national_scope_read_eligible" in repo
+          assert "hasUnreviewedGeographicScope" in gate
+          assert "DS_POPULATIONS_REFERENCE" in gate
+          # Entire old V5 cryptographic rights/revocation/Bronze filter MUST
+          # be byte-for-byte preserved in V6 except for one extra DENY.
+          v5=(root/"services/timeseries-service/src/main/resources/db/migration/V5__immutable_bronze_witness_provenance.sql").read_text()
+          key="create or replace view timeseries.latest_observation as"
+          assert v5.count(key)==1 and mig.count(key)==1
+          old=v5.split(key,1)[1].strip()
+          new=mig.split(key,1)[1].strip()
+          added=("where timeseries.national_scope_read_eligible(\n"
+                 "        o.source_code, o.dataset_code, o.geographic_scope_id, o.source_metadata\n"
+                 "    )\n"
+                 "      and sr.evidence_attestation_sha256 is not null")
+          assert new.count(added)==1
+          restored=new.replace(added, "where sr.evidence_attestation_sha256 is not null")
+          assert restored==old, "Geography migration MUST preserve all V5 rights/revocation/Bronze conditions"
+          print("PASS: V6 national view = exact V5 signed public view + one restrictive geography predicate")
+          assert "genuineRegistryBindingIsStillHiddenFromEveryNationalReadSurface" in tests
+          assert "evenForgedSourceCodeCannotInsertInseeDatasetThroughDatabase" in tests
+          print('PASS: geographic scope history is append-only and no country equivalence is auto-granted')
+          PY
+      - name: Run full Timeseries signed rights, forensic witnesses and geographic-scope tests on actual PostgreSQL 16
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service -am test
+      - name: No real Insee numeric payload or secrets in the new tests
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("worldhealth-vision-v2/services/timeseries-service")
+          source=(root/"src/test/java/com/worldhealthvision/timeseries/GeographicScopeNationalReadIntegrationTest.java").read_text()
+          assert '"numericValue":17.0' in source
+          assert "DS_POPULATIONS_REFERENCE" in source
+          assert "private key" not in source.lower()
+          print("PASS: only documented synthetic test GDP used")
+          PY

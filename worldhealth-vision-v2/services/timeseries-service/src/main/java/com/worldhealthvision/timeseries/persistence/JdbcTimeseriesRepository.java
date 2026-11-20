@@ -921,6 +921,13 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                     join timeseries.rights_decision rights
                       on rights.decision_id = linked.decision_id
                     where o.source_run_id = sr.id
+                      -- The source-run public listing must honor EXACTLY the
+                      -- same additional national geography-denial policy
+                      -- as the canonical latest_observation read view.
+                      and timeseries.national_scope_read_eligible(
+                          o.source_code, o.dataset_code,
+                          o.geographic_scope_id, o.source_metadata
+                      )
                       and rights.source_code = o.source_code
                       and rights.dataset_code = o.dataset_code
                       and rights.country_iso3 = o.country_iso3

@@ -834,3 +834,19 @@ Le premier pipeline de données réelles INSEE (P2C3B #111) est testé
 signé ni chiffre dans Atlas ou Vercel public. Les instructions de reprise
 sont dans `docs/continuity/WORLD_VISION_PRODUCT_P2C3B_INSEE_FEHM_METADATA_2026-11-20.md`
 §8–9, puis PR #108, #106, #95/issue #94 et issue #107.
+
+---
+## 2026-11-20 — P2C3C issue #112 : périmètres institutionnels MONDIAUX
+PR #113 DRAFT (`product/v2-p2c3c-geographic-scope-foundation-2026-11-20`), base PR #111 (P2C3B) → #108 P2C3 → #106 P2C2. **Migration Flyway V6** ajoutant `timeseries.geographic_scope_registry` source-native/immutable, code/version géographique alphanumérique, année facultative, pays parent facultatif en transfrontalier, inclusions/exclusions, statut `RESEARCH_ONLY`, aucune équivalence ISO3 ni autorisation signée ; verrou dataset INSEE anti-source forgée et API nationale `latest_observation` + source-runs public rights-gated. Java bloque une revendication geo non revue avant ingestion ; DB aussi en trigger. **Aucun chiffre réel Insee publié, Vercel inchangé, aucun merge.**
+CI fiable pour version enrichie `e500851ec44dce4607e334918779e22c2d30aee0` : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44784585785 **SUCCESS 42 Java/PostgreSQL16/Flyway**. CI additionnelle prouvant maintien V5 droits/révocation en cours sur SHA `2a35495f8673a54cbe44ef29be5c721da5b6aa3e` : vérifier le résultat final. Les échecs 44782942227 (import test) et 44783989398 /44784258639 (SQL régex tronquée) corrigés depuis commit V6 précédemment vert, pas maquillés. Dossier COMPLET `docs/continuity/WORLD_VISION_PRODUCT_P2C3C_NATIVE_GEOGRAPHY_FOUNDATION_2026-11-20.md`.
+**À reprendre** : issue #112 tranche P2C3C2 : reviewer/countersigner SIGNÉS d'équivalence géo avec révocation (#94), parser attestation (#95), endpoint spécifique source-native sous droits distinct des comparaisons pays, UX Atlas explicite sans mensonge FEHM=FRA, premier vrai dataset attribué/licite en staging protégé, Bronze original DURABLE et sauvegardé. Après : sources locales de chaque pays, notamment Gabon INSTAT/BEAC ; média/GDELT et onze Visions préservés.
+
+---
+## 20 novembre 2026 — P2C3C CODE + TESTS TERMINÉS, issue P2C3C2 #114
+PR #113 DRAFT, branche `product/v2-p2c3c-geographic-scope-foundation-2026-11-20`.
+**SHA de code confirmé** `2a35495f8673a54cbe44ef29be5c721da5b6aa3e`
+CI https://github.com/OBIANG5/World-Health-Vision/actions/runs/44784951860
+**SUCCESS 42 Java/PostgreSQL16/Flyway 0 échec** et contrat vérifié
+`V6 national read view = V5 droits/révocation/attestation + seul nouveau prédicat géographie restrictif`.
+Rapport `docs/continuity/WORLD_VISION_PRODUCT_P2C3C_NATIVE_GEOGRAPHY_FOUNDATION_2026-11-20.md` §8, plus PR #113 / issue #112. Registre typé source-native mondial, version alphanumérique (pas année obligatoire), parent ISO3 facultatif pour transfrontaliers, inclusion/exclusion, pas de licence/équivalence induite, FEHM dataset sous HOLD, liste publique et comparaisons national rights-gated, ancien code signatures P2C2 vert.
+**PROCHAINE PRIORITÉ** : issue #114 https://github.com/OBIANG5/World-Health-Vision/issues/114 . Arrêter de multiplier les sous-détails géographiques ; livrer une VRAIE valeur institutionnelle dans un Atlas de STAGING protégé, après revue territoriale/méthodologique/droits exacte + signatures humaines Ed25519 révocables, vrais octets Bronze sauvegardés, API distincte scope-aware et UI mobile honnête. Pas de fausse couverture des 217 pays, pas de VPS ni public Vercel automatique, chaînes de PR DRAFT toujours ouvertes. Garder les 11 Visions, médias/GDELT et extension locale Gabon INSTAT/BEAC dans la feuille de route.
