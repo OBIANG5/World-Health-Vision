@@ -47,6 +47,21 @@ jobs:
           assert "and timeseries.national_scope_read_eligible" in repo
           assert "hasUnreviewedGeographicScope" in gate
           assert "DS_POPULATIONS_REFERENCE" in gate
+          # Entire old V5 cryptographic rights/revocation/Bronze filter MUST
+          # be byte-for-byte preserved in V6 except for one extra DENY.
+          v5=(root/"services/timeseries-service/src/main/resources/db/migration/V5__immutable_bronze_witness_provenance.sql").read_text()
+          key="create or replace view timeseries.latest_observation as"
+          assert v5.count(key)==1 and mig.count(key)==1
+          old=v5.split(key,1)[1].strip()
+          new=mig.split(key,1)[1].strip()
+          added=("where timeseries.national_scope_read_eligible(\n"
+                 "        o.source_code, o.dataset_code, o.geographic_scope_id, o.source_metadata\n"
+                 "    )\n"
+                 "      and sr.evidence_attestation_sha256 is not null")
+          assert new.count(added)==1
+          restored=new.replace(added, "where sr.evidence_attestation_sha256 is not null")
+          assert restored==old, "Geography migration MUST preserve all V5 rights/revocation/Bronze conditions"
+          print("PASS: V6 national view = exact V5 signed public view + one restrictive geography predicate")
           assert "genuineRegistryBindingIsStillHiddenFromEveryNationalReadSurface" in tests
           assert "evenForgedSourceCodeCannotInsertInseeDatasetThroughDatabase" in tests
           print('PASS: geographic scope history is append-only and no country equivalence is auto-granted')
