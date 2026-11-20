@@ -1,0 +1,46 @@
+name: World-Vision P2C1 — real published indicators, never catalog guesses
+on:
+  push:
+    branches:
+      - 'product/v2-p2c1-published-indicator-discovery-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  published-indicator-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Audit rights-eligible indicator discovery, bounded response and public Gateway
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("worldhealth-vision-v2")
+          repo=(root/"services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/persistence/JdbcTimeseriesRepository.java").read_text()
+          start=repo.index("public List<CountryPublishedIndicatorResponse> listCountryPublishedIndicators(")
+          end=repo.index("@Override",start)
+          s=repo[start:end]
+          assert "from timeseries.latest_observation lo" in s
+          assert "from timeseries.observation" not in s
+          assert "numeric_value is not null or lo.text_value is not null" in s
+          assert "value_status in ('OBSERVED', 'ESTIMATED')" in s
+          assert "limit :limit" in s
+          routes=(root/"services/gateway-service/src/main/java/com/worldhealthvision/gateway/security/PublicReadRoutes.java").read_text()
+          assert '"/api/timeseries/countries/*/published-indicators"' in routes
+          assert '"/api/timeseries/source-runs"' not in routes
+          print("PASS: discovery is bounded and uses only rights-gated canonical observations")
+          PY
+      - name: Run Java 21 PostgreSQL16/Flyway Timeseries and Gateway integration
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service,services/gateway-service -am test
