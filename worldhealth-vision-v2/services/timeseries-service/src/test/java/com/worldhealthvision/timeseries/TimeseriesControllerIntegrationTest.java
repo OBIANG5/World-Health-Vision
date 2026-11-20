@@ -55,6 +55,7 @@ class TimeseriesControllerIntegrationTest {
 
         mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-WHV-Ingestion-Key", "integration-test-only-not-secret-0123456789abcdef")
                         .content("""
                                 {
                                   "sourceCode": "WORLD_BANK",
@@ -119,6 +120,7 @@ class TimeseriesControllerIntegrationTest {
 
         mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-WHV-Ingestion-Key", "integration-test-only-not-secret-0123456789abcdef")
                         .content("""
                                 {
                                   "sourceCode": "IMF",
@@ -328,6 +330,7 @@ class TimeseriesControllerIntegrationTest {
                 """);
         mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-WHV-Ingestion-Key", "integration-test-only-not-secret-0123456789abcdef")
                         .content("""
                             {
                               "sourceCode":"WORLD_BANK","datasetCode":"WDI",
