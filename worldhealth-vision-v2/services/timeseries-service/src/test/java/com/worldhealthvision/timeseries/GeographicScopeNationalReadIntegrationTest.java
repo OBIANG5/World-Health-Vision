@@ -109,6 +109,10 @@ class GeographicScopeNationalReadIntegrationTest {
     }
 
     private UUID registerOnlyPrivateSyntheticScope(String nativeGeoCode) {
+        return registerOnlyPrivateSyntheticScope(nativeGeoCode, "PARTIAL_COUNTRY");
+    }
+
+    private UUID registerOnlyPrivateSyntheticScope(String nativeGeoCode, String coverageKind) {
         UUID id = UUID.randomUUID();
         db.update("""
             insert into timeseries.geographic_scope_registry (
@@ -117,12 +121,12 @@ class GeographicScopeNationalReadIntegrationTest {
                 display_label, territorial_exclusions,
                 source_metadata_url, source_metadata_sha256
             ) values (
-                ?, 'WORLD_BANK','WDI', ?, '2025-A',2025,'FRA','PARTIAL_COUNTRY',
+                ?, 'WORLD_BANK','WDI', ?, '2025-A',2025,'FRA',?,
                 'SYNTHETIC TEST ONLY: France excluding fictional area',
                 '["FICTIONAL_TEST_TERRITORY"]'::jsonb,
                 'https://example.org/synthetic-not-provider-data', ?
             )
-        """, id, nativeGeoCode, "a".repeat(64));
+        """, id, nativeGeoCode, coverageKind, "a".repeat(64));
         return id;
     }
 
@@ -259,6 +263,113 @@ class GeographicScopeNationalReadIntegrationTest {
         assertNotNull(db.queryForObject("""
             select source_metadata from timeseries.observation where id=?
         """, String.class, obs));
+    }
+
+    @Test
+    void officialVersionAndYearMustBothMatchAndParentCountryMustNotBeForged() throws Exception {
+        UUID obs = insertSyntheticRow(freshKey());
+        String code = "GEO-2025-SYNTH-" + UUID.randomUUID().toString().substring(0, 6);
+        registerOnlyPrivateSyntheticScope(code);
+        String validScope = "{\"sourceNativeGeographyCode\":\"" + code
+                + "\",\"geographicVersion\":\"2025-A\",\"geographicReferenceYear\":2025}";
+        // No silent year reassignment, no unrelated alphanumeric release.
+        for (String invalid : new String[] {
+                validScope.replace("\"geographicVersion\":\"2025-A\"",
+                                   "\"geographicVersion\":\"2026-B\""),
+                validScope.replace("\"geographicReferenceYear\":2025",
+                                   "\"geographicReferenceYear\":2024"),
+                validScope.replace("\"geographicReferenceYear\":2025",
+                                   "\"geographicReferenceYear\":\"2025-unknown\""),
+                validScope.replace("\"sourceNativeGeographyCode\":\"" + code + "\"",
+                                   "\"sourceNativeGeographyCode\":\"OTHER\"")
+        }) {
+            assertThrows(DataIntegrityViolationException.class, () ->
+                db.update("update timeseries.observation set source_metadata=cast(? as jsonb) where id=?",
+                          invalid, obs)
+            );
+        }
+        // DEU is present in the minimal test catalog, but may not
+        // borrow geography whose parent country is explicitly FRA.
+        assertEquals(1, db.queryForObject(
+                "select count(*) from catalog.country where iso3='DEU'",
+                Integer.class
+        ));
+        assertThrows(DataIntegrityViolationException.class, () ->
+            db.update("""
+                update timeseries.observation
+                set country_iso3='DEU', source_metadata=cast(? as jsonb)
+                where id=?
+            """, validScope, obs)
+        );
+        assertEquals(1, publishedRowCount(obs),
+            "Failed country/version spoofing must leave previous valid synthetic row unchanged");
+    }
+
+    @Test
+    void evenClaimOfFullCountryScopeIsNotIndependentApprovalOrRightsGrant() throws Exception {
+        UUID obs = insertSyntheticRow(freshKey());
+        String code = "GEO-CLAIM-FULL-" + UUID.randomUUID().toString().substring(0, 6);
+        UUID scope = registerOnlyPrivateSyntheticScope(code, "FULL_COUNTRY_CLAIM_UNREVIEWED");
+        // Only the signature witness / reviewer could approve real publish
+        // later. A registry label "FULL" is NOT an approval.
+        db.update("""
+            update timeseries.observation
+            set source_metadata = cast(? as jsonb)
+            where id=?
+        """, "{\"sourceNativeGeographyCode\":\"" + code
+            + "\",\"geographicVersion\":\"2025-A\",\"geographicReferenceYear\":2025}",
+            obs);
+        assertEquals(scope, db.queryForObject(
+            "select geographic_scope_id from timeseries.observation where id=?",
+            UUID.class, obs
+        ));
+        assertEquals(0, publishedRowCount(obs));
+        assertEquals("RESEARCH_ONLY", db.queryForObject(
+            "select review_status from timeseries.geographic_scope_registry where id=?",
+            String.class, scope
+        ));
+    }
+
+    @Test
+    void multilingualCrossBorderRegistryCanStoreNativeVersionButNeverMasqueradeAsOneCountry()
+            throws Exception {
+        String code = "MULTI-NATIVE-" + UUID.randomUUID().toString().substring(0, 7);
+        UUID scope = UUID.randomUUID();
+        // Countries can use alphanumeric releases. Cross-border scope has
+        // no single ISO3 parent and must never be silently assigned one.
+        db.update("""
+            insert into timeseries.geographic_scope_registry (
+                id, source_code, dataset_code, native_geo_code,
+                native_geo_version, geo_reference_year, country_iso3,
+                coverage_kind, display_label, territorial_inclusions,
+                source_metadata_url, source_metadata_sha256
+            ) values (
+                ?, 'WORLD_BANK','WDI', ?, 'ADMIN_2026Q4',null,null,
+                'MULTINATIONAL','SYNTHETIC cross-border region',
+                '["FICTIONAL_A","FICTIONAL_B"]'::jsonb,
+                'https://example.org/synthetic-cross-border-metadata', ?
+            )
+        """, scope, code, "c".repeat(64));
+        assertEquals(1, db.queryForObject("""
+            select count(*) from timeseries.geographic_scope_registry
+            where id=? and country_iso3 is null
+              and native_geo_version='ADMIN_2026Q4'
+              and geo_reference_year is null and review_status='RESEARCH_ONLY'
+        """, Integer.class, scope));
+        UUID obs = insertSyntheticRow(freshKey());
+        assertThrows(DataIntegrityViolationException.class, () ->
+            db.update("""
+                update timeseries.observation
+                set source_metadata=cast(? as jsonb)
+                where id=?
+            """, "{\"sourceNativeGeographyCode\":\"" + code
+                    + "\",\"geographicVersion\":\"ADMIN_2026Q4\"}", obs)
+        );
+        assertEquals(1, publishedRowCount(obs));
+        assertEquals(0, db.queryForObject("""
+            select count(*) from timeseries.geographic_scope_registry
+            where coverage_kind='MULTINATIONAL' and country_iso3 is not null
+        """, Integer.class));
     }
 
     @Test
