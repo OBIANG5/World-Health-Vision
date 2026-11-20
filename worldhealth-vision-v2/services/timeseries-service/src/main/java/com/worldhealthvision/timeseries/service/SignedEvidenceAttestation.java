@@ -16,6 +16,7 @@ public record SignedEvidenceAttestation(
         String datasetCode,
         String runKey,
         long fetchedAtEpochSec,
+        int fetchedAtNano,
         String originalHttpSha256,
         String normalizedNdjsonSha256,
         String manifestSha256,
@@ -34,7 +35,7 @@ public record SignedEvidenceAttestation(
             for (String field : new String[] {
                     "WORLD_VISION_BRONZE_WITNESS_V1",
                     schema, operation, sourceCode, datasetCode,
-                    runKey, Long.toString(fetchedAtEpochSec),
+                    runKey, Long.toString(fetchedAtEpochSec), Integer.toString(fetchedAtNano),
                     originalHttpSha256, normalizedNdjsonSha256, manifestSha256,
                     acquisitionEventId, acquisitionOutcomeSha256, itemsSha256,
                     Long.toString(issuedAtEpochSec), Long.toString(expiresAtEpochSec),
