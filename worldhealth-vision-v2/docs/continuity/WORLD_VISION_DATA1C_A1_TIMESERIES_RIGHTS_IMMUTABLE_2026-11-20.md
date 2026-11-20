@@ -83,3 +83,13 @@ La comparaison précise des contributions amont WDI BRA/2022 reste une recherche
 ## 5. Reprise inter-chats et dépendances
 
 Branch HEAD à vérifier : data/v2-timeseries-rights-idempotence-2026-11-20, PR DRAFT DATA-1C-A1 basée sur PR #81, issue #82. Lire aussi docs/continuity/WORLD_VISION_DATA1B3_IBGE_WDI_COMPARABILITY_2026-11-19.md et docs/continuity/HANDOFF_CORE_F12B_2026-11-19.md sur cette branche. Lire les logs du DERNIER workflow et conserver les raisons exactes de tout test échoué. Prochaine implémentation : DATA-1C-A2, puis B2/C/D ; ne pas fusionner toute la pile sans QA et revue de droits. Ne jamais promettre qu'une PR DRAFT change le Vercel de l'iPhone.
+
+
+## 6. Renforcement après la première CI (20 novembre 2026)
+
+La suite de tests PostgreSQL a été étendue à trois scénarios supplémentaires : ordre différent des observations d'un même lot implique le même hash canonique et replay sans écriture ; double observation identique dans le même lot doit être refusée avant SQL ; échec d'une clé étrangère PostgreSQL doit déclencher un rollback de la source_run et ne laisser aucune ligne orpheline. La réponse à toutes les erreurs de parsing ou violation de contrainte est désormais GENERIQUE « Invalid Timeseries request or source constraint. » afin de ne pas renvoyer les détails de SQL, contenus/statistiques ni fragments secrets.
+
+**Preuve du candidat après les 3 nouveaux tests Java, avant le changement de texte d'erreur :**
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/44704015448 — SUCCESS, **13 tests Java/PostgreSQL 16**, **11 tests Python ciblés**, **164 régressions Python**, Maven BUILD SUCCESS. Un run successeur a été déclenché automatiquement après l'assainissement des erreurs HTTP : vérifier sa réussite et le SHA de la tête réelle de PR #85. La précédente première preuve (10 Java, 11 Python, 164 régressions) reste https://github.com/OBIANG5/World-Health-Vision/actions/runs/44703340752 mais ne remplace pas la plus récente.
+
+**Lien de PR** : https://github.com/OBIANG5/World-Health-Vision/pull/85, base #81, DRAFT. **Issue mère** : https://github.com/OBIANG5/World-Health-Vision/issues/82. Les changements restent en dehors de v2 et Vercel. La sécurité finale de production attend toujours le contrat de droits positif et la configuration authentifiée TLS/workload identity ; les tests de code ne garantissent pas un déploiement sécurisé.
