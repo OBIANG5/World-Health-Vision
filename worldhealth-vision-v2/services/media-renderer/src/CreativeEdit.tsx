@@ -32,6 +32,8 @@ export type CreativeShot = {
   title?:string;
   subtitle?:string;
   eyebrow?:string;
+  /** Editorial priority: show the opening headline on frame zero, with no intro fade. */
+  titleFrameZero?:boolean;
   footnote?:string;
   media?:CreativeMedia|null;
   foreground?:{src:string;credit?:string}|null;
@@ -362,8 +364,11 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
   if(shot.template==="country_focus")return <CountryFocus shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="photo_story")return <PhotoMultilayer shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   if(shot.template==="data_story")return <DataMotion shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
-  const opacity=reveal(frame,enterOverlapFrames,17);
-  const startTextY=interpolate(move,[0,1],[70,0],clamp);
+  // FILM-2B: the first image in a short news video must already carry its hook.
+  // This flag only changes the FIRST shot text entry; no gimmicks or source changes.
+  const immediateHeadline=shot.titleFrameZero===true;
+  const opacity=immediateHeadline?1:reveal(frame,enterOverlapFrames,17);
+  const startTextY=immediateHeadline?0:interpolate(move,[0,1],[70,0],clamp);
   const subtitleFade=reveal(frame,enterOverlapFrames+15,18);
   const glow=shot.media?"0 5px 38px rgba(0,0,0,.48)":"none";
   const textSize=shot.title
@@ -404,7 +409,7 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
           {shot.eyebrow&&<div style={{
             color:accent,textTransform:"uppercase",fontSize:25,fontWeight:700,
             letterSpacing:"0.17em",lineHeight:1.25,marginBottom:25,
-            opacity:reveal(frame,enterOverlapFrames+5,15)
+            opacity:immediateHeadline?1:reveal(frame,enterOverlapFrames+5,15)
           }}>{shot.eyebrow}</div>}
           {shot.title&&<div style={{overflow:"hidden"}}>
             <div data-wv-title={shot.id} style={{
