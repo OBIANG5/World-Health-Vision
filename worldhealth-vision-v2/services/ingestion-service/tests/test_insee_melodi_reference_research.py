@@ -209,7 +209,7 @@ def test_private_bronze_archive_never_grants_any_publication_or_geo_equivalence(
     ]
     with pytest.raises(EvidenceIntegrityError):
         capture_private_insee_evidence(root=tmp_path, rows=[
-            entry, parse(response(period="2022", value="68000000"))
+            entry[0], parse(response(period="2022", value="68000000"))[0]
         ])
 
 
