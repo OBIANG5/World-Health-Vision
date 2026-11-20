@@ -27,6 +27,7 @@ from ingestion_service.evidence_items_fingerprint import (
 from ingestion_service.source_evidence_store import (
     EvidenceIntegrityError, QuarantinedJsonEvidenceStore,
 )
+from ingestion_service.semantic_source_replay import verify_original_to_normalized
 
 _SCHEMA = "WORLD_VISION_BRONZE_WITNESS_V1"
 _OPERATION = "PRIVATE_RESEARCH_VALIDATION"
@@ -124,12 +125,24 @@ class PrivateBronzeWitness:
             or outcome.get("responseSha256") != original_http_sha256):
             raise EvidenceIntegrityError("Event is not the explicitly chosen verified success")
         normalized_bytes = manifest.normalized_payload_path.read_bytes()
+        # SECOND, independently authored semantic verifier. Comparing only
+        # source/NDJSON/manifest SHAs would accept a false normalized value
+        # prepared during the first ingestion with consistent checksums.
+        semantic = verify_original_to_normalized(
+            source_code=source_code,
+            dataset_code=dataset_code,
+            original_http_bytes=manifest.raw_payload_path.read_bytes(),
+            normalized_ndjson=normalized_bytes,
+        )
         observations = projection_items_from_verified_normalized(
             source_code=source_code,
             normalized_ndjson=normalized_bytes,
         )
-        if len(observations) != manifest.record_count:
-            raise EvidenceIntegrityError("Normalized item count differs from verified source")
+        if (len(observations) != manifest.record_count
+            or semantic.observation_count != len(observations)
+            or semantic.raw_sha256 != original_http_sha256
+            or semantic.semantic_projection_sha256 != items_sha256(observations)):
+            raise EvidenceIntegrityError("Independent source semantic replay disagrees")
         stamp = manifest.fetched_at_utc.astimezone(UTC)
         now = datetime.now(UTC)
         # A signed verification reflects the real old fetch; the token itself
