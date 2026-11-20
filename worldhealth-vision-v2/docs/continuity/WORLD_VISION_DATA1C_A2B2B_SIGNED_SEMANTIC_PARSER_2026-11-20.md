@@ -66,3 +66,20 @@ Le code conserve les garanties précédentes : indépendance clé témoin et cl�
 - Pour reprendre : lire ce document, les docs A2B2a et A2B1, l'issue #92 et #82, vérifier PR HEAD/CI, ne jamais déclarer que la version publique a changé par une simple PR DRAFT.
 
 **Critère de livraison de cette branche : CI Java/PostgreSQL/Python + live recherche privée V2 réussies sur le même commit code; documenter les SHA et liens dans la PR, l'issue #92 et HANDOFF_CORE_F12B.**
+
+
+## 6. Liens de contrôle croisé et résultats techniques acquis
+
+PR candidate empilée **#95** : https://github.com/OBIANG5/World-Health-Vision/pull/95 (DRAFT, base #93). Les deux branches conservent leur code; ni v2 ni Vercel n'ont été touchés.
+
+**Code entièrement vérifié au moins une fois** sur SHA dea6a0daa59dd080c6f65a5596012116f91e2374 : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44718698330 **SUCCESS** :
+- Java 21 / PostgreSQL 16 / Flyway et anciens E2E : **35 tests**.
+- Python 3.12 : **48 tests ciblés V2/semantic/source witness, 212 tests d'ingestion totale**.
+- Tests de sécurité opposants : bonnes signatures MAIS mauvais SHA/verifierVersion → 403; V1 → 403; absence/mauvaise syntaxe du trust pin → fail closed; vraie version synthétique de CI passe; les autres protections de droits/revocation/source-run replay/masquage restent couvertes.
+- Vecteur binaire Python/Java V2 partagé et reproductible, valeur de test synthétique, sans population réelle.
+
+**Vraies ressources officielles, privées** sur commit V2 précédent bf170829b5c1c700c1a4e6849828e8d23ebbe1bc : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44717927733 **SUCCESS** : deux GETs officiels IBGE/WDI, les deux valeurs revalidées par parsing indépendant, les empreintes du code de vérification sont recalculées sur le fichier effectif et incluses dans deux attestations PRIVATE_RESEARCH_VALIDATION. Zéro log numérique ou écriture/publication Timeseries; données originales temporaires supprimées à la fin. Les commits suivants ne changent pas le code du reparseur ni le comportement du signataire de recherche, seulement tests/contrat d'autorisation serveur/docs.
+
+**DERNIER GATE encore requis** : vérifier les jobs SUCCESS au HEAD FINAL de #95 après les commits de documentation. Cette note ne doit pas être utilisée pour prouver un SHA postérieur sans CI correspondante.
+
+**Sous-issue successeur de gouvernance clés/versions** : https://github.com/OBIANG5/World-Health-Vision/issues/94 (A2C), dans le même périmètre que les issues #92/#89/#82. C'est maintenant le prochain développement, sans redémarrer un autre moteur de données et sans confondre l'interface mobile avec le moteur scientifique.
