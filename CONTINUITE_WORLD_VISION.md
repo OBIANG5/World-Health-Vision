@@ -1,5 +1,16 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+### FILM-1 / AUDIT VISUEL DES VRAIS PIXELS — 20 NOVEMBRE
+
+La [PR #87](https://github.com/OBIANG5/World-Health-Vision/pull/87) a réussi un premier master **#44707929919** sur `2007bd82` (**30/30 tests Node, 11 Player, H.264/AAC 745 frames**, artefact **#14616267195**). Les **onze captures réelles** ont ensuite révélé un défaut NON détecté par la CI : **deux titres visibles simultanément** aux raccords 145, 300, 455. Ne surtout pas considérer cette version comme artistique finale.
+
+Correctif `editorial-text-handoff.mjs` appliqué à GEO/PAYS/PHOTO/DATA : incoming title invisible durant les dix frames du fondu, alors que l'image suivante peut entrer ; réapparition ensuite en douze frames. Tests Node et Chromium DOM d'opacité ajoutés, workflow GitHub muni d'une concurrence/cancellation par branche pour ne plus multiplier les rendus. **NOUVEAU RUN à examiner** : [#44709786780](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44709786780), SHA de code de départ `03fceacb9344d57fd87174bb64ff18ece99fb2f0`. Lire le vrai HEAD et les dernières preuves ; si la CI est verte, télécharger l'artefact, inspecter les images 145/300/455/610 et seulement ensuite certifier Sprint12. Rapport détaillé [Sprint12 §7](worldhealth-vision-v2/docs/media/WORLDVISION_INTEGRATED_FILM_SPRINT12_2026-11-20.md).
+
+**Ensuite (pas une autre démo de 5 slides)** : une vraie vidéo de reportage avec script sourcé, photos/vidéos sous licence, sources primaires et unités datées, voix humaine sélectionnée librement, sous-titres fidèles, mixage/ducking et contrôle de publication. Préserver la direction Gabon appréciée ; pas de faux événements/faux médias. Les branches restent en DRAFT.
+
+---
+
+
 ## 20 NOV. 2026 — MEDIA SPRINT 12 : FILM MULTICOUCHE COMPLET
 
 **BRANCHE À REPRENDRE :** `feature/worldvision-editorial-film-five-scene-integration-2026-11-20`, fille de PR #84 DATA ; historique empilé #44→#72→#74→#80→#84→Sprint12. **AUCUNE FUSION/DEPLOIEMENT/PUBLICATION.** Rapport obligatoire : [WORLDVISION_INTEGRATED_FILM_SPRINT12_2026-11-20.md](worldhealth-vision-v2/docs/media/WORLDVISION_INTEGRATED_FILM_SPRINT12_2026-11-20.md).
