@@ -279,3 +279,52 @@ def test_java_python_witness_signed_payload_immutable_vector():
     }
     digest = sha256(_signing_payload(synthetic)).hexdigest()
     assert digest == "1f32b6b91178a9019266999ca478385d1613d1481f15bfd02f67111029d20acb"
+
+
+
+def test_wdi_brazil_research_witness_verifies_an_estimate_without_reclassifying_observed(tmp_path):
+    # The fake provider bytes and values below are SYNTHETIC (not real WDI).
+    from test_ibge_wdi_population_comparability import capture_wdi
+    raw = capture_wdi(tmp_path)
+    events = list((tmp_path / "world_bank" / "wdi_pop_total_bra_2022" / "_acquisitions").iterdir())
+    assert len(events) == 1
+    private = Ed25519PrivateKey.generate()
+    proof = witness(tmp_path, key=private).certify_research_only(
+        source_code="WORLD_BANK", dataset_code="WDI_POP_TOTAL_BRA_2022",
+        original_http_sha256=raw.notes["httpBodySha256"],
+        acquisition_event_id=events[0].name,
+    )
+    assert proof["operation"] == "PRIVATE_RESEARCH_VALIDATION"
+    assert proof["sourceCode"] == "WORLD_BANK"
+    assert proof["datasetCode"] == "WDI_POP_TOTAL_BRA_2022"
+    items = projection_items_from_verified_normalized(
+        source_code="WORLD_BANK",
+        normalized_ndjson=raw.normalized_payload_path.read_bytes(),
+    )
+    assert items[0]["valueStatus"] == "ESTIMATED"
+    assert proof["itemsSha256"] == items_sha256(items)
+    private.public_key().verify(
+        base64.b64decode(proof["signatureBase64"]), _signing_payload(proof)
+    )
+    assert "210000000" not in json.dumps(proof)
+
+
+@pytest.mark.parametrize("dataset", [
+    "CENSO2022_4714_METADATA",
+    "CENSO2022_4714_PERIODS",
+])
+def test_metadata_is_never_mistaken_for_a_numeric_timeseries_source(tmp_path, dataset):
+    capture_population(tmp_path)
+    from test_ibge_acquisition_composite import capture_metadata
+    meta = capture_metadata(tmp_path)
+    evidence = (
+        meta.aggregate_receipt if dataset.endswith("METADATA")
+        else meta.periods_receipt
+    )
+    event = next((tmp_path / "ibge" / dataset.lower() / "_acquisitions").iterdir()).name
+    with pytest.raises(EvidenceIntegrityError):
+        witness(tmp_path).certify_research_only(
+            source_code="IBGE", dataset_code=dataset,
+            original_http_sha256=evidence.notes["httpBodySha256"],
+            acquisition_event_id=event,
+        )
