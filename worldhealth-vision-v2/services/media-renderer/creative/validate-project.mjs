@@ -71,6 +71,9 @@ export function inspectProject(project) {
     if(!TEMPLATES.has(scene.template))bad(errors,p+".template","Unknown template.");
     if(!boundedInteger(scene.durationFrames,1,3600))bad(errors,p+".durationFrames","1-3600 frames required.");
     if(scene.motion!==undefined&&!MOTIONS.has(scene.motion))bad(errors,p+".motion","Unknown motion profile.");
+    if(scene.titleFrameZero!==undefined&&(typeof scene.titleFrameZero!=="boolean"||
+      (scene.titleFrameZero&&(i!==0||!scene.title?.trim()))))
+      bad(errors,p+".titleFrameZero","Only the first authored shot may show an immediate frame-zero headline.");
     if(scene.transitionAfter!==undefined&&!TRANSITIONS.has(scene.transitionAfter))bad(errors,p+".transitionAfter","Unknown transition.");
     const t=scene.transitionFrames??0;
     if(!boundedInteger(t,0,18))bad(errors,p+".transitionFrames","Only deliberate 0-18 frame transitions.");

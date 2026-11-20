@@ -1,0 +1,85 @@
+name: World-Vision — FILM-2B authentic NASA image pilot
+
+on:
+  push:
+    branches:
+      - 'feature/worldvision-film2b-*'
+    paths:
+      - 'worldhealth-vision-v2/media-pilots/artemis2/**'
+      - '.github/workflows/worldvision-film2b-authentic-pilot.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/media-pilots/artemis2/**'
+      - '.github/workflows/worldvision-film2b-authentic-pilot.yml'
+  workflow_dispatch:
+
+# Film rendering is expensive. Only keep the last revision under review.
+concurrency:
+  group: worldvision-film2b-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  authentic-source-animatic:
+    name: Source-traced NASA footage, real MP4 and independent QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Use existing media renderer dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify existing storyboard, scientific disclosure and publication block
+        run: |
+          node --test ../../media-pilots/artemis2/pilot.test.mjs
+          node ../../media-pilots/artemis2/validate-pilot.mjs
+      - name: Ensure FFprobe and FFmpeg without redundant package updates
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffprobe -hide_banner -version | head -n 1
+      - name: Acquire three original NASA images; verify source origin, dimensions and SHA
+        run: node ../../media-pilots/artemis2/prepare-assets.mjs /tmp/worldvision-artemis2-originals
+      - name: Render authentic-media internal film with the existing Remotion engine
+        run: |
+          mkdir -p output/pilots
+          node creative/render-project.mjs \
+            --project ../../media-pilots/artemis2/project.json \
+            --assets /tmp/worldvision-artemis2-originals \
+            --output output/pilots/artemis2-first-real-media-review.mp4
+      - name: Inspect actual encoded frames, audio absence and input SHA integrity
+        run: |
+          node ../../media-pilots/artemis2/qa-video.mjs \
+            output/pilots/artemis2-first-real-media-review.mp4 \
+            /tmp/worldvision-artemis2-originals
+      - name: Produce eight real-film 360px TikTok-scale review stills
+        run: |
+          ffmpeg -hide_banner -loglevel error -y \
+            -i output/pilots/artemis2-first-real-media-review.mp4 \
+            -vf "fps=1/3,scale=270:480,tile=4x2:padding=8:margin=6:color=black" \
+            -frames:v 1 output/pilots/artemis2-eight-shot-contact.jpg
+          test -s output/pilots/artemis2-eight-shot-contact.jpg
+          test -s output/pilots/artemis2-first-real-media-review.mp4.stills/frame-01-at-0.png
+          test -s output/pilots/artemis2-first-real-media-review.mp4.stills/frame-03-at-749.png
+      - name: Preserve video, original-byte ledger and actual pixel proof (not user uploads)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-artemis2-internal-source-traced-film
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-first-real-media-review.mp4
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-first-real-media-review.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-first-real-media-review.mp4.film2b-audit.json
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-first-real-media-review.mp4.stills/*.png
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-eight-shot-contact.jpg

@@ -1,0 +1,8 @@
+/assets/
+/output/
+*.mp4
+*.wav
+*.mp3
+*.jpg
+*.png
+!README.md

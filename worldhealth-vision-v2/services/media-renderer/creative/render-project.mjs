@@ -98,6 +98,7 @@ async function run(argv){
       shots.push({
         id:shot.id,durationFrames:shot.durationFrames,template:shot.template,
         title:shot.title,subtitle:shot.subtitle,eyebrow:shot.eyebrow,
+        titleFrameZero:shot.titleFrameZero??false,
         footnote:shot.footnote,media,
         foreground:shot.foreground?{src:await stageFile(shot.foreground.file),credit:shot.foreground.credit}:null,
         accent:shot.accent,motion:shot.motion,

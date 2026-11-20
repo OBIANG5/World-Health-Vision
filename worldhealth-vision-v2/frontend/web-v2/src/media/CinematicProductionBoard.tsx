@@ -41,6 +41,7 @@ const initialPhotoSettings=():PhotoSettings=>({
 
 type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
+  titleFrameZero:boolean;
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
   mediaName:string;mediaCredit:string;mediaTrimBefore:number;
   foregroundName:string;foregroundCredit:string;focusX:number;focusY:number;
@@ -74,7 +75,7 @@ const typesByExt=(name:string):MediaType|null=>{
   return null;
 };
 const initialShot=():Shot=>({
-  id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,
+  id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,titleFrameZero:false,
   template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",mediaCredit:"",mediaTrimBefore:0,
   foregroundName:"",foregroundCredit:"",focusX:0.5,focusY:0.5,
   documentX:.25,documentY:.32,documentW:.5,documentH:.22,
@@ -282,6 +283,7 @@ export default function CinematicProductionBoard() {
       script,
       shots:[{
         id:active.id,
+        titleFrameZero:active.titleFrameZero,
         durationFrames:active.durationFrames,
         template:active.template,
         title:active.title,
@@ -348,6 +350,7 @@ export default function CinematicProductionBoard() {
             ...(clip.kind==="video"&&shot.mediaTrimBefore?{trimBefore:shot.mediaTrimBefore}:{})}:null;
       return {
         id:shot.id,
+        titleFrameZero:shot.titleFrameZero,
         durationFrames:shot.durationFrames,
         template:shot.template,
         title:shot.title,
@@ -451,6 +454,7 @@ export default function CinematicProductionBoard() {
       shots:shots.map(s=>({
         id:s.id,durationFrames:s.durationFrames,template:s.template,
         title:s.title,subtitle:s.subtitle,eyebrow:s.eyebrow,
+        ...(s.titleFrameZero?{titleFrameZero:true}:{}),
         focus:{x:s.focusX,y:s.focusY},
         ...(s.template==="document_focus"?{documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH}}:{}),
         ...(s.template==="photo_story"?{photo:buildPhoto(s)}:{}),
@@ -587,6 +591,10 @@ export default function CinematicProductionBoard() {
             <input value={active.foregroundCredit} maxLength={200} onChange={e=>updateShot({foregroundCredit:e.target.value})}/>
           </label>}
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
+          {shots[0]?.id===active.id&&<label className="wvc-wide">
+            <input type="checkbox" checked={active.titleFrameZero} onChange={e=>updateShot({titleFrameZero:e.target.checked})}/>
+            Accroche immédiate : titre lisible dès la première image (TikTok et formats courts)
+          </label>}
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
           {active.template==="photo_story"&&<div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
             <div className="wvc-focus-heading">

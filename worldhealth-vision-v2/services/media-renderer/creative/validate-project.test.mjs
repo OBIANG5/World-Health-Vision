@@ -505,3 +505,17 @@ test("global caption cues are checked against the crossfaded film, not its silen
   p.captions[1].startFrame=40;
   assert.ok(reasons(p).includes("captions[1].time"));
 });
+
+test("frame-zero news hook is opt-in, authored and reserved for the first film shot",()=>{
+  const p=clone(sample);
+  p.shots[0].titleFrameZero=true;
+  assert.equal(inspectProject(p).ok,true);
+  p.shots[0].title="";
+  assert.ok(reasons(p).includes("shots[0].titleFrameZero"));
+  p.shots[0].title="PREMIÈRE IMAGE";
+  p.shots[0].titleFrameZero="yes";
+  assert.ok(reasons(p).includes("shots[0].titleFrameZero"));
+  p.shots[0].titleFrameZero=false;
+  p.shots[1].titleFrameZero=true;
+  assert.ok(reasons(p).includes("shots[1].titleFrameZero"));
+});
