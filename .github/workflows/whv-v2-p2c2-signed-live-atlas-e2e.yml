@@ -1,0 +1,248 @@
+name: World-Vision P2C2 - real Atlas, signed synthetic ingestion and revocation
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2c2-signed-live-atlas-revocation-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# CI ONLY. No Vercel, no provider data, no public ports other than loopback Gateway.
+env:
+  WHV_TIMESCALE_IMAGE: timescale/timescaledb:2.15.3-pg16
+  WHV_OIDC_ISSUER_URI: https://ci-only.invalid/realms/worldvision
+  WHV_OIDC_JWKS_URI: https://ci-only.invalid/realms/worldvision/jwks
+  WHV_SECURITY_AUDIENCE: worldvision-ci-p2c2
+  WHV_DB_PASSWORD_FILE: /tmp/whv_ci_product_p2c2_password
+  WHV_GATEWAY_HOST_PORT: '18080'
+  WHV_P2C2_DIRECTORY: /tmp/worldvision-p2c2-signed
+  WHV_COMPILED_DIRECTORY: worldhealth-vision-v2/frontend/web-v2/dist
+
+jobs:
+  signed-synthetic-end-to-end:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout exact code (no credentials persisted)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Python 3.12 (private synthetic CI signer)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Node 22 / locked frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+
+      - name: Install reviewed Python source projection and ephemeral key implementation
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -e './worldhealth-vision-v2/services/ingestion-service' 'cryptography>=44,<47'
+
+      - name: Confirm test-only scripts parse, never use the research-only real-data signer
+        run: |
+          python -m py_compile worldhealth-vision-v2/infra/tests/p2c2_signed_fixture.py
+          python -m py_compile worldhealth-vision-v2/infra/tests/p2b_same_origin_preview.py
+          node --check worldhealth-vision-v2/frontend/web-v2/p2c2-signed-live-browser.mjs
+
+      - name: Compile actual V2 frontend with no archived preview fixtures
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npx eslint src/components/country/PublishedIndicatorExplorer.tsx src/components/country/CountryLocalEvidencePanel.tsx src/api/whvApi.ts
+          npx tsc -b --pretty false
+          npx vite build
+          test -f dist/index.html
+          test -f dist/countries.geojson
+          test ! -e dist/preview-bootstrap.js
+          test ! -e dist/preview-sources.js
+
+      - name: Create independent ephemeral keys, witnessed synthetic Bronze bytes and review
+        run: |
+          umask 077
+          python3 worldhealth-vision-v2/infra/tests/p2c2_signed_fixture.py \
+            prepare --directory "$WHV_P2C2_DIRECTORY"
+          python3 worldhealth-vision-v2/infra/tests/p2c2_signed_fixture.py \
+            verify --directory "$WHV_P2C2_DIRECTORY"
+          test ! -e worldhealth-vision-v2/frontend/web-v2/dist/signed-batch.json
+
+      - name: Prepare disposable Postgres secret
+        run: |
+          openssl rand -hex 48 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0644 "$WHV_DB_PASSWORD_FILE"
+
+      - name: Assert exactly 6 secure services and no DB or upstream public ports
+        run: |
+          docker compose \
+            -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-synthetic-rights.yml \
+            config --format json > "$RUNNER_TEMP/p2c2-private-compose.json"
+          python3 - "$RUNNER_TEMP/p2c2-private-compose.json" <<'PY'
+          import json,sys
+          services=json.load(open(sys.argv[1]))["services"]
+          assert set(services)=={
+            "whv-timescaledb","catalog-service","timeseries-service",
+            "analytics-service","ingestion-service","gateway-service"
+          }
+          for name,svc in services.items():
+              ports=svc.get("ports") or []
+              if name=="gateway-service":
+                  assert len(ports)==1 and ports[0]["host_ip"]=="127.0.0.1"
+                  cfg=svc["environment"]
+                  assert cfg["WHV_SECURITY_ENABLED"]=="true"
+                  assert cfg["WHV_PUBLIC_READ_ENABLED"]=="true"
+                  assert cfg["WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS"]=="false"
+              else:
+                  assert not ports,(name,ports)
+          assert len(services["timeseries-service"]["environment"][
+            "WHV_TIMESERIES_INTERNAL_INGESTION_KEY"])>=32
+          print("PASS: six services, private DB, JWT on and two server-side trusted public keys")
+          PY
+
+      - name: Start existing six services with TimescaleDB and Flyway migrations
+        run: |
+          docker compose \
+            -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-synthetic-rights.yml \
+            up -d --build --wait \
+            whv-timescaledb catalog-service timeseries-service analytics-service ingestion-service gateway-service
+
+      - name: Prove empty country catalog grants ZERO public observations
+        run: |
+          curl -fsS --max-time 20 \
+            http://127.0.0.1:18080/api/timeseries/countries/GAB/published-coverage \
+            > "$RUNNER_TEMP/p2c2-empty.json"
+          python3 - "$RUNNER_TEMP/p2c2-empty.json" <<'PY'
+          import json,sys
+          data=json.load(open(sys.argv[1]))
+          assert data["countryIso3"]=="GAB"
+          assert data["coverageStatus"]=="NO_PUBLICLY_ELIGIBLE_DATA"
+          assert data["availableObservationCount"]==0
+          print("PASS: no publicly eligible data in an empty CI database")
+          PY
+
+      - name: Install only ephemeral synthetic Catalog entries and signed reviewer grant
+        run: |
+          docker compose \
+            -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-synthetic-rights.yml \
+            exec -T whv-timescaledb psql -v ON_ERROR_STOP=1 -U whv_user -d whv \
+            < "$WHV_P2C2_DIRECTORY/seed.sql"
+
+      - name: Verify bad transport key and modified signed value cannot ingest
+        run: |
+          docker compose \
+            -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-synthetic-rights.yml \
+            exec -T ingestion-service python -c '
+          import json,os,sys,httpx
+          payload=json.load(sys.stdin)
+          url="http://timeseries-service:8080/internal/timeseries/ingestion/observation-batches"
+          with httpx.Client(timeout=20,follow_redirects=False) as client:
+              unauthorized=client.post(url,json=payload,headers={"X-WHV-Ingestion-Key":"invalid-test-token"})
+              assert unauthorized.status_code==403,unauthorized.status_code
+              tampered=json.loads(json.dumps(payload))
+              tampered["items"][0]["numericValue"]=18.0
+              denied=client.post(url,json=tampered,headers={"X-WHV-Ingestion-Key":os.environ["WHV_TIMESERIES_INTERNAL_INGESTION_KEY"]})
+              assert denied.status_code==403,denied.status_code
+          print("PASS: wrong transport credential and tampered witness value both rejected")
+          ' < "$WHV_P2C2_DIRECTORY/signed-batch.json"
+
+      - name: POST a correctly signed synthetic observation to REAL private Timeseries
+        run: |
+          docker compose \
+            -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-synthetic-rights.yml \
+            exec -T ingestion-service python -c '
+          import json,os,sys,httpx
+          payload=json.load(sys.stdin)
+          url="http://timeseries-service:8080/internal/timeseries/ingestion/observation-batches"
+          with httpx.Client(timeout=25,follow_redirects=False) as client:
+              response=client.post(url,json=payload,headers={"X-WHV-Ingestion-Key":os.environ["WHV_TIMESERIES_INTERNAL_INGESTION_KEY"]})
+              assert response.status_code==200,("Secure synthetic ingest rejected",response.status_code)
+              assert response.json()["upsertedCount"]==1
+          print("PASS: one signed SYNTHETIC observation ingested by real Timeseries")
+          ' < "$WHV_P2C2_DIRECTORY/signed-batch.json"
+
+      - name: Verify Gateway allows exactly one synthetic public indicator but no private runs
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.error
+          host="http://127.0.0.1:18080"
+          def get(path):
+              with urllib.request.urlopen(host+path,timeout=20) as response:
+                  return response.status,json.load(response)
+          _,coverage=get("/api/timeseries/countries/GAB/published-coverage")
+          assert coverage["coverageStatus"]=="PUBLISHED_DATA_AVAILABLE"
+          assert coverage["availableObservationCount"]==1
+          _,items=get("/api/timeseries/countries/GAB/published-indicators")
+          assert items["count"]==1 and items["items"][0]["indicatorCode"]=="SYNTH.P2C2.QA"
+          _,values=get("/api/timeseries/series/latest?countryIso3=GAB&indicatorCode=SYNTH.P2C2.QA")
+          assert values["count"]==1 and values["items"][0]["numericValue"]==17.0
+          try:
+              get("/api/timeseries/source-runs")
+          except urllib.error.HTTPError as error:
+              assert error.code==401
+          else:
+              raise AssertionError("Private operator source-run route is exposed")
+          print("PASS: authenticated private ingestion; anonymous eligible reads; private runs blocked")
+          PY
+
+      - name: Install Chromium to run mobile and desktop against REAL backend
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+
+      - name: Verify actual SQL revocation in SAME open iPhone session and all Gateway routes
+        run: node worldhealth-vision-v2/frontend/web-v2/p2c2-signed-live-browser.mjs
+
+      - name: Forensic row must remain but public row and permissions must vanish
+        run: |
+          docker compose \
+            -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-synthetic-rights.yml \
+            exec -T whv-timescaledb psql -X -At -v ON_ERROR_STOP=1 -U whv_user -d whv \
+            -c "select (select count(*) from timeseries.observation where indicator_code='SYNTH.P2C2.QA'), (select count(*) from timeseries.latest_observation where indicator_code='SYNTH.P2C2.QA'), (select count(*) from timeseries.rights_revocation)" \
+            > "$RUNNER_TEMP/p2c2-retention.txt"
+          python3 - "$RUNNER_TEMP/p2c2-retention.txt" <<'PY'
+          from pathlib import Path
+          import sys
+          raw=Path(sys.argv[1]).read_text().strip()
+          kept,published,revoked=[int(x) for x in raw.split("|")]
+          assert (kept,published,revoked)==(1,0,1),(kept,published,revoked)
+          print("PASS: forensic history 1, published rows 0, append-only revoked grants 1")
+          PY
+
+      - name: Archive QA-only phone screenshots (never raw evidence, keys or fixtures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-p2c2-real-synthetic-revocation-mobile-qa
+          path: p2c2-artifacts/
+          if-no-files-found: warn
+
+      - name: Remove disposable database and proof material including ingestion key
+        if: always()
+        run: |
+          docker compose \
+            -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-synthetic-rights.yml \
+            down -v --remove-orphans || true
+          rm -f "$WHV_DB_PASSWORD_FILE"
+          rm -rf "$WHV_P2C2_DIRECTORY"
