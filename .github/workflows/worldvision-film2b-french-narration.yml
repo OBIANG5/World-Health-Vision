@@ -1,0 +1,109 @@
+name: World-Vision — FILM-2B2 audible French NASA reportage audition
+
+on:
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/media-voice-pilots/artemis2/**'
+      - '.github/workflows/worldvision-film2b-french-narration.yml'
+  workflow_dispatch:
+
+# Do not re-render 800+ video frames on documentation-only edits.
+concurrency:
+  group: worldvision-french-voice-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  audible-nasa-film:
+    name: Neural French narration + original ducked bed + Remotion captions + H264/AAC
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install FFmpeg and French phonemizer only if absent
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1 ||
+             ! command -v espeak-ng >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg espeak-ng
+          fi
+          ffmpeg -hide_banner -version | head -n 1
+          espeak-ng --version | head -n 1
+      - name: Install pinned CPU-only PyTorch and existing Kokoro French model adapter
+        run: |
+          python -m pip install -q --disable-pip-version-check --no-cache-dir \
+            torch==2.5.1+cpu torchaudio==2.5.1+cpu \
+            --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -q --disable-pip-version-check --no-cache-dir \
+            'kokoro==0.9.4' 'soundfile==0.13.1'
+          python -m pip check
+      - name: Synthesize French voice audition (Kokoro ff_siwis, model SHA verified)
+        run: |
+          python ../../media-voice-pilots/artemis2/synthesize-kokoro.py \
+            /tmp/worldvision-nasa-voice
+          test -s /tmp/worldvision-nasa-voice/worldvision-master-mix.wav
+          test -s /tmp/worldvision-nasa-voice/worldvision-narration-timings.json
+      - name: Install current Remotion renderer without adding a second video engine
+        run: npm install --no-audit --no-fund
+      - name: Re-fetch NASA originals from immutable pinned SHA sources
+        run: |
+          node ../../media-pilots/artemis2/validate-pilot.mjs
+          node ../../media-pilots/artemis2/prepare-assets.mjs /tmp/worldvision-nasa-voiced-assets
+          cp /tmp/worldvision-nasa-voice/worldvision-master-mix.wav /tmp/worldvision-nasa-voiced-assets/
+          cp /tmp/worldvision-nasa-voice/worldvision-narration-timings.json /tmp/worldvision-nasa-voiced-assets/
+      - name: Build editorial timeline from actual spoken sample lengths
+        run: |
+          mkdir -p output/pilots
+          node ../../media-voice-pilots/artemis2/build-narrated-project.mjs \
+            /tmp/worldvision-nasa-voice/worldvision-narration-timings.json \
+            /tmp/worldvision-nasa-voiced-project.json
+          node --input-type=module -e "import fs from 'node:fs';import {inspectProject} from './creative/validate-project.mjs';const p=JSON.parse(fs.readFileSync('/tmp/worldvision-nasa-voiced-project.json','utf8'));const i=inspectProject(p);if(!i.ok)throw Error(JSON.stringify(i.errors));if(!p.voice||p.captions?.length!==7)process.exit(1);console.log('Voice + captions + four sourced scenes:',i.frames,'frames');"
+      - name: Render TRUE audible 1080x1920 Remotion MP4 with shared caption track
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-nasa-voiced-project.json \
+            --assets /tmp/worldvision-nasa-voiced-assets \
+            --output output/pilots/artemis2-audible-french-voice-review.mp4
+      - name: Inspect actual AAC waveform, phrase-caption timings and source SHA
+        run: |
+          node ../../media-voice-pilots/artemis2/audit-audible.mjs \
+            output/pilots/artemis2-audible-french-voice-review.mp4 \
+            /tmp/worldvision-nasa-voiced-project.json \
+            /tmp/worldvision-nasa-voiced-assets
+          ffmpeg -hide_banner -loglevel error -y \
+            -i /tmp/worldvision-nasa-voice/worldvision-master-mix.wav \
+            -codec:a libmp3lame -q:a 3 \
+            output/pilots/artemis2-french-voice-audition.mp3
+      - name: Capture eight genuine frames for TikTok-size collision review
+        run: |
+          ffmpeg -hide_banner -loglevel error -y \
+            -i output/pilots/artemis2-audible-french-voice-review.mp4 \
+            -vf "fps=1/4,scale=270:480,tile=4x2:padding=8:margin=6:color=black" \
+            -frames:v 1 output/pilots/artemis2-audible-eight-frames.jpg
+          test -s output/pilots/artemis2-audible-eight-frames.jpg
+          test -s output/pilots/artemis2-audible-french-voice-review.mp4.stills/frame-01-at-0.png
+      - name: Preserve audible film, independent source checks, voice audition and QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-artemis2-audible-french-internal-film
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-audible-french-voice-review.mp4
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-audible-french-voice-review.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-audible-french-voice-review.mp4.audible-qa.json
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-audible-french-voice-review.mp4.stills/*.png
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-french-voice-audition.mp3
+            worldhealth-vision-v2/services/media-renderer/output/pilots/artemis2-audible-eight-frames.jpg
