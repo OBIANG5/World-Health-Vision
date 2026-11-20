@@ -73,10 +73,13 @@ export function parseStudioProject(text){
   const seen=new Set();
   for(const [i,s] of p.shots.entries()){
     const label="plan "+(i+1);
-    only(s,["id","durationFrames","template","title","subtitle","eyebrow","focus","documentRegion","photo","geo","data","motion","transitionAfter","transitionFrames","media","foreground"],label);
+    only(s,["id","durationFrames","template","title","subtitle","eyebrow","titleFrameZero","focus","documentRegion","photo","geo","data","motion","transitionAfter","transitionFrames","media","foreground"],label);
     if(!SLUG.test(s.id)||seen.has(s.id))fail(label+" : ID absent ou répété.");
     seen.add(s.id);
     if(!SHOT_TYPES.has(s.template)||!integer(s.durationFrames,1,3600))fail(label+" : modèle ou durée invalide.");
+    if(s.titleFrameZero!==undefined&&(typeof s.titleFrameZero!=="boolean"||
+       (s.titleFrameZero&&(i!==0||!readable(s.title)))))
+      fail(label+" : ouverture frame zéro seulement pour le premier plan doté d’un titre.");
     if(s.motion!=null&&!MOTIONS.has(s.motion))fail(label+" : mouvement inconnu.");
     if(s.transitionAfter!=null&&!TRANSITIONS.has(s.transitionAfter))fail(label+" : transition inconnue.");
     const t=s.transitionFrames??0;
@@ -212,6 +215,7 @@ export function studioShotToEditor(s,defaults){
   return {
     ...defaults,
     id:s.id,title:s.title??"",subtitle:s.subtitle??"",eyebrow:s.eyebrow??"",
+    titleFrameZero:s.titleFrameZero===true,
     durationFrames:s.durationFrames,template:s.template,
     motion:s.motion??"locked",transitionAfter:s.transitionAfter??"cut",
     transitionFrames:s.transitionFrames??0,
