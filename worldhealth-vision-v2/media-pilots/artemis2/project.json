@@ -30,7 +30,8 @@
       },
       "motion": "dolly",
       "transitionAfter": "dissolve",
-      "transitionFrames": 10
+      "transitionFrames": 10,
+      "titleFrameZero": true
     },
     {
       "id": "earthset-context",
