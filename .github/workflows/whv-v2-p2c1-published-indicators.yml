@@ -44,3 +44,40 @@ jobs:
       - name: Run Java 21 PostgreSQL16/Flyway Timeseries and Gateway integration
         working-directory: worldhealth-vision-v2
         run: mvn -B -ntp -pl services/timeseries-service,services/gateway-service -am test
+
+  atlas-mobile-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Locked dependencies, strict lint and real React/Vite production compilation
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npx eslint src/components/country/PublishedIndicatorExplorer.tsx src/components/country/CountryLocalEvidencePanel.tsx src/api/whvApi.ts
+          npm run build
+      - name: Enforce truthful source and indicator read behavior
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('worldhealth-vision-v2/frontend/web-v2/src')
+          panel=(root/'components/country/CountryLocalEvidencePanel.tsx').read_text()
+          explorer=(root/'components/country/PublishedIndicatorExplorer.tsx').read_text()
+          api=(root/'api/whvApi.ts').read_text()
+          assert 'PUBLISHED_DATA_AVAILABLE' in panel
+          assert 'PublishedIndicatorExplorer' in panel
+          assert 'fetchPublishedLatestSources' in explorer
+          assert 'visibilitychange' in explorer
+          assert 'fetchCountryPublishedIndicators' in api
+          assert 'fetchCatalogSourceDetail' in api
+          assert 'NO_PUBLICLY_ELIGIBLE_DATA' in panel
+          assert 'sourceInfo' in explorer and 'licenseSummary' in explorer
+          print('PASS: interactive indicator exploration remains separated from catalogue-only claims')
+          PY
