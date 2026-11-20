@@ -1,0 +1,21 @@
+export type DataMotionMode="line"|"ranking"|"heatmap";
+export type DataPoint={label:string;value:number;date?:string};
+export type DataDirection={
+  mode:DataMotionMode;
+  series:DataPoint[];
+  source:{publisher:string;dataset:string;asOf:string;url?:string};
+  domain:{min:number;max:number};
+  unit:string;
+  precision:number;
+  locale?:"fr-FR"|"en-US";
+};
+export type DataPose={intro:number;grid:number;plot:number;number:number;notes:number;source:number};
+export function dataClamp(n:number):number;
+export function dataEase(n:number):number;
+export function dataBeat(frame:number,start:number,end:number):number;
+export function dataStagger(progress:number,index:number,total:number,window?:number):number;
+export function dataPose(frame:number,durationFrames:number):DataPose;
+export function valueLabel(value:number,precision?:number,locale?:string):string;
+export function dataPointGeometry(data:DataDirection):Array<DataPoint&{x:number;y:number}>;
+export function rankedData(series:DataPoint[]):Array<DataPoint&{originalOrder:number;rank:number}>;
+export function heatmapCells(series:DataPoint[],domain:{min:number;max:number}):Array<DataPoint&{col:number;row:number;intensity:number}>;

@@ -1,5 +1,13 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## MEDIA SPRINT 11 — DATA MOTION / BRANCHE DE TRAVAIL
+
+Branche isolée `feature/worldvision-data-motion-sourced-charts-2026-11-19` enfant de PR #80. Nouveau `data_story` : ligne temporelle, barres classement avec ex æquo et heatmap de catégorie, toutes basées sur source/dates/unités/domain explicites et animations chorégraphiées. Le renderer H.264 reçoit exactement `shot.data` comme le Player. Le Studio permet de saisir données propres et source ; refuser axe trompeur, chiffres inventés et dates impossibles. Voir [Sprint 11](../media/WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md).
+
+**État exact :** code/démo synthétique en branche, tests/CI pas encore certifiés au moment de cette note. Inspecter HEAD+Actions+artefacts après PR. Ne pas fusionner ni déployer; suivi PHOTO #80 canonique candidat et #79 alternatif. Après DATA : montage cohérent GEO/PAYS/PHOTO/DATA/DOCUMENT, journalisme sourcé, vraie voix/mix et QA iPhone. BAOCOM distinct, GDELT/blog différés.
+
+---
+
 ## MEDIA — SPRINT 10 PHOTO MULTILAYER (19 NOVEMBRE)
 
 Branche active `feature/worldvision-photo-multilayer-motion-tracks-2026-11-19`, enfant de PR #74, non fusionnée/non déployée. Nouveau template `photo_story` : la **même** image importée, six animations déterministes indépendantes, détourage transparent externe si fourni, focus lié à la caméra, compteur avec source, masque révélation et titres. Contrôles exposés au Studio et validation de données/échelles; suite de tests + rendu H.264 à exécuter et inspecter. [Rapport détaillé](../media/WORLDVISION_PHOTO_MULTILAYER_SPRINT10_2026-11-19.md). Ne pas confondre « codé » et « certifié ». Après preuves visuelles PHOTO : pack DATA, puis raccord narratif globe/pays/photo et mixage/audio. Scripts et sources ChatGPT+utilisateur; pas de publication automatique; voix libre; BAOCOM séparé; blog/GDELT différés.

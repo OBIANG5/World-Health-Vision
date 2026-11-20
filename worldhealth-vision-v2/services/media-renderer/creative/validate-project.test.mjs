@@ -7,6 +7,7 @@ import {fileURLToPath} from "node:url";
 import {FORMAT,inspectProject,durationFrames,resolveLocalFile} from "./validate-project.mjs";
 import {geoCameraPose} from "../src/geo-motion-camera.mjs";
 import {photoTrackPose,motionProgress} from "../src/photo-motion-tracks.mjs";
+import {dataPose,dataPointGeometry,rankedData,heatmapCells,dataStagger} from "../src/data-motion-engine.mjs";
 import {countryFocusGeometry} from "../src/country-focus-geometry.mjs";
 import {createRequire} from "node:module";
 import {geoContains} from "d3-geo";
@@ -375,4 +376,119 @@ test("photo STORY validates imported original, safe crop, foreground, timing and
   assert.equal(inspectProject(p).ok,true);
   delete s.photo;
   assert.ok(reasons(p).includes("shots[0].photo"));
+});
+
+test("DATA charts animate independent editorial, plot, number and source tracks",()=>{
+  const intro=dataPose(0,165);
+  const plot=dataPose(89,165);
+  const end=dataPose(162,165);
+  assert.ok(intro.intro>=.75,"First frame must show a visible editorial hook on short-form mobile video");
+  assert.equal(intro.plot,0);
+  assert.ok(plot.plot>0&&plot.plot<1);
+  assert.equal(plot.source,0,"Source comes in its own later beat");
+  assert.equal(end.plot,1);
+  assert.equal(end.source,1);
+  assert.deepEqual(dataPose(89,165),plot);
+});
+
+test("DATA geometry faithfully plots sourced values, stable tied ranks and honest 0-based heatmap",()=>{
+  const sample={mode:"line",series:[
+    {date:"2026-01-01",label:"JAN",value:10},
+    {date:"2026-02-01",label:"FÉV",value:15},
+    {date:"2026-03-01",label:"MAR",value:12}
+  ],domain:{min:8,max:16}};
+  const points=dataPointGeometry(sample);
+  assert.equal(points[0].y,957.5);
+  assert.equal(points[1].y,651.25);
+  assert.equal(points[2].x,955);
+  assert.ok(Math.abs(points[1].x-(140+815*31/59))<.001,
+    "January→February uses 31 true days from a 59-day window, NOT equal-index spacing");
+  assert.ok(points.every(p=>p.y>=590&&p.y<=1080));
+  const ranks=rankedData([{label:"A",value:3},{label:"B",value:10},{label:"C",value:10},{label:"D",value:2}]);
+  assert.deepEqual(ranks.map(v=>[v.label,v.rank]),[["B",1],["C",1],["A",3],["D",4]],
+    "Equal values share an honest rank, not false ordinal placement.");
+  const h=heatmapCells([{label:"A",value:0},{label:"B",value:50},{label:"C",value:100}],{min:0,max:100});
+  assert.deepEqual(h.map(v=>v.intensity),[0,.5,1]);
+  assert.deepEqual(h.map(v=>v.col),[0,1,2]);
+});
+
+test("DATA series require real date syntax, explicit units, legal numeric scale and publisher",()=>{
+  const p=clone(sample),shot=p.shots[0];
+  shot.template="data_story";shot.durationFrames=165;
+  shot.title="INDICATEUR · SYNTHÉTIQUE UNIQUEMENT";
+  shot.subtitle="Aucun chiffre d'actualité.";
+  delete shot.foreground;
+  shot.data={
+    mode:"line",
+    series:[
+      {date:"2026-01-01",label:"JAN",value:10},
+      {date:"2026-02-01",label:"FÉV",value:15},
+      {date:"2026-03-01",label:"MAR",value:12}
+    ],
+    source:{publisher:"INSTITUTION FICTIVE POUR CI",dataset:"Jeu de données purement synthétique",
+      asOf:"2026-03-01",url:"https://example.invalid/test"},
+    domain:{min:8,max:16},unit:" TEST",precision:0,locale:"fr-FR"
+  };
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  shot.data.series[1].date="2025-02-01";
+  assert.ok(reasons(p).includes("shots[0].data.series[1].date"));
+  shot.data.series[1].date="2026-02-01";
+  shot.data.source.asOf="2026-01-01";
+  assert.ok(reasons(p).includes("shots[0].data.source"));
+  shot.data.source.asOf="2026-03-01";
+  shot.data.source.publisher="";
+  assert.ok(reasons(p).includes("shots[0].data.source"));
+  shot.data.source.publisher="INSTITUTION FICTIVE POUR CI";
+  shot.data.domain.max=11;
+  assert.ok(reasons(p).includes("shots[0].data.domain"));
+  shot.data.domain.max=16;
+  assert.equal(inspectProject(p).ok,true);
+});
+
+test("DATA rankings and heatmaps reject deceptive baselines and missing attribution",()=>{
+  const p=clone(sample),shot=p.shots[0];
+  shot.template="data_story";shot.durationFrames=165;
+  shot.title="CLASSEMENT D'ESSAI · NON JOURNALISTIQUE";
+  shot.data={
+    mode:"ranking",series:[
+      {label:"CAT A",value:20},{label:"CAT B",value:7},{label:"CAT C",value:12}
+    ],
+    source:{publisher:"CI SYNTHETIC",dataset:"Comparatif fictif",asOf:"2026-03-01"},
+    domain:{min:0,max:25},unit:" TEST",precision:0
+  };
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  shot.data.domain.min=6;
+  assert.ok(reasons(p).includes("shots[0].data.domain"),"Ranking must start at zero");
+  shot.data.domain.min=0;
+  shot.data.series[1].value=-5;
+  assert.ok(reasons(p).includes("shots[0].data.series[1].value"));
+  shot.data.mode="heatmap";
+  shot.data.series=[{label:"A",value:3},{label:"B",value:6},{label:"C",value:0},{label:"D",value:9}];
+  shot.data.domain.max=10;
+  assert.equal(inspectProject(p).ok,true,JSON.stringify(inspectProject(p).errors));
+  shot.data.source.asOf="2026-02-30";
+  assert.ok(reasons(p).includes("shots[0].data.source"),"Reject impossible publication date");
+});
+
+test("DATA stagger never silently shortens a final ranked bar or heatmap cell",()=>{
+  for(const count of [3,4,8,12,16]){
+    const starts=Array.from({length:count},(_,i)=>dataStagger(0,i,count));
+    const finals=Array.from({length:count},(_,i)=>dataStagger(1,i,count));
+    assert.ok(starts.every(v=>v===0));
+    assert.ok(finals.every(v=>v===1), "Every category must show 100% of its stated value");
+    assert.ok(dataStagger(.50,0,count)>dataStagger(.50,count-1,count));
+  }
+});
+
+test("DATA time axis preserves irregularly spaced dated observations",()=>{
+  const data={mode:"line",series:[
+    {date:"2026-01-01",label:"DAY 1",value:10},
+    {date:"2026-01-02",label:"DAY 2",value:11},
+    {date:"2026-04-01",label:"APRIL",value:12},
+  ],domain:{min:0,max:20}};
+  const pts=dataPointGeometry(data);
+  assert.equal(pts[0].x,140);
+  assert.equal(pts[2].x,955);
+  assert.ok(pts[1].x<155,"1 day must remain near the first date on a 90-day timeline");
+  assert.notEqual(pts[1].x,(pts[0].x+pts[2].x)/2,"Never plot irregular dates as equal-distance categories");
 });

@@ -17,7 +17,7 @@ declare global{
   interface Window{
     __wvSmokeSeek?:(frame:number)=>void;
     __wvSmokeReady?:boolean;
-    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo";
+    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo"|"data-line"|"data-ranking"|"data-heatmap";
     __wvSmokeFrames?:number;
     __wvSmokeHasVoice?:boolean;
   }
@@ -30,6 +30,7 @@ const isDocument=mode==="document";
 const isGeo=mode==="geo";
 const isCountry=mode==="country";
 const isPhoto=mode==="photo";
+const isData=mode==="data-line"||mode==="data-ranking"||mode==="data-heatmap";
 function Smoke(){
   const playerRef=useRef<PlayerRef>(null);
   const [assets,setAssets]=useState<SmokeAssets|null>(null);
@@ -52,11 +53,11 @@ function Smoke(){
   const props=useMemo<CreativeEditProps|null>(()=>{
     if(!assets)return null;
     const opener:CreativeShot={
-      id:"plan-synthetique",durationFrames:isPhoto?165:isCountry?165:isGeo?150:isDocument?140:105,template:isPhoto?"photo_story":isCountry?"country_focus":isGeo?"geo_story":isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
+      id:"plan-synthetique",durationFrames:isData?165:isPhoto?165:isCountry?165:isGeo?150:isDocument?140:105,template:isData?"data_story":isPhoto?"photo_story":isCountry?"country_focus":isGeo?"geo_story":isDocument?"document_focus":isClip?"clean_video":"focus_reveal",
       media:assets.clip?{kind:"video",src:assets.clip}:{kind:"image",src:assets.photo},
-      title:isPhoto?"UNE IMAGE · SIX MOUVEMENTS":isCountry?"GABON · FOCUS CARTOGRAPHIQUE":isGeo?"LE MONDE EN MOUVEMENT":isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
-      subtitle:isPhoto?"Six animations indépendantes sur une seule source synthétique.":isCountry?"Source géographique réelle, paysage artificiel de test : aucune actualité.":isGeo?"Cartographie et animations simultanées, test synthétique.":isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
-      eyebrow:isPhoto?"PHOTO MOTION · NON JOURNALISTIQUE":isCountry?"ATELIER 1:10m · NON JOURNALISTIQUE":isGeo?"GEO MOTION · AUCUNE ACTUALITÉ":isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
+      title:isData?"DONNÉES · ESSAI VISUEL SOURCÉ":isPhoto?"UNE IMAGE · SIX MOUVEMENTS":isCountry?"GABON · FOCUS CARTOGRAPHIQUE":isGeo?"LE MONDE EN MOUVEMENT":isDocument?"EXAMINER LE DOCUMENT":"UN PLAN. UNE HISTOIRE.",
+      subtitle:isData?"Valeurs, unités et dates de démonstration : aucun fait économique.":isPhoto?"Six animations indépendantes sur une seule source synthétique.":isCountry?"Source géographique réelle, paysage artificiel de test : aucune actualité.":isGeo?"Cartographie et animations simultanées, test synthétique.":isDocument?"Une source fournie, jamais reconstituée.":"Test technique de composition — aucune actualité",
+      eyebrow:isData?"DATA MOTION · NON JOURNALISTIQUE":isPhoto?"PHOTO MOTION · NON JOURNALISTIQUE":isCountry?"ATELIER 1:10m · NON JOURNALISTIQUE":isGeo?"GEO MOTION · AUCUNE ACTUALITÉ":isDocument?"DOCUMENT TEST — AUCUNE ACTUALITÉ":"STUDIO / RENDU RÉEL",
       motion:"dolly",transitionAfter:isFilm?"dissolve":"cut",
       transitionFrames:isFilm?10:0,
       focus:{x:.5,y:.46},
@@ -68,6 +69,25 @@ function Smoke(){
         focus:{x:.5,y:.48,radius:83,startFrame:48,endFrame:91},
         metric:{label:"TEST SYNTHÉTIQUE",value:42,unit:" TEST",precision:0,
           sourceLabel:"Source : fixture synthétique CI",startFrame:71,endFrame:122}
+      }}:{}),
+      ...(isData?{data:{
+        mode:mode==="data-ranking"?"ranking" as const:mode==="data-heatmap"?"heatmap" as const:"line" as const,
+        series:mode==="data-line"?[
+          {date:"2026-01-01",label:"JAN",value:10},
+          {date:"2026-02-01",label:"FÉV",value:15},
+          {date:"2026-03-01",label:"MAR",value:12}
+        ]:mode==="data-ranking"?[
+          {label:"CAT A",value:45},{label:"CAT B",value:80},
+          {label:"CAT C",value:30},{label:"CAT D",value:65}
+        ]:[
+          {label:"ZONE A",value:12},{label:"ZONE B",value:54},
+          {label:"ZONE C",value:91},{label:"ZONE D",value:30},
+          {label:"ZONE E",value:68},{label:"ZONE F",value:5}
+        ],
+        source:{publisher:"SIMULATION CI",dataset:"Série inventée à des fins de test",
+          asOf:"2026-03-01",url:"https://example.invalid/fake"},
+        domain:mode==="data-line"?{min:8,max:16}:{min:0,max:100},
+        unit:" TEST",precision:0,locale:"fr-FR" as const
       }}:{}),
       ...(isDocument?{documentRegion:{x:.30,y:.40,width:.45,height:.20}}:{}),
       ...(isCountry?{geo:{
@@ -105,7 +125,7 @@ function Smoke(){
     if(!props)return;
     window.__wvSmokeSeek=(n:number)=>playerRef.current?.seekTo(n);
     window.__wvSmokeReady=true;
-    window.__wvSmokeMode=isFilm?"film":isClip?"clip":isDocument?"document":isPhoto?"photo":isCountry?"country":isGeo?"geo":"shot";
+    window.__wvSmokeMode=isData?mode as "data-line"|"data-ranking"|"data-heatmap":isFilm?"film":isClip?"clip":isDocument?"document":isPhoto?"photo":isCountry?"country":isGeo?"geo":"shot";
     window.__wvSmokeFrames=creativeDuration(props);
     window.__wvSmokeHasVoice=Boolean(props.narration);
     return ()=>{

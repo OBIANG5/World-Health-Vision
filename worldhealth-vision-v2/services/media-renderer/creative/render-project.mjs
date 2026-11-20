@@ -108,6 +108,8 @@ async function run(argv){
         // Pass the SAME independently authored tracks to the H264 engine
         // that CreativeCompositionPreview uses in the browser. Never freeze.
         photo:shot.photo,
+        // Export all DATA modes on the same server inputProps contract as the V2 Player.
+        data:shot.data,
       });
     }
     const props={

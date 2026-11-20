@@ -1,6 +1,7 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import type {CreativeEditProps, CreativeMedia, CreativeShot} from "../../../../services/media-renderer/src/CreativeEdit";
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
+import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
 // Lazy: do not load the sizeable motion runtime until a user requests preview.
@@ -8,7 +9,7 @@ const RealCreativePreview = lazy(() => import("./CreativeCompositionPreview"));
 const CountrySelector10m = lazy(() => import("./CountrySelector10m"));
 import "./CinematicProductionBoard.css";
 
-type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_story";
+type Template = "documentary"|"kinetic"|"evidence"|"number"|"clean_video"|"focus_reveal"|"document_focus"|"geo_story"|"country_focus"|"photo_story"|"data_story";
 type Motion = "locked"|"dolly"|"drift"|"push";
 type Transition = "cut"|"dissolve"|"slide";
 type MediaType = "image"|"video"|"audio";
@@ -48,10 +49,12 @@ type Shot = {
   geoShowRoute:boolean;geoFromLon:number;geoFromLat:number;
   geoShowMetric:boolean;geoMetricLabel:string;geoMetricValue:string;geoMetricUnit:string;
   photoSettings:PhotoSettings;photoUseSubject:boolean;photoUseMask:boolean;photoUseFocus:boolean;photoUseMetric:boolean;
+  dataMode:DataDirection["mode"];dataRaw:string;dataPublisher:string;dataDataset:string;dataAsOf:string;
+  dataUrl:string;dataUnit:string;dataPrecision:number;dataLocale:"fr-FR"|"en-US";dataMin:string;dataMax:string;
 };
 const TEMPLATE_LABELS:Record<Template,string>={
   documentary:"Photographie / reportage",focus_reveal:"Révélation cinématographique du visuel",kinetic:"Typographie cinématique",
-  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",country_focus:"Pays en détail · carte 1:10m / média / données",photo_story:"PHOTO · six pistes de motion sur une image",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
+  evidence:"Document / contexte",document_focus:"Preuve visuelle · inspection de document",geo_story:"Globe lumineux · géographie et données",country_focus:"Pays en détail · carte 1:10m / média / données",photo_story:"PHOTO · six pistes de motion sur une image",data_story:"DATA · courbes, classements et heatmaps vérifiables",number:"Chiffre important",clean_video:"Clip intégral / animation externe"
 };
 const MOTION_LABELS:Record<Motion,string>={
   locked:"Cadre fixe",dolly:"Approche de caméra",drift:"Mouvement latéral",push:"Révélation progressive"
@@ -77,7 +80,9 @@ const initialShot=():Shot=>({
   geoShowTarget:false,geoTargetLon:0,geoTargetLat:0,geoTargetLabel:"",
   geoShowRoute:false,geoFromLon:0,geoFromLat:0,
   geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:"",
-  photoSettings:initialPhotoSettings(),photoUseSubject:false,photoUseMask:true,photoUseFocus:false,photoUseMetric:false
+  photoSettings:initialPhotoSettings(),photoUseSubject:false,photoUseMask:true,photoUseFocus:false,photoUseMetric:false,
+  dataMode:"line",dataRaw:"",dataPublisher:"",dataDataset:"",dataAsOf:"",dataUrl:"",
+  dataUnit:"",dataPrecision:0,dataLocale:"fr-FR",dataMin:"",dataMax:""
 });
 /** No geography or numeric fact is inferred from text here. The user chooses
  * every coordinate and figure explicitly. Never insert synthetic values. */
@@ -137,6 +142,57 @@ const validPhoto=(s:Shot)=>{
       Number.isInteger(m.precision)&&m.precision>=0&&m.precision<=2))
   );
 };
+// Data labels and values are never guessed from the script or a live API.
+// Lines use DATE|LIBELLÉ|VALEUR; other graphs LIBELLÉ|VALEUR.
+// The author explicitly enters the visible axis range and provenance.
+const parseDataRows=(s:Shot):DataDirection["series"]=>{
+  const rows=s.dataRaw.split("\n").map(x=>x.trim()).filter(Boolean);
+  return rows.map(row=>{
+    const parts=row.split("|").map(x=>x.trim());
+    if(s.dataMode==="line")return {
+      date:parts[0]??"",label:parts[1]??"",
+      value:parts.length===3&&parts[2]!==""?Number(parts[2]):Number.NaN
+    };
+    return {label:parts[0]??"",value:parts.length===2&&parts[1]!==""?Number(parts[1]):Number.NaN};
+  });
+};
+const buildData=(s:Shot):DataDirection=>({
+  mode:s.dataMode,series:parseDataRows(s),
+  source:{publisher:s.dataPublisher.trim(),dataset:s.dataDataset.trim(),asOf:s.dataAsOf,
+    ...(s.dataUrl.trim()?{url:s.dataUrl.trim()}:{})},
+  domain:{min:Number(s.dataMin),max:Number(s.dataMax)},
+  precision:s.dataPrecision,unit:s.dataUnit,locale:s.dataLocale
+});
+const validData=(s:Shot)=>{
+  if(s.template!=="data_story")return true;
+  const p=parseDataRows(s);
+  const dateValid=(v:string)=>/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v)&&
+    Number.isFinite(new Date(v+"T12:00:00Z").getTime())&&
+    new Date(v+"T12:00:00Z").toISOString().slice(0,10)===v;
+  const min=s.dataMode==="line"?3:s.dataMode==="ranking"?3:4;
+  const max=s.dataMode==="line"?16:s.dataMode==="ranking"?8:12;
+  const low=Number(s.dataMin),high=Number(s.dataMax);
+  const names=new Set(p.map(row=>row.label));
+  const dates=p.map(row=>row.date??"");
+  return Boolean(s.title.trim()&&s.title.length<=90&&s.subtitle.length<=180&&
+    s.durationFrames>=150&&s.durationFrames<=3600&&
+    p.length>=min&&p.length<=max&&p.every(x=>x.label.trim()&&x.label.length<=22&&
+      Number.isFinite(x.value)&&Math.abs(x.value)<=1e12&&
+      (s.dataMode==="line"||x.value>=0))&&names.size===p.length&&
+    (s.dataMode!=="line"||(dates.every(dateValid)&&
+      dates.every((value,i)=>i===0||dates[i-1]<value)&&
+      s.dataAsOf>=dates[dates.length-1]))&&
+    s.dataMin.trim()!==""&&s.dataMax.trim()!==""&&
+    Number.isFinite(low)&&Number.isFinite(high)&&low<high&&
+    Math.max(Math.abs(low),Math.abs(high))<=1e12&&
+    (s.dataMode==="line"||low===0)&&
+    p.every(x=>x.value>=low&&x.value<=high)&&
+    dateValid(s.dataAsOf)&&s.dataPublisher.trim()&&s.dataPublisher.length<=80&&
+    s.dataDataset.trim()&&s.dataDataset.length<=120&&
+    (!s.dataUrl.trim()||(s.dataUrl.startsWith("https://")&&s.dataUrl.length<=1000))&&
+    s.dataUnit.length<=12&&Number.isInteger(s.dataPrecision)&&s.dataPrecision>=0&&s.dataPrecision<=2&&
+    (s.dataLocale==="fr-FR"||s.dataLocale==="en-US")&&!s.foregroundName);
+};
 const inLon=(v:number)=>Number.isFinite(v)&&v>=-180&&v<=180;
 const inLat=(v:number)=>Number.isFinite(v)&&v>=-85&&v<=85;
 const validGeo=(s:Shot)=>{
@@ -192,7 +248,9 @@ export default function CinematicProductionBoard() {
   const previewCanRender=(!needsRealMedia||Boolean(activeAsset&&activeAsset.kind!=="audio"))&&
     (active.template!=="focus_reveal"||Boolean(active.title.trim()&&active.title.length<=90&&active.durationFrames>=90))&&
     (active.template!=="document_focus"||Boolean(activeAsset?.kind==="image"&&active.title.trim()&&active.title.length<=90&&active.durationFrames>=115))&&
-    (active.template!=="photo_story"||activeAsset?.kind==="image")&&validPhoto(active)&&validGeo(active);
+    (active.template!=="photo_story"||activeAsset?.kind==="image")&&
+    (active.template!=="data_story"||!activeAsset||activeAsset.kind==="image")&&
+    validData(active)&&validPhoto(active)&&validGeo(active);
   // Exact props type of the REAL server-rendered Remotion compositor; object
   // URLs only exist in this browser session and never reach GitHub or an API.
   const previewProps=useMemo<CreativeEditProps>(()=>{
@@ -217,6 +275,7 @@ export default function CinematicProductionBoard() {
         focus:{x:active.focusX,y:active.focusY},
         ...(active.template==="document_focus"?{documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH}}:{}),
         ...(active.template==="photo_story"?{photo:buildPhoto(active)}:{}),
+        ...(active.template==="data_story"?{data:buildData(active)}:{}),
         ...((active.template==="geo_story"||active.template==="country_focus")?{geo:buildGeo(active)}:{})
       }],
       narration:null,
@@ -237,7 +296,8 @@ export default function CinematicProductionBoard() {
       shot.documentX+shot.documentW<=1.0000001&&shot.documentY+shot.documentH<=1.0000001
     );
     const validForeground=!shot.foregroundName||Boolean(shot.mediaName&&files.some(f=>f.name===shot.foregroundName&&f.kind==="image"));
-    return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot)&&validPhoto(shot)&&
+    return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot)&&validPhoto(shot)&&validData(shot)&&
+      (shot.template!=="data_story"||!shot.mediaName||files.some(f=>f.name===shot.mediaName&&f.kind==="image"))&&
       (shot.template!=="photo_story"||files.some(f=>f.name===shot.mediaName&&f.kind==="image"));
   });
   const shotsDuration=shots.reduce((sum,s,i)=>
@@ -274,6 +334,7 @@ export default function CinematicProductionBoard() {
         focus:{x:shot.focusX,y:shot.focusY},
         ...(shot.template==="document_focus"?{documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH}}:{}),
         ...(shot.template==="photo_story"?{photo:buildPhoto(shot)}:{}),
+        ...(shot.template==="data_story"?{data:buildData(shot)}:{}),
         ...((shot.template==="geo_story"||shot.template==="country_focus")?{geo:buildGeo(shot)}:{})
       };
     }),
@@ -337,6 +398,7 @@ export default function CinematicProductionBoard() {
         focus:{x:s.focusX,y:s.focusY},
         ...(s.template==="document_focus"?{documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH}}:{}),
         ...(s.template==="photo_story"?{photo:buildPhoto(s)}:{}),
+        ...(s.template==="data_story"?{data:buildData(s)}:{}),
         ...((s.template==="geo_story"||s.template==="country_focus")?{geo:buildGeo(s)}:{}),
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
@@ -422,7 +484,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
           <div className="wvc-two-col">
-            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus"||e.target.value==="photo_story")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
+            <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus"||e.target.value==="photo_story"||e.target.value==="data_story")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
@@ -518,6 +580,76 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updatePhotoTrack("metric",{endFrame:Math.round(Number(e.target.value)*30)})}/></label>
             </div>}
             <p className="wvc-hint">Ces réglages sont des pistes de montage, pas une preuve des faits. Le masque et le focus utilisent les pixels de l'image importée. Vérifie cadrage et sujet après mouvement ; seuls les assets aux droits connus peuvent être diffusés.</p>
+          </div>}
+          {active.template==="data_story"&&<div className="wvc-focus-control" aria-label="Data Motion — graphiques et sources éditoriales">
+            <div className="wvc-focus-heading">
+              <strong>DATA MOTION — GRAPHIQUES ANIMÉS ET SOURCE VÉRIFIABLE</strong>
+              <span>Le chiffre, son échelle, sa date et sa provenance viennent uniquement de tes données. Le moteur n'invente ni cours de Bourse, ni classement, ni série financière.</span>
+            </div>
+            <label>TYPE DE GRAPHIQUE
+              <select value={active.dataMode} onChange={e=>updateShot({dataMode:e.target.value as Shot["dataMode"]})}>
+                <option value="line">Évolution · courbe temporelle</option>
+                <option value="ranking">Classement · barres horizontales</option>
+                <option value="heatmap">Heatmap · intensité relative et valeurs</option>
+              </select>
+            </label>
+            <label>SÉRIE DE DONNÉES FOURNIE
+              <textarea rows={8} value={active.dataRaw} maxLength={3200}
+                placeholder={active.dataMode==="line"
+                  ?"2026-01-01|Janvier|15.5\n2026-02-01|Février|16.1\n2026-03-01|Mars|17.0"
+                  :"Catégorie A|15.5\nCatégorie B|12.0\nCatégorie C|7.2"}
+                onChange={e=>updateShot({dataRaw:e.target.value})}/>
+              <span className="wvc-hint">Séparer les colonnes par le caractère |. Courbe : DATE ISO | LIBELLÉ | VALEUR. Classement/heatmap : LIBELLÉ | VALEUR. Utiliser le point pour les décimales. Les nombres affichés dans l'exemple de saisie sont fictifs : ne pas les utiliser comme actualité.</span>
+            </label>
+            <div className="wvc-two-col">
+              <label>MINIMUM VISIBLE DE L'AXE
+                <input inputMode="decimal" value={active.dataMin} placeholder="0"
+                  onChange={e=>updateShot({dataMin:e.target.value})}/>
+              </label>
+              <label>MAXIMUM VISIBLE DE L'AXE
+                <input inputMode="decimal" value={active.dataMax} placeholder="100"
+                  onChange={e=>updateShot({dataMax:e.target.value})}/>
+              </label>
+              <label>UNITÉ DE LA SÉRIE
+                <input maxLength={12} value={active.dataUnit} placeholder="%, $, €, personnes..."
+                  onChange={e=>updateShot({dataUnit:e.target.value})}/>
+              </label>
+              <label>PRÉCISION
+                <select value={active.dataPrecision} onChange={e=>updateShot({dataPrecision:Number(e.target.value)})}>
+                  <option value={0}>0 décimale</option>
+                  <option value={1}>1 décimale</option>
+                  <option value={2}>2 décimales</option>
+                </select>
+              </label>
+              <label>FORMAT DES NOMBRES
+                <select value={active.dataLocale} onChange={e=>updateShot({dataLocale:e.target.value as "fr-FR"|"en-US"})}>
+                  <option value="fr-FR">Français</option>
+                  <option value="en-US">English (US)</option>
+                </select>
+              </label>
+            </div>
+            <div className="wvc-two-col">
+              <label>ÉMETTEUR / INSTITUTION
+                <input maxLength={80} value={active.dataPublisher} placeholder="Organisme à vérifier"
+                  onChange={e=>updateShot({dataPublisher:e.target.value})}/>
+              </label>
+              <label>INDICATEUR / JEU DE DONNÉES
+                <input maxLength={120} value={active.dataDataset} placeholder="Nom exact de la série"
+                  onChange={e=>updateShot({dataDataset:e.target.value})}/>
+              </label>
+              <label>DATE DE SITUATION (ISO)
+                <input type="date" value={active.dataAsOf}
+                  onChange={e=>updateShot({dataAsOf:e.target.value})}/>
+              </label>
+              <label>LIEN HTTPS VERS LA SOURCE (FACULTATIF)
+                <input type="url" value={active.dataUrl} placeholder="https://…"
+                  onChange={e=>updateShot({dataUrl:e.target.value})}/>
+              </label>
+            </div>
+            <p className="wvc-hint">Les classements et heatmaps exigent un axe qui commence à zéro. Les courbes peuvent choisir une autre échelle, mais l'intervalle sera explicitement affiché dans la vidéo. Un lien ou une institution saisi ne remplace pas la vérification journalistique humaine.</p>
+            <p className="wvc-hint">{validData(active)
+              ?"Format, données, échelle et source cohérents pour une prévisualisation technique. Vérifie toujours les faits."
+              :"À compléter : données (3–16 lignes suivant le graphique), source, date, bornes et unités cohérentes."}</p>
           </div>}
           {active.template==="geo_story"&&<div className="wvc-focus-control" aria-label="Direction du plan géographique">
             <div className="wvc-focus-heading">

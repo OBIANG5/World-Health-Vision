@@ -18,7 +18,7 @@ const DETAILED_IDS=new Set(DETAIL_COUNTRIES.map(g=>String(g.id).padStart(3,"0"))
 const COUNTRY_IDS=new Set(countryGeometry.map(g=>String(g.id).padStart(3,"0")));
 
 export const FORMAT = "worldvision-creative-project-v1";
-const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus","photo_story"]);
+const TEMPLATES = new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus","photo_story","data_story"]);
 const TRANSITIONS = new Set(["cut","dissolve","slide"]);
 const MOTIONS = new Set(["locked","dolly","drift","push"]);
 const IMAGE_EXT = new Set([".png",".jpg",".jpeg",".webp"]);
@@ -157,6 +157,65 @@ export function inspectProject(project) {
             !isText(m.sourceLabel,85)||!m.sourceLabel?.trim())
             bad(errors,p+".photo.metric","An editor-provided count needs a finite value, unit, readable source label and independent timing.");
         }
+      }
+    }
+    if(scene.template==="data_story"){
+      if(!boundedInteger(scene.durationFrames,150,3600))
+        bad(errors,p+".durationFrames","DATA motion needs 150-3600 frames for readable chart and source beats.");
+      if(!isText(scene.title,90)||!scene.title?.trim())
+        bad(errors,p+".title","Provide a human-authored data headline <=90 characters.");
+      if(scene.subtitle!==undefined&&!isText(scene.subtitle,180))
+        bad(errors,p+".subtitle","DATA interpretation must be <=180 characters.");
+      if(scene.geo!==undefined||scene.photo!==undefined||scene.foreground)
+        bad(errors,p+".data","Use a sourced standalone data composition; GEO and PHOTO are separate authored shots.");
+      if(scene.media&&scene.media.kind!=="image")
+        bad(errors,p+".media","Only an explicitly supplied still image can be a restrained data background.");
+      const d=scene.data;
+      const isoDate=(value)=>{
+        if(typeof value!=="string"||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value))return false;
+        const t=new Date(value+"T12:00:00Z");
+        return Number.isFinite(t.getTime())&&t.toISOString().slice(0,10)===value;
+      };
+      const safeStr=(v,max)=>isText(v,max)&&v.trim().length>0;
+      if(!d||typeof d!=="object"||!["line","ranking","heatmap"].includes(d.mode))
+        bad(errors,p+".data.mode","Choose a supported motion grammar: time-series line, ranking or heatmap.");
+      else{
+        const line=d.mode==="line",ranking=d.mode==="ranking",heatmap=d.mode==="heatmap";
+        const min=line?3:ranking?3:4,max=line?16:ranking?8:12;
+        const vals=Array.isArray(d.series)?d.series:[];
+        if(vals.length<min||vals.length>max)
+          bad(errors,p+".data.series","Chart mode requires "+min+"-"+max+" explicitly supplied points.");
+        const labels=new Set(),dates=new Set();
+        let previousDate="";
+        for(const [k,point] of vals.entries()){
+          const field=p+".data.series["+k+"]";
+          if(!point||!safeStr(point.label,22)||labels.has(point.label))
+            bad(errors,field+".label","Every point needs a unique short label.");
+          else labels.add(point.label);
+          if(!point||typeof point.value!=="number"||!Number.isFinite(point.value)||
+            Math.abs(point.value)>1e12||(ranking||heatmap)&&point.value<0)
+            bad(errors,field+".value","Only explicit finite values in the chart's supported range are allowed.");
+          if(line){
+            if(!isoDate(point?.date)||dates.has(point.date)||point.date<=previousDate)
+              bad(errors,field+".date","Financial/time series dates must exist and be strictly chronological.");
+            else{dates.add(point.date);previousDate=point.date;}
+          }
+        }
+        if(!d.domain||typeof d.domain.min!=="number"||typeof d.domain.max!=="number"||
+          !Number.isFinite(d.domain.min)||!Number.isFinite(d.domain.max)||
+          d.domain.max<=d.domain.min||Math.max(Math.abs(d.domain.min),Math.abs(d.domain.max))>1e12||
+          (ranking||heatmap)&&d.domain.min!==0||
+          vals.some(v=>typeof v?.value==="number"&&
+            (v.value<d.domain.min||v.value>d.domain.max)))
+          bad(errors,p+".data.domain","Explicit finite visible scale must include every value; rankings/heatmaps start at zero.");
+        if(!isText(d.unit,12)||!boundedInteger(d.precision,0,2)||
+          (d.locale!==undefined&&!["fr-FR","en-US"].includes(d.locale)))
+          bad(errors,p+".data.format","Source units, 0-2 decimal places and supported locale are required.");
+        const s=d.source;
+        if(!s||!safeStr(s.publisher,80)||!safeStr(s.dataset,120)||!isoDate(s.asOf)||
+          (line&&previousDate&&s.asOf<previousDate)||
+          (s.url!==undefined&&(typeof s.url!=="string"||!/^https:\/\//.test(s.url)||s.url.length>1000)))
+          bad(errors,p+".data.source","Data provenance needs actual publisher, dataset and valid observation date (not earlier than last period). HTTPS source link optional.");
       }
     }
     // Geo storytelling is cartography, not geocoding. ALL coordinates, routes

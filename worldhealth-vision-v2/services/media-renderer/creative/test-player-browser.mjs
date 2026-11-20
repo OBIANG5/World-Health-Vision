@@ -34,7 +34,7 @@ async function serverReady(){
   throw Error("Local Vite smoke page not reachable: "+url);
 }
 async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
-  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":mode==="photo"?"player-photo-frame-":"player-browser-frame-";
+  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":mode==="photo"?"player-photo-frame-":mode.startsWith("data-")?"player-"+mode+"-frame-":"player-browser-frame-";
   const page=await browser.newPage();
   const errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
@@ -271,6 +271,58 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
           throw Error("Photo final reveal and mobile-safe caption failed: "+JSON.stringify(state));
         console.log("[player-smoke] genuine photo multilayer optics and mobile content",state);
       }
+      if(mode.startsWith("data-")&&(frame===0||frame===80||frame===145)){
+        const state=await page.evaluate(()=>{
+          const root=document.querySelector('[data-wv-data-motion]');
+          const chartMode=root?.getAttribute("data-wv-data-motion")??null;
+          const title=document.querySelector('[data-wv-data-heading]');
+          const scale=document.querySelector('[data-wv-data-scale]');
+          const source=document.querySelector('[data-wv-data-provenance]');
+          const caption=document.querySelector('[data-wv-data-caption]');
+          const value=document.querySelector('[data-wv-data-key-metric]');
+          const chart=document.querySelector('[data-wv-data-chart-boundary]');
+          const viewport=document.querySelector('#smoke-preview');
+          return {
+            chartMode,scaleText:scale?.textContent??"",
+            headingOpacity:title?Number(getComputedStyle(title).opacity):0,
+            sourceText:source?.textContent??"",
+            sourceOpacity:source?Number(getComputedStyle(source).opacity):0,
+            sourceBottom:source?.getBoundingClientRect().bottom??NaN,
+            sourceTop:source?.getBoundingClientRect().top??NaN,
+            captionBottom:caption?.getBoundingClientRect().bottom??NaN,
+            maxMobileBottom:viewport?viewport.getBoundingClientRect().top+
+              viewport.getBoundingClientRect().height*.79:NaN,
+            metricText:value?.textContent??"",
+            chartBottom:chart?.getBoundingClientRect().bottom??NaN,
+            metricTop:value?.getBoundingClientRect().top??NaN,
+            metricBottom:value?.getBoundingClientRect().bottom??NaN,
+            captionTop:caption?.getBoundingClientRect().top??NaN,
+            chartLine:Boolean(document.querySelector('[data-wv-data-line-path]')),
+            chartRank:Boolean(document.querySelector('[data-wv-data-ranking]')),
+            chartHeat:Boolean(document.querySelector('[data-wv-data-heatmap]')),
+            lineOffset:Number(document.querySelector('[data-wv-data-line-path]')?.getAttribute('stroke-dashoffset'))
+          };
+        });
+        const expected=mode==="data-line"?"line":mode==="data-ranking"?"ranking":"heatmap";
+        if(state.chartMode!==expected||!state.scaleText.includes("ÉCHELLE")||
+          !state.scaleText.includes("TEST"))
+          throw Error("DATA source scale or mode missing: "+JSON.stringify(state));
+        if(frame===0&&state.headingOpacity<.14)
+          throw Error("DATA first-frame visual has no headline: "+JSON.stringify(state));
+        if(frame===80&&(
+          expected==="line"&&(!state.chartLine||state.lineOffset<=.05||state.lineOffset>=.95)||
+          expected==="ranking"&&!state.chartRank||
+          expected==="heatmap"&&!state.chartHeat))
+          throw Error("DATA chart did not animate sourced values: "+JSON.stringify(state));
+        if(frame===145&&(!state.sourceText.includes("SIMULATION CI")||
+          state.sourceOpacity<.95||!state.metricText.includes("TEST")||
+          !Number.isFinite(state.sourceBottom)||state.sourceBottom>state.maxMobileBottom||
+          !Number.isFinite(state.captionBottom)||state.captionBottom>state.sourceTop-7||
+          !Number.isFinite(state.chartBottom)||state.chartBottom>state.metricTop-4||
+          !Number.isFinite(state.metricBottom)||state.metricBottom>state.captionTop-4))
+          throw Error("DATA chronology/unit/source mobile readability failed: "+JSON.stringify(state));
+        console.log("[player-smoke] DATA source/scale/animation mobile contract",state);
+      }
       if(mode==="document"&&frame===0){
         const entrance=await page.evaluate(()=>{
           const card=document.querySelector('[data-wv-document-card="plan-synthetique"]');
@@ -347,7 +399,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     }
     const report={
       test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
-      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":mode==="photo"?"One original synthetic image and alpha PNG, independent mask/camera/focus/data/type; not journalism":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":mode==="photo"?"One original synthetic image and alpha PNG, independent mask/camera/focus/data/type; not journalism":mode.startsWith("data-")?"Explicit fictitious data with source/date/unit/domain; not live markets":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
       composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
       screen:{width:390,height:844},
       frames_in_composition:expectedDuration,
@@ -355,7 +407,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       screenshots,
       warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":mode==="photo"?"player-photo-smoke.report.json":"player-browser-smoke.report.json");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":mode==="photo"?"player-photo-smoke.report.json":mode.startsWith("data-")?"player-"+mode+"-smoke.report.json":"player-browser-smoke.report.json");
     fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
@@ -386,7 +438,11 @@ async function main(){
     await testCase(browser,{mode:"country",frames:[0,60,115,155],expectedDuration:165,expectVoice:false});
     console.log("[player-smoke] verifying 2.5D photo still with six concurrent authored motion tracks");
     await testCase(browser,{mode:"photo",frames:[0,40,85,145],expectedDuration:165,expectVoice:false});
-    console.log("[player-smoke] all seven real Player paths passed");
+    console.log("[player-smoke] verifying standalone DATA charts with explicit source/date/axis");
+    await testCase(browser,{mode:"data-line",frames:[0,80,145],expectedDuration:165,expectVoice:false});
+    await testCase(browser,{mode:"data-ranking",frames:[0,80,145],expectedDuration:165,expectVoice:false});
+    await testCase(browser,{mode:"data-heatmap",frames:[0,80,145],expectedDuration:165,expectVoice:false});
+    console.log("[player-smoke] all ten real Player paths passed");
   }finally{
     await browser.close();
   }
