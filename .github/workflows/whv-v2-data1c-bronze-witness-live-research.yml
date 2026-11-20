@@ -96,7 +96,7 @@ jobs:
                   ('WORLD_BANK', 'WDI_POP_TOTAL_BRA_2022'),
               ):
                   state = audit.audit(source, dataset)
-                  assert state['successfulFetchCount'] if False else state['successCount'] == 1
+                  assert state['successCount'] == 1
                   assert state['versionCount'] == 1
               composite = IbgeCompositeReceiptStore(root)
               bundle = composite.create(
