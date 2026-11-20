@@ -1,0 +1,51 @@
+{
+  "schema_version": "worldvision-narration-take-v1",
+  "status": "INTERNAL_TTS_VOICE_AUDITION_NOT_EDITORIALLY_APPROVED",
+  "project_id": "wv-artemis2-impact-report-2026-11-20-v01",
+  "language": "fr-FR",
+  "voice_provider": "Kokoro-82M",
+  "voice_id": "ff_siwis",
+  "lang_code": "f",
+  "speed": 1.1,
+  "sample_rate": 24000,
+  "default_pause_seconds": 0.18,
+  "model_repository": "hexgrad/Kokoro-82M",
+  "model_weights_sha256": "496dba118d1a58f5f3db2efc88dbdc216e0483fc89fe6e47ee1f2c53f18ad1e4",
+  "licenses": {
+    "model": "Apache-2.0",
+    "voice_origin": "SIWIS French Speech Synthesis Database, University of Edinburgh",
+    "voice_origin_data_license": "CC BY 4.0; preserve attribution and check before commercial publication",
+    "soundscape": "original mathematical synthesis generated for World-Vision; no external music, samples or claimed NASA sound",
+    "publication_approved": false
+  },
+  "segments": [
+    {
+      "scene": 0,
+      "text": "Cinq éclairs sur la face cachée de la Lune."
+    },
+    {
+      "scene": 0,
+      "text": "Dans son rapport du dix-sept novembre, la NASA revient sur la mission Artémis deux."
+    },
+    {
+      "scene": 1,
+      "text": "Le six avril, des astronautes ont signalé cinq éclairs durant le survol lunaire."
+    },
+    {
+      "scene": 1,
+      "text": "Ils pourraient provenir de petits fragments rocheux frappant la surface."
+    },
+    {
+      "scene": 2,
+      "text": "Cette visualisation présente leurs annotations. Ce ne sont pas des images des impacts."
+    },
+    {
+      "scene": 3,
+      "text": "Ces observations aideront à étudier les collisions et à préparer les prochaines missions lunaires."
+    },
+    {
+      "scene": 3,
+      "text": "World-Vision. Voir le monde, le comprendre."
+    }
+  ]
+}
