@@ -376,6 +376,30 @@ export default function CinematicProductionBoard() {
       :null,
     visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
   }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues]);
+  const importProject=async(e:ChangeEvent<HTMLInputElement>)=>{
+    const file=e.currentTarget.files?.[0];
+    e.currentTarget.value="";
+    if(!file)return;
+    if(file.size>2_000_000){setFeedback("Import refusé : le JSON dépasse 2 Mo.");return;}
+    try{
+      const saved=parseStudioProject(await file.text());
+      const restored=saved.shots.map(s=>studioShotToEditor(s,initialShot()));
+      const necessary=studioAssetNames(saved);
+      const missing=necessary.filter(name=>!files.some(f=>f.name===name));
+      // An invalid project must never overwrite an in-progress edit.
+      setProjectName(saved.title);setScript(saved.script);setShots(restored);setSelectedId(restored[0].id);
+      setVoiceFile(saved.voice?.file??"");setComparisonVoice("");
+      setMusicFile(saved.music?.file??"");setOutroFile(saved.outro?.file??"");
+      setAccent(saved.style?.accent??"#8bbecf");
+      setImportedCaptionCues(saved.captions??null);
+      setSrtInput(frameCaptionsToSrt(saved.captions??[]));
+      setCaptionPosition(saved.captions?.[0]?.position??"upper");
+      setPreviewMode("source");
+      setFeedback("Projet repris : "+restored.length+" plan(s), "+(saved.captions?.length??0)+" sous-titre(s). "+
+        (missing.length?"Réimporte les médias d'origine avant le rendu : "+missing.join(", "):"Médias correspondants déjà présents dans cette session."));
+    }catch(error){setFeedback("Import refusé. Le montage en cours reste inchangé. "+
+      (error instanceof Error?error.message:String(error)));}
+  };
   const addFiles=(e:ChangeEvent<HTMLInputElement>)=>{
     const items=Array.from(e.currentTarget.files??[]);
     const known=new Set(files.map(x=>x.name));
@@ -457,6 +481,9 @@ export default function CinematicProductionBoard() {
     </header>
     <div className="wvc-workspace">
       <div className="wvc-inputs">
+        <label className="wvc-field-label" htmlFor="wvc-load-project">ROUVRIR UN PROJET WORLD-VISION (.JSON)</label>
+        <input id="wvc-load-project" type="file" accept=".json,application/json" onChange={importProject}/>
+        <p className="wvc-hint">Restaure les plans, la narration choisie et les sous-titres. Le JSON ne contient aucun fichier média : rattache les photos, vidéos et audios par leurs noms originaux.</p>
         <label className="wvc-field-label" htmlFor="wvc-project">PROJET</label>
         <input id="wvc-project" className="wvc-input" value={projectName} onChange={e=>setProjectName(e.target.value)} maxLength={160}/>
         <label className="wvc-field-label" htmlFor="wvc-script">SCRIPT FOURNI</label>
@@ -469,10 +496,12 @@ export default function CinematicProductionBoard() {
           {files.length===0&&<span className="wvc-muted">Aucun fichier importé pour le moment.</span>}
           {files.map(f=><div className="wvc-asset" key={f.name}><b>{f.kind==="image"?"PHOTO":f.kind==="video"?"VIDÉO":"AUDIO"}</b><span title={f.name}>{f.name}</span><small>{(f.size/1024/1024).toFixed(1)} Mo</small></div>)}
         </div>
+        {unresolvedAssets.length>0&&<p className="wvc-hint" role="alert">Médias à rattacher avant le rendu : {unresolvedAssets.join(", ")}. Aucune substitution automatique.</p>}
         <div className="wvc-audio">
           <label htmlFor="wvc-voice">VOIX / NARRATION</label>
           <select id="wvc-voice" value={voiceFile} onChange={e=>setVoiceFile(e.target.value)}>
             <option value="">Aucune — la voix pourra être choisie plus tard</option>
+            {voiceFile&&!files.some(f=>f.name===voiceFile)&&<option value={voiceFile} disabled>Fichier absent : {voiceFile}</option>}
             {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select>
           <label htmlFor="wvc-voice-b">AUTRE PRISE À COMPARER</label>
@@ -495,9 +524,9 @@ export default function CinematicProductionBoard() {
           </div>
           <p className="wvc-hint">Écoute les deux prises du même texte au même volume. Aucune voix n'est générée automatiquement ; seule la prise principale est exportée dans le projet.</p>
           <label htmlFor="wvc-captions">SOUS-TITRES MINUTÉS (.SRT) — PISTE GLOBALE</label>
-          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput} onChange={e=>setSrtInput(e.target.value)} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
+          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput} onChange={e=>{setImportedCaptionCues(null);setSrtInput(e.target.value);}} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
           <label htmlFor="wvc-caption-position">POSITION INITIALE DES SOUS-TITRES</label>
-          <select id="wvc-caption-position" value={captionPosition} onChange={e=>setCaptionPosition(e.target.value as "upper"|"lower")}>
+          <select id="wvc-caption-position" value={captionPosition} onChange={e=>{setImportedCaptionCues(null);setCaptionPosition(e.target.value as "upper"|"lower");}}>
             <option value="upper">Haut — pour les scènes avec titres en bas</option>
             <option value="lower">Bas — pour les scènes avec titres en haut</option>
           </select>
@@ -505,11 +534,13 @@ export default function CinematicProductionBoard() {
           <label htmlFor="wvc-music">MUSIQUE / AMBIANCE</label>
           <select id="wvc-music" value={musicFile} onChange={e=>setMusicFile(e.target.value)}>
             <option value="">Aucune</option>
-            {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
+            {musicFile&&!files.some(f=>f.name===musicFile)&&<option value={musicFile} disabled>Fichier absent : {musicFile}</option>}
+            {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>}
           </select>
           <label htmlFor="wvc-outro">SIGNATURE VIDÉO ORIGINALE</label>
           <select id="wvc-outro" value={outroFile} onChange={e=>setOutroFile(e.target.value)}>
             <option value="">Pas de signature ajoutée à ce stade</option>
+            {outroFile&&!files.some(f=>f.name===outroFile)&&<option value={outroFile} disabled>Fichier absent : {outroFile}</option>}
             {files.filter(f=>f.kind==="video").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select>
         </div>
@@ -529,11 +560,13 @@ export default function CinematicProductionBoard() {
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
             <option value="">Pas de média source</option>
+            {active.mediaName&&!files.some(f=>f.name===active.mediaName)&&<option value={active.mediaName} disabled>Fichier absent : {active.mediaName}</option>}
             {files.filter(f=>f.kind!=="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select></label>
           <label className="wvc-wide">DÉTOURAGE POUR EFFET DE PROFONDEUR
             <select value={active.foregroundName} onChange={e=>updateShot({foregroundName:e.target.value})}>
               <option value="">Aucun — composition classique</option>
+              {active.foregroundName&&!files.some(f=>f.name===active.foregroundName)&&<option value={active.foregroundName} disabled>Fichier absent : {active.foregroundName}</option>
               {files.filter(f=>f.kind==="image"&&/\.(png|webp)$/i.test(f.name)).map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
             </select>
             <span className="wvc-hint">Utiliser uniquement un premier plan transparent préparé avec un outil spécialisé ; le studio effectue le compositing et le mouvement 2,5D sans inventer une image.</span>
