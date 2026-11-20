@@ -198,7 +198,7 @@ class EvidenceAttestationIntegrationTest {
     @Test
     void missingServerTrustAnchorRejectsEvenSyntacticallyValidProof() throws Exception {
         String ind=freshIndicator(), key=runKey();
-        var disabled=new EvidenceAttestationVerifier("",mapper,projection);
+        var disabled=new EvidenceAttestationVerifier("", "", mapper, projection);
         var parsed=mapper.readValue(signed(request(key,ind)),
                 IngestionObservationBatchRequest.class);
         assertThrows(EvidenceAttestationException.class,
