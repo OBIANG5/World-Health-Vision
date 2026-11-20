@@ -205,4 +205,47 @@ class EvidenceAttestationIntegrationTest {
                 () -> disabled.requireSourceProof(parsed));
         assertEquals(0,saved(key));
     }
+
+    @Test
+    void atlasCountryCoverageCountsOnlyVerifiedPublishableRecords() throws Exception {
+        // Baseline may include previously inserted synthetic tests. The
+        // published count must increase by exactly one after a valid grant,
+        // independent verified source witness and successful SQL ingest.
+        String path = "/api/timeseries/countries/FRA/published-coverage";
+        var before = mapper.readTree(mockMvc.perform(get(path))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        long baseline = before.get("availableObservationCount").asLong();
+        long indicatorsBefore = before.get("publishedIndicatorCount").asLong();
+        String indicator = freshIndicator(), key = runKey();
+
+        mockMvc.perform(direct(request(key, indicator)))
+                .andExpect(status().isForbidden());
+        var denied = mapper.readTree(mockMvc.perform(get(path))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertEquals(baseline, denied.get("availableObservationCount").asLong());
+
+        mockMvc.perform(direct(signed(request(key, indicator))))
+                .andExpect(status().isOk());
+        mockMvc.perform(get(path)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.countryIso3").value("FRA"))
+                .andExpect(jsonPath("$.coverageStatus").value("PUBLISHED_DATA_AVAILABLE"))
+                .andExpect(jsonPath("$.availableObservationCount")
+                        .value(baseline + 1))
+                .andExpect(jsonPath("$.publishedIndicatorCount")
+                        .value(indicatorsBefore + 1));
+
+        // Malformed country codes are not accepted or turned into zero data.
+        mockMvc.perform(get("/api/timeseries/countries/FRANCE/published-coverage"))
+                .andExpect(status().isBadRequest());
+
+        // ISO3 syntax alone is not evidence of collected data.
+        mockMvc.perform(get("/api/timeseries/countries/ZZZ/published-coverage"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.coverageStatus").value("NO_PUBLICLY_ELIGIBLE_DATA"))
+                .andExpect(jsonPath("$.availableObservationCount").value(0))
+                .andExpect(jsonPath("$.latestAvailablePeriodStart").value(org.hamcrest.Matchers.nullValue()));
+    }
+
 }
