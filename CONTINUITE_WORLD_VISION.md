@@ -1,3 +1,13 @@
+# ÉTAT PRIORITAIRE / 20 NOVEMBRE 2026 : PREMIER VRAI FILM NASA RENDU, SHA ÉPINGLÉS ET CORRECTIF TITRE FRAME 0 À CERTIFIER
+
+**Première réussite FILM-2B** : [GitHub Actions #44769402904](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44769402904) SUCCESS sur `f7bed7e6e...`, artefact `#14645664415`. **Vrai MP4** à 25 s / 750 frames / H.264 1080×1920 **sans audio**, construit avec les TROIS originaux NASA `art002e009627`, `art002e009288`, `art002e016252_impactflash_annotation_cropped`, journal des SHA et des licences `OPEN`. Contrôle indépendant du master : SHA `acded617779c7976ef807df088d30307d0d23170c938e9e3884e6f353f760b01`. C'est un **montage interne muet de vraies images**, pas une vidéo journalistique publiable. La visualisation annotée N'EST PAS une captation des impacts.
+
+**Revue visuelle de ce vrai master** : photos et palette prometteuses, mais **titre absent à frame0**, annotations sur document trop petites en 360px, risque de collision bas d'écran avec UI TikTok. Une **nouvelle révision en cours de certification** ajoute `titleFrameZero` comme option réutilisable au moteur, au JSON/Studio et au premier plan, et épingle les SHA des 3 originaux pour interdire les remplacements silencieux. **Lire intégralement** [audit FILM-2B](worldhealth-vision-v2/media-pilots/artemis2/README.md), [registre sources](worldhealth-vision-v2/media-pilots/artemis2/sources.json), [PR #105](https://github.com/OBIANG5/World-Health-Vision/pull/105). **Le nouveau HEAD devra repasser la CI légère ET les tests core Studio/renderer avant la moindre certification.**
+
+**Suite intelligente non négociable** : vérifier le nouveau MP4 frame 0 puis passer à une nouvelle voix FR choisie et sous licence (Vivienne C5.2 = référence facultative et non audio à recycler), aligner les SRT réels sur la voix, mixage pro contrôlé, visuels NASA sous droits, vérification TikTok à 360px iOS/Android et A/B qualité/rendement. Les quatre plans de la démo sont une hypothèse narrative, pas une obligation universelle. L'importance centrale est qualité internationale à coût/temps de production maîtrisés. Pas de nouveau moteur vidéo ni de publication/merge/deploy automatiques.
+
+---
+
 # REPRISE ACTUELLE — WORLD-VISION MÉDIA — FILM-2B AUTHENTIC NASA (20/11/2026)
 
 **CHANGEMENT D'OBJECTIF OPÉRATIONNEL** : cesser les micro-développements pour eux-mêmes ; produire le premier vrai film court à base de **photos originales sourcées**, avec un coût de montage minimal, puis ajouter la **narration choisie, synchronisation, mix et revue smartphone** pour faire un reportage international publiable. Ne pas forcer 5 grammaires et ne pas réinventer Remotion/FFmpeg.
