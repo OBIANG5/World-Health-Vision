@@ -9,6 +9,7 @@ if(!file||!assets)throw Error("Usage: qa-video.mjs <real-mp4> <NASA-assets-folde
 const hash=v=>createHash("sha256").update(fs.readFileSync(v)).digest("hex");
 const report=JSON.parse(fs.readFileSync(file+".report.json","utf8"));
 const ledger=JSON.parse(fs.readFileSync(path.join(assets,"nasa-asset-ledger.json"),"utf8"));
+const sourceManifest=JSON.parse(fs.readFileSync(new URL("./sources.json",import.meta.url),"utf8"));
 const probed=JSON.parse(execFileSync("ffprobe",["-v","error","-count_frames",
  "-show_entries","format=duration:stream=codec_name,width,height,nb_read_frames,codec_type,r_frame_rate",
  "-of","json",file],{encoding:"utf8",timeout:30000}));
@@ -30,6 +31,10 @@ for(const m of report.media){
    errors.push("Video imported bytes do not match verified NASA source ledger: "+m.relative_path);
 }
 for(const item of ledger.assets){
+ const approved=sourceManifest.assets.find(a=>a.id===item.id);
+ if(!approved||approved.sha256!==item.sha256||approved.width!==item.width||
+    approved.height!==item.height)
+   errors.push("Downloaded bytes differ from permanently pinned NASA original: "+item.id);
  if(!report.media.some(x=>x.relative_path===item.file))
    errors.push("NASA original not represented in the film output: "+item.file);
 }
