@@ -191,3 +191,50 @@ statistique.
    multiplier les connecteurs fictifs ; ensuite vrai staging/mobile
    et davantage de pays via sources locales vérifiées (Gabon
    INSTAT/BEAC en priorité).
+
+### 8. CONCLUSION CONFIRMÉE sur code SHA EXACT
+**Le statut provisoire du §4 est remplacé par ces conclusions GitHub Actions vérifiées.**
+- Code vérifié `1b6dd2eeaa2d395d9d8510fbc503e3e5fe1c1b77`.
+- **Python CI SUCCESS** :
+  https://github.com/OBIANG5/World-Health-Vision/actions/runs/44779490804 .
+  Journaux examinés : **44** tests catalogue/territoire/chronologie,
+  **47** tests connecteur source Insee,
+  **27** tests non-régression Bronze/droits ;
+  **118/118 PASS**, aucun échec.
+  Le job `opt-in-two-official-gets` est `SKIPPED` par défaut :
+  son pendant d'audit réel a déjà été vérifié dans un run isolé
+  #44778754616 ; les tests auto ne sollicitent pas l'Insee à chaque push.
+- **Java/PostgreSQL16/Flyway CI SUCCESS** :
+  https://github.com/OBIANG5/World-Health-Vision/actions/runs/44779491144 .
+  Journaux Maven : `TimeseriesSourceRunSafetyIntegrationTest` **8 PASS**,
+  `TimeseriesControllerIntegrationTest` 5 PASS, signatures 1+1 PASS,
+  EvidenceAttestation 7 PASS, SignedRightsRegistry 11 PASS ;
+  **33 tests Java au total, 0 failure/error/skipped**, `BUILD SUCCESS`.
+  Les trois tentatives ajoutées au test de sécurité de la route privée
+  restent refusées avec HTTP 403 avant toute inscription.
+- **Total suites Python+Java : 151 tests PASS** sur la même version de code
+  `1b6dd2ee...`. Les contrats Python ne prouvent pas à eux seuls la licence
+  commerciale ; le vrai contrôleur refuse volontairement toute observation
+  du dataset Insee jusqu'à revue institutionnelle et géographique.
+- **Audit réel documentaire indépendamment validé** :
+  https://github.com/OBIANG5/World-Health-Vision/actions/runs/44777513706
+  (catalogue source officiel, statut FEHM), et
+  https://github.com/OBIANG5/World-Health-Vision/actions/runs/44778754616
+  (deux GET officiels et deux preuves Bronze liées, éphémères).
+- **Commit du présent dossier** distinct du commit de code : inscription
+  de continuité `[skip ci]`, ne pas affirmer que des changements
+  documentaires ont été re-testés si GitHub ne les a pas déclenchés.
+
+**À NE PAS CONFONDRE :** la réussite de 151 tests et de 2 GETs de
+recherche n'est ni une donnée réelle publiée, ni une autorisation
+de redistribution signée, ni une preview internet connectée, ni une
+preuve de couverture des 217 pays. Les deux clés de droits restent
+externes ; aucun port public/data ou Vercel modifié.
+
+**Suites pertinentes :** standardiser dans Timeseries/Catalog la
+représentation du `geographicScopeId` source/version/inclusions,
+n'autoriser une comparaison mondiale qu'après mapping approuvé,
+remplir un dossier de licence précis Insee (avec attribution), intégrer
+identité du parseur et révocation (#95/#94), enchaîner vers une seule
+série réelle sous droits en **staging protégé**. Continuer médias,
+GDELT et onze Visions sans refaire les moteurs déjà prouvés.
