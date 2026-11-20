@@ -1,0 +1,150 @@
+/* WORLD-VISION unified product discovery — independent of map/globe layers.
+   International product navigation, with zero fabricated data or fake pricing.
+   White surfaces, ink #06163b, blue #0469cf, cyan #35dffb (existing brand). */
+
+.vision-visually-hidden {
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+}
+.vision-hub-backdrop {
+  position:fixed;inset:0;z-index:2400;display:flex;align-items:center;justify-content:center;
+  background:rgba(1,13,39,.70);padding:max(16px,env(safe-area-inset-top)) 18px max(16px,env(safe-area-inset-bottom));
+  backdrop-filter:blur(9px);
+}
+.vision-hub {
+  box-sizing:border-box;display:flex;flex-direction:column;width:min(1120px,100%);max-height:min(91dvh,850px);
+  background:#f8fbff;color:#06163b;border:1px solid #d4e8f8;border-radius:22px;
+  box-shadow:0 36px 100px rgba(0,12,39,.38);overflow:hidden;outline:none;
+}
+.vision-hub *{box-sizing:border-box}
+.vision-hub-header{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+  background:linear-gradient(110deg,#fff 0%,#f4fbff 67%,#e9f7ff 100%);
+  padding:24px 28px 19px;border-bottom:1px solid #e0ebf4;
+}
+.vision-hub-title{max-width:720px}
+.vision-hub-kicker{display:inline-block;color:#025ba5;font-size:10px;font-weight:800;letter-spacing:.14em}
+.vision-hub-title h2{color:#06163b;font-size:clamp(24px,2.65vw,36px);line-height:1.1;letter-spacing:-.052em;margin:8px 0 9px;font-weight:850}
+.vision-hub-title p{color:#516d85;margin:0;font-size:13px;line-height:1.55}
+.vision-hub-close{
+  display:grid;place-items:center;flex-shrink:0;border:1px solid #d5e8f8;
+  border-radius:12px;color:#124471;background:#fff;width:44px;height:44px;cursor:pointer;
+}
+.vision-hub-close:hover{background:#e7f5ff;color:#034e90}
+.vision-hub-toolbar{padding:16px 28px 12px;border-bottom:1px solid #e6eef8;background:#fff}
+.vision-hub-search{
+  display:flex;align-items:center;gap:10px;min-height:44px;background:#f6fbff;
+  color:#3c7199;border:1px solid #cfdfec;border-radius:12px;padding:0 14px;
+}
+.vision-hub-search:focus-within{border-color:#047bd7;box-shadow:0 0 0 3px rgba(0,136,224,.13)}
+.vision-hub-search input{
+  min-width:0;width:100%;height:42px;border:0;outline:0;background:transparent;
+  font:inherit;font-size:14px;color:#071b3f;
+}
+.vision-hub-search input::placeholder{color:#708ba0}
+.vision-hub-filters{display:flex;gap:8px;overflow-x:auto;padding:12px 0 2px;scrollbar-width:thin}
+.vision-filter{flex:0 0 auto;min-height:38px;padding:8px 13px;cursor:pointer;background:#fff;color:#42637d;
+  border:1px solid #d8e6f2;border-radius:24px;font:inherit;font-size:12px;font-weight:700}
+.vision-filter:hover{background:#f0f8fe;color:#005eac}
+.vision-filter.active{background:#044c93;color:#fff;border-color:#044c93}
+.vision-hub-body{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(270px,.91fr);flex:1;min-height:0}
+.vision-hub-results{min-width:0;overflow:auto;overscroll-behavior:contain;padding:13px 20px 24px 28px;scrollbar-width:thin}
+.vision-hub-count{font-size:11px;letter-spacing:.02em;color:#617c92;font-weight:680;margin:0 0 13px}
+.vision-hub-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:stretch}
+.vision-product{
+  display:flex;flex-direction:column;min-width:0;min-height:155px;align-items:stretch;text-align:left;
+  padding:14px 12px 12px;border:1px solid #dceaf5;border-radius:13px;background:#fff;
+  color:#0b2548;cursor:pointer;box-shadow:0 2px 9px rgba(7,41,78,.025);
+  font:inherit;transition:border-color .16s,background .16s,transform .16s;
+}
+.vision-product:hover{background:#fafdff;border-color:#8cc9f4;transform:translateY(-1px)}
+.vision-product.active{border-color:#0483dc;background:#eff9ff;box-shadow:inset 0 0 0 1px #0483dc}
+.vision-product-head{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin-bottom:13px}
+.vision-product-icon{display:grid;place-items:center;width:35px;height:35px;flex:0 0 35px;
+  border:1px solid #ceebfa;border-radius:10px;background:#e7f6ff;color:#036ab1}
+.vision-product-stage{font-size:9px;line-height:1.3;text-align:right;font-weight:740;color:#5c7489}
+.vision-product-stage.stage-explorable{color:#106c4b}
+.vision-product-stage.stage-partial{color:#185a8f}
+.vision-product-stage.stage-planned{color:#6d7181}
+.vision-product strong{font-size:14px;line-height:1.2;letter-spacing:-.025em;font-weight:810}
+.vision-product-tagline{color:#61778f;font-size:11px;line-height:1.4;margin-top:5px}
+.vision-product-disclosure{display:flex;align-items:center;gap:6px;margin-top:auto;padding-top:15px;
+  font-size:10px;font-weight:780;color:#086ba7}
+.vision-hub-empty{font-size:14px;padding:18px 10px;color:#60758c}
+.vision-hub-detail{overflow:auto;overscroll-behavior:contain;padding:24px 23px 22px;
+  border-left:1px solid #e0eaf3;background:linear-gradient(160deg,#f8fcff,#edf8ff)}
+.vision-hub-detail-kicker{font-size:10px;letter-spacing:.14em;font-weight:800;color:#0176bb}
+.vision-hub-detail h3{font-size:27px;line-height:1.15;margin:10px 0 5px;letter-spacing:-.045em;color:#062245;font-weight:850}
+.vision-hub-detail>p{color:#42617c;font-size:13px;line-height:1.7}
+.vision-hub-detail .vision-detail-stage{font-weight:780;font-size:11px;margin-top:0;color:#315a81}
+.vision-hub-detail .vision-detail-stage.stage-explorable{color:#087248}
+.vision-hub-detail .vision-detail-stage.stage-planned{color:#667286}
+.vision-hub-detail h4{font-size:12px;color:#183f65;margin:23px 0 5px;letter-spacing:.005em}
+.vision-detail-trust{display:flex;gap:10px;padding:12px;background:#fff;border:1px solid #dbe9f3;border-radius:12px;
+  font-size:12px;line-height:1.6;color:#3d5f7c}
+.vision-detail-trust svg{flex:0 0 auto;color:#1575b2;margin-top:2px}
+.vision-detail-action{display:flex;justify-content:space-between;align-items:center;gap:15px;
+  min-height:45px;margin-top:18px;width:100%;border:1px solid #006fcb;border-radius:11px;
+  padding:10px 14px;background:#0564b6;color:white;cursor:pointer;font:inherit;font-size:12px;font-weight:800}
+.vision-detail-action:hover{background:#044b91}
+.vision-hub-detail .vision-detail-future{border-top:1px solid #d7e6f0;padding-top:14px;font-size:11px}
+.vision-hub-footer{display:flex;align-items:center;gap:8px;background:#fff;border-top:1px solid #e1edf5;
+  color:#61788d;padding:11px 28px;font-size:10px;font-weight:600;line-height:1.4}
+.vision-hub-footer svg{color:#117db8;flex-shrink:0}
+.vision-hub button:focus-visible,.vision-hub input:focus-visible {
+  outline:3px solid #07a2f3;outline-offset:3px;
+}
+.whv-vision-nav{background:#e4f5ff!important;border:1px solid #b7dff6!important;color:#035b9b!important}
+.whv-vision-nav:hover,.whv-vision-nav.active{background:#d2efff!important;color:#06366e!important}
+
+@media (max-width:1050px){
+ .vision-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .vision-hub-body{grid-template-columns:minmax(0,1.35fr) minmax(260px,.9fr)}
+ .vision-hub-header{padding:22px 22px 18px}
+ .vision-hub-toolbar{padding:14px 22px 11px}
+ .vision-hub-results{padding:12px 14px 20px 22px}
+ .vision-hub-footer{padding:11px 22px}
+}
+@media (max-width:760px){
+ .vision-hub-backdrop{padding:0;align-items:stretch;backdrop-filter:none}
+ .vision-hub{width:100%;height:100dvh;max-height:100dvh;border:0;border-radius:0}
+ .vision-hub-header{padding:max(17px,env(safe-area-inset-top)) 16px 12px;gap:12px}
+ .vision-hub-title h2{font-size:25px;margin:7px 0}
+ .vision-hub-title p{font-size:11px;line-height:1.5}
+ .vision-hub-toolbar{padding:12px 14px 8px}
+ .vision-hub-filters{padding:10px 0 2px;gap:6px}
+ .vision-filter{min-height:37px;font-size:11px;padding:8px 11px}
+ .vision-hub-body{display:block;overflow-y:auto;overscroll-behavior:contain}
+ .vision-hub-results{overflow:visible;padding:12px 14px 18px}
+ .vision-hub-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .vision-product{min-height:143px;padding:12px 10px}
+ .vision-product-head{margin-bottom:10px}
+ .vision-product-stage{font-size:8.5px}
+ .vision-product strong{font-size:13px}
+ .vision-product-tagline{font-size:10px}
+ .vision-hub-detail{overflow:visible;border-left:0;border-top:1px solid #d9e9f4;padding:24px 16px 30px}
+ .vision-hub-detail h3{font-size:24px}
+ .vision-hub-footer{padding:9px 14px max(10px,env(safe-area-inset-bottom));font-size:9px}
+}
+@media (max-width:360px){
+ .vision-hub-grid{grid-template-columns:1fr}
+ .vision-product{min-height:122px}
+ .vision-product-head{margin-bottom:5px}
+}
+@media (prefers-reduced-motion:reduce){
+ .vision-product{transition:none}
+ .vision-product:hover{transform:none}
+}
+
+/* First-stage common entrypoint across the current globe-based home. */
+.whv-mobile-vision-entry{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:13px 14px;margin:12px 0 10px;border:1px solid #b9dfff;border-radius:13px;
+  background:linear-gradient(105deg,#e2f5ff,#f7fcff);color:#034e8e;text-align:left;
+  cursor:pointer;font:inherit;box-shadow:0 4px 15px rgba(0,84,161,.07);
+}
+.whv-mobile-vision-entry strong{font-size:12px;line-height:1.3;display:block;font-weight:810}
+.whv-mobile-vision-entry small{display:block;font-size:10px;line-height:1.35;margin-top:3px;color:#527592}
+.whv-mobile-vision-entry:hover{background:#d5efff}
+.whv-mobile-vision-entry:focus-visible{outline:3px solid #048af0;outline-offset:3px}
+@media(min-width:761px){.whv-mobile-vision-entry{display:none}}

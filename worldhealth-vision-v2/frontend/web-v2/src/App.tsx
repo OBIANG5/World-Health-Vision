@@ -7,6 +7,8 @@ import type { CountrySummary } from "./api/types";
 import EyeLayout from "./components/layout/EyeLayout";
 import EyeMapFrame from "./components/layout/EyeMapFrame";
 import {WorldIcon} from "./components/ui/WorldIcon";
+import { VISION_PRODUCTS, type VisionAction, type VisionId } from "./product/visionProducts";
+import { useWorldNavigation } from "./navigation/worldRoute";
 import { LanguageProvider, useLang, useToggleLang } from "./context/LanguageContext";
 import { UserProfileProvider, useUserProfile } from "./context/UserProfileContext";
 import { useCountryCatalog } from "./hooks/useCountryCatalog";
@@ -17,6 +19,8 @@ import { t } from "./i18n/labels";
 // au démarrage. On les charge quand ils s'ouvrent → bundle initial plus léger et
 // carte affichée plus vite (Recharts/jsPDF ne sont plus dans le bundle de départ).
 const CountryDrawer = lazy(() => import("./components/country/CountryDrawer"));
+const VisionHub = lazy(() => import("./components/layout/VisionHub"));
+const WorldDiscovery = lazy(() => import("./components/layout/WorldDiscovery"));
 const RegionDrawer = lazy(() => import("./components/region/RegionDrawer"));
 const SourceMethodologyModal = lazy(() => import("./components/layout/SourceMethodologyModal"));
 const WatchlistPanel = lazy(() => import("./components/layout/WatchlistPanel"));
@@ -33,6 +37,8 @@ const CurrencyPanel = lazy(() => import("./components/layout/CurrencyPanel"));
 import "./styles/mobile.css";
 import "./styles/world-editorial.css";
 import "./styles/world-electric.css";
+import "./styles/vision-hub.css";
+import "./styles/world-discovery.css";
 
 // ---------- Sélecteur de pays (popover) ----------
 
@@ -109,6 +115,7 @@ type NavDomain = "explore" | "markets" | "travel" | "safety" | "all";
 
 function AppContent() {
   const lang = useLang();
+  const { route, navigate } = useWorldNavigation();
   const toggleLang = useToggleLang();
   const { watchlist, toggle: toggleWatch, isWatched } = useWatchlist();
 
@@ -127,34 +134,39 @@ function AppContent() {
   const [showAdvisor, setShowAdvisor] = useState(false);
   const [showCurrencyPanel, setShowCurrencyPanel] = useState(false);
   const [showToolsMenu, setShowToolsMenu] = useState(false);
+  const showVisionHub = route.kind === "visions";
   const [navDomain, setNavDomain] = useState<NavDomain>("all");
   const toolsButtonRef = useRef<HTMLButtonElement>(null);
+  const closeVisionHub = useCallback(() => navigate({ kind: "home" }), [navigate]);
+  const closeWorldDiscovery = useCallback(() => navigate({ kind: "home" }), [navigate]);
   const [toolsAnchor, setToolsAnchor] = useState({ top: 80, left: 16 });
   const [countryAnchor, setCountryAnchor] = useState({ top: 80, left: 16 });
-  const [selectedCountryIso3, setSelectedCountryIso3] = useState("FRA");
+  const [selectedCountryIso3, setSelectedCountryIso3] = useState(() => route.kind === "country" ? route.iso3 : "FRA");
   const { profile, hasProfile } = useUserProfile();
   const { countries, loading: countriesLoading, error: countriesError } = useCountryCatalog();
   const isOffline = !countriesLoading && !!countriesError && countries.length === 0;
   const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
 
+  const activeIso3 = route.kind === "country" ? route.iso3 : selectedCountryIso3;
+  const routedCountryMissing = route.kind === "country"
+    && !countriesLoading && countries.length > 0
+    && !countries.some((country) => country.iso3 === route.iso3 && country.active && !country.aggregate);
+  const activeCountryDrawerOpen = (drawerOpen || route.kind === "country") && !routedCountryMissing;
   const selectedCountry = useMemo<CountrySummary | null>(
-    () => countries.find((c) => c.iso3 === selectedCountryIso3) ?? null,
-    [countries, selectedCountryIso3],
+    () => countries.find((country) => country.iso3 === activeIso3) ?? null,
+    [countries, activeIso3],
   );
 
   const handleCountryClick = useCallback((iso3: string) => {
     setRegionDrawerOpen(false);
     setShowCountrySelector(false);
+    setShowToolsMenu(false);
     setSelectedCountryIso3(iso3);
-    setDrawerOpen(true);
-  }, []);
+    setDrawerOpen(false);
+    navigate({ kind: "country", iso3 });
+  }, [navigate]);
 
-  function handleSelectFromPopover(iso3: string) {
-    setSelectedCountryIso3(iso3);
-    setDrawerOpen(true);
-    setRegionDrawerOpen(false);
-    setShowCountrySelector(false);
-  }
+  function handleSelectFromPopover(iso3: string) { handleCountryClick(iso3); }
 
   function handleOpenRegions() {
     setDrawerOpen(false);
@@ -278,6 +290,7 @@ function AppContent() {
 
 
   function openNavDomain(domain: NavDomain, trigger?: HTMLElement | null) {
+    if (route.kind !== "home") navigate({ kind: "home" });
     const rect = trigger?.getBoundingClientRect() ?? document.querySelector(".whv-nav")?.getBoundingClientRect();
     if (rect) {
       const menuWidth = Math.min(580, window.innerWidth - 24);
@@ -295,6 +308,47 @@ function AppContent() {
     setCountryAnchor(toolsAnchor);
     setShowCountrySelector(true);
     setShowToolsMenu(false);
+  }
+
+  function openVisionHub(product: VisionId = "atlas") {
+    navigate({ kind: "visions", product });
+    setDrawerOpen(false);
+    setShowCurrencyPanel(false);
+    setShowTravelPanel(false);
+    setShowToolsMenu(false);
+    setShowCountrySelector(false);
+    setShowSourcesModal(false);
+  }
+
+  function openWorldDiscovery() {
+    navigate({ kind: "search" });
+    setDrawerOpen(false);
+    setShowToolsMenu(false);
+    setShowCountrySelector(false);
+    setShowSourcesModal(false);
+  }
+
+  function handleVisionAction(action: VisionAction) {
+    setShowToolsMenu(false);
+    switch (action) {
+      case "country":
+        navigate({ kind: "home" });
+        openCountrySearch();
+        return;
+      case "favorites":
+        navigate({ kind: "home" });
+        if (!showWatchlist) openFavorites();
+        return;
+      case "currency":
+        navigate({ kind: "money" });
+        return;
+      case "travel":
+        navigate({ kind: "tourism" });
+        return;
+      case "sources":
+        navigate({ kind: "sources" });
+        return;
+    }
   }
 
   function openFavorites() {
@@ -318,8 +372,41 @@ function AppContent() {
     return () => window.removeEventListener("keydown", onEscape);
   }, [showToolsMenu, showCountrySelector]);
 
+
+  // Back/forward closes stale local menus; public route state is restored separately.
+  useEffect(() => {
+    const onHistoryChange = () => {
+      setDrawerOpen(false);
+      setShowToolsMenu(false);
+      setShowCountrySelector(false);
+      setRegionDrawerOpen(false);
+      setShowSourcesModal(false);
+      setShowCurrencyPanel(false);
+      setShowTravelPanel(false);
+    };
+    window.addEventListener("popstate", onHistoryChange);
+    return () => window.removeEventListener("popstate", onHistoryChange);
+  }, []);
+
+  useEffect(() => {
+    const onShortcut = (event: KeyboardEvent) => {
+      const el = event.target instanceof HTMLElement ? event.target : null;
+      const typing = !!el?.closest('input,textarea,select,[contenteditable="true"]');
+      const commandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      const slash = !event.altKey && !event.ctrlKey && !event.metaKey && event.key === "/";
+      if (!event.isComposing && !typing && (commandK || slash)) {
+        event.preventDefault();
+        navigate({ kind: "search" });
+        setShowCountrySelector(false);
+        setShowToolsMenu(false);
+      }
+    };
+    window.addEventListener("keydown", onShortcut);
+    return () => window.removeEventListener("keydown", onShortcut);
+  }, [navigate]);
+
   const headerActions = (
-    <nav className="whv-nav" aria-label={lang === "fr" ? "Explorer World Health Vision" : "Explore World Health Vision"}>
+    <nav className="whv-nav" aria-label={lang === "fr" ? "Naviguer dans World-Vision" : "Navigate World-Vision"}>
       <button type="button" className="whv-nav-btn whv-nav-btn--mobile-hub" aria-expanded={showToolsMenu && navDomain === "all"}
         onClick={(event) => openNavDomain("all", event.currentTarget)}><><WorldIcon name="menu" size={17}/> Menu</></button>
       {(showCountrySelector || showToolsMenu) && (
@@ -332,8 +419,18 @@ function AppContent() {
         onClick={() => {
           setDrawerOpen(false); setRegionDrawerOpen(false); setShowToolsMenu(false);
           setShowSourcesModal(false); setShowCountrySelector(false);
+          navigate({ kind: "home" });
         }}>
         {lang === "fr" ? "Accueil" : "Home"}
+      </button>
+      <button type="button" className="whv-nav-btn whv-vision-nav"
+        aria-expanded={showVisionHub} onClick={() => openVisionHub()}>
+        {lang === "fr" ? "Les Visions" : "All Visions"}
+      </button>
+      <button type="button" className="whv-nav-btn whv-global-search-trigger"
+        onClick={openWorldDiscovery}
+        title={lang === "fr" ? "Rechercher · / ou Ctrl+K" : "Search · / or Ctrl+K"}>
+        <WorldIcon name="search" size={16}/>{lang === "fr" ? "Rechercher" : "Search"}
       </button>
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--explore" + (showToolsMenu && navDomain === "explore" ? " active" : "")}
@@ -373,7 +470,8 @@ function AppContent() {
       <button type="button"
         className={"whv-nav-btn whv-nav-btn--sources" + (showSourcesModal ? " active" : "")}
         onClick={() => {
-          setShowSourcesModal((v) => !v); setShowCountrySelector(false);
+          navigate(route.kind === "sources" ? { kind: "home" } : { kind: "sources" });
+          setShowSourcesModal(false); setShowCountrySelector(false);
           setShowWatchlist(false); setRegionDrawerOpen(false); setShowToolsMenu(false);
         }}>
         {lang === "fr" ? "Sources" : "Sources"}
@@ -520,49 +618,92 @@ function AppContent() {
   return (
     <EyeLayout headerActions={headerActions}>
       <EyeMapFrame
-        drawerOpen={drawerOpen || regionDrawerOpen}
+        drawerOpen={activeCountryDrawerOpen || regionDrawerOpen}
         countries={countries}
         selectedCountryIso3={selectedCountryIso3}
         onCountryClick={handleCountryClick}
       />
 
       <section className="whv-desktop-story" aria-label={lang === "fr" ? "Présentation de la plateforme" : "Platform overview"}>
-        <span className="whv-story-eyebrow"><span className="whv-story-dot" /> {lang === "fr" ? "VOTRE ATLAS DU MONDE" : "YOUR WORLD ATLAS"}</span>
-        <h2>{lang === "fr" ? <>Voir le monde.<br/><em>Le comprendre.</em></> : <>See the world.<br/><em>Understand it.</em></>}</h2>
+        <span className="whv-story-eyebrow"><span className="whv-story-dot" /> {lang === "fr" ? "WORLD-VISION · ÉCOSYSTÈME MONDIAL" : "WORLD-VISION · GLOBAL ECOSYSTEM"}</span>
+        <h2>{lang === "fr" ? <>Un monde.<br/><em>Plusieurs Visions.</em></> : <>One world.<br/><em>Many Visions.</em></>}</h2>
         <p>{lang === "fr"
-          ? "Un même endroit pour explorer les pays, les économies, les destinations et les grands enjeux du monde."
-          : "One place to explore countries, economies, destinations and the world's key challenges."}</p>
+          ? "Atlas, veille, devises, voyages, prix et marchés : un écosystème pour comprendre les faits et prendre des décisions mieux documentées."
+          : "Atlas, monitoring, currencies, travel, prices and markets: one ecosystem for understanding facts and making better-informed decisions."}</p>
         <div className="whv-story-actions">
-          <button type="button" className="whv-story-primary" onClick={() => openNavDomain("explore")}>
-            {lang === "fr" ? "Explorer les pays" : "Explore countries"} <span aria-hidden="true"><WorldIcon name="arrow" size={17}/></span>
+          <button type="button" className="whv-story-primary" onClick={() => openVisionHub()}>
+            {lang === "fr" ? "Découvrir les Visions" : "Explore the Visions"} <span aria-hidden="true"><WorldIcon name="arrow" size={17}/></span>
           </button>
-          <button type="button" className="whv-story-secondary" onClick={() => openNavDomain("all")}>
-            {lang === "fr" ? "Découvrir les outils" : "Discover the tools"}
+          <button type="button" className="whv-story-secondary" onClick={openWorldDiscovery}>
+            {lang === "fr" ? "Rechercher un pays" : "Find a country"}
           </button>
+        </div>
+        <div className="whv-story-perspectives">
+          <div>
+            <strong>{lang === "fr" ? "Plusieurs sources. Aucun regard imposé." : "Multiple sources. No imposed viewpoint."}</strong>
+            <p>{lang === "fr"
+              ? "Institutions nationales, médias locaux et organismes internationaux, avec leurs méthodes et limites."
+              : "National institutions, local reporting and international sources, with methods and limitations."}</p>
+          </div>
+          <div className="whv-story-perspectives-actions">
+            <button type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
+              {lang === "fr" ? "Sources du pays" : "Country sources"}
+            </button>
+            <button type="button" onClick={() => navigate({ kind: "sources" })}>
+              {lang === "fr" ? "Répertoire des sources" : "Source directory"}
+            </button>
+          </div>
         </div>
         <div className="whv-story-metrics" aria-label={lang === "fr" ? "Aperçu du catalogue" : "Catalog overview"}>
           <div><strong>{countries.length || "—"}</strong><span>{lang === "fr" ? "pays & territoires" : "countries & territories"}</span></div>
-          <div><strong>04</strong><span>{lang === "fr" ? "univers à explorer" : "areas to explore"}</span></div>
+          <div><strong>{VISION_PRODUCTS.length}</strong><span>{lang === "fr" ? "Visions sur la feuille de route" : "Visions on the roadmap"}</span></div>
         </div>
         <div className="whv-story-topics">
-          <span>{lang === "fr" ? "Géographie" : "Geography"}</span>
-          <span>{lang === "fr" ? "Économie" : "Economy"}</span>
-          <span>{lang === "fr" ? "Voyage" : "Travel"}</span>
-          <span>{lang === "fr" ? "Sécurité" : "Safety"}</span>
+          <span>Atlas Vision</span>
+          <span>Watch Vision</span>
+          <span>Money Vision</span>
+          <span>Global Radar</span>
         </div>
       </section>
 
 
 <aside className="whv-mobile-overview" aria-label={lang === "fr" ? "Explorer les pays" : "Explore countries"}>
         <div>
-          <span className="whv-mobile-eyebrow">{lang === "fr" ? "L'EXPLORATEUR MONDIAL" : "WORLD EXPLORER"}</span>
+          <span className="whv-mobile-eyebrow">{lang === "fr" ? "WORLD-VISION · UN ÉCOSYSTÈME" : "WORLD-VISION · AN ECOSYSTEM"}</span>
           <h2>{lang === "fr" ? "Voir le monde, le comprendre." : "See the world, understand it."}</h2>
           <p className="whv-mobile-overview-description">
             {lang === "fr"
-              ? "Pays, économie, voyages et sécurité : explorez les multiples facettes du monde."
-              : "Countries, markets, travel and safety: discover the world from every angle."}
+              ? "Atlas, Watch, Money, Tourisme, Prix, Trading, BRVM et Global Radar : découvrez les outils actuels et ceux à construire."
+              : "Atlas, Watch, Money, Travel, Price, Trading, BRVM and Global Radar: see current and planned tools."}
           </p>
         </div>
+        <section className="whv-mobile-perspectives" aria-label={lang === "fr" ? "Choisir et confronter les sources" : "Choose and compare sources"}>
+          <span className="whv-mobile-perspectives-label"><WorldIcon name="book" size={17}/>
+            {lang === "fr" ? "SOURCES & PERSPECTIVES" : "SOURCES & PERSPECTIVES"}
+          </span>
+          <strong>{lang === "fr" ? "Ne vous arrêtez pas à une source." : "Never stop at one source."}</strong>
+          <p>{lang === "fr"
+            ? "Choisissez les sources locales, les médias et les institutions internationales. Comparez leurs origines et leurs limites."
+            : "Choose local reporting and international institutions. Compare origins and limitations."}</p>
+          <div className="whv-mobile-perspectives-actions">
+            <button type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
+              {lang === "fr" ? "Sources du pays" : "Country sources"}
+              <WorldIcon name="arrow" size={16}/>
+            </button>
+            <button type="button" onClick={() => navigate({ kind: "sources" })}>
+              {lang === "fr" ? "Sources mondiales" : "Global sources"}
+              <WorldIcon name="arrow" size={16}/>
+            </button>
+          </div>
+          <small>{lang === "fr"
+            ? "Disponibilité variable : une source répertoriée n'est pas forcément connectée ni corroborée."
+            : "Availability varies: a listed source is not necessarily connected or corroborated."}</small>
+        </section>
+        <button type="button" className="whv-mobile-vision-entry" onClick={() => openVisionHub()}>
+          <span><strong>{lang === "fr" ? "Explorer les Visions World-Vision" : "Explore World-Vision products"}</strong>
+            <small>{lang === "fr" ? "Catalogue, usages, maturité et prochaines étapes" : "Catalog, use cases, readiness and next steps"}</small></span>
+          <WorldIcon name="arrow" size={21}/>
+        </button>
         <button className="whv-mobile-featured" type="button" onClick={() => handleCountryClick(selectedCountryIso3)}>
           <span className="whv-mobile-featured-text">
             <span className="whv-mobile-featured-label">{lang === "fr" ? "PAYS SÉLECTIONNÉ" : "SELECTED COUNTRY"}</span>
@@ -595,9 +736,9 @@ function AppContent() {
             <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="shield" size={23}/></span>
             <span>{lang === "fr" ? "Sécurité" : "Safety"}</span>
           </button>
-          <button type="button" className="whv-mobile-shortcut" onClick={() => openNavDomain("all")}>
+          <button type="button" className="whv-mobile-shortcut" onClick={() => openVisionHub()}>
             <span className="whv-mobile-shortcut-symbol" aria-hidden="true"><WorldIcon name="layers" size={23}/></span>
-            <span>{lang === "fr" ? "Tous les outils" : "All tools"}</span>
+            <span>{lang === "fr" ? "Les Visions" : "All Visions"}</span>
           </button>
         </div>
         <p className="whv-mobile-note">
@@ -614,18 +755,16 @@ function AppContent() {
       </aside>
 
       <Suspense fallback={null}>
-      {drawerOpen && <CountryDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        selectedCountryIso3={selectedCountryIso3}
-        onCountryChange={(iso3) => {
-          setSelectedCountryIso3(iso3);
-        }}
+      {activeCountryDrawerOpen && <CountryDrawer
+        open={activeCountryDrawerOpen}
+        onClose={() => { setDrawerOpen(false); if (route.kind === "country") navigate({ kind: "home" }); }}
+        selectedCountryIso3={activeIso3}
+        onCountryChange={handleCountryClick}
         countries={countries}
         countriesLoading={countriesLoading}
         countriesError={countriesError}
-        watched={isWatched(selectedCountryIso3)}
-        onToggleWatch={() => toggleWatch(selectedCountryIso3)}
+        watched={isWatched(activeIso3)}
+        onToggleWatch={() => toggleWatch(activeIso3)}
       />}
 
       {regionDrawerOpen && <RegionDrawer
@@ -635,8 +774,11 @@ function AppContent() {
         onOpenCountry={handleCountryClick}
       />}
 
-      {showSourcesModal && (
-        <SourceMethodologyModal onClose={() => setShowSourcesModal(false)} />
+      {(showSourcesModal || route.kind === "sources") && (
+        <SourceMethodologyModal onClose={() => {
+          setShowSourcesModal(false);
+          if (route.kind === "sources") navigate({ kind: "home" });
+        }} />
       )}
 
       {/* Bandeau hors-ligne */}
@@ -716,14 +858,48 @@ function AppContent() {
         />
       )}
 
-      {showTravelPanel && (
+      {(showTravelPanel || route.kind === "tourism") && (
         <TravelPanel
-          onClose={() => setShowTravelPanel(false)}
+          onClose={() => {
+            setShowTravelPanel(false);
+            if (route.kind === "tourism") navigate({ kind: "home" });
+          }}
         />
       )}
 
-      {showCurrencyPanel && (
-        <CurrencyPanel onClose={() => setShowCurrencyPanel(false)} />
+      {(showCurrencyPanel || route.kind === "money") && (
+        <CurrencyPanel onClose={() => {
+          setShowCurrencyPanel(false);
+          if (route.kind === "money") navigate({ kind: "home" });
+        }} />
+      )}
+
+      <VisionHub open={showVisionHub} language={lang}
+        selectedId={route.kind === "visions" ? route.product : "atlas"}
+        onSelectProduct={(product) => navigate({ kind: "visions", product })}
+        onClose={closeVisionHub} onAction={handleVisionAction} />
+
+      {route.kind === "search" && (
+        <WorldDiscovery language={lang} onToggleLanguage={toggleLang} countries={countries}
+          loading={countriesLoading} unavailable={isOffline}
+          onClose={closeWorldDiscovery}
+          onCountry={handleCountryClick}
+          onVision={(id) => openVisionHub(id)}
+          onSources={() => navigate({ kind: "sources" })}
+        />
+      )}
+
+      {(route.kind === "invalid" || routedCountryMissing ||
+        (route.kind === "country" && isOffline)) && (
+        <div className="whv-route-notice" role="status">
+          <WorldIcon name="info" size={18}/>
+          <span>{lang === "fr"
+            ? "Ce lien ne correspond pas à une page ou à un pays actuellement accessible dans le catalogue."
+            : "This link does not match an accessible page or country in the catalog."}</span>
+          <button type="button" onClick={openWorldDiscovery}>
+            {lang === "fr" ? "Rechercher" : "Search"}
+          </button>
+        </div>
       )}
 
       {showWatchlist && (

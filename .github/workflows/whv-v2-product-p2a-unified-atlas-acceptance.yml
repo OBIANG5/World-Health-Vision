@@ -1,0 +1,109 @@
+name: World-Vision PRODUCT-P2A - Atlas UX and rights-gated coverage
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2a-unified-atlas-ux-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# CI only. Never promote, publish fixtures, or create a deployment.
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Java PostgreSQL16 Timeseries, revocable rights, Gateway integration
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service,services/gateway-service -am test
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout actual P2A code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: source
+      - name: Reuse offline catalog fixtures, not live backend data
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          persist-credentials: false
+          path: evidence
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: source/worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Strict lint TypeScript build and Vite compilation
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-fund --no-audit
+          npx eslint src/App.tsx src/components/country/CountryLocalEvidencePanel.tsx
+          npx tsc -b --pretty false
+          VITE_WHV_PREVIEW_MODE=true npx vite build --base=./
+      - name: Assemble noindex offline QA site, never deploy
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from shutil import copy2,copytree
+          source=Path('source/worldhealth-vision-v2/frontend/web-v2/dist')
+          target=Path('preview')
+          assert (source/'index.html').is_file()
+          assert (source/'countries.geojson').is_file()
+          copytree(source,target)
+          fixtures=('preview-countries.js','preview-sources.js',
+                    'preview-local-catalog.js','preview-bootstrap.js')
+          for name in fixtures:
+              file=Path('evidence')/name
+              assert file.is_file(),name
+              copy2(file,target/name)
+          html=(target/'index.html').read_text(encoding='utf-8')
+          insertion='<meta name="robots" content="noindex,nofollow">\n'
+          insertion+=''.join('<script src="./'+name+'"></script>\n' for name in fixtures)
+          assert '<head>' in html
+          (target/'index.html').write_text(html.replace('<head>','<head>\n'+insertion,1),encoding='utf-8')
+          (target/'OFFLINE_ONLY.txt').write_text('Archival fixtures for browser tests, never production observations.',encoding='utf-8')
+          PY
+      - name: Install Chromium acceptance dependencies
+        working-directory: source/worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-fund --no-audit playwright
+          npx playwright install --with-deps chromium
+      - name: Test globe, Vision hub, country links and source choice
+        env:
+          WHV_PREVIEW_DIRECTORY: preview
+        run: |
+          node source/worldhealth-vision-v2/frontend/web-v2/preview-smoke.mjs
+          node source/worldhealth-vision-v2/frontend/web-v2/vision-hub-smoke.mjs
+          node source/worldhealth-vision-v2/frontend/web-v2/ux1-discovery-smoke.mjs
+          node source/worldhealth-vision-v2/frontend/web-v2/ux1b-sources-smoke.mjs
+      - name: Verify unavailable, empty, available and invalid coverage responses
+        env:
+          WHV_PREVIEW_DIRECTORY: preview
+        run: node source/worldhealth-vision-v2/frontend/web-v2/p2a-coverage-smoke.mjs
+      - name: Archive offline UI regression screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2a-offline-synthetic-mobile-qa
+          path: |
+            preview-artifacts/
+            vision-hub-artifacts/
+            ux1-artifacts/
+            ux1b-artifacts/
+            p2a-artifacts/
+          if-no-files-found: warn

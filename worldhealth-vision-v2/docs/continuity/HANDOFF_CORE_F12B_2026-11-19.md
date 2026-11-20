@@ -721,3 +721,10 @@ Nouveaux tests **test_semantic_source_replay.py** : 2 vrais formats officiels sy
 L'algorithme scientifique DATA-1C-A2B2a PR #93 est validé ; le successeur parser-signature A2B2b (branche data/v2-semantic-parser-attestation-2026-11-20) a connu des échecs de CI Java/Python initialement, toujours revérifier son SHA avant une fusion. Ne pas accorder de droit IBGE sur la simple signature d'une réponse. Continuer la sécurité bloquante en PARALLÈLE du STAGING et au bon niveau d'effort, sans perdre GDELT/médias/audiovisuel, conservés séparément.
 
 **Reprise prochain chat :** ouvrir la PR de product/v2-country-published-coverage-2026-11-20, vérifier HEAD et CI, lire ce handoff et l'issue #96. Prochaine valeur : STAGING pilotable, PAS un nouveau moteur de preuve.
+
+---
+## 20 novembre 2026 — PRODUCT-P2A : unification effective, continuer P2B
+Base #97 bc0d4bd1, source UX #75 b650baed ; branche candidate product/v2-p2a-unified-atlas-ux-2026-11-20. Commits : f90ef5b0 (15 fichiers UX), 4b984d0f (fusion honnête du CountryLocalEvidencePanel), de1f6133 (test complet du backend + vrai frontend UX + quatre réponses couverture SYNTHÉTIQUES).
+**CI CONFIRMÉE SUCCESS sur de1f6133** : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44726772494 ; recontrôler CI du HEAD ultérieur si docs/commits.
+**Documentation de reprise exacte** : docs/continuity/WORLD_VISION_PRODUCT_P2A_UNIFIED_ATLAS_UX_2026-11-20.md.
+Les anciennes branches UX, DATA, médias/voix, v2 et le Vercel public ne sont PAS fusionnés ou déployés. L'interface mobile et le composant réel de couverture coexistent, mais les navigateurs CI utilisent encore des fixtures pour le catalogue et des réponses SYNTHETIQUES pour les quatre tests de couverture. Prochain jalon : P2B — frontend connecté dans UN environnement CI aux six services Java/Python/PostgreSQL, test GAB/FRA/BRA, panne/révocation, puis P2C dataset autorisé et préproduction isolée. Sécurité DATA #95/#94 en parallèle. Aucun VPS sans décision.
