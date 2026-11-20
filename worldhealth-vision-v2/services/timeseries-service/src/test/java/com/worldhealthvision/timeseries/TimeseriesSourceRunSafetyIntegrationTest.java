@@ -129,6 +129,10 @@ class TimeseriesSourceRunSafetyIntegrationTest {
             base.replace("\"sourceCode\":\"WORLD_BANK\"", "\"sourceCode\":\"IBGE\""),
             base.replace("\"datasetCode\":\"WDI\"", "\"datasetCode\":\"CENSO2022_4714\""),
             base.replace("\"datasetCode\":\"WDI\"", "\"datasetCode\":\"WDI_POP_TOTAL_BRA_2022\""),
+            base.replace("\"sourceCode\":\"WORLD_BANK\"", "\"sourceCode\":\"INSEE\"")
+                .replace("\"datasetCode\":\"WDI\"", "\"datasetCode\":\"DS_POPULATIONS_REFERENCE\""),
+            base.replace("\"datasetCode\":\"WDI\"", "\"datasetCode\":\"DS_POPULATIONS_REFERENCE\""),
+            base.replace("\"datasetCode\":\"WDI\"", "\"datasetCode\":\"DS_POPULATIONS_REFERENCE_CATALOG\""),
             base.replace("\"indicatorCode\":\"NY.GDP.MKTP.CD\"", "\"indicatorCode\":\"IBGE.CENSUS2022.RESIDENT_POP\""),
             base.replace("\"countryIso3\":\"FRA\"", "\"countryIso3\":\"BRA\"")
                 .replace("\"indicatorCode\":\"NY.GDP.MKTP.CD\"", "\"indicatorCode\":\"SP.POP.TOTL\"")
