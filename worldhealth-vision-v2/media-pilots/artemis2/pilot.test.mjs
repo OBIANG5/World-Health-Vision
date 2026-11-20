@@ -15,6 +15,7 @@ test("the pilot is a real-media silent review, not a falsely aligned news report
  const metadata=JSON.parse(fs.readFileSync(new URL("./sources.json",import.meta.url),"utf8"));
  assert.equal(inspectProject(project).ok,true);
  assert.equal(durationFrames(project),750);
+ assert.equal(project.shots[0].titleFrameZero,true,"hook must be visible at frame 0");
  assert.equal(project.voice,null);
  assert.equal(project.music,null);
  assert.equal(project.captions,undefined);
