@@ -824,6 +824,32 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 where (cast(:sourceCode as varchar) is null or sr.source_code = :sourceCode)
                   and (cast(:datasetCode as varchar) is null or sr.dataset_code = :datasetCode)
                   and (cast(:status as varchar) is null or sr.status = :status)
+                  -- Public source-run metadata must not reveal unreviewed,
+                  -- expired or revoked runs while their underlying history is
+                  -- kept for authorized investigations.
+                  and exists (
+                    select 1
+                    from timeseries.observation o
+                    join timeseries.source_run_rights_decision linked
+                      on linked.source_run_id = sr.id
+                    join timeseries.rights_decision rights
+                      on rights.decision_id = linked.decision_id
+                    where o.source_run_id = sr.id
+                      and rights.source_code = o.source_code
+                      and rights.dataset_code = o.dataset_code
+                      and rights.country_iso3 = o.country_iso3
+                      and rights.indicator_code = o.indicator_code
+                      and rights.operation = 'PUBLIC_API_INGEST'
+                      and rights.original_http_sha256 = sr.notes ->> 'httpBodySha256'
+                      and rights.period_start <= o.period_start
+                      and rights.period_end >= o.period_end
+                      and rights.valid_from_utc <= statement_timestamp()
+                      and rights.valid_until_utc > statement_timestamp()
+                      and not exists (
+                          select 1 from timeseries.rights_revocation r
+                          where r.decision_id = rights.decision_id
+                      )
+                  )
                 order by sr.fetched_at_utc desc, sr.persisted_at_utc desc
                 limit :limit
                 """;
