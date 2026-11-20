@@ -2,7 +2,7 @@
   "schema_version": "worldvision-real-media-sources-v1",
   "event_date": "2026-04-06",
   "latest_source_date": "2026-11-17",
-  "capture_policy": "Official NASA-origin media only. Fail closed on missing source, non-JPEG, wrong dimensions or untrusted redirect.",
+  "capture_policy": "Official NASA-origin media only. Fail closed on missing source, non-JPEG, wrong dimensions or untrusted redirect. Pin original content hashes and source dimensions; refuse any content drift, even from NASA CDN.",
   "publication_approved": false,
   "visual_edit_status": "INTERNAL_REVIEW_ONLY",
   "report": "https://science.nasa.gov/feature/artemis-ii-preliminary-lunar-science-report/",
@@ -18,7 +18,10 @@
       "source_credit": "NASA / Artemis II crew",
       "rights_classification": "NASA-origin photograph; editorial use generally permitted subject to NASA brand/media rules; check actual metadata",
       "is_impact_observation": false,
-      "rights_review": "OPEN"
+      "rights_review": "OPEN",
+      "sha256": "4eaed9058c6c414d4d8f18697eebd86220e8b05dd9b66fbcf48bd459f01659c0",
+      "width": 5568,
+      "height": 3712
     },
     {
       "id": "art002e009288",
@@ -30,7 +33,10 @@
       "source_credit": "NASA / Artemis II crew",
       "rights_classification": "NASA-origin photograph; editorial use generally permitted subject to NASA brand/media rules",
       "is_impact_observation": false,
-      "rights_review": "OPEN"
+      "rights_review": "OPEN",
+      "sha256": "1a172c85a5b7172cfffb7e3811056f22086b7dcfef56c369d5e6a66fb8a363ba",
+      "width": 5568,
+      "height": 3712
     },
     {
       "id": "art002e016252_impactflash_annotation_cropped",
@@ -42,7 +48,10 @@
       "source_credit": "NASA / Artemis II crew; annotations CSA/NASA",
       "rights_classification": "NASA-published source incorporating astronauts' annotation; independently review third-party/CSA elements before public use",
       "is_impact_observation": false,
-      "rights_review": "OPEN"
+      "rights_review": "OPEN",
+      "sha256": "57c1b522c587d2dd15f7713aaace2092deae59e24bd8ca29a8f671cbfd295e3b",
+      "width": 3840,
+      "height": 2160
     }
   ],
   "exclusions": [
