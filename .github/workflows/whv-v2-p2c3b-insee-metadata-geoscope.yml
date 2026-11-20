@@ -1,0 +1,92 @@
+name: World-Vision P2C3B — Insee catalog scope, FEHM provenance and immutable Bronze
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2c3b-insee-metadata-geoscope-*'
+  workflow_dispatch:
+    inputs:
+      institutional_metadata_probe:
+        description: 'Do two read-only GETs in a temporary private runner; no publication'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Code remains in research-only ingestion connector, not Vercel/Timeseries.
+jobs:
+  offline-source-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing ingestion package plus test harness
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -e './worldhealth-vision-v2/services/ingestion-service[dev]'
+      - name: New official catalog contract and dual immutable receipts
+        run: |
+          python -m pytest -q \
+            worldhealth-vision-v2/services/ingestion-service/tests/test_insee_melodi_catalog_review.py
+      - name: Existing source, exact geography and no-publishing contract
+        run: |
+          python -m pytest -q \
+            worldhealth-vision-v2/services/ingestion-service/tests/test_insee_melodi_reference_research.py
+      - name: Preserve historic Bronze and rights denial behavior
+        run: |
+          python -m pytest -q \
+            worldhealth-vision-v2/services/ingestion-service/tests/test_source_evidence_revisions.py \
+            worldhealth-vision-v2/services/ingestion-service/tests/test_timeseries_private_publication_gate.py
+      - name: Assert no public publishing, signing or implicit ISO3 mapping
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/connectors')
+          reader=(root/'insee_melodi_reference_client.py').read_text()
+          catalog=(root/'insee_melodi_catalog_review.py').read_text()
+          assert '"countryIso3Candidate": None' in reader
+          assert '"countryMappingStatus": "NOT_MAPPED_TO_ISO3"' in reader
+          assert 'SPATIAL_SCOPE_ID = "FEHM"' in catalog
+          for content in (reader,catalog):
+              assert 'TimeseriesClient' not in content
+              assert 'Ed25519PrivateKey' not in content
+              assert 'follow_redirects=False' in content
+              assert '"timeseriesPublication": "NOT_ATTEMPTED"' in content
+          print("PASS: official FEHM scope retained, all publishing and signing disabled")
+          PY
+
+  opt-in-two-official-gets:
+    # On push this job is skipped. No automatic recurrent provider requests.
+    if: github.event_name == 'workflow_dispatch' && inputs.institutional_metadata_probe == true
+    needs: offline-source-integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install research-only package
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -e './worldhealth-vision-v2/services/ingestion-service'
+      - name: Two official HTTPS GETs, matching geographic scope and private receipts
+        env:
+          WHV_INSEE_DUAL_REVIEW_GETS_ENABLED: YES_PRIVATE_METADATA_REVIEW
+        run: |
+          umask 077
+          python3 worldhealth-vision-v2/infra/tests/p2c3b_dual_metadata_probe.py
+      - name: Prove all original source bytes removed
+        if: always()
+        run: |
+          test ! -e "$RUNNER_TEMP/whv-insee-dual-source-private"
+          echo "PASS: original institutional metadata/data bytes absent after private audit"
