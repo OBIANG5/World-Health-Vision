@@ -173,7 +173,7 @@ jobs:
             --assets /tmp/worldvision-fixture-assets \
             --output output/creative/editorial-film-five-scenes.mp4
           node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/editorial-film-five-scenes.mp4');const r=JSON.parse(fs.readFileSync('output/creative/editorial-film-five-scenes.mp4.report.json','utf8'));const i=JSON.parse(fs.readFileSync('/tmp/worldvision-integrated-film-five-scenes.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==745||r.mode!=='full_film'||r.media.length!==4||r.track_voice!=='NON SPEECH TEST OSCILLATOR — NOT A NARRATOR'||r.exact_script_unchanged!==true||i.shots.length!==5||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size!==3)process.exit(1);console.log('World-Vision integrated five-scene video/voice and true media ledger validated');"
-          node --input-type=module -e "import fs from 'node:fs';import {buildEditorialTimeline,checkEditorialFiveScene} from './creative/editorial-timeline.mjs';const p=JSON.parse(fs.readFileSync('/tmp/worldvision-integrated-film-five-scenes.json','utf8'));const t=buildEditorialTimeline(p.shots);if(!checkEditorialFiveScene(t)||t.durationFrames!==745)process.exit(1);fs.writeFileSync('output/creative/editorial-film-five-scenes.timeline.json',JSON.stringify(t,null,2)+'\\n');console.log('Five authored beats, four actual overlaps, no empty frames',t.shots.map(s=>s.startFrame));"
+          node --input-type=module -e "import fs from 'node:fs';import {buildEditorialTimeline,checkEditorialFiveScene} from './creative/editorial-timeline.mjs';const p=JSON.parse(fs.readFileSync('/tmp/worldvision-integrated-film-five-scenes.json','utf8'));const t=buildEditorialTimeline(p.shots);if(!checkEditorialFiveScene(t)||t.durationFrames!==745)process.exit(1);fs.writeFileSync('output/creative/editorial-film-five-scenes.timeline.json',JSON.stringify(t,null,2)+String.fromCharCode(10));console.log('Five authored beats, four actual overlaps, no empty frames',t.shots.map(s=>s.startFrame));"
       - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Independently verify full-film H264 plus uninterrupted AAC test waveform
@@ -198,6 +198,7 @@ jobs:
           cp /tmp/worldvision-fixture-assets/synthetic-document.png ../../frontend/web-v2/public/smoke/synthetic-document.png
           cp /tmp/worldvision-fixture-assets/synthetic-tone.wav ../../frontend/web-v2/public/smoke/synthetic-tone.wav
           cp /tmp/worldvision-fixture-assets/synthetic-film-oscillator.wav ../../frontend/web-v2/public/smoke/synthetic-film-oscillator.wav
+          cp /tmp/worldvision-integrated-film-five-scenes.json ../../frontend/web-v2/public/smoke/worldvision-integrated-film-five-scenes.json
           cp /tmp/worldvision-fixture-assets/synthetic-clip.mp4 ../../frontend/web-v2/public/smoke/synthetic-clip.mp4
           npm --prefix ../../frontend/web-v2 run dev -- --host 127.0.0.1 --port 5173 --strictPort > /tmp/wv-player-vite.log 2>&1 &
           echo $! > /tmp/wv-player-vite.pid
