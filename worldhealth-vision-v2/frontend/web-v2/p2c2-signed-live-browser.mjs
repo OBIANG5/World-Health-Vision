@@ -124,7 +124,15 @@ try {
     await sleep(300);
   }
   assert(serving, "Real compiled Atlas and Gateway proxy not serving");
-  browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
+  // GitHub-hosted Ubuntu runners normally ship Chrome; downloading Chromium
+  // again wastes bandwidth and can hang on the browser CDN. The workflow
+  // verifies system Chrome first, then installs Playwright headless-shell only
+  // when needed. Both execute the EXACT same browser acceptance code.
+  browser = await chromium.launch({
+    headless: true,
+    channel: process.env.WHV_BROWSER_CHANNEL === "chrome" ? "chrome" : undefined,
+    args: ["--no-sandbox"],
+  });
 
   // Same real state in 320px, iPhone and desktop, no fake fixtures.
   const contexts = [

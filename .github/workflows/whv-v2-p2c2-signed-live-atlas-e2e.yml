@@ -201,11 +201,19 @@ jobs:
           print("PASS: authenticated private ingestion; anonymous eligible reads; private runs blocked")
           PY
 
-      - name: Install Chromium to run mobile and desktop against REAL backend
+      - name: Prefer preinstalled Chrome, bounded fallback to Playwright headless shell
         working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 8
         run: |
           npm install --no-save --no-package-lock --no-audit --no-fund playwright
-          npx playwright install --with-deps chromium
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo 'WHV_BROWSER_CHANNEL=chrome' >> "$GITHUB_ENV"
+            echo 'PASS: using GitHub-hosted system Chrome without browser downloads'
+          else
+            echo 'System Chrome unavailable; bounded Playwright headless-shell fallback'
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
 
       - name: Verify actual SQL revocation in SAME open iPhone session and all Gateway routes
         run: node worldhealth-vision-v2/frontend/web-v2/p2c2-signed-live-browser.mjs
