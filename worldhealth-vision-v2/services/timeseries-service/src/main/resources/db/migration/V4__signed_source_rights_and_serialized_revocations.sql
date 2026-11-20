@@ -110,3 +110,98 @@ comment on table timeseries.rights_decision is
 'Independent externally Ed25519-signed, time/territory/indicator/HTTP-SHA-scoped reviewer decisions; no grants seeded.';
 comment on table timeseries.rights_revocation is
 'Append-only revocations acquire FOR UPDATE on decision to serialize with ingest commit.';
+
+
+-- DATA-1C-A2 public read gate. A previously approved value is NOT still
+-- publishable after license revocation/expiry. The old physical source_run
+-- and observation remain stored for forensic/legal historical review.
+-- The changed latest_observation view is used by business read endpoints
+-- and source-data coverage; this is a deliberate fail-closed migration.
+-- No timeseries values or source rows are destructively migrated.
+create or replace view timeseries.latest_observation as
+select
+    ranked.id,
+    ranked.source_run_id,
+    ranked.source_code,
+    ranked.dataset_code,
+    ranked.indicator_code,
+    ranked.country_iso3,
+    ranked.period_granularity,
+    ranked.period_start,
+    ranked.period_end,
+    ranked.period_label,
+    ranked.numeric_value,
+    ranked.text_value,
+    ranked.value_status,
+    ranked.source_published_at,
+    ranked.source_metadata,
+    ranked.quality_flags,
+    ranked.ingested_at,
+    ranked.run_key,
+    ranked.fetched_at_utc,
+    ranked.persisted_at_utc
+from (
+    select
+        o.id,
+        o.source_run_id,
+        o.source_code,
+        o.dataset_code,
+        o.indicator_code,
+        o.country_iso3,
+        o.period_granularity,
+        o.period_start,
+        o.period_end,
+        o.period_label,
+        o.numeric_value,
+        o.text_value,
+        o.value_status,
+        o.source_published_at,
+        o.source_metadata,
+        o.quality_flags,
+        o.ingested_at,
+        sr.run_key,
+        sr.fetched_at_utc,
+        sr.persisted_at_utc,
+        row_number() over (
+            partition by
+                o.source_code,
+                o.dataset_code,
+                o.indicator_code,
+                o.country_iso3,
+                o.period_granularity,
+                o.period_start
+            order by
+                sr.fetched_at_utc desc,
+                sr.persisted_at_utc desc,
+                o.ingested_at desc,
+                o.id desc
+        ) as rn
+    from timeseries.observation o
+    join timeseries.source_run sr on sr.id = o.source_run_id
+    -- Source history can remain stored after revocation, but current public
+    -- reads MUST show only versions linked to STILL-VALID reviewed rights.
+    -- Historical V1/V2 rows without signed rights links are not auto-approved.
+    where exists (
+        select 1
+        from timeseries.source_run_rights_decision linked
+        join timeseries.rights_decision rights
+          on rights.decision_id = linked.decision_id
+        where linked.source_run_id = sr.id
+          and rights.source_code = o.source_code
+          and rights.dataset_code = o.dataset_code
+          and rights.country_iso3 = o.country_iso3
+          and rights.indicator_code = o.indicator_code
+          and rights.operation = 'PUBLIC_API_INGEST'
+          and rights.original_http_sha256 = sr.notes ->> 'httpBodySha256'
+          and rights.period_start <= o.period_start
+          and rights.period_end >= o.period_end
+          and rights.valid_from_utc <= statement_timestamp()
+          and rights.valid_until_utc > statement_timestamp()
+          and not exists (
+              select 1
+              from timeseries.rights_revocation revoked
+              where revoked.decision_id = rights.decision_id
+          )
+    )
+) ranked
+where ranked.rn = 1;
