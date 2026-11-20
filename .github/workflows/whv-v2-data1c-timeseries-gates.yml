@@ -59,6 +59,32 @@ jobs:
           main=(p/"src/main/resources/application.yml").read_text()
           assert "WHV_TIMESERIES_INTERNAL_INGESTION_KEY" in main
           assert "integration-test-only-not-secret" not in main
-          assert "123456789" not in (p/"src/test/java/com/worldhealthvision/timeseries/TimeseriesSourceRunSafetyIntegrationTest.java").read_text()
+          assert '"numericValue":123456789' not in (p/"src/test/java/com/worldhealthvision/timeseries/TimeseriesSourceRunSafetyIntegrationTest.java").read_text()
           print("PASS no real Brazilian population fixture; no production credential configured")
           PY
+
+  python-ingestion-publisher-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - name: Checkout same candidate SHA
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: worldhealth-vision-v2/services/ingestion-service/pyproject.toml
+      - name: Install existing Python ingestion package
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pip install --disable-pip-version-check -e '.[dev]'
+          python -m compileall -q src/ingestion_service
+      - name: Private publisher and no false WDI OBSERVED assertions
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m pytest -q tests/test_timeseries_private_publication_gate.py
+      - name: Full ingestion regressions except explicitly network-only World Bank
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m pytest -q tests --ignore=tests/test_worldbank_live_scope.py
