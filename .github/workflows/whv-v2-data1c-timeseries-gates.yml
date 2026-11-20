@@ -1,0 +1,64 @@
+name: World-Vision DATA-1C-A — Timeseries rights, private auth and immutable replay
+
+on:
+  push:
+    branches:
+      - 'data/v2-timeseries-rights-idempotence-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-data1c-timeseries-${{ github.ref }}
+  cancel-in-progress: true
+
+# No external data pulls. PostgreSQL Testcontainers uses SYNTHETIC FRA GDP,
+# NOT the real private BRA population, and exits with container destruction.
+jobs:
+  java-timeseries-real-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - name: Checkout exact candidate without stored GitHub credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Java 21 Temurin + Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Verify receiver does not trust source notes or expose public research routes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("worldhealth-vision-v2/services/timeseries-service/src/main/java/com/worldhealthvision/timeseries")
+          gate=(p/"service/ProtectedSourcePublicationGate.java").read_text()
+          controller=(p/"api/TimeseriesInternalIngestionController.java").read_text()
+          repository=(p/"persistence/JdbcTimeseriesRepository.java").read_text()
+          assert "WDI_POP_TOTAL_BRA_2022" in gate
+          assert "CENSO2022_4714" in gate
+          assert 'X-WHV-Ingestion-Key' in controller
+          assert "SERVICE_UNAVAILABLE" in controller and "FORBIDDEN" in controller
+          assert "on conflict (source_code, dataset_code, run_key) do nothing" in repository
+          assert "set fetched_at_utc = :fetchedAtUtc" not in repository
+          assert "new ImmutableSourceRunConflictException()" in repository
+          print("PASS receiver-side private research rights and immutable replay contract")
+          PY
+      - name: Maven build + Testcontainers PostgreSQL 16/Flyway integration tests
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service -am test
+      - name: Verify no actual IBGE values, raw source fixtures, or committed production keys
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("worldhealth-vision-v2/services/timeseries-service")
+          main=(p/"src/main/resources/application.yml").read_text()
+          assert "WHV_TIMESERIES_INTERNAL_INGESTION_KEY" in main
+          assert "integration-test-only-not-secret" not in main
+          assert "123456789" not in (p/"src/test/java/com/worldhealthvision/timeseries/TimeseriesSourceRunSafetyIntegrationTest.java").read_text()
+          print("PASS no real Brazilian population fixture; no production credential configured")
+          PY
