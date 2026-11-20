@@ -94,6 +94,25 @@ def test_rejects_wrong_geography_measure_status_or_value(change):
         parse(response(**change))
 
 
+def test_official_melodi_split_national_geo_pair_is_supported_but_not_assumed_iso3():
+    # Insee's documented GEO=FRANCE-F GET is flattened as GEO_OBJECT=FRANCE,
+    # GEO=F. This is a SOURCE-specific syntax, never a worldwide ISO3 rule.
+    exact = parse(response(geo="F"))[0]
+    assert exact.geo_filter == "FRANCE-F"
+    assert exact.population_type == "LEGAL_TOTAL_UNREVIEWED"
+    # A code F without explicit FRANCE national scope must be denied.
+    with pytest.raises(EvidenceIntegrityError):
+        parse(response(geo="F", override={
+            "dimensions": {"GEO": "F", "FREQ": "A", "TIME_PERIOD": "2023",
+                           "POPREF_MEASURE": "PTOT", "GEO_REF": "2025"}
+        }))
+    with pytest.raises(EvidenceIntegrityError):
+        parse(response(geo="F", override={
+            "dimensions": {"GEO": "F", "GEO_OBJECT": "COM", "FREQ": "A",
+                           "TIME_PERIOD": "2023", "POPREF_MEASURE": "PTOT"}
+        }))
+
+
 def test_unrecognized_api_json_and_response_schema_fail_closed():
     for raw in (
         b"", b"not-json", b"\xff",

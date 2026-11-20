@@ -166,8 +166,14 @@ def parse_reference_population(
         measures = row.get("measures")
         if not isinstance(dimensions, dict) or not isinstance(measures, dict):
             raise EvidenceIntegrityError("Missing structured Melodi dimension/measures")
-        if _required(dimensions, "GEO") != GEO_FILTER:
-            raise EvidenceIntegrityError("Unexpected geography: cannot treat foreign/metro territories as FRA")
+        # Melodi query GEO=FRANCE-F addresses the geography pair
+        # GEO_OBJECT=FRANCE / GEO=F in tabular data (InseeFrLab example).
+        # The official API can represent the pair split rather than echoing
+        # the composite URL filter. Accept only these two EXACT encodings,
+        # never a different country, region, or arbitrary ISO3 mapping.
+        geo_code = _required(dimensions, "GEO")
+        if geo_code not in {GEO_FILTER, "F"}:
+            raise EvidenceIntegrityError("Unexpected Insee national geography code")
         if _required(dimensions, "POPREF_MEASURE") != MEASURE_CODE:
             raise EvidenceIntegrityError("Municipal population is not total population (PTOT)")
         if _required(dimensions, "FREQ") != "A":
@@ -181,8 +187,8 @@ def parse_reference_population(
         seen_periods.add(year)
         geo_reference = _dimension(dimensions, "GEO_REF")
         obj = _dimension(dimensions, "GEO_OBJECT")
-        if obj not in (None, "FRANCE"):
-            raise EvidenceIntegrityError("GEO_OBJECT not national FRANCE")
+        if obj != "FRANCE":
+            raise EvidenceIntegrityError("GEO_OBJECT MUST explicitly identify national FRANCE")
         if geo_reference is not None and not re.fullmatch(r"20\d{2}", geo_reference):
             raise EvidenceIntegrityError("GEO_REF not a recognized annual year")
 
