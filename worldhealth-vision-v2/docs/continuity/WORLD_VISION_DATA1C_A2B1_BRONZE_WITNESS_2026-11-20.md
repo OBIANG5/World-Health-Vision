@@ -83,3 +83,17 @@ Ensuite :
 - sources locales par pays, Watch Vision, Money Vision, Global Radar GDELT avec vérification médias multi-sources et ligne éditoriale séparée.
 
 Toujours actualiser HANDOFF_CORE_F12B et commenter PR/issue #89/#82 sur GitHub avec les fonctions, nouveaux tests, risques, commit final et URL CI. N'affirmer ni fusion v2, ni lien Vercel mis à jour, ni droit accordé si rien de tel n'a été fait.
+
+
+## 7. Validation officielle effective et fermeture du périmètre du témoin (20/11/2026)
+
+**PR DRAFT #91** : https://github.com/OBIANG5/World-Health-Vision/pull/91.
+
+Sur le commit de CODE d3e842c756c1433b49d8bffa2cd1ae7fa016500b, deux workflows GitHub Actions ont réussi séparément :
+- https://github.com/OBIANG5/World-Health-Vision/actions/runs/44714823320 : **SUCCESS, 32 tests Java21/PostgreSQL16/Flyway et 190 tests Python ingestion**, dont 26 tests spécifiques au témoin original et à la projection. Les vecteurs GOLDEN Python/Java et toutes les régressions héritées sont verts.
+- https://github.com/OBIANG5/World-Health-Vision/actions/runs/44714823274 : **SUCCESS, quatre RESSOURCES officielles du Brésil/2022 réellement interrogées**, IBGE valeur nationale 4714/93, métadonnées table 4714, listing de périodes, Banque mondiale WDI SP.POP.TOTL source 2. Les SHA et journaux de ces quatre ressources et le reçu IBGE composite ont été vérifiés ; **deux attestations Ed25519 de recherche privée** signées et vérifiées en RAM sur les DEUX ressources numériques IBGE + WDI, aucun jeton PUBLIC_API_INGEST, aucune valeur ni source brute affichée, TemporaryDirectory effacé à la fin. En cas de 429/5xx transitoire, WDI peut nécessiter plusieurs tentatives GET : les « quatre ressources » ne constituent donc pas une garantie de nombre de tentatives HTTP exact.
+- Ajouter un dernier contrôle de CI sur le HEAD FINAL de cette PR après les commits documentaires, avant annoncer validation définitive de la PR. Les deux runs ci-dessus justifient le CODE inchangé de leurs SHAs mais ne prouvent ni la licence commerciale ni la persistance de production.
+
+**Restriction de périmètre délibérée** : le témoin Python émet des attestations NUMÉRIQUES uniquement pour IBGE CENSO2022_4714 et WORLD_BANK WDI_POP_TOTAL_BRA_2022. Les autres deux ressources IBGE métadonnées et périodes demeurent vérifiées via AcquisitionJournal et IbgeCompositeReceiptStore ; elles ne sont PAS des observations IndicatorObservation et ne doivent pas être déguisées en valeurs numériques dans la signature destinée à Timeseries. Tests Python explicites : test_wdi_brazil_research_witness_verifies_an_estimate_without_reclassifying_observed, test_metadata_is_never_mistaken_for_a_numeric_timeseries_source. WDI garde la qualité ESTIMATED et non OBSERVED.
+
+**Handoff clair vers l'étape A2B2 :** https://github.com/OBIANG5/World-Health-Vision/issues/92. À implémenter ensuite sur nouvelle branche empilée sur #91 : reparser INDEPENDAMMENT les octets originaux selon un contrat institutionnel versionné et vérifier que chaque valeur normalisée correspond exactement à la réponse du fournisseur. Ne pas transformer une cohérence de SHA en validation scientifique. Ensuite seulement un émetteur public piloté par vraie licence, identité service forte et coffre de clés ; PUBLIC_API_INGEST ne signifie pas COMMERCIAL_REUSE. Vercel, v2, cloud payant, médias/voix demeurent inchangés.
