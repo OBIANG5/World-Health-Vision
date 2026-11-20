@@ -8,6 +8,7 @@ import type {CreativeShot,CreativeEditProps} from "./CreativeEdit";
 import {resolveCreativeSource} from "./CreativeEdit";
 import {GeoPhotorealEarth} from "./GeoPhotorealEarth";
 import {geoCameraPose} from "./geo-motion-camera.mjs";
+import {headlineHandoffOpacity} from "./editorial-text-handoff.mjs";
 
 /**
  * WORLD-VISION GEO STORY / international motion grammar, stage A.
@@ -361,7 +362,7 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
     <div data-wv-geo-copy="true" style={{
       position:"absolute",left:89,right:173,
       top:1162,
-      opacity:titleIn*fadeOut,
+      opacity:titleIn*fadeOut*headlineHandoffOpacity(frame,enterOverlapFrames),
       transform:"translateY("+Math.round((1-titleIn)*45)+"px)"
     }}>
       <div style={{height:3,width:Math.round(86*titleIn),

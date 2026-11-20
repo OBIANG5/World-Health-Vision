@@ -17,12 +17,24 @@ declare global{
   interface Window{
     __wvSmokeSeek?:(frame:number)=>void;
     __wvSmokeReady?:boolean;
-    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo"|"data-line"|"data-ranking"|"data-heatmap";
+    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo"|"data-line"|"data-ranking"|"data-heatmap"|"editorial";
     __wvSmokeFrames?:number;
     __wvSmokeHasVoice?:boolean;
   }
 }
-type SmokeAssets={photo:string;voice:string|null;clip:string|null;foreground:string|null};
+type FilmSourceShot=Omit<CreativeShot,"media"|"foreground">&{
+  media?:{kind:"image"|"video";file:string;credit?:string};
+  foreground?:{file:string;credit?:string};
+};
+type FilmManifest={
+  schema_version:string;title:string;script:string;shots:FilmSourceShot[];
+  voice?:{file:string;label?:string;volume?:number}|null;
+  style?:{background?:string;ink?:string;accent?:string};
+};
+type SmokeAssets={
+  photo:string;voice:string|null;clip:string|null;foreground:string|null;
+  document:string|null;filmTone:string|null;filmManifest:FilmManifest|null;
+};
 const mode=new URLSearchParams(window.location.search).get("mode");
 const isFilm=mode==="film";
 const isClip=mode==="clip";
@@ -30,6 +42,7 @@ const isDocument=mode==="document";
 const isGeo=mode==="geo";
 const isCountry=mode==="country";
 const isPhoto=mode==="photo";
+const isEditorial=mode==="editorial";
 const isData=mode==="data-line"||mode==="data-ranking"||mode==="data-heatmap";
 function Smoke(){
   const playerRef=useRef<PlayerRef>(null);
@@ -39,14 +52,33 @@ function Smoke(){
     let disposed=false;
     const urls:string[]=[];
     (async()=>{
-      const routes=isPhoto?["/smoke/synthetic-landscape.png","/smoke/synthetic-foreground.png"]:isFilm?["/smoke/synthetic-landscape.png","/smoke/synthetic-tone.wav"]:isClip?["/smoke/synthetic-clip.mp4"]:isDocument?["/smoke/synthetic-document.png"]:["/smoke/synthetic-landscape.png"];
+      const routes=isEditorial?["/smoke/synthetic-landscape.png","/smoke/synthetic-foreground.png","/smoke/synthetic-document.png","/smoke/synthetic-film-oscillator.wav"]:isPhoto?["/smoke/synthetic-landscape.png","/smoke/synthetic-foreground.png"]:isFilm?["/smoke/synthetic-landscape.png","/smoke/synthetic-tone.wav"]:isClip?["/smoke/synthetic-clip.mp4"]:isDocument?["/smoke/synthetic-document.png"]:["/smoke/synthetic-landscape.png"];
       const blobs=await Promise.all(routes.map(async route=>{
         const response=await fetch(route,{cache:"no-store"});
         if(!response.ok)throw Error("Missing synthetic fixture "+route+" ("+response.status+")");
         return response.blob();
       }));
       for(const blob of blobs)urls.push(URL.createObjectURL(blob));
-      if(!disposed)setAssets({photo:isClip?"":urls[0],voice:isFilm?urls[1]:null,clip:isClip?urls[0]:null,foreground:isPhoto?urls[1]:null});
+      let filmManifest:FilmManifest|null=null;
+      if(isEditorial){
+        // Load EXACT same machine-readable storyboard that the MP4 renderer used.
+        // Only the local media file paths are replaced by in-memory blob URLs.
+        const response=await fetch("/smoke/worldvision-integrated-film-five-scenes.json",{cache:"no-store"});
+        if(!response.ok)throw Error("Missing source-of-truth film manifesto: "+response.status);
+        const raw=await response.json() as FilmManifest;
+        const expected=["geo_story","country_focus","photo_story","data_story","document_focus"];
+        if(raw.schema_version!=="worldvision-creative-project-v1"||
+          !Array.isArray(raw.shots)||raw.shots.length!==5||
+          raw.shots.some((shot,i)=>shot.template!==expected[i])||
+          raw.voice?.file!=="synthetic-film-oscillator.wav")
+          throw Error("Invalid or mismatched original FIVE-SCENE JSON manifest");
+        filmManifest=raw;
+      }
+      if(!disposed)setAssets({
+        photo:isClip?"":urls[0],voice:isFilm?urls[1]:null,clip:isClip?urls[0]:null,
+        foreground:isPhoto||isEditorial?urls[1]:null,
+        document:isEditorial?urls[2]:null,filmTone:isEditorial?urls[3]:null,filmManifest
+      });
     })().catch(e=>{if(!disposed)setError(String(e));});
     return ()=>{disposed=true;for(const url of urls)URL.revokeObjectURL(url);};
   },[]);
@@ -111,21 +143,38 @@ function Smoke(){
       eyebrow:"ATELIER / ESSAI DE TIMELINE",
       motion:"locked",transitionAfter:"cut",transitionFrames:0
     };
+    const editorial=assets.filmManifest;
+    const mediaBlob=(file:string)=>{
+      if(file==="synthetic-landscape.png")return assets.photo;
+      if(file==="synthetic-document.png"&&assets.document)return assets.document;
+      if(file==="synthetic-foreground.png"&&assets.foreground)return assets.foreground;
+      throw Error("Unexpected local film source: "+file);
+    };
+    const editorialShots:CreativeShot[]=isEditorial&&editorial
+      ?editorial.shots.map(shot=>({
+        ...shot,
+        media:shot.media?{kind:shot.media.kind,src:mediaBlob(shot.media.file),
+          credit:shot.media.credit}:null,
+        foreground:shot.foreground?{src:mediaBlob(shot.foreground.file),
+          credit:shot.foreground.credit}:null
+      })):[];
     return {
       version:1,
-      title:"WORLD-VISION — ESSAI NON JOURNALISTIQUE",
-      script:"Ceci est un texte de test. Aucune information d'actualité n'est générée.",
-      shots:isFilm?[opener,continuation]:[opener],
-      narration:assets.voice?{src:assets.voice,label:"Synthetic CI tone, NOT a human voice",volume:.3}:null,
+      title:isEditorial&&editorial?editorial.title:"WORLD-VISION — ESSAI NON JOURNALISTIQUE",
+      script:isEditorial&&editorial?editorial.script:"Ceci est un texte de test. Aucune information d'actualité n'est générée.",
+      shots:isEditorial?editorialShots:isFilm?[opener,continuation]:[opener],
+      narration:isEditorial&&assets.filmTone&&editorial?.voice?{
+        src:assets.filmTone,label:editorial.voice.label,volume:editorial.voice.volume??1
+      }:assets.voice?{src:assets.voice,label:"Synthetic CI tone, NOT a human voice",volume:.3}:null,
       soundtrack:null,brandOutro:null,
-      visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent:"#8bbecf"}
+      visualStyle:isEditorial&&editorial?.style?editorial.style:{background:"#0b1721",ink:"#f6f8fa",accent:"#8bbecf"}
     };
   },[assets]);
   useEffect(()=>{
     if(!props)return;
     window.__wvSmokeSeek=(n:number)=>playerRef.current?.seekTo(n);
     window.__wvSmokeReady=true;
-    window.__wvSmokeMode=isData?mode as "data-line"|"data-ranking"|"data-heatmap":isFilm?"film":isClip?"clip":isDocument?"document":isPhoto?"photo":isCountry?"country":isGeo?"geo":"shot";
+    window.__wvSmokeMode=isEditorial?"editorial":isData?mode as "data-line"|"data-ranking"|"data-heatmap":isFilm?"film":isClip?"clip":isDocument?"document":isPhoto?"photo":isCountry?"country":isGeo?"geo":"shot";
     window.__wvSmokeFrames=creativeDuration(props);
     window.__wvSmokeHasVoice=Boolean(props.narration);
     return ()=>{

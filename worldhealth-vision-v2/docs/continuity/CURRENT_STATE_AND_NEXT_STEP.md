@@ -1,5 +1,11 @@
 # World-Vision — état actuel, blocages et prochaine action
 
+## 20 NOV. — MEDIA FILM-1 / CHANTIER PRIORITAIRE
+
+Branche `feature/worldvision-editorial-film-five-scene-integration-2026-11-20` enfant de PR #84. Création du **premier vrai film continu** en cinq tableaux : GEO→PAYS→PHOTO→DATA→DOCUMENT, 745 frames, 4 fondus chronométrés de 10 frames, piste sonore AAC 24,83 s non-vocale, storyboard et EDL source, test Chromium 11 photogrammes / vrai MP4 H264. **Seulement fixtures synthétiques** ; aucune actualité réelle ni consentement de publication. Lire [rapport FILM-1](../media/WORLDVISION_INTEGRATED_FILM_SPRINT12_2026-11-20.md). La certification du nouveau commit est encore à obtenir. Baseline certifiée Sprint11 Actions #44705502118, 27/27 Node et 10/10 Player. **Ne pas publier/fusionner/déployer.** Next : récupérer les artefacts du run de la PR Sprint12, examiner les pixels, corriger les collisions, puis passer au film avec vraie recherche, documents sous droits, narration/sous-titres et mixage.
+
+---
+
 ## MEDIA SPRINT 11 — DATA MOTION / BRANCHE DE TRAVAIL
 
 Branche isolée `feature/worldvision-data-motion-sourced-charts-2026-11-19` enfant de PR #80. Nouveau `data_story` : ligne temporelle, barres classement avec ex æquo et heatmap de catégorie, toutes basées sur source/dates/unités/domain explicites et animations chorégraphiées. Le renderer H.264 reçoit exactement `shot.data` comme le Player. Le Studio permet de saisir données propres et source ; refuser axe trompeur, chiffres inventés et dates impossibles. Voir [Sprint 11](../media/WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md).

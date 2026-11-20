@@ -34,7 +34,7 @@ async function serverReady(){
   throw Error("Local Vite smoke page not reachable: "+url);
 }
 async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
-  const prefix=mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":mode==="photo"?"player-photo-frame-":mode.startsWith("data-")?"player-"+mode+"-frame-":"player-browser-frame-";
+  const prefix=mode==="editorial"?"player-editorial-frame-":mode==="film"?"player-film-frame-":mode==="clip"?"player-clip-frame-":mode==="document"?"player-document-frame-":mode==="geo"?"player-geo-frame-":mode==="country"?"player-country-frame-":mode==="photo"?"player-photo-frame-":mode.startsWith("data-")?"player-"+mode+"-frame-":"player-browser-frame-";
   const page=await browser.newPage();
   const errors=[];
   page.on("pageerror",e=>errors.push(String(e)));
@@ -44,7 +44,13 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       waitUntil:"domcontentloaded",timeout:35000
     });
     await page.waitForFunction("window.__wvSmokeReady === true",{timeout:30000});
-    if(mode==="clip"){
+    if(mode==="editorial"){
+      // The first scene is a real globe/canvas rather than an <img> picture.
+      await page.waitForFunction(
+        "Boolean(document.querySelector('[data-wv-geo-earth]'))",
+        {timeout:30000}
+      );
+    }else if(mode==="clip"){
       await page.waitForFunction(
         "Array.from(document.querySelectorAll('#smoke-preview video')).some(v=>v.readyState>=2 && v.videoWidth>0)",
         {timeout:30000}
@@ -69,6 +75,43 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
       await sleep(600);
+      if(mode==="editorial"&&[145,300,455].includes(frame)){
+        // Measure the actual DOM heading opacity of the INCOMING shot during
+        // a cross-dissolve, not a paper assumption about our easing formula.
+        const next=frame===145?"film-territory-context":
+          frame===300?"film-source-photo":"film-verified-data-contract";
+        const opacity=await page.evaluate(id=>{
+          const title=document.querySelector('[data-wv-title="'+id+'"]');
+          return title?.parentElement?Number(getComputedStyle(title.parentElement).opacity):null;
+        },next);
+        if(opacity===null||opacity>.02)
+          throw Error("Two readable headlines collide in a real transition: "+
+            JSON.stringify({frame,next,opacity}));
+        console.log("[player-smoke] verified single-headline real transition",frame,next,opacity);
+      }
+      if(mode==="editorial"){
+        const stage=frame>=650?"document":frame>=485&&frame<=580?"data":
+          frame>=335&&frame<=420?"photo":frame>=180&&frame<=270?"country":
+          frame>=35&&frame<=105?"geo":null;
+        if(stage){
+          const scene=await page.evaluate(()=>({
+            globe:Boolean(document.querySelector('[data-wv-geo-earth]')),
+            country:Boolean(document.querySelector('[data-wv-country-map-boundary]')),
+            photo:Boolean(document.querySelector('[data-wv-photo-multilayer]')),
+            data:Boolean(document.querySelector('[data-wv-data-motion="line"]')),
+            document:Boolean(document.querySelector('[data-wv-document-card="film-evidence-closing"]')),
+            currentTitles:Array.from(document.querySelectorAll('[data-wv-title]'))
+              .map(x=>x.getAttribute("data-wv-title"))
+          }));
+          if(!(stage==="geo"?scene.globe:scene[stage])||!scene.currentTitles.includes({
+            geo:"film-world-overview",country:"film-territory-context",
+            photo:"film-source-photo",data:"film-verified-data-contract",
+            document:"film-evidence-closing"
+          }[stage]))throw Error("Integrated FILM scene missing at frame "+
+            frame+": "+JSON.stringify(scene));
+          console.log("[player-smoke] editorial FILM verified staged shot",frame,stage);
+        }
+      }
       if(mode==="geo"&&frame===96){
         const geometry=await page.evaluate(()=>{
           const photo=document.querySelector('[data-wv-geo-photo]');
@@ -399,7 +442,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     }
     const report={
       test:"worldvision-shared-remotion-player-browser-"+mode+"-v2",
-      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":mode==="photo"?"One original synthetic image and alpha PNG, independent mask/camera/focus/data/type; not journalism":mode.startsWith("data-")?"Explicit fictitious data with source/date/unit/domain; not live markets":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
+      input:mode==="clip"?"locally supplied synthetic H.264 video as blob":mode==="document"?"synthetic abstract paper, no original facts or excerpts":mode==="geo"?"natural earth atlas, synthetic labelled map route, supplied fixture image and fictive counter":mode==="country"?"Natural Earth 50m/10m atlas, synthetic landscape and fictive counter; not reportage":mode==="photo"?"One original synthetic image and alpha PNG, independent mask/camera/focus/data/type; not journalism":mode.startsWith("data-")?"Explicit fictitious data with source/date/unit/domain; not live markets":mode==="editorial"?"Five linked genuine scene grammars with fictional media and explicit non-speech continuous oscillator":"original synthetic picture; "+(expectVoice?"local synthetic WAV tone":"no voice"),
       composition:"exact shared CreativeEdit.tsx — no CSS animation duplication",
       screen:{width:390,height:844},
       frames_in_composition:expectedDuration,
@@ -407,7 +450,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
       screenshots,
       warning:"This confirms Chromium animation and source integration, NOT artistic quality, iOS Safari or production publication rights."
     };
-    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":mode==="photo"?"player-photo-smoke.report.json":mode.startsWith("data-")?"player-"+mode+"-smoke.report.json":"player-browser-smoke.report.json");
+    const dest=path.join(output,mode==="film"?"player-film-smoke.report.json":mode==="clip"?"player-clip-smoke.report.json":mode==="document"?"player-document-smoke.report.json":mode==="geo"?"player-geo-smoke.report.json":mode==="country"?"player-country-smoke.report.json":mode==="photo"?"player-photo-smoke.report.json":mode.startsWith("data-")?"player-"+mode+"-smoke.report.json":mode==="editorial"?"player-editorial-smoke.report.json":"player-browser-smoke.report.json");
     fs.writeFileSync(dest,JSON.stringify(report,null,2)+"\n");
     console.log(JSON.stringify(report,null,2));
   }finally{
@@ -442,7 +485,11 @@ async function main(){
     await testCase(browser,{mode:"data-line",frames:[0,80,145],expectedDuration:165,expectVoice:false});
     await testCase(browser,{mode:"data-ranking",frames:[0,80,145],expectedDuration:165,expectVoice:false});
     await testCase(browser,{mode:"data-heatmap",frames:[0,80,145],expectedDuration:165,expectVoice:false});
-    console.log("[player-smoke] all ten real Player paths passed");
+    console.log("[player-smoke] real connected film: GEO→PAYS→PHOTO→DATA→DOCUMENT + oscillator");
+    await testCase(browser,{mode:"editorial",
+      frames:[0,70,145,230,300,375,455,520,610,686,742],
+      expectedDuration:745,expectVoice:true});
+    console.log("[player-smoke] all eleven real Player paths passed");
   }finally{
     await browser.close();
   }
