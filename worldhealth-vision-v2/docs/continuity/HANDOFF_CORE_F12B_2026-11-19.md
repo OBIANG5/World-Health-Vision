@@ -784,3 +784,11 @@ confirmer pour le dataset choisi), pipeline source→Bronze→witness/parseur/
 revue droits→Timeseries→Atlas et PREVIEW privée, ne pas prétendre couvrir
 217 pays en séries statistiques. #95/#94 doivent être examinés avant diffusion
 commerciale. Conserver l'intégralité des onze Visions, média et GDELT.
+
+---
+## 20/11/2026 — PRODUCT-P2C3A : première source réelle en lecture PRIVÉE, INSEE
+PR #109 DRAFT branche `product/v2-p2c3a-insee-private-population-2026-11-20` issue #107 ; base PR #106 P2C2 réussite réelle.
+Périmètre strict Insee Melodi `DS_POPULATIONS_REFERENCE` / population MUNICIPALE `PMUN` / 2023 / `2025-FRANCE-F` = **France hors Mayotte**, pas population de la France entière ; référentiel officiel historique de cohérence 68 094 280, date d'effet 2026 et frontières 2025 séparées ; comparabilité recensements normalement 5 ans, exceptionnellement 6 ans pour millésime 2023. Sources pages Insee sous Licence Ouverte à revue détaillée. Code Python : connecteur HTTP exact sans redirection, validation géo/mesure/date/confidentialité, Bronze immutable + journal audit avec whitelist précise, notes `REVIEW_REQUIRED`/`BRONZE_ONLY_UNREVIEWED`/`NOT_ATTEMPTED`. **AUCUNE ingestion Timeseries, grant réel ou mise en ligne.**
+CI code SHA `e88fa30d24acaae445bf10a9e1041ee3b17d2044` https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773353575 **SUCCESS 19/19 ciblés et 235/235 Python global, LIVE SKIPPED**. Premier run #44773111830 avait échoué sur lecture httpx MockTransport déjà consommée, bug corrigé.
+Doc de reprise `docs/continuity/WORLD_VISION_PRODUCT_P2C3A_INSEE_PRIVATE_SOURCE_2026-11-20.md`.
+Suite immédiate : run LIVE INSEE **2 GETs en lecture seule** déclenché 1 fois par commit dédié avec `[insee-once-live-probe]` (ou manual), résultats à documenter ; revoir licence dataset et signatures par vrais décideurs ; témoin Bronze indépendamment vérifié + version parseur, Atlas sans confondre population municipale hors Mayotte avec FRA entier ; staging privé à décision/coût séparés. Conserver onze Visions, GDELT, média, Watch et toutes les branches.
