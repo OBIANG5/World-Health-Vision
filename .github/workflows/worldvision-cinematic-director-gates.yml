@@ -6,6 +6,7 @@ on:
       - 'feature/worldvision-cinematic-*'
       - 'feature/worldvision-photo-*'
       - 'feature/worldvision-data-*'
+      - 'feature/worldvision-editorial-*'
     paths:
       - 'worldhealth-vision-v2/services/media-renderer/creative/**'
       - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
@@ -165,8 +166,20 @@ jobs:
             --assets /tmp/worldvision-fixture-assets \
             --output output/creative/data-motion-three-charts.mp4
           node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/data-motion-three-charts.mp4');const r=JSON.parse(fs.readFileSync('output/creative/data-motion-three-charts.mp4.report.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==495||r.media.length!==0||new Set(r.actual_rendered_stills.map(s=>s.sha256)).size!==3)process.exit(1);console.log('DATA motion three-chart actual film verified');"
+      - name: Render true five-scene editorial master with real transition overlaps and continuous supplied audio
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-integrated-film-five-scenes.json \
+            --assets /tmp/worldvision-fixture-assets \
+            --output output/creative/editorial-film-five-scenes.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/editorial-film-five-scenes.mp4');const r=JSON.parse(fs.readFileSync('output/creative/editorial-film-five-scenes.mp4.report.json','utf8'));const i=JSON.parse(fs.readFileSync('/tmp/worldvision-integrated-film-five-scenes.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==745||r.mode!=='full_film'||r.media.length!==4||r.track_voice!=='NON SPEECH TEST OSCILLATOR — NOT A NARRATOR'||r.exact_script_unchanged!==true||i.shots.length!==5||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size!==3)process.exit(1);console.log('World-Vision integrated five-scene video/voice and true media ledger validated');"
       - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
         run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - name: Independently verify full-film H264 plus uninterrupted AAC test waveform
+        run: |
+          test "$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=nw=1:nk=1 output/creative/editorial-film-five-scenes.mp4 | head -n1)" = "h264"
+          test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=nw=1:nk=1 output/creative/editorial-film-five-scenes.mp4 | head -n1)" = "aac"
+          ffprobe -v error -show_entries format=duration -of default=nw=1 output/creative/editorial-film-five-scenes.mp4
       - name: Analyze supplied audio without modifying or regenerating it
         run: |
           node creative/audit-voice.mjs /tmp/worldvision-fixture-assets/synthetic-tone.wav 5.2 > output/creative/audit-voice.json
@@ -183,6 +196,7 @@ jobs:
           cp /tmp/worldvision-fixture-assets/synthetic-foreground.png ../../frontend/web-v2/public/smoke/synthetic-foreground.png
           cp /tmp/worldvision-fixture-assets/synthetic-document.png ../../frontend/web-v2/public/smoke/synthetic-document.png
           cp /tmp/worldvision-fixture-assets/synthetic-tone.wav ../../frontend/web-v2/public/smoke/synthetic-tone.wav
+          cp /tmp/worldvision-fixture-assets/synthetic-film-oscillator.wav ../../frontend/web-v2/public/smoke/synthetic-film-oscillator.wav
           cp /tmp/worldvision-fixture-assets/synthetic-clip.mp4 ../../frontend/web-v2/public/smoke/synthetic-clip.mp4
           npm --prefix ../../frontend/web-v2 run dev -- --host 127.0.0.1 --port 5173 --strictPort > /tmp/wv-player-vite.log 2>&1 &
           echo $! > /tmp/wv-player-vite.pid
@@ -227,6 +241,18 @@ jobs:
           test -s output/creative/player-data-heatmap-frame-80.png
           test -s output/creative/player-data-heatmap-frame-145.png
           test -s output/creative/player-data-heatmap-smoke.report.json
+          test -s output/creative/player-editorial-frame-0.png
+          test -s output/creative/player-editorial-frame-70.png
+          test -s output/creative/player-editorial-frame-145.png
+          test -s output/creative/player-editorial-frame-230.png
+          test -s output/creative/player-editorial-frame-300.png
+          test -s output/creative/player-editorial-frame-375.png
+          test -s output/creative/player-editorial-frame-455.png
+          test -s output/creative/player-editorial-frame-520.png
+          test -s output/creative/player-editorial-frame-610.png
+          test -s output/creative/player-editorial-frame-686.png
+          test -s output/creative/player-editorial-frame-742.png
+          test -s output/creative/player-editorial-smoke.report.json
           test -s output/creative/player-document-frame-102.png
           test -s output/creative/player-document-frame-68.png
           test -s output/creative/player-document-smoke.report.json
@@ -306,6 +332,11 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-data-heatmap-frame-80.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-data-heatmap-frame-145.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-data-heatmap-smoke.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/editorial-film-five-scenes.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/editorial-film-five-scenes.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/editorial-film-five-scenes.mp4.stills/**
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-editorial-frame-*.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/player-editorial-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/focus-reveal-only.mp4.stills/**
           retention-days: 7
           if-no-files-found: error
