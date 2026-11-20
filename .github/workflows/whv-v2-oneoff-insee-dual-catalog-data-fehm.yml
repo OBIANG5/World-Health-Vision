@@ -1,0 +1,38 @@
+name: World-Vision one-off INSEE catalog + population private cross-check
+
+on:
+  push:
+    branches:
+      - 'audit/insee-dual-catalog-population-fehm-2026-11-20'
+
+permissions:
+  contents: read
+
+# One ephemeral runner, TWO exact official read-only requests (metadata and data).
+# Never upload raw provider bytes, never write into repo, never publish to Atlas.
+jobs:
+  verify-provider-cross-scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing ingestion package (not a new service)
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -e './worldhealth-vision-v2/services/ingestion-service'
+      - name: Exactly two GETs; independent hash archives; enforce FEHM and 2023/2025 scope
+        env:
+          WHV_INSEE_DUAL_REVIEW_GETS_ENABLED: YES_PRIVATE_METADATA_REVIEW
+        run: |
+          umask 077
+          python3 worldhealth-vision-v2/infra/tests/p2c3b_dual_metadata_probe.py
+      - name: Check original Insee bytes were destroyed and no public artifact is possible
+        if: always()
+        run: |
+          test ! -e "$RUNNER_TEMP/whv-insee-dual-source-private"
+          echo 'PASS: no dataset bytes or raw metadata retained in CI artifacts'
