@@ -382,7 +382,7 @@ test("DATA charts animate independent editorial, plot, number and source tracks"
   const intro=dataPose(0,165);
   const plot=dataPose(89,165);
   const end=dataPose(162,165);
-  assert.ok(intro.intro>.1,"First frame cannot be blank");
+  assert.ok(intro.intro>=.75,"First frame must show a visible editorial hook on short-form mobile video");
   assert.equal(intro.plot,0);
   assert.ok(plot.plot>0&&plot.plot<1);
   assert.equal(plot.source,0,"Source comes in its own later beat");
@@ -401,6 +401,8 @@ test("DATA geometry faithfully plots sourced values, stable tied ranks and hones
   assert.equal(points[0].y,957.5);
   assert.equal(points[1].y,651.25);
   assert.equal(points[2].x,955);
+  assert.ok(Math.abs(points[1].x-(140+815*31/59))<.001,
+    "January→February uses 31 true days from a 59-day window, NOT equal-index spacing");
   assert.ok(points.every(p=>p.y>=590&&p.y<=1080));
   const ranks=rankedData([{label:"A",value:3},{label:"B",value:10},{label:"C",value:10},{label:"D",value:2}]);
   assert.deepEqual(ranks.map(v=>[v.label,v.rank]),[["B",1],["C",1],["A",3],["D",4]],
@@ -476,4 +478,17 @@ test("DATA stagger never silently shortens a final ranked bar or heatmap cell",(
     assert.ok(finals.every(v=>v===1), "Every category must show 100% of its stated value");
     assert.ok(dataStagger(.50,0,count)>dataStagger(.50,count-1,count));
   }
+});
+
+test("DATA time axis preserves irregularly spaced dated observations",()=>{
+  const data={mode:"line",series:[
+    {date:"2026-01-01",label:"DAY 1",value:10},
+    {date:"2026-01-02",label:"DAY 2",value:11},
+    {date:"2026-04-01",label:"APRIL",value:12},
+  ],domain:{min:0,max:20}};
+  const pts=dataPointGeometry(data);
+  assert.equal(pts[0].x,140);
+  assert.equal(pts[2].x,955);
+  assert.ok(pts[1].x<155,"1 day must remain near the first date on a 90-day timeline");
+  assert.notEqual(pts[1].x,(pts[0].x+pts[2].x)/2,"Never plot irregular dates as equal-distance categories");
 });
