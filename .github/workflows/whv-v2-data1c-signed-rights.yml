@@ -1,0 +1,93 @@
+name: World-Vision DATA-1C-A2 — signed source rights and revocation transaction
+
+on:
+  push:
+    branches:
+      - 'data/v2-signed-rights-registry-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-data1c-a2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  signed-rights-postgres-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact candidate, no credential persistence
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Java 21 + Maven
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Source/receiver rights contract and no implicit licenses
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("worldhealth-vision-v2/services/timeseries-service")
+          base=root/"src/main/java/com/worldhealthvision/timeseries"
+          db=(root/"src/main/resources/db/migration/V4__signed_source_rights_and_serialized_revocations.sql").read_text()
+          rights=(base/"service/SignedRightsRegistry.java").read_text()
+          verify=(base/"service/RightsSignatureVerifier.java").read_text()
+          service=(base/"service/TimeseriesIngestionService.java").read_text()
+          assert "for update" in rights.lower()
+          assert "serialize_rights_revocation" in db and "for update" in db.lower()
+          assert "create table timeseries.rights_decision" in db.lower()
+          assert "create table timeseries.rights_revocation" in db.lower()
+          assert "insert into timeseries.rights_decision" not in db.lower()
+          assert "Ed25519" in verify and "initVerify" in verify
+          assert "requireCurrentPublicIngestRights" in service
+          assert "recheckAndLink" in service and "recheckReplay" in service
+          assert "ProtectedSourcePublicationGate" in service
+          assert "PUBLIC_API_INGEST" in rights
+          assert "WHV_RIGHTS_TRUST_PUBLIC_KEY_BASE64" in (root/"src/main/resources/application.yml").read_text()
+          print("PASS: no implicit institution grants, signature and revocation lock contract")
+          PY
+      - name: Run full real PostgreSQL 16 Testcontainers/Flyway + Java 21 suite
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service -am test
+      - name: Confirm isolated ephemeral signer and no committed private keys
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          base=Path("worldhealth-vision-v2/services/timeseries-service")
+          main=(base/"src/main/resources/application.yml").read_text()
+          test=(base/"src/test/java/com/worldhealthvision/timeseries/SignedTestRightsFixture.java").read_text()
+          assert "KeyPairGenerator.getInstance" in test
+          assert "initSign" in test
+          assert "private static final KeyPair" in test
+          assert "BEGIN PRIVATE KEY" not in test + main
+          assert "integration-test-only-not-secret" not in main
+          assert "rights-trust-public-key-base64" in main
+          print("PASS: test ephemeral signing key stays exclusively in CI process")
+          PY
+
+  python-previous-ingestion-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: worldhealth-vision-v2/services/ingestion-service/pyproject.toml
+      - name: Reuse existing Python ingestion package
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m pip install --disable-pip-version-check -e '.[dev]'
+      - name: Security publisher and entire ingestion regression excluding explicit external live test
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m pytest -q tests --ignore=tests/test_worldbank_live_scope.py
