@@ -1,4 +1,3 @@
-import React from "react";
 import {AbsoluteFill,interpolate,useCurrentFrame} from "remotion";
 import {activeCaption} from "./caption-timeline.mjs";
 import type {CaptionCue} from "./caption-timeline.mjs";
