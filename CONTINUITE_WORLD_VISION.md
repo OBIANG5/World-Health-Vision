@@ -1,3 +1,15 @@
+# REPRISE PRIORITAIRE — 20/11/2026 — FILM-2A : SOUS-TITRES SRT PARTAGÉS + REPORTAGE PREMIUM ENSUITE
+
+**Nouvelle branche active :** `feature/worldvision-editorial-film2-captions-2026-11-20`, fille PR #90 (skills) et PR #87 (film multi-scènes). Instruction utilisateur : maximiser **qualité internationale et vitesse de réalisation**, NE PAS réinventer des outils existants et conserver un journal GitHub exact.
+
+**Implementation FILM-2A en cours de validation** : lecteur SRT partagé `src/caption-timeline.mjs`, calque `src/CaptionTrack.tsx`, cues globaux branchés dans `CreativeEdit.tsx` / `render-project.mjs` / `validate-project.mjs`, collage SRT et placement upper/lower dans l'atelier, tests Node et Chromium, render H.264 synthétique supplémentaire. Exemple de réutilisation : l'ancien master 43s du 14 novembre conservait déjà 13 SRT et un JSON, mais **son récit n'est pas autorisé pour republier une actualité**. Copier les méthodes techniques, pas les assertions journalistiques.
+
+**LIRE ABSOLUMENT :** [rapport complet FILM-2](worldhealth-vision-v2/docs/media/WORLDVISION_FILM2_CAPTIONS_AUDIO_REUSE_2026-11-20.md), puis [audit artistique Sprint12](worldhealth-vision-v2/docs/media/SPRINT12_VERIFIED_PIXEL_REVIEW_AND_SKILL_BENCHMARK_2026-11-20.md), puis PR #90/#87. Résultats du commit de code nouveau **à vérifier sur GitHub Actions avant succès** ; les deux anciens runs verts de PR #90 concernent le parent, pas FILM-2.
+
+**APRÈS CI** : lire vrai master captioned + Player 360px ; correction des bugs de captions et des conflits typographiques ; puis premier **reportage réel de 20–40 s, sourcé, sous droits, voix choisie librement, SRT vrai synchronisé, mixage/ducking mesuré et QA sur iPhone/Android**. Les 5 grammaires ne sont pas obligatoires à chaque sujet. Pas de merge/déploiement/publication sans accord. BAOCOM/GDELT/blog séparés.
+
+---
+
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
 ## 20 NOV. 2026 — SKILLS MÉDIA / CLAUDE CODE + CODEX (CHANTIER PARALLÈLE AU FILM)
