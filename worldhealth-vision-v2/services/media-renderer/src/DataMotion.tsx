@@ -4,6 +4,7 @@ import {fitTextOnNLines} from "@remotion/layout-utils";
 import type {CreativeShot,CreativeEditProps} from "./CreativeEdit";
 import {resolveCreativeSource} from "./CreativeEdit";
 import {dataPose,valueLabel,dataPointGeometry,rankedData,heatmapCells,dataStagger} from "./data-motion-engine.mjs";
+import {headlineHandoffOpacity} from "./editorial-text-handoff.mjs";
 
 /**
  * World-Vision DATA / multi-visualization Remotion scene. All measurements
@@ -51,7 +52,7 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
   const chartModeLabel=mode==="line"?"ÉVOLUTION TEMPORELLE":mode==="ranking"
     ?"CLASSEMENT PAR VALEUR":"CARTE DE CHALEUR · INTENSITÉ";
   const showNumber=beat.number;
-  const headlineOpacity=beat.intro*fadeOut;
+  const headlineOpacity=beat.intro*fadeOut*headlineHandoffOpacity(frame,enterOverlapFrames);
   const unitLabel=d.unit?" · "+d.unit:"";
   const scaleLabel="ÉCHELLE "+format(d.domain.min)+" – "+format(d.domain.max)+unitLabel;
   const seriesSummary=mode==="line"?"DERNIER POINT":mode==="ranking"
