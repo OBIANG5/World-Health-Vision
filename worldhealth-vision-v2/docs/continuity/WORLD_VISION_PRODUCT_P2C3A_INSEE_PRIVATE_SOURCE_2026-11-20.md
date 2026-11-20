@@ -181,3 +181,78 @@ SKIPPED volontairement. Une nouvelle sonde unique est déclenchée
 séparément, ses résultats définitifs doivent être consignés ensuite.
 Le diagnostic d'échec ne journalise que des types et noms de champs,
 jamais les valeurs de fournisseur ni le corps complet HTTP.
+
+## 8. PREUVE SOURCE LIVE RÉUSSIE — première institution nationale réelle validée en privé
+**CETTE SECTION EST LE STATUT FINAL DE P2C3A, ET REMPLACE LA SONDE
+PROVISOIRE DU §7.**
+GitHub Actions https://github.com/OBIANG5/World-Health-Vision/actions/runs/44774203052
+sur commit de code `4e51423cb28bfadbb651a73c8abfbd13d743cbaa`.
+Les deux jobs `insee-private-offline-regressions` et
+`insee-private-official-live-probe` ont conclu **SUCCESS**.
+
+- Test Python ciblé : **22 / 22 PASS**.
+- Suite d'ingestion entière : **238 / 238 PASS**.
+- Deux **vrais HTTP GET HTTPS** directement vers l'API Melodi de l'Insee,
+  avec 5 s d'intervalle et URL, géographie, millésime et mesure fixes.
+  Deux réponses correctement analysées et cohérentes avec la valeur
+  de référence PMUN 2023 « France hors Mayotte ».
+- SHA256 EXACT des octets HTTP originaux de CHAQUE réponse :
+  `86e21971a8734eea9cba89fcee0cdf7d9b8f16f0c04a3a9384470c27cdf92927`.
+  Empreintes IDENTIQUES pour les deux appels : pas de révision de contenu
+  observée durant ces deux requêtes. Cela NE garantit aucune stabilité
+  pour les prochains mois, ni une disponibilité mondiale.
+- Bronze immuable : **1 révision** content-addressed, **2 succès distincts**
+  d'acquisition journalisés, un même octet canonique dans le stockage
+  privé et aucune réécriture du manifeste.
+- Tous les octets de réponse, normalisations, manifestes et journaux sont
+  restés dans le répertoire temporaire privé du runner GitHub Actions,
+  **détruit ensuite** par le nettoyage. Pas d'archive conservée comme
+  preuve matérielle permanente, seulement le journal de CI, le SHA
+  et le contrôle du parseur. Pour une véritable diffusion publique,
+  une acquisition durable et indépendante avec sauvegarde/offsite
+  sera nécessaire.
+- Aucune donnée Insee insérée dans le public Timeseries, Gateway ni
+  Atlas/Vercel. Aucun grant Ed25519 public réel signé : les noms
+  `PUBLIC_API_INGEST` de P2C2 restent des permissions SYNTHÉTIQUES
+  de test. Les états privés `REVIEW_REQUIRED` et `NOT_ATTEMPTED`
+  restent les seules classifications de cette véritable acquisition.
+- L'anomalie précédente de typage numérique était résolue avec
+  la validation « float fini MAIS exactement entier ». Les 3 cas
+  d'acceptation Python + protections contre toute valeur fractionnaire
+  ont été revérifiés AVANT le nouveau GET.
+
+**P2C3A est VALIDÉ pour une lecture source vérifiée et archivable en privé,
+PAS pour une publication commerciale effective.** Ce résultat ferme le
+goulot technique « la vraie API répond-elle avec une valeur cohérente
+et un format vérifiable ? ». La prochaine décision ne doit pas confondre
+ce goulot avec la licence et la preuve Bronze signée institutionnelle.
+
+Dossier juridique/statistique séparé :
+`docs/data/INSEE_MELODI_POPREF_2023_FEHM_LICENSE_SCOPE_REVIEW.md`.
+
+## 9. Séquence de réalisation issue #107 — PRODUCT-P2C3B
+1. Décision tracée sur la licence applicable au **dataset précis** :
+   conditions et exceptions (source, crédits, date réelle de MAJ,
+   renvoi documentaire, diffusions Web/API, dérivés/commercial).
+   Attribution conforme Licence Ouverte 2.0 :
+   producteur Insee + date de MAJ réelle, pas date de collecte substituée.
+   Aucune signature de revue fabriquée : signataires légitimes.
+2. Capturer les VRAIS octets source en Bronze conservé/durable, comparer
+   hash `86e21971…` aux nouvelles captures et déclencher revue si
+   révision. Ne pas réutiliser les octets effacés de cette CI.
+3. Appliquer vérification des items par témoin indépendant et identité de
+   parseur revu, traiter PR #95/issue #94 comme portes de production,
+   journal d'accès et rotation des clés, transfert privé vers Timeseries.
+4. Inscrire le jeu de données et ses limites dans Catalog : indicateur
+   national explicitement **France hors Mayotte/PMUN, 2023** avec source
+   et méthode. Ne PAS détourner `SP.POP.TOTL` WDI ou autres indices
+   internationaux qui portent d'autres géographies/méthodes.
+5. Vérifier l'Atlas FRA sur mobile : valeur, unité, millésime, date
+   observation/effet/MAJ distinctes, source institutionnelle, lien direct,
+   licence et limites, comparaison méthodologique non équivalente.
+   Retirer sur vraie révocation PostgreSQL, même navigateur, zéro
+   ≠ panne, conserver archive légale.
+6. Préproduction HTTPS protégée/noindex, tests iPhone Safari/Chrome,
+   backup/restore, alertes, coût d'infra et plan de rollback avant
+   décision de promotion publique. Les 11 Visions/média/GDELT
+   ne doivent pas être sacrifiés.

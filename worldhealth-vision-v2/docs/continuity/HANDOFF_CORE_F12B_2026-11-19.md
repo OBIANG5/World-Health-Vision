@@ -803,3 +803,30 @@ décimal accepté seulement SI exactement entier, fini et borné ;
 https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773961917 .
 Nouvelle sonde LIVE 2 GETs contrôlés à conclure et documenter ;
 historique détaillé `docs/continuity/WORLD_VISION_PRODUCT_P2C3A_INSEE_PRIVATE_SOURCE_2026-11-20.md`.
+
+---
+## 20/11/2026 — PRODUCT-P2C3A : PREMIÈRE ACQUISITION OFFICIELLE INSEE VALIDÉE EN PRIVÉ
+PR #109, branche `product/v2-p2c3a-insee-private-population-2026-11-20`.
+**Code SHA `4e51423cb28bfadbb651a73c8abfbd13d743cbaa` ; CI
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/44774203052
+SUCCESS : 22/22 tests Insee, 238/238 tests Python ingestion, DEUX vrais HTTP GETs
+Insee Melodi PMUN 2023 France hors Mayotte, SHA256 original exact identique
+`86e21971a8734eea9cba89fcee0cdf7d9b8f16f0c04a3a9384470c27cdf92927`,
+UNE révision Bronze immuable/deux acquisitions SUCCESS, archives privées
+supprimées après test. Le parseur distingue PMUN/PTOT, l'année 2023,
+le référentiel géographique 2025, le statut et les valeurs. La valeur
+de référence 68 094 280 ne doit JAMAIS être présentée comme population
+actuelle de la France entière. La source officielle a été jointe
+directement avec succès (aucun serveur public World-Vision nouveau).
+**0 écriture publique Timeseries / 0 licence de fournisseur signée
+/ 0 Vercel déployé / 0 nouveau coût.**
+Handoff détaillé
+`docs/continuity/WORLD_VISION_PRODUCT_P2C3A_INSEE_PRIVATE_SOURCE_2026-11-20.md`
+section 8 et dossier juridique/statistique
+`docs/data/INSEE_MELODI_POPREF_2023_FEHM_LICENSE_SCOPE_REVIEW.md`.
+Issue #107 P2C3B : revue licence exacte et attribution date MAJ,
+décision humaine signée pour opérations permises, capture Bronze durable,
+témoin indépendant/version parseur #95 + révocations #94,
+publication indicateur clairement limité à France hors Mayotte,
+vraie preuve du navigateur puis staging privé/noindex/backup/rollback.
+Préserver onze Visions, toutes branches médias/GDELT, Money/Watch.
