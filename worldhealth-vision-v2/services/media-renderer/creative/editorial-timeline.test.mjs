@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {buildEditorialTimeline,activeAtFrame,checkEditorialFiveScene} from "./editorial-timeline.mjs";
+import {headlineHandoffOpacity} from "../src/editorial-text-handoff.mjs";
 const kinds=["geo_story","country_focus","photo_story","data_story","document_focus"];
 const times=[150,165,165,165,140];
 const shots=kinds.map((template,i)=>({
@@ -30,4 +31,20 @@ test("FILM-1 rejects montage holes, triple-frames and incorrect editorial scene 
   assert.throws(()=>checkEditorialFiveScene(buildEditorialTimeline([
     {...shots[0],template:"data_story"},...shots.slice(1)
   ])));
+});
+
+test("FILM-1 source imagery crossfades independently from incoming typographic visibility",()=>{
+  for(const incomingStart of [140,295,450,605]){
+    const overlap=10;
+    assert.equal(headlineHandoffOpacity(0,overlap),0,"Headline must not compete on first incoming frame");
+    assert.equal(headlineHandoffOpacity(5,overlap),0,"Headline still held inside overlap");
+    assert.equal(headlineHandoffOpacity(9,overlap),0,"Incoming headline cannot appear during last overlapped frame");
+    assert.equal(headlineHandoffOpacity(10,overlap),0);
+    assert.ok(headlineHandoffOpacity(16,overlap)>.45);
+    assert.equal(headlineHandoffOpacity(22,overlap),1,"Headline readable only after old shot left");
+    assert.equal(activeAtFrame(buildEditorialTimeline(shots),incomingStart).length,2);
+  }
+  assert.equal(headlineHandoffOpacity(0,0),1,
+    "First shot's first frame must remain a legible short-form hook");
+  assert.throws(()=>headlineHandoffOpacity(NaN,10));
 });
