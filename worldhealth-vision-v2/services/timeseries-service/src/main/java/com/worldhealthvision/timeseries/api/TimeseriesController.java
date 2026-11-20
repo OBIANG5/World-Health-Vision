@@ -22,6 +22,7 @@ import com.worldhealthvision.timeseries.api.dto.CountryLatestComparisonResponse;
 import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
+import com.worldhealthvision.timeseries.api.dto.CountryPublishedCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesListResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
@@ -32,6 +33,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,6 +58,12 @@ public class TimeseriesController {
      * Registered sources and their actual measured/estimated observations.
      * Missing, suppressed or not-yet-ingested data is never presented as available.
      */
+    /** Public only: counts from rights- and witness-filtered latest_observation. */
+    @GetMapping("/countries/{iso3}/published-coverage")
+    public CountryPublishedCoverageResponse getCountryPublishedCoverage(@PathVariable String iso3) {
+        return timeseriesQueryService.getCountryPublishedCoverage(iso3);
+    }
+
     @GetMapping("/sources/coverage")
     public TimeseriesListResponse<SourceDataCoverageResponse> listSourceDataCoverage() {
         return timeseriesQueryService.listSourceDataCoverage();
