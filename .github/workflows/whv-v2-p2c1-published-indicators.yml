@@ -81,3 +81,49 @@ jobs:
           assert 'sourceInfo' in explorer and 'licenseSummary' in explorer
           print('PASS: interactive indicator exploration remains separated from catalogue-only claims')
           PY
+      - name: Checkout archival country registry for isolated browser testing only
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: archive
+          persist-credentials: false
+      - name: Assemble temporary NOINDEX Atlas test with archival country fixtures
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from shutil import copy2,copytree
+          source=Path("worldhealth-vision-v2/frontend/web-v2/dist")
+          target=Path("preview")
+          assert (source/"index.html").is_file()
+          copytree(source,target)
+          fixtures=("preview-countries.js","preview-sources.js",
+                    "preview-local-catalog.js","preview-bootstrap.js")
+          for name in fixtures:
+              p=Path("archive")/name
+              assert p.is_file(),name
+              copy2(p,target/name)
+          html=(target/"index.html").read_text(encoding="utf-8")
+          assert "<head>" in html
+          block='<meta name="robots" content="noindex,nofollow">\n'
+          block+=''.join('<script src="./'+name+'"></script>\n' for name in fixtures)
+          (target/"index.html").write_text(html.replace("<head>","<head>\n"+block,1),encoding="utf-8")
+          (target/"OFFLINE_SYNTHETIC_ONLY.txt").write_text(
+              "World-Vision QA ONLY. Source numbers in Playwright init script are synthetic, not provider data.\n",
+              encoding="utf-8")
+          PY
+      - name: Install temporary Chromium for real mobile/tablet browser QA
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Test visible indicator value, source terms and synthetic revocation on 320px iPhone and desktop
+        env:
+          WHV_PREVIEW_DIRECTORY: preview
+        run: node worldhealth-vision-v2/frontend/web-v2/p2c1-indicators-smoke.mjs
+      - name: Archive clearly labelled synthetic-only browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-p2c1-synthetic-indicator-mobile-qa
+          path: p2c1-artifacts/
+          if-no-files-found: warn
