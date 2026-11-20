@@ -1,0 +1,55 @@
+name: World-Vision — editorial release evidence integrity (offline)
+
+on:
+  push:
+    branches:
+      - 'feature/worldvision-editorial-proof-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/editorial-release-gate.*'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/audit-editorial-release.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/caption-timeline.*'
+      - '.github/workflows/worldvision-editorial-evidence-gates.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/editorial-release-gate.*'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/audit-editorial-release.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/caption-timeline.*'
+      - '.github/workflows/worldvision-editorial-evidence-gates.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wv-editorial-evidence-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Fact/rights packet integrity — never auto-approve releases
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax-check zero-network local dossier audit
+        run: |
+          node --check worldhealth-vision-v2/services/media-renderer/creative/editorial-release-gate.mjs
+          node --check worldhealth-vision-v2/services/media-renderer/creative/audit-editorial-release.mjs
+      - name: Reject forged source hashes, missing permission, future-unreviewed claims and traversal
+        run: |
+          node --test worldhealth-vision-v2/services/media-renderer/creative/editorial-release-gate.test.mjs
+      - name: Confirm missing dossier cannot pass publication
+        run: |
+          mkdir -p /tmp/wv-empty-assets /tmp/wv-empty-evidence
+          if node worldhealth-vision-v2/services/media-renderer/creative/audit-editorial-release.mjs \
+            --project /tmp/does-not-exist.json \
+            --manifest /tmp/does-not-exist-manifest.json \
+            --assets /tmp/wv-empty-assets --evidence /tmp/wv-empty-evidence \
+            --mode publish-gate --report /tmp/wv-blocked-audit.json; then
+            echo "CRITICAL: release gate wrongly approved an empty dossier"
+            exit 1
+          fi
+          node --input-type=module -e "import fs from 'node:fs';const d=JSON.parse(fs.readFileSync('/tmp/wv-blocked-audit.json','utf8'));if(d.status!=='BLOCKED'||d.blockers.length<1)process.exit(1);console.log('No dossier can ever auto-publish:',d.verdict);"
