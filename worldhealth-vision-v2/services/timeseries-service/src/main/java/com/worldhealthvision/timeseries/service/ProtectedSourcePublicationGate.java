@@ -56,6 +56,15 @@ public final class ProtectedSourcePublicationGate {
                     && !item.periodEnd().isBefore(LocalDate.of(2022, 1, 1)))) {
                 throw new ProtectedResearchPublicationException();
             }
+            // A countryISO3 + an unreviewed source-native geography is NOT
+            // a national statistic. Reject it at the HTTP receiver BEFORE
+            // writing a source_run, even when source/dataset is an otherwise
+            // signed and permitted synthetic fixture. V6 SQL independently
+            // rejects or quarantines geography in case a producer bypasses
+            // this service in a future maintenance job.
+            if (hasUnreviewedGeographicScope(item.sourceMetadata())) {
+                throw new ProtectedResearchPublicationException();
+            }
             if (hasBlockedState(item.sourceMetadata()) || containsBlockedFlag(item.qualityFlags())) {
                 throw new ProtectedResearchPublicationException();
             }
@@ -63,6 +72,17 @@ public final class ProtectedSourcePublicationGate {
         if (hasBlockedState(request.notes())) {
             throw new ProtectedResearchPublicationException();
         }
+    }
+
+    private boolean hasUnreviewedGeographicScope(Map<String, Object> metadata) {
+        if (metadata == null) return false;
+        // Keys are deliberately recognized at the RECEIVER, not trusted
+        // as claims of full ISO-country coverage or publication rights.
+        return List.of(
+                "sourceNativeGeographyCode", "geographicReferenceYear",
+                "geographicScopeId", "countryIso3Candidate", "geoFilter",
+                "sourceGeographyCode", "geoReferenceYear"
+        ).stream().anyMatch(metadata::containsKey);
     }
 
     private boolean containsBlockedFlag(List<String> flags) {
