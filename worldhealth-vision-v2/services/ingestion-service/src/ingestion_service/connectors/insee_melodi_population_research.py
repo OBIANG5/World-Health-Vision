@@ -166,7 +166,12 @@ class InseePrivatePopulationClient:
                 ):
                     raise ValueError("Compressed source bytes require a reviewed receiver")
                 data = bytearray()
-                for chunk in response.iter_raw():
+                # MockTransport can return an already-buffered Response; real
+                # responses stream raw bytes. Identity encoding ensures both
+                # paths retain the same HTTP entity bytes for the Bronze SHA.
+                raw_chunks = ((response.content,) if response.is_stream_consumed
+                              else response.iter_raw())
+                for chunk in raw_chunks:
                     data.extend(chunk)
                     if len(data) > MAX_RAW_BYTES:
                         raise ValueError("Melodi body exceeds private fixed-byte budget")
