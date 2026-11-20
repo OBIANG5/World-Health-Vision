@@ -23,6 +23,8 @@ public record SignedEvidenceAttestation(
         String acquisitionEventId,
         String acquisitionOutcomeSha256,
         String itemsSha256,
+        String semanticVerifierVersion,
+        String semanticVerifierCodeSha256,
         long issuedAtEpochSec,
         long expiresAtEpochSec,
         String signingPublicKeySha256,
@@ -33,11 +35,12 @@ public record SignedEvidenceAttestation(
             var target = new ByteArrayOutputStream();
             var writer = new DataOutputStream(target);
             for (String field : new String[] {
-                    "WORLD_VISION_BRONZE_WITNESS_V1",
+                    "WORLD_VISION_BRONZE_WITNESS_V2",
                     schema, operation, sourceCode, datasetCode,
                     runKey, Long.toString(fetchedAtEpochSec), Integer.toString(fetchedAtNano),
                     originalHttpSha256, normalizedNdjsonSha256, manifestSha256,
                     acquisitionEventId, acquisitionOutcomeSha256, itemsSha256,
+                    semanticVerifierVersion, semanticVerifierCodeSha256,
                     Long.toString(issuedAtEpochSec), Long.toString(expiresAtEpochSec),
                     signingPublicKeySha256
             }) {
