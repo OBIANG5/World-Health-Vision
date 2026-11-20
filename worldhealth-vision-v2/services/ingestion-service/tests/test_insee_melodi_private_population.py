@@ -98,6 +98,20 @@ def test_single_pinned_historical_reference_is_quarantined_without_timeseries(tm
     assert events["failureCount"] == 0
 
 
+@pytest.mark.parametrize("provider_value", [
+    REVIEWED_REFERENCE_PMUN,
+    float(REVIEWED_REFERENCE_PMUN),
+    str(REVIEWED_REFERENCE_PMUN),
+])
+def test_insee_provider_accepts_only_exact_integral_numeric_representations(tmp_path, provider_value):
+    record = fixture_response()
+    record["observations"][0]["measures"]["OBS_VALUE_NIVEAU"]["value"] = provider_value
+    receipt = capture(tmp_path, record)
+    assert receipt.notes["originalMeasure"] == "PMUN"
+    rows = [json.loads(v) for v in receipt.normalized_payload_path.read_text().splitlines()]
+    assert rows[0]["value"] == float(REVIEWED_REFERENCE_PMUN)
+
+
 def test_exact_bytes_identical_replay_reuses_revision_but_creates_another_fetch_event(tmp_path):
     receipt1 = capture(tmp_path)
     receipt2 = capture(tmp_path)

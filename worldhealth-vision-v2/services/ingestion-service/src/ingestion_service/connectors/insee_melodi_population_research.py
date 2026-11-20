@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from hashlib import sha256
+import math
 import json
 import re
 from typing import Any
@@ -110,11 +111,18 @@ def parse_private_insee_population(payload: Any, *, original_http_bytes: bytes
     if not isinstance(value_record, dict) or set(value_record) - {"value", "unit", "decimals"}:
         raise ValueError("Changed Melodi numeric measure schema")
     value = value_record.get("value")
-    if isinstance(value, bool) or not (
-        isinstance(value, int) or isinstance(value, str)
-        and re.fullmatch(r"[0-9]+", value)
-    ):
-        raise ValueError("Missing, suppressed, rounded or invalid municipal count")
+    # Melodi JSON can use 68094280.0 for an integral number of persons.
+    # IEEE-754 represents all integers below 2**53 exactly; the population
+    # bounds below are much tighter. Accept only *mathematically* integral
+    # floats, never coerce a fractional or missing observation by rounding.
+    valid_integer = (
+        (isinstance(value, int) and not isinstance(value, bool))
+        or (isinstance(value, str) and re.fullmatch(r"[0-9]+", value) is not None)
+        or (isinstance(value, float) and value.is_integer()
+            and math.isfinite(value) and abs(value) <= 2**53)
+    )
+    if not valid_integer:
+        raise ValueError("Missing, suppressed, fractional or invalid municipal count")
     population = int(value)
     if not 1_000_000 <= population <= 100_000_000:
         raise ValueError("Insee 2023 municipal value outside reviewable range")
