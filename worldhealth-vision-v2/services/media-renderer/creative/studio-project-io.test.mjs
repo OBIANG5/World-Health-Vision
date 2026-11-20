@@ -111,3 +111,12 @@ test("broken JSON, unsafe captions and silent-outro cues never overwrite current
   assert.throws(()=>parseStudioProject(JSON.stringify(p)),/captions/);
   assert.equal(frameCaptionsToSrt([]),"");
 });
+
+test("unknown nested GEO, PHOTO, DATA and caption attributes cannot be silently lost",()=>{
+  const mutate=f=>{const p=clone();f(p);assert.throws(()=>parseStudioProject(JSON.stringify(p)),/Projet non importable/);};
+  mutate(p=>{p.shots[0].template="geo_story";p.shots[0].geo={center:{lon:0,lat:2},secretOverride:true};});
+  mutate(p=>{p.shots[0].template="photo_story";p.shots[0].photo={camera:{zoomFrom:1.05,zoomTo:1.12,panX:0,panY:0,startFrame:0,endFrame:110,secretKey:"bad"}};});
+  mutate(p=>{p.shots[0].template="data_story";p.shots[0].data={mode:"ranking",series:[{label:"A",value:10,sourceUrl:"hidden"}],source:{publisher:"X",dataset:"Y",asOf:"2026-01-01"},domain:{min:0,max:20}};});
+  mutate(p=>{p.captions=[{startFrame:1,endFrame:55,text:"Test",position:"upper",hiddenCommand:"run"}];});
+  mutate(p=>{p.shots[0].geo={center:{lon:0,lat:0}};}); // GEO on unrelated kinetic model
+});
