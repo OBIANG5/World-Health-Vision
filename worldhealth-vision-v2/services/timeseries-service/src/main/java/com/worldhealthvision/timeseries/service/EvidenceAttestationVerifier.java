@@ -35,7 +35,7 @@ public final class EvidenceAttestationVerifier {
     private static final String OPERATION = "PUBLIC_API_INGEST";
     private static final Set<String> FIELDS = Set.of(
             "schema", "operation", "sourceCode", "datasetCode", "runKey",
-            "fetchedAtEpochSec", "originalHttpSha256", "normalizedNdjsonSha256",
+            "fetchedAtEpochSec", "fetchedAtNano", "originalHttpSha256", "normalizedNdjsonSha256",
             "manifestSha256", "acquisitionEventId", "acquisitionOutcomeSha256",
             "itemsSha256", "issuedAtEpochSec", "expiresAtEpochSec",
             "signingPublicKeySha256", "signatureBase64"
@@ -89,7 +89,7 @@ public final class EvidenceAttestationVerifier {
                     || !request.datasetCode().equals(token.datasetCode())
                     || !request.runKey().equals(token.runKey())
                     || request.fetchedAtUtc().toInstant().getEpochSecond() != token.fetchedAtEpochSec()
-                    || request.fetchedAtUtc().toInstant().getNano() != 0
+                    || request.fetchedAtUtc().toInstant().getNano() != token.fetchedAtNano()
                     || !trustKeySha256.equals(token.signingPublicKeySha256())
                     || !equalsHex(request.notes().get("httpBodySha256"), token.originalHttpSha256(), 64)
                     || !equalsHex(request.notes().get("normalizedNdjsonSha256"), token.normalizedNdjsonSha256(), 64)
