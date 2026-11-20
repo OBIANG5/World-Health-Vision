@@ -3,40 +3,67 @@ package com.worldhealthvision.timeseries.service;
 import com.worldhealthvision.timeseries.api.internal.dto.IngestionBatchAcceptedResponse;
 import com.worldhealthvision.timeseries.api.internal.dto.IngestionObservationBatchRequest;
 import com.worldhealthvision.timeseries.api.internal.dto.IngestionObservationWriteRequest;
+import com.worldhealthvision.timeseries.persistence.SourceRunInsertResult;
 import com.worldhealthvision.timeseries.persistence.TimeseriesRepository;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TimeseriesIngestionService {
-
     private final TimeseriesRepository timeseriesRepository;
+    private final CanonicalIngestionFingerprint fingerprint;
+    private final ProtectedSourcePublicationGate rightsGate;
 
-    public TimeseriesIngestionService(TimeseriesRepository timeseriesRepository) {
+    public TimeseriesIngestionService(
+            TimeseriesRepository timeseriesRepository,
+            CanonicalIngestionFingerprint fingerprint,
+            ProtectedSourcePublicationGate rightsGate
+    ) {
         this.timeseriesRepository = timeseriesRepository;
+        this.fingerprint = fingerprint;
+        this.rightsGate = rightsGate;
     }
 
     @Transactional
     public IngestionBatchAcceptedResponse ingestObservationBatch(IngestionObservationBatchRequest request) {
         IngestionObservationBatchRequest normalizedRequest = normalize(request);
-        UUID sourceRunId = timeseriesRepository.upsertSourceRun(normalizedRequest);
-        int upsertedCount = timeseriesRepository.upsertObservations(sourceRunId, normalizedRequest);
-
-        return new IngestionBatchAcceptedResponse(sourceRunId, normalizedRequest.items().size(), upsertedCount);
+        // Reject private research data before ANY write or SQL transaction
+        // resolving a source-run identity. The gate is server-owned, never
+        // overridden by user-supplied status flags or a synthetic test note.
+        rightsGate.requirePublishable(normalizedRequest);
+        String canonicalSha256 = fingerprint.calculate(normalizedRequest);
+        SourceRunInsertResult sourceRun = timeseriesRepository.insertSourceRunIfAbsent(
+                normalizedRequest, canonicalSha256
+        );
+        if (!sourceRun.newlyInserted()) {
+            // True idempotency: do not update fetchedAt, source notes, path,
+            // persistedAt, observation numeric value or ingestedAt on replay.
+            return new IngestionBatchAcceptedResponse(
+                    sourceRun.sourceRunId(), normalizedRequest.items().size(), 0
+            );
+        }
+        int insertedCount = timeseriesRepository.upsertObservations(
+                sourceRun.sourceRunId(), normalizedRequest
+        );
+        return new IngestionBatchAcceptedResponse(
+                sourceRun.sourceRunId(), normalizedRequest.items().size(), insertedCount
+        );
     }
 
     private IngestionObservationBatchRequest normalize(IngestionObservationBatchRequest request) {
         List<IngestionObservationWriteRequest> normalizedItems = request.items().stream()
-                .map(this::normalizeObservation)
-                .toList();
-
+                .map(this::normalizeObservation).toList();
+        String runKey = request.runKey().trim();
+        if (!runKey.matches("[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}")) {
+            throw new IllegalArgumentException("Invalid canonical ingestion run key.");
+        }
         return new IngestionObservationBatchRequest(
                 normalizeCode(request.sourceCode()),
                 normalizeCode(request.datasetCode()),
-                request.runKey().trim(),
+                runKey,
                 request.fetchedAtUtc(),
                 blankToNull(request.bronzeRawPayloadPath()),
                 blankToNull(request.bronzeNormalizedPayloadPath()),
@@ -51,12 +78,9 @@ public class TimeseriesIngestionService {
                 normalizeCode(item.indicatorCode()),
                 normalizeCode(item.countryIso3()),
                 normalizeCode(item.periodGranularity()),
-                item.periodStart(),
-                item.periodEnd(),
-                item.periodLabel().trim(),
-                item.numericValue(),
-                blankToNull(item.textValue()),
-                normalizeCode(item.valueStatus()),
+                item.periodStart(), item.periodEnd(),
+                item.periodLabel().trim(), item.numericValue(),
+                blankToNull(item.textValue()), normalizeCode(item.valueStatus()),
                 item.sourcePublishedAt(),
                 item.sourceMetadata() == null ? Map.of() : item.sourceMetadata(),
                 item.qualityFlags() == null ? List.of() : item.qualityFlags()
@@ -64,7 +88,14 @@ public class TimeseriesIngestionService {
     }
 
     private String normalizeCode(String value) {
-        return value.trim().toUpperCase();
+        if (value == null) {
+            throw new IllegalArgumentException("Missing source, dataset or observation code.");
+        }
+        String normalized = value.trim().toUpperCase(Locale.ROOT);
+        if (!normalized.matches("[A-Z0-9][A-Z0-9_.-]{0,95}")) {
+            throw new IllegalArgumentException("Invalid canonical source or observation code.");
+        }
+        return normalized;
     }
 
     private String blankToNull(String value) {
