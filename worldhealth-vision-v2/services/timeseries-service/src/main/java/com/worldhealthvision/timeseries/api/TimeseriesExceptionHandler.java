@@ -29,7 +29,10 @@ public class TimeseriesExceptionHandler {
             Exception exception,
             HttpServletRequest request
     ) {
-        return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
+        // Do not echo JDBC constraint details, input values, token fragments or
+        // arbitrary JSON parsing exceptions to callers.
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                "Invalid Timeseries request or source constraint.", request);
     }
 
     @ExceptionHandler(ProtectedResearchPublicationException.class)
