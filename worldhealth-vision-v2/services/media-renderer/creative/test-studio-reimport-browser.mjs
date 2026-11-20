@@ -88,7 +88,7 @@ try{
  });
  await page.waitForFunction(()=>Boolean(window.__wvExportedJson),{timeout:15000});
  const exported=JSON.parse(await page.evaluate(()=>window.__wvExportedJson));
- if(exported.title!==saved.title||exported.script!==saved.script||
+ if(exported.id!==saved.id||exported.title!==saved.title||exported.script!==saved.script||
     exported.shots[0]?.media?.file!==saved.shots[0].media.file||
     exported.shots[0]?.media?.credit!=="SIMULATION CI"||
     exported.captions?.length!==2||exported.captions[1].position!=="lower"||
