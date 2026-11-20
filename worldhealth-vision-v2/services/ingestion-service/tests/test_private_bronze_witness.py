@@ -254,3 +254,28 @@ def test_cross_language_java_python_projection_vector_is_stable():
     assert items_sha256(fixture) == golden
     fixture[0]["sourceMetadata"]["sourceYear"] = "2025"
     assert items_sha256(fixture) != golden
+
+
+
+def test_java_python_witness_signed_payload_immutable_vector():
+    # Same fields and unsigned bytes as EvidenceSigningPayloadTest.java.
+    synthetic = {
+        "schema": "WORLD_VISION_BRONZE_WITNESS_V1",
+        "operation": "PRIVATE_RESEARCH_VALIDATION",
+        "sourceCode": "IBGE",
+        "datasetCode": "CENSO2022_4714",
+        "runKey": "sha256-" + "b" * 64,
+        "fetchedAtEpochSec": 1795176000,
+        "fetchedAtNano": 123456000,
+        "originalHttpSha256": "b" * 64,
+        "normalizedNdjsonSha256": "c" * 64,
+        "manifestSha256": "d" * 64,
+        "acquisitionEventId": "e" * 32,
+        "acquisitionOutcomeSha256": "f" * 64,
+        "itemsSha256": "cd3c0117ff783f8f0c18aa6075eb8062ffb60f68ab44544edc6268ae79a7fb4d",
+        "issuedAtEpochSec": 1795176000,
+        "expiresAtEpochSec": 1795176180,
+        "signingPublicKeySha256": "a" * 64,
+    }
+    digest = sha256(_signing_payload(synthetic)).hexdigest()
+    assert digest == "1f32b6b91178a9019266999ca478385d1613d1481f15bfd02f67111029d20acb"
