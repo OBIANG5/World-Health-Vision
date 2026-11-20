@@ -48,9 +48,12 @@ class TimeseriesSourceRunSafetyIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper mapper;
+    @Autowired com.worldhealthvision.timeseries.service.EvidenceItemsFingerprint evidenceProjection;
 
     @DynamicPropertySource
     static void signedReviewTrustAnchor(DynamicPropertyRegistry registry) {
+        registry.add("whv.timeseries.evidence-trust-public-key-base64",
+                SignedTestEvidenceFixture::publicKeyBase64);
         registry.add("whv.timeseries.rights-trust-public-key-base64",
                 SignedTestRightsFixture::publicKeyBase64);
     }
@@ -89,7 +92,8 @@ class TimeseriesSourceRunSafetyIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder authenticated(String json) {
         return post(ROUTE).header("X-WHV-Ingestion-Key", KEY)
-                .contentType(MediaType.APPLICATION_JSON).content(json);
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(SignedTestEvidenceFixture.attach(json, mapper, evidenceProjection));
     }
 
     private int runCount(String key) {
