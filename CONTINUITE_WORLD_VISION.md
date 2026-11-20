@@ -1,5 +1,18 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+### 20 NOV. 2026 — REPRISE EXACTE SPRINT 11 APRÈS INTERRUPTIONS
+
+Le dernier run **#44634270490** (SHA `4c3494e507b53b5c72d73e856ca3cfcc41d1c656`) est **2 jobs SUCCESS** et le run jumeau #44634282857 est lui aussi vert. **26/26 tests Node, 10/10 paths Chromium**, vrai H264 DATA de **16,5 s / 495 frames / 1080×1920**, artefact **#14582924805** vérifié par extraction des 9 véritables captures du Player. Espacements mobiles métriques contrôlés, ancienne collision sous-titre/source corrigée. Le rendu demeure silencieux, synthétique et pas encore prêt au reportage réel.
+
+Améliorations en cours le 20 novembre : **axe de temps proportionnel aux dates ISO réelles** (et non indice du point), et **titre visible dès le premier photogramme**. Commits `b55cef07` + `00b3e822` ; nouvelle CI [#44705502118](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44705502118) à contrôler sur HEAD, NE PAS attribuer les résultats verts précédents à ces nouveaux commits avant réussite.
+
+**Risque de branche concurrente :** [PR #83](https://github.com/OBIANG5/World-Health-Vision/pull/83) autre DATA avec comparaisons signées et méthodologie; échec Chromium timeout sur dernier HEAD. **PR #84 reste la référence DATA, #83 ne doit pas être fusionnée côte à côte** ; relever les innovations utiles pour un futur port ciblé. Même principe pour PR #79 PHOTO archivée face à #80 canonique.
+
+**NEXT** après dernière CI : une vraie *séquence complète* de plusieurs plans (GEO→PAYS→PHOTO→DATA→DOCUMENT) et une bande sonore/sous-titres préparés de façon licite, vraie revue de la cohérence visuelle, A/B iPhone/Android. Lire [Rapport Sprint11](worldhealth-vision-v2/docs/media/WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md), consulter dernier commit et tests et ne pas redémarrer la même fonctionnalité par mégarde.
+
+---
+
+
 ## WORLD-VISION MEDIA — SPRINT 11 DATA MOTION (19 NOV. 2026)
 
 **NOUVELLE BRANCHE MÉDIA dédiée :** `feature/worldvision-data-motion-sourced-charts-2026-11-19` empilée sur la PR #80 PHOTO. Lire [WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md](worldhealth-vision-v2/docs/media/WORLDVISION_DATA_MOTION_SPRINT11_2026-11-19.md). Le logiciel sait désormais *en code de branche* préparer des **courbes temporelles, classements avec ex æquo et heatmaps de valeurs** via `data_story`/Remotion, dans le vrai Player et les MP4. La source, l'institution, l'indicateur, la date, l'unité et **l'intervalle explicite de l'axe** sont FOURNIS par le journaliste. Les classements/heatmaps partent de zéro ; les dates de courbe doivent être réelles et chronologiques. Le Studio fournit un formulaire complet et une saisie de série `DATE|LIBELLÉ|VALEUR`. Tests et films à vérifier : **ne pas annoncer ce nouveau Sprint 11 comme certifié avant la CI et les vrais pixels**.
