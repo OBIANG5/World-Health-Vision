@@ -53,7 +53,7 @@ def token(root):
 def test_officially_pinned_synthetic_source_creates_cryptographic_research_proof(tmp_path):
     private_key, evidence, event_id, proof = token(tmp_path)
     assert proof["operation"] == "PRIVATE_RESEARCH_VALIDATION"
-    assert proof["schema"] == "WORLD_VISION_BRONZE_WITNESS_V1"
+    assert proof["schema"] == "WORLD_VISION_BRONZE_WITNESS_V2"
     assert proof["acquisitionEventId"] == event_id
     assert proof["sourceCode"] == "IBGE"
     assert proof["datasetCode"] == "CENSO2022_4714"
@@ -260,7 +260,7 @@ def test_cross_language_java_python_projection_vector_is_stable():
 def test_java_python_witness_signed_payload_immutable_vector():
     # Same fields and unsigned bytes as EvidenceSigningPayloadTest.java.
     synthetic = {
-        "schema": "WORLD_VISION_BRONZE_WITNESS_V1",
+        "schema": "WORLD_VISION_BRONZE_WITNESS_V2",
         "operation": "PRIVATE_RESEARCH_VALIDATION",
         "sourceCode": "IBGE",
         "datasetCode": "CENSO2022_4714",
@@ -273,12 +273,14 @@ def test_java_python_witness_signed_payload_immutable_vector():
         "acquisitionEventId": "e" * 32,
         "acquisitionOutcomeSha256": "f" * 64,
         "itemsSha256": "cd3c0117ff783f8f0c18aa6075eb8062ffb60f68ab44544edc6268ae79a7fb4d",
+        "semanticVerifierVersion": "WORLD_VISION_SEMANTIC_POPULATION_REPLAY_V1",
+        "semanticVerifierCodeSha256": "9" * 64,
         "issuedAtEpochSec": 1795176000,
         "expiresAtEpochSec": 1795176180,
         "signingPublicKeySha256": "a" * 64,
     }
     digest = sha256(_signing_payload(synthetic)).hexdigest()
-    assert digest == "1f32b6b91178a9019266999ca478385d1613d1481f15bfd02f67111029d20acb"
+    assert digest == "ad6c456304ac78a48209327f056ce4e1fe35b02a693410359fd8a6635014d72d"
 
 
 
