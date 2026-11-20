@@ -34,6 +34,8 @@ on:
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CreativeCompositionPreview.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/studio-project-smoke.html'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/studio-project-smoke.tsx'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/creative-player-smoke.tsx'
       - 'worldhealth-vision-v2/frontend/web-v2/creative-player-smoke.html'
       - 'worldhealth-vision-v2/frontend/web-v2/package.json'
@@ -69,6 +71,8 @@ on:
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard*'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/ProductionJourney.tsx'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/CreativeCompositionPreview.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/studio-project-smoke.html'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/studio-project-smoke.tsx'
       - 'worldhealth-vision-v2/frontend/web-v2/src/media/creative-player-smoke.tsx'
       - 'worldhealth-vision-v2/frontend/web-v2/creative-player-smoke.html'
       - 'worldhealth-vision-v2/frontend/web-v2/package.json'
@@ -107,7 +111,7 @@ jobs:
       - name: Typecheck video compositions
         run: npm run typecheck
       - name: Test project import, arbitrary voice and file safety
-        run: node --test creative/validate-project.test.mjs creative/editorial-timeline.test.mjs creative/caption-timeline.test.mjs
+        run: node --test creative/validate-project.test.mjs creative/editorial-timeline.test.mjs creative/caption-timeline.test.mjs creative/studio-project-io.test.mjs
       - name: Render a synthetic media-free motion graphics test
         run: |
           mkdir -p /tmp/worldvision-assets
@@ -293,6 +297,11 @@ jobs:
           test -s output/creative/player-geo-frame-96.png
           test -s output/creative/player-geo-frame-138.png
           test -s output/creative/player-geo-smoke.report.json
+      - name: Verify actual Studio JSON reopen and relink local media on mobile Chromium
+        run: |
+          timeout --kill-after=10s 100s node creative/test-studio-reimport-browser.mjs
+          test -s output/creative/studio-reimport-mobile-390.png
+          test -s output/creative/studio-reimport-browser.report.json
       - name: Preserve real demo render for review
         uses: actions/upload-artifact@v4
         with:
@@ -312,6 +321,8 @@ jobs:
             worldhealth-vision-v2/services/media-renderer/output/creative/player-browser-frame-74.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-browser-smoke.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/player-film-frame-0.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/studio-reimport-mobile-390.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/studio-reimport-browser.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/player-film-frame-100.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-film-frame-145.png
             worldhealth-vision-v2/services/media-renderer/output/creative/player-film-smoke.report.json

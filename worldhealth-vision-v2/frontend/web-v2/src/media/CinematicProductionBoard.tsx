@@ -1,6 +1,8 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import type {CreativeEditProps, CreativeMedia, CreativeShot} from "../../../../services/media-renderer/src/CreativeEdit";
 import {parseSrtCaptions,captionCueIssues} from "../../../../services/media-renderer/src/caption-timeline.mjs";
+import type {CaptionCue} from "../../../../services/media-renderer/src/caption-timeline.mjs";
+import {parseStudioProject,studioShotToEditor,studioAssetNames,frameCaptionsToSrt} from "../../../../services/media-renderer/creative/studio-project-io.mjs";
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
@@ -40,7 +42,8 @@ const initialPhotoSettings=():PhotoSettings=>({
 type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
-  mediaName:string;foregroundName:string;focusX:number;focusY:number;
+  mediaName:string;mediaCredit:string;mediaTrimBefore:number;
+  foregroundName:string;foregroundCredit:string;focusX:number;focusY:number;
   documentX:number;documentY:number;documentW:number;documentH:number;
   geoLon:number;geoLat:number;geoSpin:number;geoLook:"photo"|"vector";
   geoShowCamera:boolean;geoToLon:number;geoToLat:number;
@@ -72,7 +75,8 @@ const typesByExt=(name:string):MediaType|null=>{
 };
 const initialShot=():Shot=>({
   id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,
-  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",foregroundName:"",focusX:0.5,focusY:0.5,
+  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",mediaCredit:"",mediaTrimBefore:0,
+  foregroundName:"",foregroundCredit:"",focusX:0.5,focusY:0.5,
   documentX:.25,documentY:.32,documentW:.5,documentH:.22,
   geoLon:0,geoLat:10,geoSpin:16,geoLook:"photo",
   geoShowCamera:false,geoToLon:0,geoToLat:0,
@@ -228,6 +232,8 @@ const path="https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvis
 
 export default function CinematicProductionBoard() {
   const [projectName,setProjectName]=useState("Nouvelle production World-Vision");
+  // Preserve the original stable project identifier through revisions.
+  const [loadedProjectId,setLoadedProjectId]=useState<string|null>(null);
   const [script,setScript]=useState("");
   const [files,setFiles]=useState<Asset[]>([]);
   const [shots,setShots]=useState<Shot[]>([initialShot()]);
@@ -236,11 +242,14 @@ export default function CinematicProductionBoard() {
   const [comparisonVoice,setComparisonVoice]=useState("");
   const [musicFile,setMusicFile]=useState("");
   const [srtInput,setSrtInput]=useState("");
+  // Preserve imported frame-exact cues until the editor explicitly changes captions.
+  const [importedCaptionCues,setImportedCaptionCues]=useState<CaptionCue[]|null>(null);
   const [captionPosition,setCaptionPosition]=useState<"upper"|"lower">("upper");
   const parsedCaptions=useMemo(()=>{
+    if(importedCaptionCues)return {cues:importedCaptionCues,error:""};
     try{return {cues:parseSrtCaptions(srtInput,{position:captionPosition}),error:""};}
     catch(e){return {cues:[],error:e instanceof Error?e.message:String(e)};}
-  },[srtInput,captionPosition]);
+  },[srtInput,captionPosition,importedCaptionCues]);
   const [outroFile,setOutroFile]=useState("");
   const [accent,setAccent]=useState("#8bbecf");
   const [feedback,setFeedback]=useState("");
@@ -249,6 +258,8 @@ export default function CinematicProductionBoard() {
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
+  const requiredNames=new Set([...shots.flatMap(s=>[s.mediaName,s.foregroundName]),voiceFile,musicFile,outroFile].filter(Boolean));
+  const unresolvedAssets=[...requiredNames].filter(name=>!files.some(file=>file.name===name));
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const foregroundAsset=files.find(f=>f.name===active.foregroundName);
   const needsRealMedia=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_story"].includes(active.template);
@@ -262,7 +273,9 @@ export default function CinematicProductionBoard() {
   // URLs only exist in this browser session and never reach GitHub or an API.
   const previewProps=useMemo<CreativeEditProps>(()=>{
     const media:CreativeMedia|null=activeAsset&&activeAsset.kind!=="audio"
-      ? {kind:activeAsset.kind,src:activeAsset.url}:null;
+      ? {kind:activeAsset.kind,src:activeAsset.url,
+          ...(active.mediaCredit?{credit:active.mediaCredit}:{}),
+          ...(activeAsset.kind==="video"&&active.mediaTrimBefore?{trimBefore:active.mediaTrimBefore}:{})}:null;
     return {
       version:1,
       title:projectName,
@@ -275,7 +288,8 @@ export default function CinematicProductionBoard() {
         subtitle:active.subtitle,
         eyebrow:active.eyebrow,
         media,
-        foreground:foregroundAsset?{src:foregroundAsset.url}:null,
+        foreground:foregroundAsset?{src:foregroundAsset.url,
+          ...(active.foregroundCredit?{credit:active.foregroundCredit}:{})}:null,
         motion:active.motion,
         transitionAfter:"cut",
         transitionFrames:0,
@@ -292,7 +306,7 @@ export default function CinematicProductionBoard() {
       visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
     };
   },[active,activeAsset,foregroundAsset,projectName,script,accent]);
-  const canExport=script.trim().length>0&&shots.every(shot=>{
+  const canExport=unresolvedAssets.length===0&&script.trim().length>0&&shots.every(shot=>{
     const requires=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_story"].includes(shot.template);
     const hasMedia=!requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
     const validFocus=shot.template!=="focus_reveal"||Boolean(shot.title.trim()&&shot.title.length<=90&&shot.durationFrames>=90);
@@ -328,7 +342,10 @@ export default function CinematicProductionBoard() {
     shots:shots.map((shot,i)=>{
       const clip=files.find(f=>f.name===shot.mediaName);
       const cutout=files.find(f=>f.name===shot.foregroundName);
-      const media:CreativeMedia|null=clip&&clip.kind!=="audio"?{kind:clip.kind,src:clip.url}:null;
+      const media:CreativeMedia|null=clip&&clip.kind!=="audio"
+        ? {kind:clip.kind,src:clip.url,
+            ...(shot.mediaCredit?{credit:shot.mediaCredit}:{}),
+            ...(clip.kind==="video"&&shot.mediaTrimBefore?{trimBefore:shot.mediaTrimBefore}:{})}:null;
       return {
         id:shot.id,
         durationFrames:shot.durationFrames,
@@ -337,7 +354,8 @@ export default function CinematicProductionBoard() {
         subtitle:shot.subtitle,
         eyebrow:shot.eyebrow,
         media,
-        foreground:cutout?{src:cutout.url}:null,
+        foreground:cutout?{src:cutout.url,
+          ...(shot.foregroundCredit?{credit:shot.foregroundCredit}:{})}:null,
         motion:shot.motion,
         transitionAfter:i===shots.length-1?"cut":shot.transitionAfter,
         transitionFrames:i===shots.length-1||shot.transitionAfter==="cut"?0:shot.transitionFrames,
@@ -360,6 +378,31 @@ export default function CinematicProductionBoard() {
       :null,
     visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
   }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues]);
+  const importProject=async(e:ChangeEvent<HTMLInputElement>)=>{
+    const file=e.currentTarget.files?.[0];
+    e.currentTarget.value="";
+    if(!file)return;
+    if(file.size>2_000_000){setFeedback("Import refusé : le JSON dépasse 2 Mo.");return;}
+    try{
+      const saved=parseStudioProject(await file.text());
+      const restored=saved.shots.map(s=>studioShotToEditor(s,initialShot()));
+      const necessary=studioAssetNames(saved);
+      const missing=necessary.filter(name=>!files.some(f=>f.name===name));
+      // An invalid project must never overwrite an in-progress edit.
+      setProjectName(saved.title);setLoadedProjectId(saved.id);
+      setScript(saved.script);setShots(restored);setSelectedId(restored[0].id);
+      setVoiceFile(saved.voice?.file??"");setComparisonVoice("");
+      setMusicFile(saved.music?.file??"");setOutroFile(saved.outro?.file??"");
+      setAccent(saved.style?.accent??"#8bbecf");
+      setImportedCaptionCues(saved.captions??null);
+      setSrtInput(frameCaptionsToSrt(saved.captions??[]));
+      setCaptionPosition(saved.captions?.[0]?.position??"upper");
+      setPreviewMode("source");
+      setFeedback("Projet repris : "+restored.length+" plan(s), "+(saved.captions?.length??0)+" sous-titre(s). "+
+        (missing.length?"Réimporte les médias d'origine avant le rendu : "+missing.join(", "):"Médias correspondants déjà présents dans cette session."));
+    }catch(error){setFeedback("Import refusé. Le montage en cours reste inchangé. "+
+      (error instanceof Error?error.message:String(error)));}
+  };
   const addFiles=(e:ChangeEvent<HTMLInputElement>)=>{
     const items=Array.from(e.currentTarget.files??[]);
     const known=new Set(files.map(x=>x.name));
@@ -401,7 +444,7 @@ export default function CinematicProductionBoard() {
     if(!canExport){setFeedback("Ajoute un script et les médias indispensables aux plans choisis.");return;}
     if(!captionValid){setFeedback("Corrige les sous-titres avant export : "+(parsedCaptions.error||captionIssues[0]?.reason));return;}
     const project={
-      schema_version:"worldvision-creative-project-v1",id:mkSlug(projectName),
+      schema_version:"worldvision-creative-project-v1",id:loadedProjectId??mkSlug(projectName),
       title:projectName,script,fps:30,aspect_ratio:"9:16",
       ...(parsedCaptions.cues.length?{captions:parsedCaptions.cues}:{}),
       style:{background:"#0b1721",ink:"#f6f8fa",accent},
@@ -415,8 +458,11 @@ export default function CinematicProductionBoard() {
         ...((s.template==="geo_story"||s.template==="country_focus")?{geo:buildGeo(s)}:{}),
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
-        ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName}}:{}),
-        ...(s.foregroundName?{foreground:{file:s.foregroundName}}:{})
+        ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName,
+          ...(s.mediaCredit?{credit:s.mediaCredit}:{}),
+          ...(files.find(f=>f.name===s.mediaName)?.kind==="video"&&s.mediaTrimBefore?{trimBefore:s.mediaTrimBefore}:{})}}:{}),
+        ...(s.foregroundName?{foreground:{file:s.foregroundName,
+          ...(s.foregroundCredit?{credit:s.foregroundCredit}:{})}}:{})
       })),
       ...(voiceFile?{voice:{file:voiceFile,label:"Voix choisie ou enregistrée",volume:1}}:{}),
       ...(musicFile?{music:{file:musicFile,label:"Bande-son fournie",volume:0.10}}:{}),
@@ -424,7 +470,7 @@ export default function CinematicProductionBoard() {
     };
     const blob=new Blob([JSON.stringify(project,null,2)+"\n"],{type:"application/json"});
     const url=URL.createObjectURL(blob);
-    const link=document.createElement("a");link.href=url;link.download=mkSlug(projectName)+".json";
+    const link=document.createElement("a");link.href=url;link.download=(loadedProjectId??mkSlug(projectName))+".json";
     document.body.append(link);link.click();link.remove();
     window.setTimeout(()=>URL.revokeObjectURL(url),1000);
     setFeedback("Projet JSON exporté. Conserve les fichiers médias dans un dossier assets/ portant les mêmes noms avant rendu.");
@@ -438,6 +484,9 @@ export default function CinematicProductionBoard() {
     </header>
     <div className="wvc-workspace">
       <div className="wvc-inputs">
+        <label className="wvc-field-label" htmlFor="wvc-load-project">ROUVRIR UN PROJET WORLD-VISION (.JSON)</label>
+        <input id="wvc-load-project" type="file" accept=".json,application/json" onChange={importProject}/>
+        <p className="wvc-hint">Restaure les plans, la narration choisie et les sous-titres. Le JSON ne contient aucun fichier média : rattache les photos, vidéos et audios par leurs noms originaux.</p>
         <label className="wvc-field-label" htmlFor="wvc-project">PROJET</label>
         <input id="wvc-project" className="wvc-input" value={projectName} onChange={e=>setProjectName(e.target.value)} maxLength={160}/>
         <label className="wvc-field-label" htmlFor="wvc-script">SCRIPT FOURNI</label>
@@ -450,10 +499,12 @@ export default function CinematicProductionBoard() {
           {files.length===0&&<span className="wvc-muted">Aucun fichier importé pour le moment.</span>}
           {files.map(f=><div className="wvc-asset" key={f.name}><b>{f.kind==="image"?"PHOTO":f.kind==="video"?"VIDÉO":"AUDIO"}</b><span title={f.name}>{f.name}</span><small>{(f.size/1024/1024).toFixed(1)} Mo</small></div>)}
         </div>
+        {unresolvedAssets.length>0&&<p className="wvc-hint" role="alert">Médias à rattacher avant le rendu : {unresolvedAssets.join(", ")}. Aucune substitution automatique.</p>}
         <div className="wvc-audio">
           <label htmlFor="wvc-voice">VOIX / NARRATION</label>
           <select id="wvc-voice" value={voiceFile} onChange={e=>setVoiceFile(e.target.value)}>
             <option value="">Aucune — la voix pourra être choisie plus tard</option>
+            {voiceFile&&!files.some(f=>f.name===voiceFile)&&<option value={voiceFile} disabled>Fichier absent : {voiceFile}</option>}
             {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select>
           <label htmlFor="wvc-voice-b">AUTRE PRISE À COMPARER</label>
@@ -476,9 +527,9 @@ export default function CinematicProductionBoard() {
           </div>
           <p className="wvc-hint">Écoute les deux prises du même texte au même volume. Aucune voix n'est générée automatiquement ; seule la prise principale est exportée dans le projet.</p>
           <label htmlFor="wvc-captions">SOUS-TITRES MINUTÉS (.SRT) — PISTE GLOBALE</label>
-          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput} onChange={e=>setSrtInput(e.target.value)} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
+          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput} onChange={e=>{setImportedCaptionCues(null);setSrtInput(e.target.value);}} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
           <label htmlFor="wvc-caption-position">POSITION INITIALE DES SOUS-TITRES</label>
-          <select id="wvc-caption-position" value={captionPosition} onChange={e=>setCaptionPosition(e.target.value as "upper"|"lower")}>
+          <select id="wvc-caption-position" value={captionPosition} onChange={e=>{setImportedCaptionCues(null);setCaptionPosition(e.target.value as "upper"|"lower");}}>
             <option value="upper">Haut — pour les scènes avec titres en bas</option>
             <option value="lower">Bas — pour les scènes avec titres en haut</option>
           </select>
@@ -486,11 +537,13 @@ export default function CinematicProductionBoard() {
           <label htmlFor="wvc-music">MUSIQUE / AMBIANCE</label>
           <select id="wvc-music" value={musicFile} onChange={e=>setMusicFile(e.target.value)}>
             <option value="">Aucune</option>
+            {musicFile&&!files.some(f=>f.name===musicFile)&&<option value={musicFile} disabled>Fichier absent : {musicFile}</option>}
             {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select>
           <label htmlFor="wvc-outro">SIGNATURE VIDÉO ORIGINALE</label>
           <select id="wvc-outro" value={outroFile} onChange={e=>setOutroFile(e.target.value)}>
             <option value="">Pas de signature ajoutée à ce stade</option>
+            {outroFile&&!files.some(f=>f.name===outroFile)&&<option value={outroFile} disabled>Fichier absent : {outroFile}</option>}
             {files.filter(f=>f.kind==="video").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select>
         </div>
@@ -510,15 +563,29 @@ export default function CinematicProductionBoard() {
           </div>
           <label className="wvc-wide">MÉDIA SOURCE<select value={active.mediaName} onChange={e=>updateShot({mediaName:e.target.value})}>
             <option value="">Pas de média source</option>
+            {active.mediaName&&!files.some(f=>f.name===active.mediaName)&&<option value={active.mediaName} disabled>Fichier absent : {active.mediaName}</option>}
             {files.filter(f=>f.kind!=="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select></label>
           <label className="wvc-wide">DÉTOURAGE POUR EFFET DE PROFONDEUR
             <select value={active.foregroundName} onChange={e=>updateShot({foregroundName:e.target.value})}>
               <option value="">Aucun — composition classique</option>
+              {active.foregroundName&&!files.some(f=>f.name===active.foregroundName)&&<option value={active.foregroundName} disabled>Fichier absent : {active.foregroundName}</option>}
               {files.filter(f=>f.kind==="image"&&/\.(png|webp)$/i.test(f.name)).map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
             </select>
             <span className="wvc-hint">Utiliser uniquement un premier plan transparent préparé avec un outil spécialisé ; le studio effectue le compositing et le mouvement 2,5D sans inventer une image.</span>
           </label>
+          <label className="wvc-wide">CRÉDIT / PROVENANCE DU MÉDIA
+            <input value={active.mediaCredit} maxLength={200} onChange={e=>updateShot({mediaCredit:e.target.value})}
+              placeholder="Auteur, institution et attribution approuvée"/>
+          </label>
+          {files.find(f=>f.name===active.mediaName)?.kind==="video"&&<label className="wvc-wide">
+            POINT D'ENTRÉE VIDÉO (IMAGES À 30 FPS)
+            <input type="number" min="0" max="30000" step="1" value={active.mediaTrimBefore}
+              onChange={e=>{const n=Number(e.target.value);if(Number.isInteger(n)&&n>=0&&n<=30000)updateShot({mediaTrimBefore:n});}}/>
+          </label>}
+          {active.foregroundName&&<label className="wvc-wide">CRÉDIT DU DÉTOURAGE
+            <input value={active.foregroundCredit} maxLength={200} onChange={e=>updateShot({foregroundCredit:e.target.value})}/>
+          </label>}
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
           {active.template==="photo_story"&&<div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
