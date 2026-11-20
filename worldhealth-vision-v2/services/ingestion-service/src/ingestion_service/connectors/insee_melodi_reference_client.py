@@ -19,6 +19,7 @@ import json
 import math
 from pathlib import Path
 import re
+from urllib.parse import parse_qs, urlsplit
 from typing import Any
 
 import httpx
@@ -105,16 +106,50 @@ def _positive_integer(value: Any) -> int:
     return number
 
 
+def _validate_exact_official_url(url: str) -> None:
+    try:
+        parsed = urlsplit(url)
+        query = parse_qs(parsed.query, strict_parsing=True, keep_blank_values=True)
+    except (ValueError, TypeError) as error:
+        raise EvidenceIntegrityError("Invalid source evidence URL") from error
+    if (
+        parsed.scheme != "https" or parsed.hostname != "api.insee.fr"
+        or parsed.port is not None or parsed.username is not None
+        or parsed.password is not None or parsed.fragment
+        or parsed.path != API_PATH
+        or query != {key: [value] for key, value in PROBE_PARAMS.items()}
+    ):
+        raise EvidenceIntegrityError("Provider provenance is not the exact allowlisted research request")
+
+
+def _unique_key_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise EvidenceIntegrityError("Duplicate fields in official source response")
+        result[key] = value
+    return result
+
+
+def _reject_nonfinite(value: str) -> None:
+    raise EvidenceIntegrityError("Nonfinite JSON tokens are not valid source measurements")
+
+
 def parse_reference_population(
     body: bytes, *, source_url: str, fetched_at_utc: str,
     etag: str | None = None, last_modified: str | None = None,
 ) -> list[MelodiPopulationEvidence]:
+    _validate_exact_official_url(source_url)
     if not isinstance(body, bytes) or not 1 <= len(body) <= MAX_BODY_BYTES:
         raise EvidenceIntegrityError("Empty/oversize original Insee response")
     try:
-        raw = json.loads(body.decode("utf-8"))
+        raw = json.loads(
+            body.decode("utf-8"),
+            object_pairs_hook=_unique_key_pairs,
+            parse_constant=_reject_nonfinite,
+        )
     except (UnicodeDecodeError, ValueError) as err:
-        raise EvidenceIntegrityError("Insee response is not valid UTF-8 JSON") from err
+        raise EvidenceIntegrityError("Insee response is not valid unambiguous UTF-8 JSON") from err
     if not isinstance(raw, dict) or not isinstance(raw.get("observations"), list):
         raise EvidenceIntegrityError("Melodi response structure changed: observations absent")
     rows = raw["observations"]
@@ -233,6 +268,7 @@ def capture_private_insee_evidence(
     if not rows:
         raise EvidenceIntegrityError("Cannot archive empty Melodi evidence")
     first = rows[0]
+    _validate_exact_official_url(first.source_url)
     if any(row.raw_response_bytes != first.raw_response_bytes or
            row.source_url != first.source_url or row.original_http_sha256 != first.original_http_sha256
            for row in rows):

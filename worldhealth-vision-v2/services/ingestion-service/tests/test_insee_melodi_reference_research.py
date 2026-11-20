@@ -109,6 +109,30 @@ def test_unrecognized_api_json_and_response_schema_fail_closed():
             parse(raw)
 
 
+@pytest.mark.parametrize("url", [
+    "https://untrusted.invalid/melodi/data/DS_POPULATIONS_REFERENCE?GEO=FRANCE-F&POPREF_MEASURE=PTOT&maxResult=20",
+    "http://api.insee.fr/melodi/data/DS_POPULATIONS_REFERENCE?GEO=FRANCE-F&POPREF_MEASURE=PTOT&maxResult=20",
+    "https://api.insee.fr/melodi/data/DS_POPULATIONS_REFERENCE?GEO=FRANCE-M&POPREF_MEASURE=PTOT&maxResult=20",
+    "https://api.insee.fr/melodi/data/DS_POPULATIONS_REFERENCE?GEO=FRANCE-F&POPREF_MEASURE=PMUN&maxResult=20",
+    "https://api.insee.fr/melodi/data/DS_POPULATIONS_REFERENCE?GEO=FRANCE-F&POPREF_MEASURE=PTOT&maxResult=20&DEBUG=1",
+    "https://api.insee.fr/melodi/data/DS_POPULATIONS_REFERENCE?GEO=FRANCE-F&POPREF_MEASURE=PTOT&maxResult=20#fragment",
+    "https://api.insee.fr:444/melodi/data/DS_POPULATIONS_REFERENCE?GEO=FRANCE-F&POPREF_MEASURE=PTOT&maxResult=20",
+])
+def test_cannot_launder_arbitrary_source_url_into_official_insee_provenance(url):
+    with pytest.raises(EvidenceIntegrityError):
+        parse_reference_population(
+            response(), source_url=url, fetched_at_utc=FETCHED_AT,
+        )
+
+
+def test_duplicate_json_keys_and_nonfinite_values_never_normalize_silently():
+    from_raw = response()
+    with pytest.raises(EvidenceIntegrityError):
+        parse(from_raw.replace(b'"observations":', b'"observations":[],"observations":'))
+    with pytest.raises(EvidenceIntegrityError):
+        parse(from_raw.replace(b'"value": "69294105"', b'"value": NaN'))
+
+
 def test_multiple_years_sorted_but_duplicate_period_and_partial_pages_refused():
     a = json.loads(response())
     b = json.loads(response(period="2022", value="68000000"))
