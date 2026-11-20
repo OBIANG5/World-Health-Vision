@@ -120,3 +120,18 @@ test("unknown nested GEO, PHOTO, DATA and caption attributes cannot be silently 
   mutate(p=>{p.captions=[{startFrame:1,endFrame:55,text:"Test",position:"upper",hiddenCommand:"run"}];});
   mutate(p=>{p.shots[0].geo={center:{lon:0,lat:0}};}); // GEO on unrelated kinetic model
 });
+
+test("frame-zero headline option roundtrips as an editable Studio control",()=>{
+  const p=clone();
+  p.shots[0].titleFrameZero=true;
+  const parsed=parseStudioProject(JSON.stringify(p));
+  const restored=studioShotToEditor(parsed.shots[0],defaults);
+  assert.equal(restored.titleFrameZero,true);
+  p.shots[0].titleFrameZero=false;
+  assert.equal(studioShotToEditor(parseStudioProject(JSON.stringify(p)).shots[0],defaults).titleFrameZero,false);
+  p.shots[0].titleFrameZero=1;
+  assert.throws(()=>parseStudioProject(JSON.stringify(p)),/Projet non importable/);
+  p.shots[0].titleFrameZero=false;
+  p.shots[1].titleFrameZero=true;
+  assert.throws(()=>parseStudioProject(JSON.stringify(p)),/Projet non importable/);
+});
