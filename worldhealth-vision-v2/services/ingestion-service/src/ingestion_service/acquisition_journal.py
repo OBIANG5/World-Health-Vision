@@ -45,9 +45,16 @@ _WDI_DATASET_CODE = "WDI_POP_TOTAL_BRA_2022"
 _WDI_PATH = "/v2/country/BRA/indicator/SP.POP.TOTL"
 _WDI_QUERY = "date=2022&format=json&source=2"
 _WDI_HOST = "api.worldbank.org"
+# P2C3A: a single INSEE 2023 municipal reference (France hors Mayotte).
+# Approval to archive READ-ONLY is NOT a permission to publish.
+_INSEE_DATASET = "DS_POPULATIONS_REFERENCE"
+_INSEE_URL = ("https://api.insee.fr/melodi/data/DS_POPULATIONS_REFERENCE"
+              "?GEO=FRANCE-F&POPREF_MEASURE=PMUN&TIME_PERIOD=2023&maxResult=10")
+
 _ALLOWED_PAIRS = frozenset(
     {("IBGE", dataset) for dataset in _ENDPOINTS}
     | {("WORLD_BANK", _WDI_DATASET_CODE)}
+    | {("INSEE", _INSEE_DATASET)}
 )
 
 
@@ -96,6 +103,12 @@ def _safe_header(value: str | None) -> str | None:
 def _check_url(source_code: str, dataset_code: str, url: str) -> str:
     if (source_code, dataset_code) not in _ALLOWED_PAIRS:
         raise EvidenceIntegrityError("Unreviewed acquisition source/dataset pair")
+    if source_code == "INSEE":
+        # No alternate host, parameters, year, dataset or geography. The rest
+        # of the acquisition and immutable-event audit remains unchanged.
+        if url != _INSEE_URL:
+            raise EvidenceIntegrityError("INSEE research URL is not the pinned official request")
+        return url
     if not isinstance(url, str) or not (1 <= len(url) <= 380):
         raise EvidenceIntegrityError("Invalid official source URL")
     parts = urlsplit(url)
