@@ -1,6 +1,12 @@
 name: World-Vision — FILM-2B authentic NASA image pilot
 
 on:
+  push:
+    branches:
+      - 'feature/worldvision-film2b-*'
+    paths:
+      - 'worldhealth-vision-v2/media-pilots/artemis2/**'
+      - '.github/workflows/worldvision-film2b-authentic-pilot.yml'
   pull_request:
     paths:
       - 'worldhealth-vision-v2/media-pilots/artemis2/**'
