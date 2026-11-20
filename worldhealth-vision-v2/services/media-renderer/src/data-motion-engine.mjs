@@ -17,7 +17,7 @@ export function dataStagger(progress,index,total,window=.30){
 export function dataPose(frame,durationFrames){
   const f=Math.max(0,Math.min(durationFrames,frame));
   return {
-    intro:.18+.82*dataBeat(f,0,25),
+    intro:.78+.22*dataBeat(f,0,25),
     grid:dataBeat(f,18,58),
     plot:dataBeat(f,35,112),
     number:dataBeat(f,91,128),
@@ -33,9 +33,20 @@ export function valueLabel(value,precision=0,locale="fr-FR"){
 export function dataPointGeometry(data){
   const {series,domain}=data;
   const w=815,h=490,x0=140,y0=1080;
-  return series.map((pt,i)=>({
+  // The X axis is genuine elapsed UTC calendar time, never array index:
+  // irregularly spaced observations must NOT masquerade as evenly spaced.
+  // Validation already demands real ISO dates, strictly ascending.
+  const timestamp=(iso)=>{
+    const [year,month,day]=iso.split("-").map(Number);
+    return Date.UTC(year,month-1,day);
+  };
+  const first=timestamp(series[0].date);
+  const last=timestamp(series[series.length-1].date);
+  const span=last-first;
+  if(!Number.isFinite(span)||span<=0)throw Error("DATA time axis requires distinct valid chronological dates");
+  return series.map(pt=>({
     ...pt,
-    x:x0+(w*i/Math.max(1,series.length-1)),
+    x:x0+w*((timestamp(pt.date)-first)/span),
     y:y0-(pt.value-domain.min)/(domain.max-domain.min)*h
   }));
 }
