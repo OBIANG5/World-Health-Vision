@@ -412,6 +412,23 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
         if(titleVisible===null||titleVisible<.85)
           throw Error("Authored context not visible after document camera emphasis: "+titleVisible);
       }
+      if(mode==="film"&&(frame===100||frame===145)){
+        const cue=await page.evaluate(()=>{
+          const node=document.querySelector('[data-wv-caption]');
+          const viewport=document.querySelector("#smoke-preview");
+          if(!node||!viewport)return null;
+          const a=node.getBoundingClientRect(),v=viewport.getBoundingClientRect();
+          return {text:node.textContent||"",position:node.getAttribute("data-wv-caption-position"),
+            top:a.top,bottom:a.bottom,maxBottom:v.top+v.height*.79,
+            fontSize:parseFloat(getComputedStyle(node).fontSize)*v.width/1080};
+        });
+        if(frame===100&&(!cue||!cue.text.includes("TEST")||cue.position!=="upper"||
+            cue.bottom>=cue.maxBottom||cue.fontSize<15))
+          throw Error("Global timed Remotion captions failed mobile Player inspection: "+JSON.stringify(cue));
+        if(frame===145&&cue!==null)
+          throw Error("Caption remained on screen after its audited end frame: "+JSON.stringify(cue));
+        console.log("[player-smoke] global caption timeline and safe viewport",frame,cue);
+      }
       if(mode==="film"&&frame===100){
         const incomingHeadlineOpacity=await page.evaluate(()=>{
           const title=document.querySelector('[data-wv-title="contexte-synthetique"]');

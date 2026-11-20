@@ -1,5 +1,6 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import type {CreativeEditProps, CreativeMedia, CreativeShot} from "../../../../services/media-renderer/src/CreativeEdit";
+import {parseSrtCaptions,captionCueIssues} from "../../../../services/media-renderer/src/caption-timeline.mjs";
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
@@ -234,6 +235,12 @@ export default function CinematicProductionBoard() {
   const [voiceFile,setVoiceFile]=useState("");
   const [comparisonVoice,setComparisonVoice]=useState("");
   const [musicFile,setMusicFile]=useState("");
+  const [srtInput,setSrtInput]=useState("");
+  const [captionPosition,setCaptionPosition]=useState<"upper"|"lower">("upper");
+  const parsedCaptions=useMemo(()=>{
+    try{return {cues:parseSrtCaptions(srtInput,{position:captionPosition}),error:""};}
+    catch(e){return {cues:[],error:e instanceof Error?e.message:String(e)};}
+  },[srtInput,captionPosition]);
   const [outroFile,setOutroFile]=useState("");
   const [accent,setAccent]=useState("#8bbecf");
   const [feedback,setFeedback]=useState("");
@@ -278,6 +285,7 @@ export default function CinematicProductionBoard() {
         ...(active.template==="data_story"?{data:buildData(active)}:{}),
         ...((active.template==="geo_story"||active.template==="country_focus")?{geo:buildGeo(active)}:{})
       }],
+      captions:[],
       narration:null,
       soundtrack:null,
       brandOutro:null,
@@ -303,7 +311,9 @@ export default function CinematicProductionBoard() {
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
   const duration=shotsDuration+(outroFile?90:0);
-  const fullFilmCanRender=canExport&&duration>0&&duration<=18000;
+  const captionIssues=captionCueIssues(parsedCaptions.cues,shotsDuration);
+  const captionValid=!parsedCaptions.error&&captionIssues.length===0;
+  const fullFilmCanRender=canExport&&captionValid&&duration>0&&duration<=18000;
 
   /**
    * Complete local timeline for editorial review — EXACT Remotion composition
@@ -338,6 +348,7 @@ export default function CinematicProductionBoard() {
         ...((shot.template==="geo_story"||shot.template==="country_focus")?{geo:buildGeo(shot)}:{})
       };
     }),
+    captions:parsedCaptions.cues,
     narration:voiceFile&&files.find(f=>f.name===voiceFile)
       ? {src:files.find(f=>f.name===voiceFile)!.url,volume:1,label:"Narration sélectionnée"}
       :null,
@@ -348,7 +359,7 @@ export default function CinematicProductionBoard() {
       ? {src:files.find(f=>f.name===outroFile)!.url,durationFrames:90}
       :null,
     visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
-  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent]);
+  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues]);
   const addFiles=(e:ChangeEvent<HTMLInputElement>)=>{
     const items=Array.from(e.currentTarget.files??[]);
     const known=new Set(files.map(x=>x.name));
@@ -388,9 +399,11 @@ export default function CinematicProductionBoard() {
   };
   const exportProject=()=>{
     if(!canExport){setFeedback("Ajoute un script et les médias indispensables aux plans choisis.");return;}
+    if(!captionValid){setFeedback("Corrige les sous-titres avant export : "+(parsedCaptions.error||captionIssues[0]?.reason));return;}
     const project={
       schema_version:"worldvision-creative-project-v1",id:mkSlug(projectName),
       title:projectName,script,fps:30,aspect_ratio:"9:16",
+      ...(parsedCaptions.cues.length?{captions:parsedCaptions.cues}:{}),
       style:{background:"#0b1721",ink:"#f6f8fa",accent},
       shots:shots.map(s=>({
         id:s.id,durationFrames:s.durationFrames,template:s.template,
@@ -462,6 +475,14 @@ export default function CinematicProductionBoard() {
             })}
           </div>
           <p className="wvc-hint">Écoute les deux prises du même texte au même volume. Aucune voix n'est générée automatiquement ; seule la prise principale est exportée dans le projet.</p>
+          <label htmlFor="wvc-captions">SOUS-TITRES MINUTÉS (.SRT) — PISTE GLOBALE</label>
+          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput} onChange={e=>setSrtInput(e.target.value)} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
+          <label htmlFor="wvc-caption-position">POSITION INITIALE DES SOUS-TITRES</label>
+          <select id="wvc-caption-position" value={captionPosition} onChange={e=>setCaptionPosition(e.target.value as "upper"|"lower")}>
+            <option value="upper">Haut — pour les scènes avec titres en bas</option>
+            <option value="lower">Bas — pour les scènes avec titres en haut</option>
+          </select>
+          <p className="wvc-hint" role="status">{parsedCaptions.error?"Erreur SRT : "+parsedCaptions.error:captionIssues.length?"Erreur : "+captionIssues[0].reason:parsedCaptions.cues.length+" sous-titres lus à 30 images/s · aucune synchronisation vocale automatique."} Un SRT doit correspondre à la prise A effectivement sélectionnée ; vérifier son alignement à l’écoute et la superposition à chaque changement de scène.</p>
           <label htmlFor="wvc-music">MUSIQUE / AMBIANCE</label>
           <select id="wvc-music" value={musicFile} onChange={e=>setMusicFile(e.target.value)}>
             <option value="">Aucune</option>
@@ -823,7 +844,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-export">
           <div className="wvc-export-top"><strong>MASTER VISÉ · 9:16 · 1080×1920 · 30 ips</strong><span>{(duration/30).toFixed(1)} secondes</span></div>
           <p>Une fois le JSON exporté, les médias peuvent être montés par le moteur Remotion de World‑Vision. Les effets professionnels avancés ou génératifs resteront accessibles par des outils spécialisés.</p>
-          <button type="button" disabled={!canExport} onClick={exportProject}>Exporter le projet de montage (.json)</button>
+          <button type="button" disabled={!canExport||!captionValid} onClick={exportProject}>Exporter le projet de montage (.json)</button>
           <a href={path} target="_blank" rel="noopener noreferrer">Voir le processus de rendu et les limites ↗</a>
           {feedback&&<div className="wvc-feedback" role="status">{feedback}</div>}
         </div>

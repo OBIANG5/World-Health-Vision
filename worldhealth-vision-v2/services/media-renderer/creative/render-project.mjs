@@ -114,6 +114,8 @@ async function run(argv){
     }
     const props={
       version:1,title:project.title,script:project.script,shots,
+      // Same project-supplied global frame cues in browser Player and exported MP4.
+      captions:shotId?[]:(project.captions??[]),
       narration:project.voice?{
         src:await stageFile(project.voice.file),
         volume:project.voice.volume??1,
@@ -175,6 +177,8 @@ async function run(argv){
       output_path:output,output_sha256:sha,
       duration_frames:inspection.frames,canvas:{width:1080,height:1920,fps:30},
       track_voice:project.voice?.label??(project.voice?"externally_supplied":"no_narration"),
+      caption_cues:props.captions.length,
+      caption_timing_source:"editor_supplied_not_auto_verified",
       media:ledger,
       actual_rendered_stills:stills,
       warnings:["Tech render only. Not an AI quality guarantee, not editorial verification or publication approval."],

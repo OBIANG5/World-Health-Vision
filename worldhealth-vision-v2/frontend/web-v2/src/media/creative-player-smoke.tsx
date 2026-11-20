@@ -29,6 +29,7 @@ type FilmSourceShot=Omit<CreativeShot,"media"|"foreground">&{
 type FilmManifest={
   schema_version:string;title:string;script:string;shots:FilmSourceShot[];
   voice?:{file:string;label?:string;volume?:number}|null;
+  captions?:{startFrame:number;endFrame:number;text:string;position?:"upper"|"lower"}[];
   style?:{background?:string;ink?:string;accent?:string};
 };
 type SmokeAssets={
@@ -166,6 +167,8 @@ function Smoke(){
       narration:isEditorial&&assets.filmTone&&editorial?.voice?{
         src:assets.filmTone,label:editorial.voice.label,volume:editorial.voice.volume??1
       }:assets.voice?{src:assets.voice,label:"Synthetic CI tone, NOT a human voice",volume:.3}:null,
+      // Synthetic caption demonstrates global frame timing through a dissolve.
+      captions:isFilm?[{startFrame:92,endFrame:115,text:"SOUS-TITRE DE TEST · AUCUNE ACTUALITÉ",position:"upper"}]:isEditorial&&editorial?.captions?editorial.captions:[],
       soundtrack:null,brandOutro:null,
       visualStyle:isEditorial&&editorial?.style?editorial.style:{background:"#0b1721",ink:"#f6f8fa",accent:"#8bbecf"}
     };

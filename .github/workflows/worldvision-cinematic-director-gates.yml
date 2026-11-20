@@ -10,6 +10,9 @@ on:
     paths:
       - 'worldhealth-vision-v2/services/media-renderer/creative/**'
       - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CaptionTrack.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/caption-timeline.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/caption-timeline.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/GeoStory.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.d.mts'
@@ -42,6 +45,9 @@ on:
     paths:
       - 'worldhealth-vision-v2/services/media-renderer/creative/**'
       - 'worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/CaptionTrack.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/caption-timeline.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/caption-timeline.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/GeoStory.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/geo-motion-camera.d.mts'
@@ -101,7 +107,7 @@ jobs:
       - name: Typecheck video compositions
         run: npm run typecheck
       - name: Test project import, arbitrary voice and file safety
-        run: node --test creative/validate-project.test.mjs creative/editorial-timeline.test.mjs
+        run: node --test creative/validate-project.test.mjs creative/editorial-timeline.test.mjs creative/caption-timeline.test.mjs
       - name: Render a synthetic media-free motion graphics test
         run: |
           mkdir -p /tmp/worldvision-assets
@@ -109,6 +115,11 @@ jobs:
             --project creative/project.example.json \
             --assets /tmp/worldvision-assets \
             --output output/creative/example.mp4
+      - name: Verify authored SRT caption cues survive real H.264 export
+        run: |
+          node --input-type=module -e "import fs from 'node:fs'; const p=JSON.parse(fs.readFileSync('creative/project.example.json','utf8'));p.captions=[{startFrame:2,endFrame:55,text:'SOUS-TITRE TECHNIQUE SEULEMENT',position:'upper'},{startFrame:70,endFrame:125,text:'AUCUNE ACTUALITÉ',position:'upper'}];fs.writeFileSync('/tmp/worldvision-captioned-project.json',JSON.stringify(p));"
+          node creative/render-project.mjs --project /tmp/worldvision-captioned-project.json --assets /tmp/worldvision-assets --output output/creative/captioned-example.mp4
+          node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const r=JSON.parse(fs.readFileSync('output/creative/captioned-example.mp4.report.json','utf8'));const v=await getVideoMetadata('output/creative/captioned-example.mp4');if(r.caption_cues!==2||r.caption_timing_source!=='editor_supplied_not_auto_verified'||r.duration_frames!==151||v.codec!=='h264'||v.width!==1080||v.height!==1920)process.exit(1);console.log('Real caption-bearing MP4 verified',r.output_sha256);"
       - name: Independently inspect the real encoded output using Remotion's existing metadata reader
         run: |
           node --input-type=module -e "import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/example.mp4');console.log(JSON.stringify(m));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||Math.abs(m.durationInSeconds-151/30)>.15)process.exit(1);"
@@ -185,7 +196,16 @@ jobs:
           node --input-type=module -e "import fs from 'node:fs';import {getVideoMetadata} from '@remotion/renderer';const m=await getVideoMetadata('output/creative/editorial-film-five-scenes.mp4');const r=JSON.parse(fs.readFileSync('output/creative/editorial-film-five-scenes.mp4.report.json','utf8'));const i=JSON.parse(fs.readFileSync('/tmp/worldvision-integrated-film-five-scenes.json','utf8'));if(m.width!==1080||m.height!==1920||m.codec!=='h264'||r.duration_frames!==745||r.mode!=='full_film'||r.media.length!==4||r.track_voice!=='NON SPEECH TEST OSCILLATOR — NOT A NARRATOR'||r.exact_script_unchanged!==true||i.shots.length!==5||new Set(r.actual_rendered_stills.map(x=>x.sha256)).size!==3)process.exit(1);console.log('World-Vision integrated five-scene video/voice and true media ledger validated');"
           node --input-type=module -e "import fs from 'node:fs';import {buildEditorialTimeline,checkEditorialFiveScene} from './creative/editorial-timeline.mjs';const p=JSON.parse(fs.readFileSync('/tmp/worldvision-integrated-film-five-scenes.json','utf8'));const t=buildEditorialTimeline(p.shots);if(!checkEditorialFiveScene(t)||t.durationFrames!==745)process.exit(1);fs.writeFileSync('output/creative/editorial-film-five-scenes.timeline.json',JSON.stringify(t,null,2)+String.fromCharCode(10));console.log('Five authored beats, four actual overlaps, no empty frames',t.shots.map(s=>s.startFrame));"
       - name: Use production-grade FFmpeg/FFprobe binaries for sound analysis
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+        run: |
+          # GitHub-hosted Ubuntu already commonly ships these binaries. Avoid
+          # an apt repository refresh on every expensive 745-frame video run.
+          # Install only when the image genuinely lacks the required tools.
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffmpeg -hide_banner -version | head -n 1
+          ffprobe -hide_banner -version | head -n 1
       - name: Independently verify full-film H264 plus uninterrupted AAC test waveform
         run: |
           test "$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=nw=1:nk=1 output/creative/editorial-film-five-scenes.mp4 | head -n1)" = "h264"
@@ -279,6 +299,8 @@ jobs:
           name: worldvision-creative-compositor-demo
           path: |
             worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/captioned-example.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/captioned-example.mp4.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/example.mp4.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/with-imported-media.mp4
             worldhealth-vision-v2/services/media-renderer/output/creative/with-imported-media.mp4.report.json
