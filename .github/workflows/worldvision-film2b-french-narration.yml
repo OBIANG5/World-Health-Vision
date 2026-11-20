@@ -46,8 +46,17 @@ jobs:
             torch==2.5.1+cpu torchaudio==2.5.1+cpu \
             --index-url https://download.pytorch.org/whl/cpu
           python -m pip install -q --disable-pip-version-check --no-cache-dir \
-            'kokoro==0.9.4' 'soundfile==0.13.1'
+            'kokoro==0.9.4' 'soundfile==0.13.1' 'transformers==4.50.3'
           python -m pip check
+          python - <<'PY'
+          import torch
+          import transformers
+          from transformers import AlbertConfig
+          from kokoro import KPipeline
+          assert torch.__version__.startswith('2.5.1')
+          assert transformers.__version__=='4.50.3'
+          print('Kokoro/Transformers CPU compatibility confirmed, before model inference.')
+          PY
       - name: Synthesize French voice audition (Kokoro ff_siwis, model SHA verified)
         run: |
           python ../../media-voice-pilots/artemis2/synthesize-kokoro.py \
