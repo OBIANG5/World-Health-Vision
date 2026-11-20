@@ -15,8 +15,7 @@
     "model": "Apache-2.0",
     "voice_origin": "SIWIS French Speech Synthesis Database, University of Edinburgh",
     "voice_origin_data_license": "CC BY 4.0; preserve attribution and check before commercial publication",
-    "soundscape": "original mathematical synthesis generated for World-Vision; no external music, samples or claimed NASA sound",
-    "publication_approved": false
+    "soundscape": "original mathematical synthesis generated for World-Vision; no external music, samples or claimed NASA sound"
   },
   "segments": [
     {
@@ -47,5 +46,6 @@
       "scene": 3,
       "text": "World-Vision. Voir le monde, le comprendre."
     }
-  ]
+  ],
+  "publication_approved": false
 }
