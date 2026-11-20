@@ -76,7 +76,7 @@ try{
  const bad=path.join(tmp,"bad-project.json");
  fs.writeFileSync(bad,JSON.stringify({...saved,schema_version:"worldvision-other-project",title:"MALICIOUS OVERWRITE"}));
  await (await page.$("#wvc-load-project")).uploadFile(bad);
- await page.waitForFunction(()=>document.querySelector('[role="status"]')?.textContent?.includes("Import refusé"),{timeout:15000});
+ await page.waitForFunction(()=>Array.from(document.querySelectorAll('[role="status"]')).some(x=>x.textContent?.includes("Import refusé")),{timeout:15000});
  const title=await page.$eval("#wvc-project",el=>el.value);
  if(title!=="REPRISE TECHNIQUE 2026")throw Error("Invalid JSON overwrote user edit");
  if(errors.length)throw Error("Browser errors: "+errors.join(" / "));
