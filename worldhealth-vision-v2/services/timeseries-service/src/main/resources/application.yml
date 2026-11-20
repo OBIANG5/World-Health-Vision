@@ -65,3 +65,8 @@ info:
 whv:
   timeseries:
     internal-ingestion-key: ${WHV_TIMESERIES_INTERNAL_INGESTION_KEY:}
+
+    # Externally approved Ed25519 PUBLIC key (X.509 DER in base64).
+    # Empty = no signed permissions can validate, all new ingestion denied.
+    # NEVER provision a private signing key to the Timeseries service.
+    rights-trust-public-key-base64: ${WHV_RIGHTS_TRUST_PUBLIC_KEY_BASE64:}
