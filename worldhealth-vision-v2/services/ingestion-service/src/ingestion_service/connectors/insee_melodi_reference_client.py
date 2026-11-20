@@ -99,8 +99,15 @@ def _positive_integer(value: Any) -> int:
         number = int(value)
     elif isinstance(value, int):
         number = value
+    elif isinstance(value, float):
+        # The real Melodi API can encode an exact population integer as
+        # JSON numeric double. Only ACCEPT if it is strictly integral,
+        # finite and exactly representable; no rounding/truncation.
+        if not math.isfinite(value) or not value.is_integer() or abs(value) > 2**53:
+            raise EvidenceIntegrityError("Non-integral/nonfinite Insee numeric observation")
+        number = int(value)
     else:
-        raise EvidenceIntegrityError("Melodi population must be an integer or integer string")
+        raise EvidenceIntegrityError("Melodi population must be an exact integer")
     if not 1 <= number <= 200_000_000:
         raise EvidenceIntegrityError("Melodi value outside reviewed population bounds")
     return number

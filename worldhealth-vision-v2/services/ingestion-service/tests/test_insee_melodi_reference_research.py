@@ -142,6 +142,21 @@ def test_actual_official_november_2026_melodi_geo_2025_france_f_is_parseable_wit
             "TIME_PERIOD": "2023", "POPREF_MEASURE": "PTOT"}}))
 
 
+def test_official_melodi_numeric_double_accepted_only_when_exact_integral():
+    # Schema drift demonstrated by one-off official network audit; do not
+    # round non-integer data or infer undocumented units.
+    record = parse(response(
+        value=69294105.0,
+        override={"dimensions": {"GEO": "2025-FRANCE-F", "FREQ": "A",
+                                 "TIME_PERIOD": "2023", "POPREF_MEASURE": "PTOT"}},
+    ))[0]
+    assert record.population_total == 69294105
+    assert record.geo_reference == "2025"
+    for invalid in (69294105.5, float("nan"), float("inf"), -1.0):
+        with pytest.raises(EvidenceIntegrityError):
+            parse(response(value=invalid))
+
+
 def test_unrecognized_api_json_and_response_schema_fail_closed():
     for raw in (
         b"", b"not-json", b"\xff",
