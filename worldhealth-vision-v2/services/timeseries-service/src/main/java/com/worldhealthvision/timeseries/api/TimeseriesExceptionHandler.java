@@ -5,6 +5,7 @@ import com.worldhealthvision.common.http.WhvHttpHeaders;
 import com.worldhealthvision.timeseries.persistence.ImmutableSourceRunConflictException;
 import com.worldhealthvision.timeseries.service.ProtectedResearchPublicationException;
 import com.worldhealthvision.timeseries.service.RightsAuthorizationException;
+import com.worldhealthvision.timeseries.service.EvidenceAttestationException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.time.OffsetDateTime;
@@ -42,6 +43,14 @@ public class TimeseriesExceptionHandler {
     ) {
         return buildResponse(HttpStatus.FORBIDDEN,
                 "This source observation is not authorized for Timeseries publication.", request);
+    }
+
+    @ExceptionHandler(EvidenceAttestationException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnverifiedSourceEvidence(
+            EvidenceAttestationException exception, HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.FORBIDDEN,
+                "No currently trusted source evidence for public API ingest.", request);
     }
 
     @ExceptionHandler(RightsAuthorizationException.class)
