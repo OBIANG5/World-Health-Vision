@@ -538,7 +538,7 @@ export default function CinematicProductionBoard() {
           <select id="wvc-music" value={musicFile} onChange={e=>setMusicFile(e.target.value)}>
             <option value="">Aucune</option>
             {musicFile&&!files.some(f=>f.name===musicFile)&&<option value={musicFile} disabled>Fichier absent : {musicFile}</option>}
-            {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>}
+            {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
           </select>
           <label htmlFor="wvc-outro">SIGNATURE VIDÉO ORIGINALE</label>
           <select id="wvc-outro" value={outroFile} onChange={e=>setOutroFile(e.target.value)}>
