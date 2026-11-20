@@ -1,0 +1,102 @@
+{
+  "schema_version": "worldvision-creative-project-v1",
+  "id": "wv-artemis2-impact-report-2026-11-20-v01",
+  "title": "Artemis II · les cinq éclairs signalés — premier montage réel World-Vision",
+  "script": "La NASA a publié le 17 novembre 2026 son rapport scientifique préliminaire sur Artemis II. Pendant le survol lunaire du 6 avril, trois membres de l’équipage ont rapporté cinq éclairs distincts sur la face cachée de la Lune. Les scientifiques y voient des impacts probables de petits fragments rocheux. Les points ont été annotés sur une visualisation de la Lune. Ils ne constituent pas une vidéo filmant les impacts. Ces observations serviront à étudier les impacts lunaires et à préparer les futures missions.",
+  "fps": 30,
+  "aspect_ratio": "9:16",
+  "style": {
+    "background": "#0b1721",
+    "ink": "#f6f8fa",
+    "accent": "#68d3f2"
+  },
+  "shots": [
+    {
+      "id": "lunar-hook",
+      "durationFrames": 165,
+      "template": "documentary",
+      "title": "5 ÉCLAIRS\nSUR LA LUNE",
+      "subtitle": "Un nouveau rapport de la NASA revient sur les observations d’Artemis II.",
+      "eyebrow": "NASA SCIENCE · RAPPORT DU 17 NOV. 2026",
+      "footnote": "Photo de la Lune : équipage Artemis II · NASA · avril 2026",
+      "media": {
+        "kind": "image",
+        "file": "lunar-orientale.jpg",
+        "credit": "NASA / Artemis II crew · art002e009627 · photo réelle"
+      },
+      "focus": {
+        "x": 0.5,
+        "y": 0.52
+      },
+      "motion": "dolly",
+      "transitionAfter": "dissolve",
+      "transitionFrames": 10
+    },
+    {
+      "id": "earthset-context",
+      "durationFrames": 195,
+      "template": "focus_reveal",
+      "title": "UNE MISSION\nDERRIÈRE LA LUNE",
+      "subtitle": "6 avril 2026 : l’équipage observe la face cachée lors du survol.",
+      "eyebrow": "ARTEMIS II · ORION",
+      "media": {
+        "kind": "image",
+        "file": "earthset.jpg",
+        "credit": "NASA / Artemis II crew · art002e009288 · photo réelle"
+      },
+      "focus": {
+        "x": 0.51,
+        "y": 0.5
+      },
+      "motion": "push",
+      "transitionAfter": "dissolve",
+      "transitionFrames": 10
+    },
+    {
+      "id": "impact-notes",
+      "durationFrames": 225,
+      "template": "document_focus",
+      "title": "LES NOTES DES ASTRONAUTES",
+      "subtitle": "Visualisation scientifique annotée : ce n’est PAS une photo des impacts.",
+      "eyebrow": "DOCUMENT ORIGINAL · NASA · VISUALISATION ANNOTÉE",
+      "media": {
+        "kind": "image",
+        "file": "impact-annotations.jpg",
+        "credit": "NASA / Artemis II · art002e016252, capture d’annotations sur visualisation"
+      },
+      "documentRegion": {
+        "x": 0.16,
+        "y": 0.2,
+        "width": 0.67,
+        "height": 0.55
+      },
+      "motion": "locked",
+      "transitionAfter": "dissolve",
+      "transitionFrames": 10
+    },
+    {
+      "id": "lunar-significance",
+      "durationFrames": 195,
+      "template": "documentary",
+      "title": "COMPRENDRE\nLES IMPACTS",
+      "subtitle": "Ces observations éclairent la préparation des futures missions lunaires.",
+      "eyebrow": "WORLD-VISION · VOIR LE MONDE, LE COMPRENDRE",
+      "footnote": "Source : NASA Science · rapport préliminaire du 17 nov. 2026",
+      "media": {
+        "kind": "image",
+        "file": "lunar-orientale.jpg",
+        "credit": "NASA / Artemis II crew · art002e009627 · photo réelle"
+      },
+      "focus": {
+        "x": 0.53,
+        "y": 0.5
+      },
+      "motion": "drift",
+      "transitionAfter": "cut",
+      "transitionFrames": 0
+    }
+  ],
+  "voice": null,
+  "music": null,
+  "outro": null
+}
