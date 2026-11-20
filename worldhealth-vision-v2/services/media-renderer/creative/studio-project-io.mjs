@@ -96,9 +96,43 @@ export function parseStudioProject(text){
       filename(s.foreground.file,new Set(["png","webp"]),label+".foreground.file");
       if(s.foreground.credit!=null&&typeof s.foreground.credit!=="string")fail(label+".foreground.credit invalide.");
     }
-    if(s.photo!=null)only(s.photo,["camera","subject","mask","focus","metric"],label+".photo");
+    if(s.photo!=null){
+      if(s.template!=="photo_story")fail(label+" : pistes PHOTO incompatibles avec ce modèle.");
+      only(s.photo,["camera","subject","mask","focus","metric"],label+".photo");
+      if(s.photo.camera)only(s.photo.camera,["zoomFrom","zoomTo","panX","panY","startFrame","endFrame"],label+".photo.camera");
+      if(s.photo.subject)only(s.photo.subject,["dx","dy","scale","startFrame","endFrame"],label+".photo.subject");
+      if(s.photo.mask)only(s.photo.mask,["axis","startFrame","endFrame"],label+".photo.mask");
+      if(s.photo.focus)only(s.photo.focus,["x","y","radius","startFrame","endFrame"],label+".photo.focus");
+      if(s.photo.metric)only(s.photo.metric,["label","value","unit","precision","sourceLabel","startFrame","endFrame"],label+".photo.metric");
+    }
+    if(s.documentRegion!=null){
+      if(s.template!=="document_focus")fail(label+" : région documentaire incompatible avec ce modèle.");
+      only(s.documentRegion,["x","y","width","height"],label+".documentRegion");
+    }
     if(s.geo!=null){
+      if(!["geo_story","country_focus"].includes(s.template))
+        fail(label+" : champs GEO incompatibles avec ce modèle.");
+      if(s.template!=="geo_story"&&(s.geo.camera||s.geo.route))
+        fail(label+" : camera/route GEO indisponible dans country_focus.");
+      if(s.template==="country_focus"&&!s.geo.spotlight)
+        fail(label+" : country_focus exige son identifiant de pays.");
+      if(s.template==="geo_story"&&!s.geo.spotlight&&s.geo.route)
+        fail(label+" : la trajectoire requiert un lieu cible confirmé.");
+
       only(s.geo,["center","look","spinDegrees","camera","spotlight","target","route","metric"],label+".geo");
+      if(s.geo.center)only(s.geo.center,["lon","lat"],label+".geo.center");
+      if(s.geo.camera){
+        only(s.geo.camera,["to","startFrame","endFrame","zoom"],label+".geo.camera");
+        if(s.geo.camera.to)only(s.geo.camera.to,["lon","lat"],label+".geo.camera.to");
+      }
+      if(s.geo.spotlight)only(s.geo.spotlight,["countryId"],label+".geo.spotlight");
+      if(s.geo.target)only(s.geo.target,["lon","lat","label"],label+".geo.target");
+      if(s.geo.route){
+        only(s.geo.route,["from","to"],label+".geo.route");
+        if(s.geo.route.from)only(s.geo.route.from,["lon","lat"],label+".geo.route.from");
+        if(s.geo.route.to)only(s.geo.route.to,["lon","lat"],label+".geo.route.to");
+      }
+      if(s.geo.metric)only(s.geo.metric,["label","value","unit","precision"],label+".geo.metric");
       if(s.geo.metric?.precision!=null&&s.geo.metric.precision!==0)
         fail(label+".geo.metric : précision non prise en charge.");
       if(s.geo.route&&(!s.geo.target||s.geo.route.to?.lon!==s.geo.target.lon||
@@ -106,9 +140,19 @@ export function parseStudioProject(text){
         fail(label+".geo.route : destination différente du repère de cible, non modifiable par Studio.");
     }
     if(s.data!=null){
+      if(s.template!=="data_story")fail(label+" : champs DATA incompatibles avec ce modèle.");
       only(s.data,["mode","series","source","domain","precision","unit","locale"],label+".data");
-      if(Array.isArray(s.data.series)&&s.data.series.some(row=>typeof row.label!=="string"||/[|\\n\\r]/.test(row.label)))
-        fail(label+".data.series : le séparateur | ou les retours ligne ne peuvent pas être préservés.");
+      if(s.data.source)only(s.data.source,["publisher","dataset","asOf","url"],label+".data.source");
+      if(s.data.domain)only(s.data.domain,["min","max"],label+".data.domain");
+      if(Array.isArray(s.data.series)){
+        for(const [j,row] of s.data.series.entries()){
+          only(row,s.data.mode==="line"?["date","label","value"]:["label","value"],label+".data.series["+j+"]");
+          if(typeof row.label!=="string"||/[|\n\r]/.test(row.label)||
+            (s.data.mode==="line"&&(typeof row.date!=="string"||/[|\n\r]/.test(row.date)))||
+            !finite(row.value))
+            fail(label+".data.series : date, valeur ou libellé non préservable.");
+        }
+      }
     }
     if(s.template==="photo_story"&&(!toObject(s.photo)||!toObject(s.photo.camera)))
       fail(label+" : PHOTO requiert ses pistes caméra originales.");
@@ -131,6 +175,9 @@ export function parseStudioProject(text){
   const filmFrames=shotDuration(p);
   if(filmFrames<=0||filmFrames+(p.outro?.durationFrames??0)>18000)
     fail("durée globale du film invalide.");
+  if(Array.isArray(p.captions)){
+    for(const [i,cue] of p.captions.entries())only(cue,["startFrame","endFrame","text","position"],"captions["+i+"]");
+  }
   const problems=captionCueIssues(p.captions,filmFrames);
   if(problems.length)fail(problems[0].field+" : "+problems[0].reason);
   return p;
