@@ -1,3 +1,15 @@
+# REPRISE ACTIVE — 20 NOVEMBRE 2026 — FILM-2C / STUDIO RÉOUVRABLE
+
+**La dernière étape MEDIA techniquement CERTIFIÉE est FILM-2A PR #98**, commit `eb6bd7dbb283733dd12baa51db3b5e80b763e01b`, [Actions #44729319744](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44729319744), **2/2 jobs SUCCESS**, ancien film cinq scènes H264/AAC 745 frames, nouveau MP4 avec deux cues de captions, Node/TypeScript, Player Chromium et tests audio. Artefact `#14626087265`, expire 27 novembre 2026, 11:48 UTC. Certification TECHNIQUE uniquement, aucun vrai reportage ni publication.
+
+**BRANCHE MEDIA DE TRAVAIL SUIVANTE :** `feature/worldvision-studio-project-roundtrip-2026-11-20`, fille directe de FILM-2A PR #98. **Lire d'abord** [Rapport complet Studio Roundtrip FILM-2C](worldhealth-vision-v2/docs/media/WORLDVISION_STUDIO_PROJECT_ROUNDTRIP_2026-11-20.md), puis [FILM-2A captions](worldhealth-vision-v2/docs/media/WORLDVISION_FILM2_CAPTIONS_AUDIO_REUSE_2026-11-20.md), puis [FILM-2B préproduction](worldhealth-vision-v2/docs/media/FILM2B_PREPROD_ARTEMIS2_IMPACT_FLASHES_2026-11-20.md), et les commentaires PR #98. **Statut FILM-2C : CODE AJOUTÉ, CI HEAD À CERTIFIER** ; ne jamais annoncer succès avant dernière Actions.
+
+**Pourquoi FILM-2C :** l'atelier exportait JSON mais ne savait pas recharger un projet, faisant perdre du temps à chaque correction. Ajout d'une réouverture stricte JSON, restauration des plans GEO/PHOTO/DATA/doc, données et citations, voix/musique choisies, cues per-position et identifiant stable, retrait de toute substitution silencieuse des fichiers manquants. Tests Node négatifs et **vrai navigateur Chromium 390px** import→réattachement de photo synthétique→export JSON exact→rejet d'import invalide, sans réinitialiser l'existant. Les binaires média restent sur le disque du monteur, jamais téléversés. Aucune dépendance tierce ni service payant.
+
+**Prochaine priorité après CI** : FILM-2B — premier reportage premium réellement sourcé, droits et provenance des 2–3 assets NASA contrôlés, script « nouveau rapport publié le 17 novembre » et non nouvel impact du 20 novembre, voix FR libre/licenciée, sous-titrage exactement calé sur audio, mixage, vrais pixels TikTok iPhone/Android, métrique qualité/temps/coût ; ensuite bibliothèque de séquences réutilisables approuvées. Aucune nouvelle batterie de micro-effets gratuits. BAOCOM/GDELT/blog/V2 nationale séparés. **Pas de merge, déploiement ni publication sans approbation explicite.**
+
+---
+
 # REPRISE PRIORITAIRE — 20/11/2026 — FILM-2A : SOUS-TITRES SRT PARTAGÉS + REPORTAGE PREMIUM ENSUITE
 
 **Nouvelle branche active :** `feature/worldvision-editorial-film2-captions-2026-11-20`, fille PR #90 (skills) et PR #87 (film multi-scènes). Instruction utilisateur : maximiser **qualité internationale et vitesse de réalisation**, NE PAS réinventer des outils existants et conserver un journal GitHub exact.
