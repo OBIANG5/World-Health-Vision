@@ -29,6 +29,7 @@ type FilmSourceShot=Omit<CreativeShot,"media"|"foreground">&{
 type FilmManifest={
   schema_version:string;title:string;script:string;shots:FilmSourceShot[];
   voice?:{file:string;label?:string;volume?:number}|null;
+  captions?:{startFrame:number;endFrame:number;text:string;position?:"upper"|"lower"}[];
   style?:{background?:string;ink?:string;accent?:string};
 };
 type SmokeAssets={
