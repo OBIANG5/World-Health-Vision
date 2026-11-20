@@ -3,6 +3,7 @@ import {fitTextOnNLines} from "@remotion/layout-utils";
 import type {CreativeEditProps,CreativeShot} from "./CreativeEdit";
 import {resolveCreativeSource} from "./CreativeEdit";
 import {photoTrackPose} from "./photo-motion-tracks.mjs";
+import {headlineHandoffOpacity} from "./editorial-text-handoff.mjs";
 
 type VisualStyle=Required<NonNullable<CreativeEditProps["visualStyle"]>>;
 
@@ -116,7 +117,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
     <div data-wv-photo-heading="true" style={{
       position:"absolute",top:190,left:94,right:93,
       borderLeft:"5px solid "+accent,paddingLeft:22,
-      opacity:pose.headingProgress*fading,
+      opacity:pose.headingProgress*fading*headlineHandoffOpacity(frame,enterOverlapFrames),
       transform:"translateY("+Math.round((1-pose.headingProgress)*28)+"px)"
     }}>
       {shot.eyebrow&&<div dir="auto" style={{fontSize:30,fontWeight:760,
