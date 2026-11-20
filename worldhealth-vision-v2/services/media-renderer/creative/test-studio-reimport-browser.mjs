@@ -36,7 +36,8 @@ try{
    title:"REPRISE TECHNIQUE 2026",script:"Cette production est une simulation. Aucun fait journalistique.",
    aspect_ratio:"9:16",fps:30,
    style:{background:"#0b1721",ink:"#f6f8fa",accent:"#8bbecf"},
-   captions:[{startFrame:1,endFrame:60,text:"SRT importé et préservé",position:"upper"}],
+   captions:[{startFrame:1,endFrame:45,text:"SRT importé et préservé",position:"upper"},
+     {startFrame:48,endFrame:95,text:"Deuxième sous-titre retenu",position:"lower"}],
    shots:[{id:"plan-01",durationFrames:105,template:"focus_reveal",
      title:"UNE IMAGE FOURNIE",subtitle:"Aucune actualité",eyebrow:"SIMULATION CI",
      motion:"dolly",transitionAfter:"cut",transitionFrames:0,
@@ -72,6 +73,28 @@ try{
  }));
  if(valid.missing.some(x=>x.includes("synthetic-landscape.png"))||!valid.exportEnabled)
    throw Error("Asset reconnection did not restore editability: "+JSON.stringify(valid));
+ // Capture the JSON Blob the real button generates, without relying on filesystem downloads.
+ await page.evaluate(()=>{
+   window.__wvExportedJson=null;
+   const real=URL.createObjectURL.bind(URL);
+   URL.createObjectURL=(blob)=>{
+     if(blob?.type==="application/json")blob.text().then(text=>{window.__wvExportedJson=text;});
+     return real(blob);
+   };
+ });
+ await page.evaluate(()=>{
+   Array.from(document.querySelectorAll("button"))
+     .find(x=>x.textContent?.includes("Exporter le projet"))?.click();
+ });
+ await page.waitForFunction(()=>Boolean(window.__wvExportedJson),{timeout:15000});
+ const exported=JSON.parse(await page.evaluate(()=>window.__wvExportedJson));
+ if(exported.title!==saved.title||exported.script!==saved.script||
+    exported.shots[0]?.media?.file!==saved.shots[0].media.file||
+    exported.shots[0]?.media?.credit!=="SIMULATION CI"||
+    exported.captions?.length!==2||exported.captions[1].position!=="lower"||
+    exported.shots[0]?.durationFrames!==105)
+    throw Error("Export after import silently modified a source, cue or timeline: "+JSON.stringify(exported));
+
  // Negative file must never erase the currently restored production.
  const bad=path.join(tmp,"bad-project.json");
  fs.writeFileSync(bad,JSON.stringify({...saved,schema_version:"worldvision-other-project",title:"MALICIOUS OVERWRITE"}));
@@ -84,7 +107,8 @@ try{
  await page.screenshot({path:screenshot,fullPage:true,type:"png"});
  const report={status:"PASS",source:"CI synthetic local project and photo",
   viewport:{width:390,height:844},missingBeforeRebind:missing,
-  afterRebind:valid,invalidImportPreservedTitle:title,screenshot};
+  afterRebind:valid,roundtripExportVerified:true,
+  mixedCaptionPositionsPreserved:true,invalidImportPreservedTitle:title,screenshot};
  fs.writeFileSync(path.join(output,"studio-reimport-browser.report.json"),JSON.stringify(report,null,2)+"\n");
  console.log(JSON.stringify(report));
 }finally{
