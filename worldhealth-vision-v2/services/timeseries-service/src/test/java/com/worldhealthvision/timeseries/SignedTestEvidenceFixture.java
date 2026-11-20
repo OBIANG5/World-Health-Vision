@@ -80,7 +80,7 @@ final class SignedTestEvidenceFixture {
             String publicHash = HexFormat.of().formatHex(
                     MessageDigest.getInstance("SHA-256").digest(KEY.getPublic().getEncoded()));
             var unsigned = new SignedEvidenceAttestation(
-                    "WORLD_VISION_BRONZE_WITNESS_V1",
+                    "WORLD_VISION_BRONZE_WITNESS_V2",
                     operation,
                     request.sourceCode(), request.datasetCode(), request.runKey(),
                     request.fetchedAtUtc().toInstant().getEpochSecond(),
