@@ -36,7 +36,9 @@ jobs:
           tests=(root/"services/timeseries-service/src/test/java/com/worldhealthvision/timeseries/GeographicScopeNationalReadIntegrationTest.java").read_text()
           assert "create table timeseries.geographic_scope_registry" in mig
           assert "source_metadata_sha256" in mig and "source_metadata_url" in mig
-          assert "unique (source_code, dataset_code, native_geo_code, geo_reference_year)" in mig
+          assert "unique (source_code, dataset_code, native_geo_code, native_geo_version)" in mig
+          assert "native_geo_version varchar(64)" in mig
+          assert "country_iso3 char(3) references catalog.country" in mig
           assert "review_status = 'RESEARCH_ONLY'" in mig
           assert "geographic_scope_id is null" in mig
           assert "SOURCE-CODE FORGERY" in mig

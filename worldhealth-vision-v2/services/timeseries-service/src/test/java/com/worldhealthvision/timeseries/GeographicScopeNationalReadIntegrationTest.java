@@ -113,11 +113,11 @@ class GeographicScopeNationalReadIntegrationTest {
         db.update("""
             insert into timeseries.geographic_scope_registry (
                 id, source_code, dataset_code, native_geo_code,
-                geo_reference_year, country_iso3, coverage_kind,
+                native_geo_version, geo_reference_year, country_iso3, coverage_kind,
                 display_label, territorial_exclusions,
                 source_metadata_url, source_metadata_sha256
             ) values (
-                ?, 'WORLD_BANK','WDI', ?, 2025,'FRA','PARTIAL_COUNTRY',
+                ?, 'WORLD_BANK','WDI', ?, '2025-A',2025,'FRA','PARTIAL_COUNTRY',
                 'SYNTHETIC TEST ONLY: France excluding fictional area',
                 '["FICTIONAL_TEST_TERRITORY"]'::jsonb,
                 'https://example.org/synthetic-not-provider-data', ?
@@ -158,6 +158,7 @@ class GeographicScopeNationalReadIntegrationTest {
         String attempted = synthetic(key).replace(
                 "\"sourceMetadata\":{\"syntheticTestOnly\":true}",
                 "\"sourceMetadata\":{\"sourceNativeGeographyCode\":\"2025-FRANCE-F\","
+                    + "\"geographicVersion\":\"2025-A\","
                     + "\"geographicReferenceYear\":2025,\"geographicScopeId\":\"FEHM\","
                     + "\"syntheticTestOnly\":true}"
         );
@@ -234,7 +235,8 @@ class GeographicScopeNationalReadIntegrationTest {
             set source_metadata = cast(? as jsonb)
             where id=?
         """, "{\"sourceNativeGeographyCode\":\"" + sourceGeo
-                + "\",\"geographicReferenceYear\":2025}", obs);
+                + "\",\"geographicVersion\":\"2025-A\","
+                + "\"geographicReferenceYear\":2025}", obs);
         UUID bound = db.queryForObject("""
             select geographic_scope_id from timeseries.observation where id=?
         """, UUID.class, obs);

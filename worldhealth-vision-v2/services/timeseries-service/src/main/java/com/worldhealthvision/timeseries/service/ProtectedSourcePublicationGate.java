@@ -79,8 +79,9 @@ public final class ProtectedSourcePublicationGate {
         // Keys are deliberately recognized at the RECEIVER, not trusted
         // as claims of full ISO-country coverage or publication rights.
         return List.of(
-                "sourceNativeGeographyCode", "geographicReferenceYear",
-                "geographicScopeId", "countryIso3Candidate", "geoFilter",
+                "sourceNativeGeographyCode", "geographicVersion",
+                "geographicReferenceYear", "geographicScopeId",
+                "countryIso3Candidate", "geoFilter",
                 "sourceGeographyCode", "geoReferenceYear"
         ).stream().anyMatch(metadata::containsKey);
     }
