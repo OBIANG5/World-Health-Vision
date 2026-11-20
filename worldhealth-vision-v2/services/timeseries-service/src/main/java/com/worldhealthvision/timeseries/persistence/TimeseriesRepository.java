@@ -86,7 +86,10 @@ public interface TimeseriesRepository {
             int limit
     );
 
-    UUID upsertSourceRun(IngestionObservationBatchRequest request);
+    /** First-write source run; exact replay returns false without any data mutation. */
+    SourceRunInsertResult insertSourceRunIfAbsent(
+            IngestionObservationBatchRequest request, String canonicalBatchSha256
+    );
 
     int upsertObservations(UUID sourceRunId, IngestionObservationBatchRequest request);
 }

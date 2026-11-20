@@ -2,6 +2,8 @@ package com.worldhealthvision.timeseries.api;
 
 import com.worldhealthvision.common.api.ApiErrorResponse;
 import com.worldhealthvision.common.http.WhvHttpHeaders;
+import com.worldhealthvision.timeseries.persistence.ImmutableSourceRunConflictException;
+import com.worldhealthvision.timeseries.service.ProtectedResearchPublicationException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.time.OffsetDateTime;
@@ -27,7 +29,26 @@ public class TimeseriesExceptionHandler {
             Exception exception,
             HttpServletRequest request
     ) {
-        return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
+        // Do not echo JDBC constraint details, input values, token fragments or
+        // arbitrary JSON parsing exceptions to callers.
+        return buildResponse(HttpStatus.BAD_REQUEST,
+                "Invalid Timeseries request or source constraint.", request);
+    }
+
+    @ExceptionHandler(ProtectedResearchPublicationException.class)
+    public ResponseEntity<ApiErrorResponse> handlePrivateResearchDenied(
+            ProtectedResearchPublicationException exception, HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.FORBIDDEN,
+                "This source observation is not authorized for Timeseries publication.", request);
+    }
+
+    @ExceptionHandler(ImmutableSourceRunConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleSourceVersionConflict(
+            ImmutableSourceRunConflictException exception, HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.CONFLICT,
+                "Source run key already exists with different or unverified immutable content.", request);
     }
 
     @ExceptionHandler(Exception.class)

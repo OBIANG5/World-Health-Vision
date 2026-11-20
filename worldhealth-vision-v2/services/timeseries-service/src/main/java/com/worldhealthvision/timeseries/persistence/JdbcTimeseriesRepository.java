@@ -837,74 +837,41 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 .list();
     }
 
+    /**
+     * PostgreSQL unique (source_code, dataset_code, run_key) arbitrates
+     * concurrency. First request persists; byte-for-byte equivalent canonical
+     * replay is a READ ONLY success. A differing request or historical row
+     * with no reviewed fingerprint is a 409, never an UPDATE.
+     *
+     * Caller runs in one @Transactional boundary with observation batch:
+     * any failed observation write rolls back the new source_run as well.
+     */
     @Override
-    public UUID upsertSourceRun(IngestionObservationBatchRequest request) {
-        Optional<UUID> existingId = jdbcClient.sql("""
-                select id
-                from timeseries.source_run
-                where source_code = :sourceCode
-                  and dataset_code = :datasetCode
-                  and run_key = :runKey
-                """)
-                .param("sourceCode", request.sourceCode())
-                .param("datasetCode", request.datasetCode())
-                .param("runKey", request.runKey())
-                .query(UUID.class)
-                .optional();
-
-        String notesJson = toJson(request.notes() == null ? Map.of() : request.notes());
-
-        if (existingId.isPresent()) {
-            UUID sourceRunId = existingId.get();
-            jdbcClient.sql("""
-                    update timeseries.source_run
-                    set fetched_at_utc = :fetchedAtUtc,
-                        bronze_raw_payload_path = :bronzeRawPayloadPath,
-                        bronze_normalized_payload_path = :bronzeNormalizedPayloadPath,
-                        record_count = :recordCount,
-                        status = 'PERSISTED',
-                        notes = cast(:notes as jsonb),
-                        persisted_at_utc = current_timestamp
-                    where id = :id
-                    """)
-                    .param("fetchedAtUtc", request.fetchedAtUtc())
-                    .param("bronzeRawPayloadPath", request.bronzeRawPayloadPath())
-                    .param("bronzeNormalizedPayloadPath", request.bronzeNormalizedPayloadPath())
-                    .param("recordCount", request.recordCount())
-                    .param("notes", notesJson)
-                    .param("id", sourceRunId)
-                    .update();
-            return sourceRunId;
+    public SourceRunInsertResult insertSourceRunIfAbsent(
+            IngestionObservationBatchRequest request, String canonicalBatchSha256
+    ) {
+        if (canonicalBatchSha256 == null || !canonicalBatchSha256.matches("[a-f0-9]{64}")) {
+            throw new IllegalArgumentException("Canonical ingestion batch SHA-256 is required.");
         }
 
-        UUID sourceRunId = UUID.randomUUID();
-        jdbcClient.sql("""
+        String notesJson = toJson(request.notes() == null ? Map.of() : request.notes());
+        UUID id = UUID.randomUUID();
+        Optional<UUID> inserted = jdbcClient.sql("""
                 insert into timeseries.source_run (
-                    id,
-                    source_code,
-                    dataset_code,
-                    run_key,
-                    fetched_at_utc,
-                    bronze_raw_payload_path,
-                    bronze_normalized_payload_path,
-                    record_count,
-                    status,
-                    notes
+                    id, source_code, dataset_code, run_key,
+                    fetched_at_utc, bronze_raw_payload_path,
+                    bronze_normalized_payload_path, record_count,
+                    status, notes, canonical_batch_sha256
+                ) values (
+                    :id, :sourceCode, :datasetCode, :runKey,
+                    :fetchedAtUtc, :bronzeRawPayloadPath,
+                    :bronzeNormalizedPayloadPath, :recordCount,
+                    'PERSISTED', cast(:notes as jsonb), :canonicalSha
                 )
-                values (
-                    :id,
-                    :sourceCode,
-                    :datasetCode,
-                    :runKey,
-                    :fetchedAtUtc,
-                    :bronzeRawPayloadPath,
-                    :bronzeNormalizedPayloadPath,
-                    :recordCount,
-                    'PERSISTED',
-                    cast(:notes as jsonb)
-                )
+                on conflict (source_code, dataset_code, run_key) do nothing
+                returning id
                 """)
-                .param("id", sourceRunId)
+                .param("id", id)
                 .param("sourceCode", request.sourceCode())
                 .param("datasetCode", request.datasetCode())
                 .param("runKey", request.runKey())
@@ -913,9 +880,34 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 .param("bronzeNormalizedPayloadPath", request.bronzeNormalizedPayloadPath())
                 .param("recordCount", request.recordCount())
                 .param("notes", notesJson)
-                .update();
+                .param("canonicalSha", canonicalBatchSha256)
+                .query(UUID.class).optional();
+        if (inserted.isPresent()) {
+            return new SourceRunInsertResult(inserted.get(), true);
+        }
 
-        return sourceRunId;
+        // On READ COMMITTED isolation, a competing INSERT must commit or roll
+        // back before ON CONFLICT returns. This SELECT then observes its row.
+        record ExistingRun(UUID id, String fingerprint) {}
+        ExistingRun existing = jdbcClient.sql("""
+                select id, canonical_batch_sha256
+                from timeseries.source_run
+                where source_code = :sourceCode
+                  and dataset_code = :datasetCode
+                  and run_key = :runKey
+                """)
+                .param("sourceCode", request.sourceCode())
+                .param("datasetCode", request.datasetCode())
+                .param("runKey", request.runKey())
+                .query((rs, row) -> new ExistingRun(
+                    rs.getObject("id", UUID.class),
+                    rs.getString("canonical_batch_sha256")
+                )).single();
+        if (!canonicalBatchSha256.equals(existing.fingerprint())) {
+            // NULL historical fingerprint is intentionally NOT auto-attested.
+            throw new ImmutableSourceRunConflictException();
+        }
+        return new SourceRunInsertResult(existing.id(), false);
     }
 
     @Override

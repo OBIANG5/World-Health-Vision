@@ -59,3 +59,9 @@ info:
     name: timeseries-service
     role: canonical-timeseries
     focus: multi-source-observations
+# DATA-1C-A: ingestion is DENIED if this private secret is absent or weak.
+# Provision only as a server-side, high-entropy secret over a TLS/private link.
+# No auth token belongs to the frontend, repository or public browser.
+whv:
+  timeseries:
+    internal-ingestion-key: ${WHV_TIMESERIES_INTERNAL_INGESTION_KEY:}

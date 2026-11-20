@@ -1,3 +1,7 @@
 spring:
   flyway:
     locations: classpath:testdb/catalog,classpath:db/migration
+# Intentionally PUBLIC/FAKE TEST KEY; never a production credential.
+whv:
+  timeseries:
+    internal-ingestion-key: integration-test-only-not-secret-0123456789abcdef
