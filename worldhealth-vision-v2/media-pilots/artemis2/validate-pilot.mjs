@@ -17,6 +17,8 @@ export function reviewPilot(){
   if(project.id!=="wv-artemis2-impact-report-2026-11-20-v01"||
      sources.publication_approved!==false||
      sources.latest_source_date!=="2026-11-17")errors.push("Approved editorial version mismatch.");
+  if(project.shots[0]?.titleFrameZero!==true||!project.shots[0]?.title?.trim())
+    errors.push("First photo frame must display an authored headline from frame 0.");
   if(project.shots.length!==4||durationFrames(project)<600||durationFrames(project)>1000)
     errors.push("Storyboard requires 4 authentic scenes and a 20-33s internal edit.");
   if(project.voice!==null||project.music!==null||project.captions?.length)
@@ -29,6 +31,9 @@ export function reviewPilot(){
   for(const asset of sources.assets){
     if(referenced.has(asset.file))errors.push("Duplicate source filename.");
     referenced.set(asset.file,asset);
+    if(!/^[0-9a-f]{64}$/.test(asset.sha256)||
+      !Number.isInteger(asset.width)||!Number.isInteger(asset.height))
+      errors.push("NASA original content hash or dimensions not pinned: "+asset.file);
     if(!asset.original_url.startsWith("https://images-assets.nasa.gov/image/")||
       !asset.original_url.endsWith("/"+asset.id+"~orig.jpg")||
       asset.rights_review!=="OPEN"||asset.is_impact_observation!==false)
