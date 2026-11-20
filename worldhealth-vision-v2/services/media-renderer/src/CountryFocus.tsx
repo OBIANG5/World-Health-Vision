@@ -6,6 +6,7 @@ import atlas50 from "world-atlas/countries-50m.json";
 import type {CreativeShot,CreativeEditProps} from "./CreativeEdit";
 import {resolveCreativeSource} from "./CreativeEdit";
 import {countryFocusGeometry} from "./country-focus-geometry.mjs";
+import {headlineHandoffOpacity} from "./editorial-text-handoff.mjs";
 
 /**
  * GEO-2 / premium 10m COUNTRY FOCUS, independent of the globe composition.
@@ -138,7 +139,7 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
     {/* Brand stays subtle: no invented breaking-news or VERIFIED badge. */}
     <div style={{position:"absolute",top:154,left:92,right:91,
       borderLeft:"5px solid "+accent,paddingLeft:19,
-      opacity:titleIn*holdFade}}>
+      opacity:titleIn*holdFade*headlineHandoffOpacity(frame,enterOverlapFrames)}}>
       {shot.eyebrow&&<div dir="auto" style={{
         fontSize:24,fontWeight:780,textTransform:"uppercase",
         color:"#9eecfa",letterSpacing:".10em",lineHeight:1.22
