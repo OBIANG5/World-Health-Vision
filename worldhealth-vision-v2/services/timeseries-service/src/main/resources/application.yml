@@ -75,3 +75,8 @@ whv:
     # Empty => public Timeseries writes DENIED (even with reviewer rights).
     # Never deploy the witness private signing key to Timeseries or web.
     evidence-trust-public-key-base64: ${WHV_EVIDENCE_TRUST_PUBLIC_KEY_BASE64:}
+
+    # Pin externally reviewed exact semantic reference verifier implementation
+    # SHA256. No value configured = DENY public ingest (even with valid Ed25519).
+    # A new parser build requires separate code review and controlled rollout.
+    semantic-replay-code-sha256: ${WHV_SEMANTIC_REPLAY_CODE_SHA256:}
