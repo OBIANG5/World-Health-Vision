@@ -1,3 +1,20 @@
+## Audit réel du PREMIER master NASA — 20 novembre 2026
+
+**Run initial [#44769402904](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44769402904) SUCCESS** sur SHA `f7bed7e6e180274749c8caf05bb28a2723f2d878` ; artefact `#14645664415` `worldvision-artemis2-internal-source-traced-film` ; fichier MP4 inspecté indépendamment : `1080×1920`, `H.264`, `750 images`, `30fps`, `25.000s`, **AUCUNE PISTE AUDIO**. SHA master `acded617779c7976ef807df088d30307d0d23170c938e9e3884e6f353f760b01`. Le **vrai film et 8 images à 360px** ont été visionnés.
+
+**Original NASA Lune** `art002e009627` : `4eaed9058c6c414d4d8f18697eebd86220e8b05dd9b66fbcf48bd459f01659c0` (5568×3712). **Earthset** `art002e009288` : `1a172c85a5b7172cfffb7e3811056f22086b7dcfef56c369d5e6a66fb8a363ba` (5568×3712). **Visualisation annotée** `art002e016252_impactflash_annotation_cropped` : `57c1b522c587d2dd15f7713aaace2092deae59e24bd8ca29a8f671cbfd295e3b` (3840×2160). **Ces SHA sont désormais épinglés** dans `sources.json` et doivent être contrôlés avant copie, après rendu et dans les tests Node.
+
+**Constat visuel vérifié**, sans survente :
+- Photos NASA originales, géométrie spatiale crédible, bleu/cyan sobre et lisibilité des titres satisfaisante vers les frames suivantes.
+- **Défaut important du frame 0** : photographie sans titre, mauvais pour le hook TikTok ; correction réutilisable ajoutée `titleFrameZero:true` au premier plan de `project.json`, prise en charge par `CreativeEdit.tsx`, `render-project.mjs`, validation et **Studio export/reimport** ; pas un effet ad hoc. Le nouveau MP4 **doit être revérifié**, ne pas déclarer correction validée à partir du seul code.
+- **Plan documentaire trop peu lisible** à l'échelle mobile : petite image source paysagère encadrée, annotations difficiles à lire à 270–390px ; améliorer avec recadrage dirigé et magnification dont l'original reste toujours présent et jamais altéré, après revue du vrai script et de la durée de narration. Ne pas inventer de points ou attribuer une fausse séquence filmée aux impacts.
+- **Titres/légendes dans la zone basse** : vérifier sous les contrôles TikTok. Un sous-titre global haut/bas additionnel peut entrer en conflit avec ces titres, à auditer lors du vrai alignement.
+- Silence volontaire ; **aucun master publiable ni mix signé**, droits NASA/CSA et voix à auditer humainement.
+
+**Suite immédiate et raisonnable** : vérifier GH Actions au nouveau HEAD **après pinning des SHA et hook frame 0**, télécharger le **nouveau** vrai MP4 et comparer l'image initiale à l'ancienne. Corriger seulement les défaillances réelles ; ensuite consacrer l'essentiel à la **voix FR sélectionnée, synchronisation SRT sur le master audio final, musique sous droits, ducking et loudness, composition des preuves et QA smartphone**, puis seulement apprendre des vrais retours pour les presets. **Éviter le piège de passer une journée à retoucher des fonds sans réelle information**.
+
+---
+
 # FILM-2B — Premier véritable film World-Vision à partir de photographies NASA originales
 
 **Date du dossier : 20 novembre 2026.** **Branche active** : `feature/worldvision-film2b-artemis2-authentic-media-2026-11-20`, enfant de FILM-2C PR #104 (certifié techniquement sur `d9e5ba4`), elle-même fille de FILM-2A PR #98. Cette branche est un **film de revue interne, non publiable** : elle intègre enfin des originaux de mission vérifiables et non des photographies générées ou des figures inventées.
