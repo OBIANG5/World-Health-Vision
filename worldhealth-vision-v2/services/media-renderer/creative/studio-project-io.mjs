@@ -116,8 +116,6 @@ export function parseStudioProject(text){
         fail(label+" : camera/route GEO indisponible dans country_focus.");
       if(s.template==="country_focus"&&!s.geo.spotlight)
         fail(label+" : country_focus exige son identifiant de pays.");
-      if(s.template==="geo_story"&&!s.geo.spotlight&&s.geo.route)
-        fail(label+" : la trajectoire requiert un lieu cible confirmé.");
 
       only(s.geo,["center","look","spinDegrees","camera","spotlight","target","route","metric"],label+".geo");
       if(s.geo.center)only(s.geo.center,["lon","lat"],label+".geo.center");
