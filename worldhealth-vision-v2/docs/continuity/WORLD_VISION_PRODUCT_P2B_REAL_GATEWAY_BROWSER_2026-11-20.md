@@ -35,3 +35,18 @@ Limites non masquées : l'environnement CI est éphémère, sur loopback ; il n'
 
 ## 6. Reprise dans un autre chat
 Lire en priorité cette note, PR #100, son dernier commit et GitHub Actions, puis PR #99/ #97/ #75, issue #96, le grand HANDOFF_CORE_F12B et document P2A, #95/#94, #68 déploiement Vercel. Ne pas confondre le test e2e local, une licence de données, une architecture de production et un produit mondial réellement opérationnel.
+
+## 7. PREUVE FINALE VALIDÉE — P2B (20/11/2026)
+
+**CI réelle SUCCESS sur SHA exact du code/documentation `71130169de65954b407a3b365f03f58e61a7a4e8`** : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44729189035
+
+Job `real-stack-and-browser` : conclusion SUCCESS. Dans cette exécution unique : six conteneurs réels démarrés par Compose sécurisé ; Catalog, Gateway, Analytics, Ingestion, Timeseries et TimescaleDB ; isolation des ports vérifiée et JWT activé. Réponses GET GAB, FRA et BRA obtenues sur Gateway ; HTTP 401 confirmé sur `/api/timeseries/source-runs` et la commande Advisor. Aucune observation autorisée dans cette DB neuve, sans fabriquer un chiffre ou accorder des droits institutionnels.
+
+Le véritable frontend React construit par Vite (sans archives preview/bootstrap) a été ouvert depuis Chromium iPhone dans le même réseau :
+- `PASS P2B baseline/GAB` ; `baseline/FRA` ; `baseline/BRA` : vérification des fiches nationales et de la couverture via services réels ; choix volontaire de sources pour le Gabon.
+- `PASS P2B outage/GAB` : conteneur Timeseries arrêté ; absence de données ≠ panne ; Catalog continue de fonctionner.
+- `PASS P2B recovery/GAB` : redémarrage Timeseries et rétablissement visible.
+- Benchmark à charge LIMITÉE, 12 requêtes de couverture par pays, 36/36 HTTP 200 sur localhost : GAB p50=19,75 ms, p95=p99=27,42 ms ; FRA p50=11,95 ms, p95=p99=21,10 ms ; BRA p50=18,97 ms, p95=p99=24,81 ms. Ce n'est PAS une SLA globale, une mesure Internet, ni un test de charge à grande échelle.
+- Artefact GitHub Actions `product-p2b-disposable-real-stack-test-evidence`, id `14625631603`, contient des captures iPhone et les mesures. Logs de job `136264248119` examinés. Nettoyage éphémère terminé, job SUCCESS.
+
+Cette preuve valide **le parcours navigateur→vraie Gateway→services→PostgreSQL** pour les trois pays, en absence de série publiée ; elle NE prouve PAS encore une ingestion d'une observation reconnue sous droits, sa source et sa méthode visibles dans Atlas, ni un aperçu Internet 24/7. La PR #100 doit rester DRAFT jusqu'au découpage de release revu. Le changement documentaire suivant seul ne modifie aucune logique applicative : distinguer SHA code testé et SHA de documentation final. P2C doit maintenant livrer une vraie observation autorisée en environnement synthétique privé de test, révocable et traçable, puis un dataset externe légalement approuvé. Pas de publication de recherches IBGE/WDI à partir de ce seul test.
