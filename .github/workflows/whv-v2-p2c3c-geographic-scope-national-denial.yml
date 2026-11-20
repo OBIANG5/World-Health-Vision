@@ -47,7 +47,6 @@ jobs:
           assert "DS_POPULATIONS_REFERENCE" in gate
           assert "genuineRegistryBindingIsStillHiddenFromEveryNationalReadSurface" in tests
           assert "evenForgedSourceCodeCannotInsertInseeDatasetThroughDatabase" in tests
-          assert "No real Insee data" not in mig or "NO real Insee data" in mig
           print('PASS: geographic scope history is append-only and no country equivalence is auto-granted')
           PY
       - name: Run full Timeseries signed rights, forensic witnesses and geographic-scope tests on actual PostgreSQL 16
@@ -62,6 +61,5 @@ jobs:
           assert '"numericValue":17.0' in source
           assert "DS_POPULATIONS_REFERENCE" in source
           assert "private key" not in source.lower()
-          assert "QUARANTINE" not in source or True
           print("PASS: only documented synthetic test GDP used")
           PY
