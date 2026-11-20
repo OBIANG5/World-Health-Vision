@@ -11,6 +11,8 @@ import {DataMotion} from "./DataMotion";
 import type {DataDirection} from "./data-motion-engine.mjs";
 import type {PhotoMotion} from "./photo-motion-tracks.mjs";
 import type {GeoDirection} from "./GeoStory";
+import {CaptionTrack} from "./CaptionTrack";
+import type {CaptionCue} from "./caption-timeline.mjs";
 
 /**
  * A real Remotion composition for supplied scripts, images, clips, voices and
@@ -52,6 +54,8 @@ export type CreativeEditProps = {
   title:string;
   script:string; // authored outside the renderer, passed through untouched
   shots:CreativeShot[];
+  /** Global frame-exact transcription supplied by the editor. */
+  captions?:CaptionCue[];
   narration?:{src:string;volume?:number;label?:string}|null;
   soundtrack?:{src:string;volume?:number;label?:string}|null;
   brandOutro?:{src:string;durationFrames:number}|null;
@@ -465,6 +469,7 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
   });
   return <AbsoluteFill style={{background:base.background}}>
     <TransitionSeries>{children}</TransitionSeries>
+    {props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions}/>}
     {props.narration&&<Sequence durationInFrames={timelineFrames} name="Voix choisie / fournie">
       <Audio src={resolveCreativeSource(props.narration.src)} volume={props.narration.volume??1}/>
     </Sequence>}
