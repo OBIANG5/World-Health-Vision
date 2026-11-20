@@ -311,4 +311,57 @@ class SignedRightsRegistryIntegrationTest {
                 .andExpect(status().isForbidden());
         assertEquals(0, countRuns(key));
     }
+
+    @Test
+    void oldUnattestedSourceRunsRemainStoredButInvisibleInPublicResponses() throws Exception {
+        String indicator = newIndicator(), key = newRunKey();
+        UUID runId = UUID.randomUUID();
+        // Simulate V1 archive data with no signed grant and no rights link.
+        jdbc.update("""
+                insert into timeseries.source_run (
+                    id, source_code, dataset_code, run_key, fetched_at_utc,
+                    record_count, status, notes
+                ) values (?, 'WORLD_BANK', 'WDI', ?, ?, 1, 'PERSISTED',
+                          '{"httpBodySha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}'::jsonb)
+                """, runId, key, OffsetDateTime.parse("2026-11-20T00:00:00Z"));
+        jdbc.update("""
+                insert into timeseries.observation (
+                    id,source_run_id,source_code,dataset_code,indicator_code,
+                    country_iso3,period_granularity,period_start,period_end,
+                    period_label,numeric_value,value_status
+                ) values (?, ?, 'WORLD_BANK', 'WDI', ?, 'FRA', 'ANNUAL',
+                          '2024-01-01', '2024-12-31', '2024', 17.0, 'OBSERVED')
+                """, UUID.randomUUID(), runId, indicator);
+        assertEquals(1, jdbc.queryForObject("""
+                select count(*) from timeseries.observation where source_run_id=?
+                """, Integer.class, runId));
+        mockMvc.perform(get("/api/timeseries/series")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", indicator))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(0));
+        var publicRuns = mapper.readTree(mockMvc.perform(get("/api/timeseries/source-runs")
+                        .param("sourceCode", "WORLD_BANK")
+                        .param("datasetCode", "WDI"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        for (var item : publicRuns.get("items")) {
+            assertFalse(item.get("runKey").asText().equals(key),
+                    "Unreviewed historical source-run must not leak through public provenance listing");
+        }
+    }
+
+    @Test
+    void noConfiguredTrustAnchorCannotTurnUnsignedClaimsIntoAPermission() throws Exception {
+        String ind = newIndicator();
+        SignedRightsDecision d = SignedTestRightsFixture.defaultDecision(
+                "WORLD_BANK", "WDI", "FRA", ind);
+        var noTrust = new com.worldhealthvision.timeseries.service.RightsSignatureVerifier("");
+        assertThrows(com.worldhealthvision.timeseries.service.RightsAuthorizationException.class,
+                () -> noTrust.requireAuthentic(d));
+        assertThrows(IllegalStateException.class,
+                () -> new com.worldhealthvision.timeseries.service.RightsSignatureVerifier(
+                        "malformed-not-an-ed25519-public-key"));
+    }
+
 }
