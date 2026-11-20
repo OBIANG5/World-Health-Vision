@@ -1,0 +1,117 @@
+name: World-Vision DATA-1C-A2B2a — independent live semantic replay private
+
+on:
+  push:
+    branches:
+      - 'data/v2-independent-semantic-replay-*'
+    paths:
+      - '.github/workflows/whv-v2-data1c-semantic-live-private.yml'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/semantic_source_replay.py'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/private_bronze_witness.py'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/pipelines/ibge_national_census.py'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/pipelines/worldbank_population_2022_research.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-a2b2-live-${{ github.ref }}
+  cancel-in-progress: true
+
+# Exactly TWO pinned official research HTTP resources (IBGE 4714/93 BRA 2022
+# and World Bank WDI BRA SP.POP.TOTL 2022). They are NOT independent census
+# confirmations and NOT approved commercial redistribution.
+# Raw response, values, normalized NDJSON and journals remain under a local
+# ephemeral TemporaryDirectory and are neither printed nor uploaded.
+jobs:
+  official-two-source-independent-raw-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install ingestion package and ephemeral-only crypto verification
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pip install --disable-pip-version-check -e '.[dev]'
+          python -m pip install --disable-pip-version-check 'cryptography>=43,<47'
+      - name: Verify TWO official responses with independent scientific reference parser
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python - <<'PY'
+          from tempfile import TemporaryDirectory
+          from pathlib import Path
+          from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+          import json
+          import time
+          import httpx
+          from ingestion_service.bronze_store import BronzeStore
+          from ingestion_service.connectors.ibge_national_census_client import IbgeNationalCensusClient
+          from ingestion_service.connectors.worldbank_population_2022_research import WdiPopulation2022ResearchClient
+          from ingestion_service.pipelines.ibge_national_census import IbgeNationalCensusPilot
+          from ingestion_service.pipelines.worldbank_population_2022_research import WdiPopulation2022ResearchPilot
+          from ingestion_service.semantic_source_replay import verify_original_to_normalized, SEMANTIC_REPLAY_VERSION
+          from ingestion_service.private_bronze_witness import PrivateBronzeWitness
+          from ingestion_service.acquisition_journal import AcquisitionJournal
+
+          with TemporaryDirectory(prefix='worldvision-semantic-private-') as temp:
+              root = Path(temp)
+              bronze = BronzeStore(root)
+              ibge = IbgeNationalCensusPilot(
+                  client=IbgeNationalCensusClient(timeout_seconds=25),
+                  bronze_store=bronze,
+              ).capture_population_2022()
+              wdi_pilot = WdiPopulation2022ResearchPilot(
+                  client=WdiPopulation2022ResearchClient(timeout_seconds=25),
+                  bronze_store=bronze,
+              )
+              for trial in range(3):
+                  try:
+                      wdi = wdi_pilot.capture()
+                      break
+                  except httpx.HTTPStatusError as exc:
+                      if trial == 2 or exc.response.status_code not in (429, 500, 502, 503, 504):
+                          raise
+                      time.sleep(2 * (trial + 1))
+
+              signer = Ed25519PrivateKey.generate()
+              witness = PrivateBronzeWitness(bronze_root=root, signing_key=signer)
+              journal = AcquisitionJournal(root)
+              for source, dataset, manifest in (
+                  ('IBGE', 'CENSO2022_4714', ibge),
+                  ('WORLD_BANK', 'WDI_POP_TOTAL_BRA_2022', wdi),
+              ):
+                  replay = verify_original_to_normalized(
+                      source_code=source, dataset_code=dataset,
+                      original_http_bytes=manifest.raw_payload_path.read_bytes(),
+                      normalized_ndjson=manifest.normalized_payload_path.read_bytes(),
+                  )
+                  assert replay.verifier_version == SEMANTIC_REPLAY_VERSION
+                  assert replay.raw_sha256 == manifest.notes['httpBodySha256']
+                  assert replay.normalized_sha256 == manifest.notes['normalizedNdjsonSha256']
+                  assert replay.observation_count == 1
+                  state = journal.audit(source, dataset)
+                  assert state['successCount'] == 1 and state['versionCount'] == 1
+                  event_dir = root / source.lower() / dataset.lower() / '_acquisitions'
+                  events = [e.name for e in event_dir.iterdir() if
+                            (e / 'outcome.json').is_file() and
+                            json.loads((e / 'outcome.json').read_text())['kind'] == 'SUCCESS']
+                  assert len(events) == 1
+                  proof = witness.certify_research_only(
+                      source_code=source, dataset_code=dataset,
+                      original_http_sha256=manifest.notes['httpBodySha256'],
+                      acquisition_event_id=events[0],
+                  )
+                  assert proof['operation'] == 'PRIVATE_RESEARCH_VALIDATION'
+                  assert proof['itemsSha256'] == replay.semantic_projection_sha256
+                  assert 'numericValue' not in proof
+              assert not list(root.rglob('timeseries'))
+              print('PASS: 2 pinned official research observations independently reconstructed from raw HTTP bytes.')
+              print('PASS: 2 private Ed25519 research attestations, zero public Timeseries/Atlas publication.')
+          print('PASS: official source bytes, original values and temporary acquisition journals destroyed.')
+          PY
