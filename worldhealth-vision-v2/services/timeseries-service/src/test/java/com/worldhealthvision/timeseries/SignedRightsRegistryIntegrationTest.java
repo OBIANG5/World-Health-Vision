@@ -223,6 +223,15 @@ class SignedRightsRegistryIntegrationTest {
                         .param("sourceCode", "WORLD_BANK"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(1));
+        // The public country-comparison route must honor the SAME rights gate
+        // as /series and country published-coverage.
+        mockMvc.perform(get("/api/timeseries/compare/countries/latest")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", ind)
+                        .param("sourceCode", "WORLD_BANK")
+                        .param("includeMissing", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1));
         jdbc.update("""
                 insert into timeseries.rights_revocation(decision_id,operator_id,reason_code)
                 values (?, 'CI_REVOKER', 'SYNTHETIC_REVIEW_WITHDRAWN')
@@ -244,6 +253,15 @@ class SignedRightsRegistryIntegrationTest {
                         .param("countryIso3", "FRA")
                         .param("indicatorCode", ind)
                         .param("sourceCode", "WORLD_BANK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(0));
+        // A once-authorized row MUST disappear immediately from all anonymous
+        // cross-country comparisons, including includeMissing=true.
+        mockMvc.perform(get("/api/timeseries/compare/countries/latest")
+                        .param("countryIso3", "FRA", "BRA")
+                        .param("indicatorCode", ind)
+                        .param("sourceCode", "WORLD_BANK")
+                        .param("includeMissing", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(0));
         mockMvc.perform(get("/api/timeseries/source-runs")
@@ -355,6 +373,19 @@ class SignedRightsRegistryIntegrationTest {
         mockMvc.perform(get("/api/timeseries/series")
                         .param("countryIso3", "FRA")
                         .param("indicatorCode", indicator))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(0));
+        // Regression: previously this route queried timeseries.observation
+        // directly, leaking unsigned/unattested V1 raw values publicly.
+        mockMvc.perform(get("/api/timeseries/compare/countries/latest")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", indicator))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(0));
+        mockMvc.perform(get("/api/timeseries/compare/countries/latest")
+                        .param("countryIso3", "FRA", "BRA")
+                        .param("indicatorCode", indicator)
+                        .param("includeMissing", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(0));
         var publicRuns = mapper.readTree(mockMvc.perform(get("/api/timeseries/source-runs")
