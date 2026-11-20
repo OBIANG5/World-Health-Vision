@@ -1,0 +1,77 @@
+name: World-Vision one-off Insee official response structure only (NO values)
+
+on:
+  push:
+    branches:
+      - 'audit/insee-melodi-schema-codes-2026-11-20'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-structure-no-provider-values:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read ONLY public dimension codes from one pinned official GET
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+          import urllib.request
+          from urllib.parse import urlencode
+          host='https://api.insee.fr'
+          path='/melodi/data/DS_POPULATIONS_REFERENCE'
+          params={'GEO':'FRANCE-F','POPREF_MEASURE':'PTOT','maxResult':'20'}
+          url=host+path+'?'+urlencode(params)
+          req=urllib.request.Request(url,headers={
+              'Accept':'application/json','User-Agent':'World-Vision-Research-Schema-Only/1'})
+          # urllib redirects could mask the true provider, so prevent redirects.
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):
+                  raise ValueError('Redirect refused')
+          opener=urllib.request.build_opener(NoRedirect())
+          with opener.open(req,timeout=15) as response:
+              assert response.geturl()==url,'Provider URL changed'
+              assert response.status==200
+              raw=response.read(500001)
+              assert len(raw)<=500000
+          body=json.loads(raw.decode('utf-8'))
+          assert isinstance(body,dict) and isinstance(body.get('observations'),list)
+          rows=body['observations']
+          assert 0<len(rows)<=20
+          def print_code(label,raw):
+              if isinstance(raw,dict):
+                  raw=raw.get('id',raw.get('value','<object>'))
+              if not isinstance(raw,str) or not re.fullmatch(r'[A-Za-z0-9_.:/-]{1,90}',raw):
+                  print(label+': unsupported field type='+type(raw).__name__)
+              else:
+                  print(label+': '+raw)
+          print('provider: api.insee.fr')
+          print('schema: top-level keys='+','.join(sorted(body)))
+          print('observations-count: '+str(len(rows)))
+          for i,row in enumerate(rows[:2]):
+              assert isinstance(row,dict)
+              dimensions=row.get('dimensions',{})
+              measures=row.get('measures',{})
+              assert isinstance(dimensions,dict) and isinstance(measures,dict)
+              print('row-'+str(i)+' dimensions-keys='+','.join(sorted(dimensions)))
+              print('row-'+str(i)+' measure-keys='+','.join(sorted(measures)))
+              for key in ('GEO','GEO_OBJECT','GEO_REF','FREQ','POPREF_MEASURE','TIME_PERIOD','OBS_STATUS','CONF_STATUS'):
+                  if key in dimensions:
+                      print_code('row-'+str(i)+' dimension.'+key,dimensions[key])
+              for key in ('OBS_STATUS','CONF_STATUS'):
+                  if key in row: print_code('row-'+str(i)+' status.'+key,row[key])
+              for key in sorted(measures):
+                  value=measures[key]
+                  # Print structure/type ONLY. Absolutely no numeric values.
+                  print('row-'+str(i)+' measure.'+key+' type='+type(value).__name__+
+                      ' keys='+(','.join(sorted(value)) if isinstance(value,dict) else '<n/a>'))
+          print('PASS: single official GET inspected only dimension codes and value TYPES; no original bytes stored/uploaded')
+          PY
