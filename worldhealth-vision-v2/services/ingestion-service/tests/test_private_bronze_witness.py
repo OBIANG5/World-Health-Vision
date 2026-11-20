@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 from hashlib import sha256
+from pathlib import Path
 import json
 import shutil
 
