@@ -1,0 +1,53 @@
+{
+  "schema_version": "worldvision-real-media-sources-v1",
+  "event_date": "2026-04-06",
+  "latest_source_date": "2026-11-17",
+  "capture_policy": "Official NASA-origin media only. Fail closed on missing source, non-JPEG, wrong dimensions or untrusted redirect.",
+  "publication_approved": false,
+  "visual_edit_status": "INTERNAL_REVIEW_ONLY",
+  "report": "https://science.nasa.gov/feature/artemis-ii-preliminary-lunar-science-report/",
+  "usage_policy": "https://www.nasa.gov/nasa-brand-center/images-and-media/",
+  "assets": [
+    {
+      "id": "art002e009627",
+      "file": "lunar-orientale.jpg",
+      "media_type": "photo",
+      "actual_content": "Lune, bassins Orientale et Grimaldi photographiés depuis Orion le 6 avril 2026",
+      "source_page": "https://www.nasa.gov/gallery/lunar-flyby/page/2",
+      "original_url": "https://images-assets.nasa.gov/image/art002e009627/art002e009627~orig.jpg",
+      "source_credit": "NASA / Artemis II crew",
+      "rights_classification": "NASA-origin photograph; editorial use generally permitted subject to NASA brand/media rules; check actual metadata",
+      "is_impact_observation": false,
+      "rights_review": "OPEN"
+    },
+    {
+      "id": "art002e009288",
+      "file": "earthset.jpg",
+      "media_type": "photo",
+      "actual_content": "Terre se couchant sur l’horizon lunaire, 6 avril 2026",
+      "source_page": "https://www.nasa.gov/image-article/earthset/",
+      "original_url": "https://images-assets.nasa.gov/image/art002e009288/art002e009288~orig.jpg",
+      "source_credit": "NASA / Artemis II crew",
+      "rights_classification": "NASA-origin photograph; editorial use generally permitted subject to NASA brand/media rules",
+      "is_impact_observation": false,
+      "rights_review": "OPEN"
+    },
+    {
+      "id": "art002e016252_impactflash_annotation_cropped",
+      "file": "impact-annotations.jpg",
+      "media_type": "annotated_visualization",
+      "actual_content": "Capture tablette d’une simulation de la Lune éclipsée annotée par Reid Wiseman, Victor Glover et Jeremy Hansen. Pas une photographie des impacts.",
+      "source_page": "https://www.nasa.gov/image-article/artemis-ii-crew-moon-photo-annotations/",
+      "original_url": "https://images-assets.nasa.gov/image/art002e016252_impactflash_annotation_cropped/art002e016252_impactflash_annotation_cropped~orig.jpg",
+      "source_credit": "NASA / Artemis II crew; annotations CSA/NASA",
+      "rights_classification": "NASA-published source incorporating astronauts' annotation; independently review third-party/CSA elements before public use",
+      "is_impact_observation": false,
+      "rights_review": "OPEN"
+    }
+  ],
+  "exclusions": [
+    "Do not fetch or reuse NASA SVS 15103 ImpactFlashesVertical_1.mp4: incorporated soundtrack is credited to Universal Production Music.",
+    "Do not render fictional filmed lunar impacts, invented location pins, or graphical time series.",
+    "Do not call this an audio-synchronized final news film: narration absent and there is no verified SRT for a selected voice."
+  ]
+}
