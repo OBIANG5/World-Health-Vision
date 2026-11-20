@@ -15,3 +15,4 @@ export const STUDIO_PROJECT_FORMAT:"worldvision-creative-project-v1";
 export function parseStudioProject(text:string):SavedStudioProject;
 export function frameCaptionsToSrt(cues?:CaptionCue[]):string;
 export function studioAssetNames(project:SavedStudioProject):string[];
+export function studioShotToEditor<T extends object>(shot:SavedShot,defaults:T):T;
