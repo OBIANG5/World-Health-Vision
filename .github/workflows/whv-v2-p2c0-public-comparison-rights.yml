@@ -1,0 +1,46 @@
+name: World-Vision P2C0 — prevent public comparison rights bypass
+on:
+  push:
+    branches:
+      - 'product/v2-p2c0-rights-gated-comparisons-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  java-postgres-public-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Assert EVERY public Timeseries comparison uses rights filtered view
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          base=Path('worldhealth-vision-v2')
+          jdbc=(base/'services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/persistence/JdbcTimeseriesRepository.java').read_text()
+          start=jdbc.index('public List<CountryLatestComparisonResponse> listLatestCountryComparison(')
+          end=jdbc.index('public List<SourceRunSummaryResponse> listSourceRuns(',start)
+          query=jdbc[start:end]
+          assert 'from timeseries.latest_observation lo' in query
+          assert 'from timeseries.observation o' not in query
+          assert 'join timeseries.source_run' not in query
+          assert 'join requested_country rc' in query
+          routes=(base/'services/gateway-service/src/main/java/com/worldhealthvision/gateway/security/PublicReadRoutes.java').read_text()
+          assert '"/api/timeseries/compare/countries/latest"' in routes
+          test=(base/'services/timeseries-service/src/test/java/com/worldhealthvision/timeseries/SignedRightsRegistryIntegrationTest.java').read_text()
+          assert test.count('get("/api/timeseries/compare/countries/latest")') >= 4
+          print("PASS: public compare now uses only current legally eligible series")
+          PY
+      - name: Test real PostgreSQL16/Flyway, revoked and unsigned exposure through Java API
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service,services/gateway-service -am test
