@@ -113,6 +113,35 @@ def test_official_melodi_split_national_geo_pair_is_supported_but_not_assumed_is
         }))
 
 
+def test_actual_official_november_2026_melodi_geo_2025_france_f_is_parseable_without_iso3_assumption():
+    # Dimension codes observed by a ONE-OFF real provider HTTP GET,
+    # GitHub Actions 44773997299. Do not confuse geography 2025 with 2023 period.
+    actual_shape = response(override={
+        "dimensions": {"GEO": "2025-FRANCE-F", "FREQ": "A",
+                       "TIME_PERIOD": "2023", "POPREF_MEASURE": "PTOT"}
+    })
+    row = parse(actual_shape)[0]
+    assert row.geo_reference == "2025"
+    assert row.year == 2023
+    assert row.geo_filter == "FRANCE-F"
+    assert row.population_type == "LEGAL_TOTAL_UNREVIEWED"
+    # A similarly prefixed OTHER territory is never national France.
+    with pytest.raises(EvidenceIntegrityError):
+        parse(response(override={"dimensions": {
+            "GEO": "2025-FRANCE-M", "FREQ": "A",
+            "TIME_PERIOD": "2023", "POPREF_MEASURE": "PTOT"}}))
+    # A contradictory vintage or GEO_OBJECT cannot silently overwrite
+    # explicit official geographic scope.
+    with pytest.raises(EvidenceIntegrityError):
+        parse(response(override={"dimensions": {
+            "GEO": "2025-FRANCE-F", "GEO_REF": "2024", "FREQ": "A",
+            "TIME_PERIOD": "2023", "POPREF_MEASURE": "PTOT"}}))
+    with pytest.raises(EvidenceIntegrityError):
+        parse(response(override={"dimensions": {
+            "GEO": "2025-FRANCE-F", "GEO_OBJECT": "COM", "FREQ": "A",
+            "TIME_PERIOD": "2023", "POPREF_MEASURE": "PTOT"}}))
+
+
 def test_unrecognized_api_json_and_response_schema_fail_closed():
     for raw in (
         b"", b"not-json", b"\xff",

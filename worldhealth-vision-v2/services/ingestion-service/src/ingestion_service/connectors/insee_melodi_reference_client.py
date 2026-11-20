@@ -166,13 +166,14 @@ def parse_reference_population(
         measures = row.get("measures")
         if not isinstance(dimensions, dict) or not isinstance(measures, dict):
             raise EvidenceIntegrityError("Missing structured Melodi dimension/measures")
-        # Melodi query GEO=FRANCE-F addresses the geography pair
-        # GEO_OBJECT=FRANCE / GEO=F in tabular data (InseeFrLab example).
-        # The official API can represent the pair split rather than echoing
-        # the composite URL filter. Accept only these two EXACT encodings,
-        # never a different country, region, or arbitrary ISO3 mapping.
+        # REAL Insee Melodi GET, independently inspected in one-off CI:
+        # query GEO=FRANCE-F produced observation GEO="2025-FRANCE-F".
+        # 2025 is a GEOGRAPHIC REFERENCE VERSION, NOT TIME_PERIOD=2023.
+        # Keep older documented split GEO=F / GEO_OBJECT=FRANCE or composite
+        # FRANCE-F only with explicit national code. Never infer ISO3 FRA.
         geo_code = _required(dimensions, "GEO")
-        if geo_code not in {GEO_FILTER, "F"}:
+        full_geo = re.fullmatch(r"(20[0-9]{2})-FRANCE-F", geo_code)
+        if not full_geo and geo_code not in {GEO_FILTER, "F"}:
             raise EvidenceIntegrityError("Unexpected Insee national geography code")
         if _required(dimensions, "POPREF_MEASURE") != MEASURE_CODE:
             raise EvidenceIntegrityError("Municipal population is not total population (PTOT)")
@@ -187,8 +188,14 @@ def parse_reference_population(
         seen_periods.add(year)
         geo_reference = _dimension(dimensions, "GEO_REF")
         obj = _dimension(dimensions, "GEO_OBJECT")
-        if obj != "FRANCE":
-            raise EvidenceIntegrityError("GEO_OBJECT MUST explicitly identify national FRANCE")
+        if full_geo:
+            if obj not in (None, "FRANCE"):
+                raise EvidenceIntegrityError("National GEO full code conflicts with GEO_OBJECT")
+            if geo_reference is not None and geo_reference != full_geo.group(1):
+                raise EvidenceIntegrityError("GEO reference vintage conflicts with national full code")
+            geo_reference = full_geo.group(1)
+        elif obj != "FRANCE":
+            raise EvidenceIntegrityError("Short GEO requires national FRANCE object proof")
         if geo_reference is not None and not re.fullmatch(r"20\d{2}", geo_reference):
             raise EvidenceIntegrityError("GEO_REF not a recognized annual year")
 
