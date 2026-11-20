@@ -805,3 +805,32 @@ br. `audit/insee-melodi-one-time-final-schema-2026-11-20`.
 Source HTTP GET uniquement `DS_POPULATIONS_REFERENCE?GEO=FRANCE-F&POPREF_MEASURE=PTOT&maxResult=20` ; réponse effective `GEO=2025-FRANCE-F` (VERSION géographique 2025) et `TIME_PERIOD=2023`, JSON float codant ENTIER exact. Le parseur a été corrigé sur preuve réelle, sans arrondir. La source a été vérifiée en **Bronze temporaire privé**, puis supprimée du runner ; AUCUN CHIFFRE affiché dans GitHub, AUCUN POST Timeseries et aucune licence/revue PUBLIC_API_INGEST accordée. Échecs intermédiaires utiles audités : 44773502271, 44773788927, 44774306006 ; diagnostic sans valeur 44773997299. La CI de code final et le GET réel sont SUCCESS. Les fixtures des tests NE SONT PAS des chiffres officiels actuels.
 Documentation exhaustive : `worldhealth-vision-v2/docs/continuity/WORLD_VISION_PRODUCT_P2C3_INSEE_PRIVATE_AUDIT_2026-11-20.md` §8.
 **Prochain travail** : première archive Bronze durable privée sous droits, dossier de licence du dataset précis (usage WEB/API/commercial, attribution, exceptions, méthodes), identité du parseur #95 / gouvernance #94, signature indépendante et vraie ingestion en PREVIEW protégée, puis promotion séparée. Les sources locales Gabon INSTAT/BEAC et l'internationalisation restent prioritaires ; préserver les onze Visions, média/GDELT, Watch/Money/Transport/Price et tous les anciens travaux GitHub.
+
+---
+## 20 novembre 2026 — PRODUCT-P2C3B : FEHM et double métadonnée réelles, sans fausse statistique nationale
+**PR #111 DRAFT**, branche `product/v2-p2c3b-insee-metadata-geoscope-2026-11-20` base #108 (#106 P2C2). Audit catalogue officiel `DS_POPULATIONS_REFERENCE` https://github.com/OBIANG5/World-Health-Vision/actions/runs/44777513706 SUCCESS : `spatial.id=FEHM` = **France hors Mayotte**, `publisher.id=INSEE`, période statistique 2023, millésime géographique 2025, unité `Individu`, accès `Public`, confidentialité `Libre`, statut `publie`. La précédente inférence `countryIso3Candidate=FRA` était imprudente ; elle est désormais `null`, `NOT_MAPPED_TO_ISO3`.
+Code : `services/ingestion-service/src/ingestion_service/connectors/insee_melodi_catalog_review.py` nouveau, vrai GET catalog en lecture seule, archive privée des bytes métadonnées en plus des bytes chiffre, lien SHA256, validation stricte des droits d'accès/statut/GEO FEHM et temporality ; `ProtectedSourcePublicationGate.java` **bloque en plus au RECEPTIONNAIRE** toute ingestion publique des datasets exacts `DS_POPULATIONS_REFERENCE` et `..._CATALOG` en attendant modèle de scope et deux décisions humaines.
+Premier code SHA `29014f7267d637b86a22ff9ef58c04ddb3d1075f`, Python CI https://github.com/OBIANG5/World-Health-Vision/actions/runs/44778485343 : **117/117 PASS (43 nouveau +47 ancien +27 droits)**. Audit LIVE à deux GETs : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44778754616 SUCCESS, receipts métadonnées + données P2C3 dans même runner, FEHM/2023/2025 concordent, rien publié, bytes éphémères détruits. CI Java/Postgres lancée sur commit suivant : **à vérifier sur SHA FINAL**. Dossier GitHub `docs/continuity/WORLD_VISION_PRODUCT_P2C3B_INSEE_FEHM_METADATA_2026-11-20.md`.
+**Prochaine valeur :** revue de droits précise du dataset Insee (Licence Ouverte 2.0 générale sauf exception ; attribution `Source : Insee`, mise à jour), décision signée par humains distincts, modèle territorial FEHM distinct de France entière/FRA, vrai archivage durable privé, #95/#94, puis une série statistique réelle sous contrôle dans staging privé avec mobile/rollback. Rien mergé, Vercel inchangé, aucune dépense ni donnée institutionnelle réellement mise en ligne. Préserver le globe, les 11 Visions, sources locales Gabon INSTAT/BEAC et toutes les branches média/GDELT.
+
+---
+## 20 novembre 2026 — P2C3B VALIDATION FINALE (suite de la note P2C3B précédente)
+**PR #111 DRAFT**, code testé `1b6dd2eeaa2d395d9d8510fbc503e3e5fe1c1b77`.
+GitHub Python https://github.com/OBIANG5/World-Health-Vision/actions/runs/44779490804 **SUCCESS 118 PASS (44+47+27)**.
+Java/Flyway Postgres16 https://github.com/OBIANG5/World-Health-Vision/actions/runs/44779491144 **SUCCESS 33 PASS (0 échec)** ;
+**151 tests réussis** en tout sur le même SHA. GET Insee catalogue réel 44777513706 et deux GET catalogue+valeur réels 44778754616 PASS, sans valeurs exposées ni artifact de source, pas de publication réelle. `spatial.id=FEHM` = « France hors Mayotte », pas la France entière/FRA ; correction Python `countryIso3Candidate=null`, lien SHA catalog, verrou Java `ProtectedSourcePublicationGate` pour datasets INSEE `DS_POPULATIONS_REFERENCE` et `..._CATALOG`, même avec source forgée.
+Document complet : `docs/continuity/WORLD_VISION_PRODUCT_P2C3B_INSEE_FEHM_METADATA_2026-11-20.md` §8.
+**Next** modèle international source-native geo scope (version, inclusions), licence dataset/signature humaine et attribuée, migration de comparaison/Atlas, stockage privé durable et staging HTTPS protégée. Ne pas confondre les 151 tests CI avec licence réelle, droits commercial ou publication. Aucun VPS/Vercel modifié.
+
+---
+## Suite à prendre après P2C3B : issue #112 (périmètres mondiaux / FEHM)
+Créer une RFC puis implémenter sans casser la pile réussie le modèle
+`geographicScopeId` source-native, version, inclusions/exclusions et
+relation ISO3 uniquement après revue ; propagation en SQL comparaison,
+Gateway et Atlas mobile, tests d'incompatibilité/droits. **Issue #112**
+https://github.com/OBIANG5/World-Health-Vision/issues/112 .
+Le premier pipeline de données réelles INSEE (P2C3B #111) est testé
+**151 PASS + 2 vrais GETs source** mais AUCUN droit réutilisation
+signé ni chiffre dans Atlas ou Vercel public. Les instructions de reprise
+sont dans `docs/continuity/WORLD_VISION_PRODUCT_P2C3B_INSEE_FEHM_METADATA_2026-11-20.md`
+§8–9, puis PR #108, #106, #95/issue #94 et issue #107.

@@ -1,0 +1,53 @@
+name: World-Vision P2C3B — real Java/Postgres receiver geography denial
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2c3b-insee-metadata-geoscope-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Java21, real PostgreSQL16 via Testcontainers; only synthetic observations.
+# Neither real Insee values nor signed reviewer decisions are published.
+jobs:
+  java-timeseries-protected-geo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Guard unreviewed FEHM geography at real receiver as well as private Python
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          r=Path('worldhealth-vision-v2/services/timeseries-service')
+          gate=(r/'src/main/java/com/worldhealthvision/timeseries/service/ProtectedSourcePublicationGate.java').read_text()
+          test=(r/'src/test/java/com/worldhealthvision/timeseries/TimeseriesSourceRunSafetyIntegrationTest.java').read_text()
+          assert '"DS_POPULATIONS_REFERENCE"' in gate and '"DS_POPULATIONS_REFERENCE_CATALOG"' in gate
+          assert 'BLOCKED_DATASET_CODES.contains(request.datasetCode())' in gate
+          assert 'DS_POPULATIONS_REFERENCE' in test
+          assert 'CENSO2022_4714' in gate and 'WDI_POP_TOTAL_BRA_2022' in gate
+          print('PASS: receiver scope and old research private gates still enforced')
+          PY
+      - name: Run Java21/Maven Timeseries real Postgres16 and Flyway integration
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service -am test
+      - name: No private Ed25519 keys stored with the receiver
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          text=(Path('worldhealth-vision-v2/services/timeseries-service/src/main/resources/application.yml').read_text())
+          assert 'WHV_RIGHTS_TRUST_PUBLIC_KEY_BASE64:' in text
+          assert 'WHV_EVIDENCE_TRUST_PUBLIC_KEY_BASE64:' in text
+          assert 'PRIVATE KEY' not in text
+          print('PASS: receiver trusts only externally provisioned PUBLIC Ed25519 keys')
+          PY

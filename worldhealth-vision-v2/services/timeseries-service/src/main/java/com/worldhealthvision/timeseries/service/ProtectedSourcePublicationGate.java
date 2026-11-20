@@ -23,7 +23,15 @@ public final class ProtectedSourcePublicationGate {
             "CENSO2022_4714",
             "CENSO2022_4714_METADATA",
             "CENSO2022_4714_PERIODS",
-            "WDI_POP_TOTAL_BRA_2022"
+            "WDI_POP_TOTAL_BRA_2022",
+            // Insee Melodi P2C3: the catalog's official territory is FEHM
+            // (France hors Mayotte), not unqualified ISO3 FRA. No public
+            // Timeseries country mapping exists yet. Public ingest stays
+            // DENIED irrespective of reviewer notes or transport signature.
+            // Unblock only after a reviewed, schema-backed geography scope
+            // model, correct attribution/rights and signed provenance.
+            "DS_POPULATIONS_REFERENCE",
+            "DS_POPULATIONS_REFERENCE_CATALOG"
     );
     private static final Set<String> UNPUBLISHABLE_STATUSES = Set.of(
             "BRONZE_ONLY_UNREVIEWED", "REVIEW_REQUIRED",
