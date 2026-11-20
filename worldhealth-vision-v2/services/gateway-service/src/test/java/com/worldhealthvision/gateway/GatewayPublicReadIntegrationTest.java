@@ -90,6 +90,8 @@ class GatewayPublicReadIntegrationTest {
                 .exchange().expectStatus().isOk();
         client.get().uri("/api/timeseries/sources/coverage")
                 .exchange().expectStatus().isOk();
+        client.get().uri("/api/timeseries/countries/GAB/published-coverage")
+                .exchange().expectStatus().isOk();
         client.get().uri("/api/product/countries/GAB/national-comparisons")
                 .exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.forwarded")
@@ -98,7 +100,7 @@ class GatewayPublicReadIntegrationTest {
                 .exchange().expectStatus().isOk();
         client.get().uri("/api/product/continents/AFRICA/economic-snapshot")
                 .exchange().expectStatus().isOk();
-        assertThat(requests.get()).isEqualTo(5);
+        assertThat(requests.get()).isEqualTo(6);
     }
 
     @Test
@@ -106,6 +108,8 @@ class GatewayPublicReadIntegrationTest {
         String[] forbidden = {
                 "/api/timeseries/source-runs",
                 "/api/timeseries/readiness",
+                "/api/timeseries/countries/GAB/published-coverage/write",
+                "/api/timeseries/countries/GAB/unreviewed-revisions",
                 "/api/catalog/readiness",
                 "/api/analytics/readiness",
                 "/api/analytics/new-personal-profile",
