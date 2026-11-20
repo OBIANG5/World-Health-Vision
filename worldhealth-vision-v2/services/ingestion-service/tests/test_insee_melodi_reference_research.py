@@ -277,7 +277,7 @@ def test_private_bronze_archive_never_grants_any_publication_or_geo_equivalence(
     assert manifest.dataset_code == DATASET_CODE
     assert manifest.notes["licenseReviewStatus"] == "REVIEW_REQUIRED"
     assert manifest.notes["timeseriesPublication"] == "NOT_ATTEMPTED"
-    assert manifest.notes["countryMappingStatus"] == "REVIEW_REQUIRED"
+    assert manifest.notes["countryMappingStatus"] == "NOT_MAPPED_TO_ISO3"
     assert manifest.notes["sourceStatus"] == "PRIVATE_RESEARCH_VALIDATION"
     assert manifest.notes["httpBodySha256"] == sha256(raw).hexdigest()
     assert manifest.raw_payload_path.read_bytes() == raw
@@ -286,8 +286,8 @@ def test_private_bronze_archive_never_grants_any_publication_or_geo_equivalence(
     )
     assert archived.manifest_path.is_file()
     assert b'"publicationRights":"NOT_GRANTED"' in manifest.normalized_payload_path.read_bytes()
-    assert b'"countryIso3Candidate":"FRA"' in manifest.normalized_payload_path.read_bytes()
-    assert b'"countryMappingStatus":"REVIEW_REQUIRED"' in manifest.normalized_payload_path.read_bytes()
+    assert b'"countryIso3Candidate":null' in manifest.normalized_payload_path.read_bytes()
+    assert b'"countryMappingStatus":"NOT_MAPPED_TO_ISO3"' in manifest.normalized_payload_path.read_bytes()
     # Historical bytes are not rewritten on repeat; idempotent SHA revision.
     again = capture_private_insee_evidence(root=tmp_path, rows=entry)
     assert again.raw_payload_path == manifest.raw_payload_path

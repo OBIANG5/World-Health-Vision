@@ -279,6 +279,7 @@ class InseeMelodiReferenceResearchClient:
 
 def capture_private_insee_evidence(
     *, root: Path, rows: list[MelodiPopulationEvidence],
+    metadata: object | None = None,
 ):
     """Archive original bytes in existing immutable/quarantined Bronze store.
 
@@ -289,14 +290,35 @@ def capture_private_insee_evidence(
         raise EvidenceIntegrityError("Cannot archive empty Melodi evidence")
     first = rows[0]
     _validate_exact_official_url(first.source_url)
+    # A geography FILTER from a source API is not an ISO3 territory. The
+    # official Melodi catalog declares the underlying scope FEHM = France
+    # excluding Mayotte, confirmed independently in CI. Even when a catalog
+    # attestation is present, ISO3 FRA MUST NOT be inferred here.
+    scope = None
+    catalog_sha256 = None
+    if metadata is not None:
+        from ingestion_service.connectors.insee_melodi_catalog_review import (
+            InseePopulationCatalogEvidence, validate_population_and_metadata,
+            capture_private_insee_catalog,
+        )
+        if not isinstance(metadata, InseePopulationCatalogEvidence):
+            raise EvidenceIntegrityError("Unknown institutional metadata cannot corroborate geographic scope")
+        validate_population_and_metadata(rows, metadata)
+        # Two independent, immutable content-addressed raw receipts;
+        # source observation receipt links to the exact catalog HTTP bytes.
+        capture_private_insee_catalog(root=root, metadata=metadata)
+        scope = metadata.spatial_code
+        catalog_sha256 = metadata.original_http_sha256
     if any(row.raw_response_bytes != first.raw_response_bytes or
            row.source_url != first.source_url or row.original_http_sha256 != first.original_http_sha256
            for row in rows):
         raise EvidenceIntegrityError("Mixed source responses cannot be a single revision")
     normalized = [{
         "datasetCode": DATASET_CODE, "measureCode": MEASURE_CODE,
-        "geoFilter": GEO_FILTER, "countryIso3Candidate": "FRA",
-        "countryMappingStatus": "REVIEW_REQUIRED", "referencePeriod": str(row.year),
+        "geoFilter": GEO_FILTER, "countryIso3Candidate": None,
+        "countryMappingStatus": "NOT_MAPPED_TO_ISO3",
+        "geographicScopeId": scope, "catalogHttpBodySha256": catalog_sha256,
+        "referencePeriod": str(row.year),
         "populationType": row.population_type, "numericValue": row.population_total,
         "unitStatus": "REVIEW_REQUIRED", "publicationRights": "NOT_GRANTED",
         "httpBodySha256": row.original_http_sha256,
@@ -308,7 +330,10 @@ def capture_private_insee_evidence(
         notes={
             "rawSha256": _canonical_hash(first.raw_response_bytes),
             "sourceUrl": first.source_url, "httpBodySha256": first.original_http_sha256,
-            "countryMappingStatus": "REVIEW_REQUIRED",
+            "countryMappingStatus": "NOT_MAPPED_TO_ISO3",
+            "geographicScopeStatus": "FEHM_VERIFIED_NOT_FRA" if scope else "REVIEW_REQUIRED",
+            "geographicScopeId": scope,
+            "catalogHttpBodySha256": catalog_sha256,
             "unitReviewStatus": "REVIEW_REQUIRED",
             "licenseReviewStatus": "REVIEW_REQUIRED",
             "publicationStatus": "BRONZE_ONLY_UNREVIEWED",
