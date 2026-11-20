@@ -80,8 +80,10 @@ class PrivateBronzeWitness:
         # allowlist enforces the pinned official institutional research pilot.
         if ((source_code, dataset_code) not in {
             ("IBGE", "CENSO2022_4714"),
-            ("IBGE", "CENSO2022_4714_METADATA"),
-            ("IBGE", "CENSO2022_4714_PERIODS"),
+            # IBGE metadata and period listing are separate institutional
+            # evidence resources checked by the existing composite receipt.
+            # They are NOT normalized IndicatorObservation items and MUST
+            # never be mis-signed as a public Timeseries observation batch.
             ("WORLD_BANK", "WDI_POP_TOTAL_BRA_2022"),
         }):
             raise EvidenceIntegrityError("Unreviewed dataset cannot be attested by research issuer")
