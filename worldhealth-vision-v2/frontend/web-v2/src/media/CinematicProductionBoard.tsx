@@ -1,6 +1,8 @@
 import {lazy, Suspense, useEffect, useMemo, useRef, useState, type ChangeEvent} from "react";
 import type {CreativeEditProps, CreativeMedia, CreativeShot} from "../../../../services/media-renderer/src/CreativeEdit";
 import {parseSrtCaptions,captionCueIssues} from "../../../../services/media-renderer/src/caption-timeline.mjs";
+import type {CaptionCue} from "../../../../services/media-renderer/src/caption-timeline.mjs";
+import {parseStudioProject,studioShotToEditor,studioAssetNames,frameCaptionsToSrt} from "../../../../services/media-renderer/creative/studio-project-io.mjs";
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
@@ -40,7 +42,8 @@ const initialPhotoSettings=():PhotoSettings=>({
 type Shot = {
   id:string;title:string;subtitle:string;eyebrow:string;durationFrames:number;
   template:Template;motion:Motion;transitionAfter:Transition;transitionFrames:number;
-  mediaName:string;foregroundName:string;focusX:number;focusY:number;
+  mediaName:string;mediaCredit:string;mediaTrimBefore:number;
+  foregroundName:string;foregroundCredit:string;focusX:number;focusY:number;
   documentX:number;documentY:number;documentW:number;documentH:number;
   geoLon:number;geoLat:number;geoSpin:number;geoLook:"photo"|"vector";
   geoShowCamera:boolean;geoToLon:number;geoToLat:number;
@@ -72,7 +75,8 @@ const typesByExt=(name:string):MediaType|null=>{
 };
 const initialShot=():Shot=>({
   id:"plan-01",title:"",subtitle:"",eyebrow:"",durationFrames:120,
-  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",foregroundName:"",focusX:0.5,focusY:0.5,
+  template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",mediaCredit:"",mediaTrimBefore:0,
+  foregroundName:"",foregroundCredit:"",focusX:0.5,focusY:0.5,
   documentX:.25,documentY:.32,documentW:.5,documentH:.22,
   geoLon:0,geoLat:10,geoSpin:16,geoLook:"photo",
   geoShowCamera:false,geoToLon:0,geoToLat:0,
@@ -236,11 +240,14 @@ export default function CinematicProductionBoard() {
   const [comparisonVoice,setComparisonVoice]=useState("");
   const [musicFile,setMusicFile]=useState("");
   const [srtInput,setSrtInput]=useState("");
+  // Preserve imported frame-exact cues until the editor explicitly changes captions.
+  const [importedCaptionCues,setImportedCaptionCues]=useState<CaptionCue[]|null>(null);
   const [captionPosition,setCaptionPosition]=useState<"upper"|"lower">("upper");
   const parsedCaptions=useMemo(()=>{
+    if(importedCaptionCues)return {cues:importedCaptionCues,error:""};
     try{return {cues:parseSrtCaptions(srtInput,{position:captionPosition}),error:""};}
     catch(e){return {cues:[],error:e instanceof Error?e.message:String(e)};}
-  },[srtInput,captionPosition]);
+  },[srtInput,captionPosition,importedCaptionCues]);
   const [outroFile,setOutroFile]=useState("");
   const [accent,setAccent]=useState("#8bbecf");
   const [feedback,setFeedback]=useState("");
@@ -249,6 +256,8 @@ export default function CinematicProductionBoard() {
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
+  const requiredNames=new Set([...shots.flatMap(s=>[s.mediaName,s.foregroundName]),voiceFile,musicFile,outroFile].filter(Boolean));
+  const unresolvedAssets=[...requiredNames].filter(name=>!files.some(file=>file.name===name));
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const foregroundAsset=files.find(f=>f.name===active.foregroundName);
   const needsRealMedia=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_story"].includes(active.template);
@@ -262,7 +271,9 @@ export default function CinematicProductionBoard() {
   // URLs only exist in this browser session and never reach GitHub or an API.
   const previewProps=useMemo<CreativeEditProps>(()=>{
     const media:CreativeMedia|null=activeAsset&&activeAsset.kind!=="audio"
-      ? {kind:activeAsset.kind,src:activeAsset.url}:null;
+      ? {kind:activeAsset.kind,src:activeAsset.url,
+          ...(active.mediaCredit?{credit:active.mediaCredit}:{}),
+          ...(activeAsset.kind==="video"&&active.mediaTrimBefore?{trimBefore:active.mediaTrimBefore}:{})}:null;
     return {
       version:1,
       title:projectName,
@@ -275,7 +286,8 @@ export default function CinematicProductionBoard() {
         subtitle:active.subtitle,
         eyebrow:active.eyebrow,
         media,
-        foreground:foregroundAsset?{src:foregroundAsset.url}:null,
+        foreground:foregroundAsset?{src:foregroundAsset.url,
+          ...(active.foregroundCredit?{credit:active.foregroundCredit}:{})}:null,
         motion:active.motion,
         transitionAfter:"cut",
         transitionFrames:0,
@@ -292,7 +304,7 @@ export default function CinematicProductionBoard() {
       visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
     };
   },[active,activeAsset,foregroundAsset,projectName,script,accent]);
-  const canExport=script.trim().length>0&&shots.every(shot=>{
+  const canExport=unresolvedAssets.length===0&&script.trim().length>0&&shots.every(shot=>{
     const requires=["documentary","evidence","clean_video","focus_reveal","document_focus","photo_story"].includes(shot.template);
     const hasMedia=!requires||Boolean(shot.mediaName&&files.some(f=>f.name===shot.mediaName));
     const validFocus=shot.template!=="focus_reveal"||Boolean(shot.title.trim()&&shot.title.length<=90&&shot.durationFrames>=90);
@@ -328,7 +340,10 @@ export default function CinematicProductionBoard() {
     shots:shots.map((shot,i)=>{
       const clip=files.find(f=>f.name===shot.mediaName);
       const cutout=files.find(f=>f.name===shot.foregroundName);
-      const media:CreativeMedia|null=clip&&clip.kind!=="audio"?{kind:clip.kind,src:clip.url}:null;
+      const media:CreativeMedia|null=clip&&clip.kind!=="audio"
+        ? {kind:clip.kind,src:clip.url,
+            ...(shot.mediaCredit?{credit:shot.mediaCredit}:{}),
+            ...(clip.kind==="video"&&shot.mediaTrimBefore?{trimBefore:shot.mediaTrimBefore}:{})}:null;
       return {
         id:shot.id,
         durationFrames:shot.durationFrames,
@@ -337,7 +352,8 @@ export default function CinematicProductionBoard() {
         subtitle:shot.subtitle,
         eyebrow:shot.eyebrow,
         media,
-        foreground:cutout?{src:cutout.url}:null,
+        foreground:cutout?{src:cutout.url,
+          ...(shot.foregroundCredit?{credit:shot.foregroundCredit}:{})}:null,
         motion:shot.motion,
         transitionAfter:i===shots.length-1?"cut":shot.transitionAfter,
         transitionFrames:i===shots.length-1||shot.transitionAfter==="cut"?0:shot.transitionFrames,
@@ -415,8 +431,11 @@ export default function CinematicProductionBoard() {
         ...((s.template==="geo_story"||s.template==="country_focus")?{geo:buildGeo(s)}:{}),
         motion:s.motion,transitionAfter:shots.indexOf(s)===shots.length-1?"cut":s.transitionAfter,
         transitionFrames:shots.indexOf(s)===shots.length-1||s.transitionAfter==="cut"?0:s.transitionFrames,
-        ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName}}:{}),
-        ...(s.foregroundName?{foreground:{file:s.foregroundName}}:{})
+        ...(s.mediaName?{media:{kind:files.find(f=>f.name===s.mediaName)?.kind,file:s.mediaName,
+          ...(s.mediaCredit?{credit:s.mediaCredit}:{}),
+          ...(files.find(f=>f.name===s.mediaName)?.kind==="video"&&s.mediaTrimBefore?{trimBefore:s.mediaTrimBefore}:{})}}:{}),
+        ...(s.foregroundName?{foreground:{file:s.foregroundName,
+          ...(s.foregroundCredit?{credit:s.foregroundCredit}:{})}}:{})
       })),
       ...(voiceFile?{voice:{file:voiceFile,label:"Voix choisie ou enregistrée",volume:1}}:{}),
       ...(musicFile?{music:{file:musicFile,label:"Bande-son fournie",volume:0.10}}:{}),
