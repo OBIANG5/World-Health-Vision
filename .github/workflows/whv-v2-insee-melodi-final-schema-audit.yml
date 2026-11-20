@@ -1,0 +1,40 @@
+name: World-Vision Insee Melodi one-off private provider verified geo and integral numeric audit
+
+on:
+  push:
+    branches:
+      - 'audit/insee-melodi-one-time-final-schema-2026-11-20'
+
+permissions:
+  contents: read
+
+# Exactly one source HTTPS GET, no retries, no public source artefacts, no
+# official data publication. AUDIT branch is isolated and never merged.
+jobs:
+  one-off-official-json-schema-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Checkout auditable immutable source revision
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install reviewed research-only connector
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -e './worldhealth-vision-v2/services/ingestion-service'
+      - name: Exactly one official read-only Melodi dataset GET
+        env:
+          WHV_INSEE_PRIVATE_PROBE_ENABLED: YES_RESEARCH_READ_ONLY
+        run: |
+          umask 077
+          python3 worldhealth-vision-v2/infra/tests/p2c3_insee_readonly_probe.py
+      - name: Confirm provider bytes absent at job end
+        if: always()
+        run: |
+          test ! -e "$RUNNER_TEMP/whv-insee-research-quarantine"
+          echo "PASS: no provider data retained/uploaded on public GitHub"
