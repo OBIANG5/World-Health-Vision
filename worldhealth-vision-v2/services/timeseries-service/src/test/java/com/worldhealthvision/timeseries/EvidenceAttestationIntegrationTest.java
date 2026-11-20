@@ -198,11 +198,62 @@ class EvidenceAttestationIntegrationTest {
     @Test
     void missingServerTrustAnchorRejectsEvenSyntacticallyValidProof() throws Exception {
         String ind=freshIndicator(), key=runKey();
-        var disabled=new EvidenceAttestationVerifier("",mapper,projection);
+        var disabled=new EvidenceAttestationVerifier("", "", mapper, projection);
         var parsed=mapper.readValue(signed(request(key,ind)),
                 IngestionObservationBatchRequest.class);
         assertThrows(EvidenceAttestationException.class,
                 () -> disabled.requireSourceProof(parsed));
         assertEquals(0,saved(key));
     }
+
+    @Test
+    void validEd25519ButUnapprovedParserVersionOrImplementationIsDeniedBeforeSql() throws Exception {
+        String indicator = freshIndicator(), key = runKey();
+        String base = request(key, indicator);
+        String wrongCode = SignedTestEvidenceFixture.attachWithParser(
+                base, mapper, projection, "PUBLIC_API_INGEST",
+                0, 180, SignedTestEvidenceFixture.SEMANTIC_VERSION,
+                "8".repeat(64)
+        );
+        mockMvc.perform(direct(wrongCode)).andExpect(status().isForbidden());
+
+        String wrongVersion = SignedTestEvidenceFixture.attachWithParser(
+                base, mapper, projection, "PUBLIC_API_INGEST",
+                0, 180, "WORLD_VISION_SEMANTIC_POPULATION_REPLAY_V0",
+                SignedTestEvidenceFixture.SEMANTIC_SHA
+        );
+        mockMvc.perform(direct(wrongVersion)).andExpect(status().isForbidden());
+        assertEquals(0, saved(key));
+    }
+
+    @Test
+    void noReviewedSemanticCodeShaInReceiverMustDenyEvenWithBothValidSignatures() throws Exception {
+        String indicator = freshIndicator(), key = runKey();
+        String attested = signed(request(key, indicator));
+        var blocked = new EvidenceAttestationVerifier(
+                SignedTestEvidenceFixture.publicKeyBase64(), "", mapper, projection
+        );
+        var dto = mapper.readValue(attested, IngestionObservationBatchRequest.class);
+        assertThrows(EvidenceAttestationException.class, () -> blocked.requireSourceProof(dto));
+        assertThrows(IllegalStateException.class, () ->
+                new EvidenceAttestationVerifier(
+                        SignedTestEvidenceFixture.publicKeyBase64(),
+                        "invalid-hash", mapper, projection
+                )
+        );
+        assertEquals(0, saved(key));
+    }
+
+    @Test
+    void priorV1SchemaCannotBeReplayedAsV2WitnessOrOverridePinning() throws Exception {
+        String indicator = freshIndicator(), key = runKey();
+        String signedV2 = signed(request(key, indicator));
+        String invalidV1 = signedV2.replace(
+                "WORLD_VISION_BRONZE_WITNESS_V2",
+                "WORLD_VISION_BRONZE_WITNESS_V1"
+        );
+        mockMvc.perform(direct(invalidV1)).andExpect(status().isForbidden());
+        assertEquals(0, saved(key));
+    }
+
 }

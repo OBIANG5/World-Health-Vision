@@ -25,6 +25,8 @@ final class SignedTestEvidenceFixture {
     static final String MANIFEST_SHA = "d".repeat(64);
     static final String OUTCOME_SHA = "e".repeat(64);
     static final String EVENT = "f".repeat(32);
+    static final String SEMANTIC_SHA = "9".repeat(64);
+    static final String SEMANTIC_VERSION = "WORLD_VISION_SEMANTIC_POPULATION_REPLAY_V1";
     private static final KeyPair KEY = generate();
 
     private SignedTestEvidenceFixture() {}
@@ -51,6 +53,17 @@ final class SignedTestEvidenceFixture {
             String json, ObjectMapper mapper, EvidenceItemsFingerprint fingerprint,
             String operation, long issuedOffsetSeconds, long expiresOffsetSeconds
     ) {
+        return attachWithParser(
+                json, mapper, fingerprint, operation, issuedOffsetSeconds,
+                expiresOffsetSeconds, SEMANTIC_VERSION, SEMANTIC_SHA
+        );
+    }
+
+    static String attachWithParser(
+            String json, ObjectMapper mapper, EvidenceItemsFingerprint fingerprint,
+            String operation, long issuedOffsetSeconds, long expiresOffsetSeconds,
+            String semanticVersion, String semanticSha256
+    ) {
         try {
             ObjectNode root = (ObjectNode) mapper.readTree(json);
             ObjectNode notes = (ObjectNode) root.with("notes");
@@ -67,14 +80,15 @@ final class SignedTestEvidenceFixture {
             String publicHash = HexFormat.of().formatHex(
                     MessageDigest.getInstance("SHA-256").digest(KEY.getPublic().getEncoded()));
             var unsigned = new SignedEvidenceAttestation(
-                    "WORLD_VISION_BRONZE_WITNESS_V1",
+                    "WORLD_VISION_BRONZE_WITNESS_V2",
                     operation,
                     request.sourceCode(), request.datasetCode(), request.runKey(),
                     request.fetchedAtUtc().toInstant().getEpochSecond(),
                     request.fetchedAtUtc().toInstant().getNano(),
                     notes.get("httpBodySha256").asText(),
                     NORMALIZED_SHA, MANIFEST_SHA, EVENT, OUTCOME_SHA,
-                    projection, now + issuedOffsetSeconds,
+                    projection, semanticVersion, semanticSha256,
+                    now + issuedOffsetSeconds,
                     now + expiresOffsetSeconds, publicHash, ""
             );
             var signature = Signature.getInstance("Ed25519");
@@ -87,6 +101,7 @@ final class SignedTestEvidenceFixture {
                     unsigned.originalHttpSha256(), unsigned.normalizedNdjsonSha256(),
                     unsigned.manifestSha256(), unsigned.acquisitionEventId(),
                     unsigned.acquisitionOutcomeSha256(), unsigned.itemsSha256(),
+                    unsigned.semanticVerifierVersion(), unsigned.semanticVerifierCodeSha256(),
                     unsigned.issuedAtEpochSec(), unsigned.expiresAtEpochSec(),
                     unsigned.signingPublicKeySha256(),
                     Base64.getEncoder().encodeToString(signature.sign())

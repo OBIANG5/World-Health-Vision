@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'data/v2-independent-semantic-replay-*'
+      - 'data/v2-semantic-parser-attestation-*'
     paths:
       - '.github/workflows/whv-v2-data1c-semantic-live-private.yml'
       - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/semantic_source_replay.py'
@@ -56,6 +57,8 @@ jobs:
           from ingestion_service.pipelines.ibge_national_census import IbgeNationalCensusPilot
           from ingestion_service.pipelines.worldbank_population_2022_research import WdiPopulation2022ResearchPilot
           from ingestion_service.semantic_source_replay import verify_original_to_normalized, SEMANTIC_REPLAY_VERSION
+          from ingestion_service import semantic_source_replay as independent_replay_module
+          from hashlib import sha256
           from ingestion_service.private_bronze_witness import PrivateBronzeWitness
           from ingestion_service.acquisition_journal import AcquisitionJournal
 
@@ -108,6 +111,11 @@ jobs:
                       acquisition_event_id=events[0],
                   )
                   assert proof['operation'] == 'PRIVATE_RESEARCH_VALIDATION'
+                  assert proof['schema'] == 'WORLD_VISION_BRONZE_WITNESS_V2'
+                  assert proof['semanticVerifierVersion'] == SEMANTIC_REPLAY_VERSION
+                  assert proof['semanticVerifierCodeSha256'] == sha256(
+                      Path(independent_replay_module.__file__).read_bytes()
+                  ).hexdigest()
                   assert proof['itemsSha256'] == replay.semantic_projection_sha256
                   assert 'numericValue' not in proof
               assert not list(root.rglob('timeseries'))

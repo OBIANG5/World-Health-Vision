@@ -31,26 +31,36 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public final class EvidenceAttestationVerifier {
-    private static final String SCHEMA = "WORLD_VISION_BRONZE_WITNESS_V1";
+    private static final String SCHEMA = "WORLD_VISION_BRONZE_WITNESS_V2";
+    private static final String SEMANTIC_VERSION = "WORLD_VISION_SEMANTIC_POPULATION_REPLAY_V1";
     private static final String OPERATION = "PUBLIC_API_INGEST";
     private static final Set<String> FIELDS = Set.of(
             "schema", "operation", "sourceCode", "datasetCode", "runKey",
             "fetchedAtEpochSec", "fetchedAtNano", "originalHttpSha256", "normalizedNdjsonSha256",
             "manifestSha256", "acquisitionEventId", "acquisitionOutcomeSha256",
-            "itemsSha256", "issuedAtEpochSec", "expiresAtEpochSec",
+            "itemsSha256", "semanticVerifierVersion", "semanticVerifierCodeSha256",
+            "issuedAtEpochSec", "expiresAtEpochSec",
             "signingPublicKeySha256", "signatureBase64"
     );
 
     private final PublicKey trustKey;
     private final String trustKeySha256;
+    private final String trustedSemanticCodeSha256;
     private final ObjectMapper mapper;
     private final EvidenceItemsFingerprint projection;
 
     public EvidenceAttestationVerifier(
             @Value("${whv.timeseries.evidence-trust-public-key-base64:}") String configuredPublicKey,
+            @Value("${whv.timeseries.semantic-replay-code-sha256:}") String configuredSemanticCodeSha256,
             ObjectMapper mapper, EvidenceItemsFingerprint projection
     ) {
         this.mapper = mapper;
+        this.trustedSemanticCodeSha256 = configuredSemanticCodeSha256 == null
+                ? "" : configuredSemanticCodeSha256;
+        if (!trustedSemanticCodeSha256.isBlank()
+                && !trustedSemanticCodeSha256.matches("[0-9a-f]{64}")) {
+            throw new IllegalStateException("Invalid pinned independent semantic verifier SHA");
+        }
         this.projection = projection;
         if (configuredPublicKey == null || configuredPublicKey.isBlank()) {
             trustKey = null;
@@ -75,6 +85,7 @@ public final class EvidenceAttestationVerifier {
             IngestionObservationBatchRequest request
     ) {
         if (trustKey == null || trustKeySha256 == null
+                || !trustedSemanticCodeSha256.matches("[0-9a-f]{64}")
                 || request.notes() == null
                 || !(request.notes().get("evidenceAttestation") instanceof Map<?, ?> raw)
                 || !raw.keySet().equals(FIELDS)) {
@@ -102,6 +113,8 @@ public final class EvidenceAttestationVerifier {
                     || !equalsHex(request.notes().get("acquisitionOutcomeSha256"), token.acquisitionOutcomeSha256(), 64)
                     || !token.itemsSha256().matches("[a-f0-9]{64}")
                     || !token.itemsSha256().equals(projection.calculate(request))
+                    || !SEMANTIC_VERSION.equals(token.semanticVerifierVersion())
+                    || !trustedSemanticCodeSha256.equals(token.semanticVerifierCodeSha256())
                     || token.issuedAtEpochSec() > now + 5
                     || token.issuedAtEpochSec() < now - 600
                     || token.expiresAtEpochSec() <= now
