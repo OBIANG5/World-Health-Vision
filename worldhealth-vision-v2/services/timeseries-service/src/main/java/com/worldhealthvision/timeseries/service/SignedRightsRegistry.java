@@ -131,6 +131,14 @@ public final class SignedRightsRegistry {
      * snapshot; locks from requireCurrentPublicIngestRights are still held.
      */
     public void recheckAndLink(UUID sourceRunId, List<UUID> decisionIds) {
+        recheck(decisionIds, sourceRunId);
+    }
+
+    public void recheckReplay(List<UUID> decisionIds) {
+        recheck(decisionIds, null);
+    }
+
+    private void recheck(List<UUID> decisionIds, UUID sourceRunId) {
         if (decisionIds == null || decisionIds.isEmpty()) {
             throw new RightsAuthorizationException();
         }
@@ -155,14 +163,16 @@ public final class SignedRightsRegistry {
             // New source_run rights links are inserted in the SAME atomic
             // transaction as source_run and observations. An ordinary replay
             // still checks authorization but never rewrites historical links.
-            database.sql("""
-                    insert into timeseries.source_run_rights_decision(
-                        source_run_id, decision_id
-                    ) values (:sourceRunId, :decision)
-                    """)
-                    .param("sourceRunId", sourceRunId)
-                    .param("decision", decision)
-                    .update();
+            if (sourceRunId != null) {
+                database.sql("""
+                        insert into timeseries.source_run_rights_decision(
+                            source_run_id, decision_id
+                        ) values (:sourceRunId, :decision)
+                        """)
+                        .param("sourceRunId", sourceRunId)
+                        .param("decision", decision)
+                        .update();
+            }
         }
     }
 
