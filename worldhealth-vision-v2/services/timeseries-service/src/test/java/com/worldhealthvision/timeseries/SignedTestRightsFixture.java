@@ -70,8 +70,20 @@ final class SignedTestRightsFixture {
     static SignedRightsDecision defaultDecision(
             String source, String dataset, String country, String indicator
     ) {
-        return decision(source, dataset, country, indicator, HTTP_SHA,
+        var base = decision(source, dataset, country, indicator, HTTP_SHA,
                 "PUBLIC_API_INGEST", OffsetDateTime.parse("2029-12-31T00:00:00Z"));
+        var stableId = UUID.nameUUIDFromBytes(
+                ("CI_ONLY/" + source + "/" + dataset + "/" + country + "/" + indicator)
+                        .getBytes(StandardCharsets.UTF_8));
+        return new SignedRightsDecision(
+                stableId, base.sourceCode(), base.datasetCode(), base.countryIso3(),
+                base.indicatorCode(), base.operation(), base.originalHttpSha256(),
+                base.periodStart(), base.periodEnd(), base.validFromUtc(),
+                base.validUntilUtc(), base.issuedAtUtc(), base.reviewerId(),
+                base.countersignerId(), base.licenseIdentifier(), base.licenseUrl(),
+                base.licenseTextSha256(), base.attributionText(),
+                base.signingPublicKeySha256(), ""
+        );
     }
 
     static String sign(SignedRightsDecision unsigned) {
@@ -104,6 +116,7 @@ final class SignedTestRightsFixture {
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                     ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
+                on conflict (decision_id) do nothing
                 """, d.id(), d.sourceCode(), d.datasetCode(), d.countryIso3(),
                 d.indicatorCode(), d.operation(), d.originalHttpSha256(),
                 d.periodStart(), d.periodEnd(), d.validFromUtc(), d.validUntilUtc(),
