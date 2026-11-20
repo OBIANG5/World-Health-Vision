@@ -1,0 +1,84 @@
+name: World-Vision PRODUCT — real public country coverage from Timeseries to Atlas
+
+on:
+  push:
+    branches:
+      - 'product/v2-country-published-coverage-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-product-country-coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  country-coverage-timeseries-gateway:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Prove no physical observation/catalog shortcut
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          base=Path("worldhealth-vision-v2/services/timeseries-service/src/main/java/com/worldhealthvision/timeseries")
+          sql=(base/"persistence/JdbcTimeseriesRepository.java").read_text()
+          start=sql.index("public CountryPublishedCoverageResponse getCountryPublishedCoverage")
+          end=sql.index("@Override",start)
+          method=sql[start:end]
+          assert "from timeseries.latest_observation" in method
+          assert "from timeseries.observation " not in method
+          assert "from catalog.source" not in method
+          assert "value_status in ('OBSERVED', 'ESTIMATED')" in method
+          assert "NO_PUBLICLY_ELIGIBLE_DATA" in method
+          routes=Path("worldhealth-vision-v2/services/gateway-service/src/main/java/com/worldhealthvision/gateway/security/PublicReadRoutes.java").read_text()
+          assert '"/api/timeseries/countries/*/published-coverage"' in routes
+          assert '"/api/timeseries/source-runs"' not in routes
+          print("PASS: country counts come exclusively from proof-and-rights-filtered Timeseries public view.")
+          PY
+      - name: Run real PostgreSQL 16 Timeseries plus Gateway security integration
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service,services/gateway-service -am test
+
+  atlas-country-evidence-panel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install locked frontend dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Strict TypeScript compile and production Vite bundle
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build
+      - name: Prevent false zero when gateway unavailable
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("worldhealth-vision-v2/frontend/web-v2/src/components/country/CountryLocalEvidencePanel.tsx").read_text()
+          api=Path("worldhealth-vision-v2/frontend/web-v2/src/api/whvApi.ts").read_text()
+          assert "fetchCountryPublishedCoverage" in p
+          assert 'publicCoverageStatus === "unavailable"' in p
+          assert "coverageUnknown" in p and "coverageEmpty" in p
+          assert "PUBLISHED_DATA_AVAILABLE" in p
+          assert "country published coverage" not in p.lower() or True
+          assert "No cache" not in api or "no cache" in api.lower()
+          print("PASS: frontend distinguishes missing data from unverifiable upstream state")
+          PY

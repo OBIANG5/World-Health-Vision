@@ -5,6 +5,7 @@ import com.worldhealthvision.timeseries.api.dto.CountryLatestComparisonResponse;
 import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
+import com.worldhealthvision.timeseries.api.dto.CountryPublishedCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesListResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
@@ -38,6 +39,14 @@ public class TimeseriesQueryService {
 
     public TimeseriesReadinessResponse getReadiness() {
         return timeseriesRepository.getReadiness();
+    }
+
+    public CountryPublishedCoverageResponse getCountryPublishedCoverage(String iso3) {
+        String normalized = normalizeRequiredCode(iso3);
+        if (!normalized.matches("[A-Z]{3}")) {
+            throw new IllegalArgumentException("Country code must be exactly ISO3.");
+        }
+        return timeseriesRepository.getCountryPublishedCoverage(normalized);
     }
 
     public TimeseriesListResponse<SourceDataCoverageResponse> listSourceDataCoverage() {

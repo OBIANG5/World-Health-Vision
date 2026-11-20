@@ -211,6 +211,11 @@ class SignedRightsRegistryIntegrationTest {
                 SignedTestRightsFixture.defaultDecision("WORLD_BANK", "WDI", "FRA", ind));
         mockMvc.perform(authorizedHeader(request(key, ind))).andExpect(status().isOk());
         assertEquals(1, countRuns(key));
+        long publishedBeforeRevocation = mapper.readTree(mockMvc.perform(
+                get("/api/timeseries/countries/FRA/published-coverage"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString())
+                .get("availableObservationCount").asLong();
         // The public API is allowed to read a signed valid observation.
         mockMvc.perform(get("/api/timeseries/series")
                         .param("countryIso3", "FRA")
@@ -226,6 +231,14 @@ class SignedRightsRegistryIntegrationTest {
         // run identity and its immutable hash are unchanged.
         mockMvc.perform(authorizedHeader(request(key, ind)))
                 .andExpect(status().isForbidden());
+        // Country-wide public coverage also falls as soon as a reviewer
+        // permission is revoked, without deleting forensic source rows.
+        long publishedAfterRevocation = mapper.readTree(mockMvc.perform(
+                get("/api/timeseries/countries/FRA/published-coverage"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString())
+                .get("availableObservationCount").asLong();
+        assertEquals(publishedBeforeRevocation - 1, publishedAfterRevocation);
         // Revocation must take effect on PUBLIC READS, not just future writes.
         mockMvc.perform(get("/api/timeseries/series")
                         .param("countryIso3", "FRA")

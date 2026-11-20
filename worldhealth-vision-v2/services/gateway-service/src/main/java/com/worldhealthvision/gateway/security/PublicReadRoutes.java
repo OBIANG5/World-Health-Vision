@@ -37,6 +37,9 @@ final class PublicReadRoutes {
             // Only published, source-stamped observations, availability and comparisons.
             // Exclude /api/timeseries/source-runs (operator information) and /readiness.
             "/api/timeseries/sources/coverage",
+            // Public counts only; the underlying SQL view already filters
+            // unlicensed, revoked and not-attested series.
+            "/api/timeseries/countries/*/published-coverage",
             "/api/timeseries/series",
             "/api/timeseries/series/latest",
             "/api/timeseries/series/availability",

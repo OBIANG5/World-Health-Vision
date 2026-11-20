@@ -22,6 +22,7 @@ import com.worldhealthvision.timeseries.api.dto.LatestSourceObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
+import com.worldhealthvision.timeseries.api.dto.CountryPublishedCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
 import com.worldhealthvision.timeseries.api.internal.dto.IngestionObservationBatchRequest;
@@ -109,6 +110,65 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
      * or missing records never count as available, and modeled/estimated values
      * are always distinguished from observed values.
      */
+    /**
+     * Honest published-data coverage per country. Never count catalogue
+     * sources, raw source_run rows, suppressed values or unreviewed evidence.
+     * The latest_observation SQL view applies rights, revocations and
+     * signed-evidence checks; this query MUST NOT read observation directly.
+     */
+    @Override
+    public CountryPublishedCoverageResponse getCountryPublishedCoverage(String countryIso3) {
+        return jdbcClient.sql("""
+                select
+                    count(*) filter (
+                        where value_status in ('OBSERVED', 'ESTIMATED')
+                          and (numeric_value is not null or text_value is not null)
+                    ) as available_count,
+                    count(*) filter (
+                        where value_status = 'OBSERVED'
+                          and (numeric_value is not null or text_value is not null)
+                    ) as observed_count,
+                    count(*) filter (
+                        where value_status = 'ESTIMATED'
+                          and (numeric_value is not null or text_value is not null)
+                    ) as estimated_count,
+                    count(distinct indicator_code) filter (
+                        where value_status in ('OBSERVED', 'ESTIMATED')
+                          and (numeric_value is not null or text_value is not null)
+                    ) as indicator_count,
+                    count(distinct source_code) filter (
+                        where value_status in ('OBSERVED', 'ESTIMATED')
+                          and (numeric_value is not null or text_value is not null)
+                    ) as source_count,
+                    max(period_start) filter (
+                        where value_status in ('OBSERVED', 'ESTIMATED')
+                          and (numeric_value is not null or text_value is not null)
+                    ) as latest_period,
+                    max(fetched_at_utc) filter (
+                        where value_status in ('OBSERVED', 'ESTIMATED')
+                          and (numeric_value is not null or text_value is not null)
+                    ) as latest_fetch
+                from timeseries.latest_observation
+                where country_iso3 = :countryIso3
+                """)
+                .param("countryIso3", countryIso3)
+                .query((rs, row) -> {
+                    long available = rs.getLong("available_count");
+                    return new CountryPublishedCoverageResponse(
+                            countryIso3,
+                            available > 0 ? "PUBLISHED_DATA_AVAILABLE" : "NO_PUBLICLY_ELIGIBLE_DATA",
+                            available,
+                            rs.getLong("observed_count"),
+                            rs.getLong("estimated_count"),
+                            rs.getLong("indicator_count"),
+                            rs.getLong("source_count"),
+                            rs.getObject("latest_period", LocalDate.class),
+                            rs.getObject("latest_fetch", OffsetDateTime.class)
+                    );
+                })
+                .single();
+    }
+
     @Override
     public List<SourceDataCoverageResponse> listSourceDataCoverage() {
         String sql = """

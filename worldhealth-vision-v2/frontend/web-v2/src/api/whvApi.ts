@@ -17,6 +17,7 @@ import type {
   RegionSummary,
   SourceDetail,
   SourceDataCoverage,
+  CountryPublishedCoverage,
   TimeseriesSeriesResponse,
 } from "./types";
 
@@ -101,6 +102,37 @@ const sourceCoverageCache = new AsyncCache<SourceDataCoverage[]>(2 * 60 * 1000);
 const countryLocalContextCache = new AsyncCache<CountryLocalContext>(2 * 60 * 1000);
 const countrySourceCoverageCache = new AsyncCache<CountryLocalCoverageOverview>(2 * 60 * 1000);
 const nationalComparisonCache = new AsyncCache<CountryNationalComparisons>(2 * 60 * 1000);
+
+/**
+ * Truthful country coverage: ONLY the real rights/attestation-filtered
+ * Timeseries database. Do NOT infer coverage from catalog countries.
+ * Intentionally no cache: permissions can be revoked after prior fetches.
+ */
+export async function fetchCountryPublishedCoverage(
+  iso3: string,
+): Promise<CountryPublishedCoverage> {
+  const code = iso3.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(code)) throw new Error("Invalid ISO3 country");
+  const response = await whvApi.get<CountryPublishedCoverage>(
+    `/api/timeseries/countries/${code}/published-coverage`,
+    { timeout: 12000 },
+  );
+  const data = response.data;
+  if (!data || data.countryIso3 !== code ||
+      !["PUBLISHED_DATA_AVAILABLE", "NO_PUBLICLY_ELIGIBLE_DATA"].includes(data.coverageStatus) ||
+      ![data.availableObservationCount, data.observedObservationCount,
+        data.estimatedObservationCount, data.publishedIndicatorCount,
+        data.publishedSourceCount].every(value => Number.isSafeInteger(value) && value >= 0) ||
+      data.availableObservationCount !==
+        data.observedObservationCount + data.estimatedObservationCount ||
+      (data.coverageStatus === "NO_PUBLICLY_ELIGIBLE_DATA" &&
+        data.availableObservationCount !== 0) ||
+      (data.coverageStatus === "PUBLISHED_DATA_AVAILABLE" &&
+        data.availableObservationCount === 0)) {
+    throw new Error("Inconsistent public coverage data");
+  }
+  return data;
+}
 
 export async function fetchCountries(): Promise<CountrySummary[]> {
   try {

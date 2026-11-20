@@ -4,8 +4,8 @@
  * catalogue and does not call a curated claim a Timescale observation.
  */
 import { useEffect, useState } from "react";
-import { fetchCountryLocalContext, fetchCountryNationalComparisons } from "../../api/whvApi";
-import type { CountryLocalContext, CountryNationalComparisons } from "../../api/types";
+import { fetchCountryLocalContext, fetchCountryNationalComparisons, fetchCountryPublishedCoverage } from "../../api/whvApi";
+import type { CountryLocalContext, CountryNationalComparisons, CountryPublishedCoverage } from "../../api/types";
 
 type Props = {
   iso3: string;
@@ -54,6 +54,16 @@ const COPY = {
     internationalEstimated: "Estimation",
     internationalHeading: "Organismes internationaux : données réellement enregistrées",
     methodologicalWarning: "Même pour une année commune, un recensement et une estimation ne prouvent pas un accord ou une contradiction.",
+    coverageTitle: "Données réellement publiables pour ce pays",
+    coverageLoading: "Vérification des données statistiques autorisées…",
+    coverageUnknown: "État des séries non vérifiable actuellement : cela ne signifie pas qu'elles sont absentes.",
+    coverageEmpty: "Aucune observation actuellement autorisée à la publication dans notre base. Les organismes répertoriés ne sont pas forcément connectés.",
+    coverageAvailable: "Observations disponibles",
+    coverageIndicators: "indicateurs",
+    coverageSources: "sources",
+    coverageObserved: "observées",
+    coverageEstimated: "estimées",
+    coverageCaveat: "Seulement les séries contrôlées et autorisées dans World-Vision, pas toutes les statistiques du pays.",
 
   },
   en: {
@@ -96,6 +106,16 @@ const COPY = {
     internationalEstimated: "Estimated",
     internationalHeading: "International institutions: actually stored observations",
     methodologicalWarning: "Even for a common year, a census and an estimate do not by themselves establish agreement or conflict.",
+    coverageTitle: "Actually publishable data for this country",
+    coverageLoading: "Checking authorized statistical records…",
+    coverageUnknown: "Cannot verify published-series availability now; this does not imply records are absent.",
+    coverageEmpty: "No currently authorized observations in this database. Listed institutions may not be connected.",
+    coverageAvailable: "Available observations",
+    coverageIndicators: "indicators",
+    coverageSources: "sources",
+    coverageObserved: "observed",
+    coverageEstimated: "estimated",
+    coverageCaveat: "Only verified, authorized series in World-Vision, not all statistics about this country.",
 
   },
 } as const;
@@ -112,6 +132,9 @@ function validExternalUrl(url: string): string | null {
 export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props) {
   const [data, setData] = useState<CountryLocalContext | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
+  const [publicCoverage, setPublicCoverage] = useState<CountryPublishedCoverage | null>(null);
+  const [publicCoverageStatus, setPublicCoverageStatus] =
+    useState<"loading" | "ready" | "unavailable">("loading");
   const [comparisons, setComparisons] = useState<CountryNationalComparisons | null>(null);
   const [comparisonStatus, setComparisonStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const copy = lang === "fr" ? COPY.fr : COPY.en;
@@ -130,6 +153,26 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
       .catch(() => {
         if (!active) return;
         setStatus("unavailable");
+      });
+    return () => { active = false; };
+  }, [iso3, enabled]);
+
+  // This independent coverage check is useful EVEN when the catalog or
+  // Analytics backend is down. Never turn a failed request into zero sources.
+  useEffect(() => {
+    if (!enabled || !/^[A-Z]{3}$/.test(iso3)) return;
+    let active = true;
+    setPublicCoverage(null);
+    setPublicCoverageStatus("loading");
+    fetchCountryPublishedCoverage(iso3)
+      .then((result) => {
+        if (!active) return;
+        setPublicCoverage(result);
+        setPublicCoverageStatus("ready");
+      })
+      .catch(() => {
+        if (!active) return;
+        setPublicCoverageStatus("unavailable");
       });
     return () => { active = false; };
   }, [iso3, enabled]);
@@ -174,6 +217,25 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
         )}
       </summary>
       <div className="whv-national-evidence-body">
+        <section className="whv-national-evidence-release" aria-live="polite"
+          aria-label={copy.coverageTitle}>
+          <strong>{copy.coverageTitle}</strong>
+          {publicCoverageStatus === "loading" && <p role="status">{copy.coverageLoading}</p>}
+          {publicCoverageStatus === "unavailable" && <p role="status">{copy.coverageUnknown}</p>}
+          {publicCoverageStatus === "ready" && publicCoverage?.coverageStatus ===
+            "NO_PUBLICLY_ELIGIBLE_DATA" && <p>{copy.coverageEmpty}</p>}
+          {publicCoverageStatus === "ready" && publicCoverage?.coverageStatus ===
+            "PUBLISHED_DATA_AVAILABLE" && (
+            <p>
+              {copy.coverageAvailable} : <strong>{numberFormatter.format(publicCoverage.availableObservationCount)}</strong>
+              {" · "}{numberFormatter.format(publicCoverage.publishedIndicatorCount)} {copy.coverageIndicators}
+              {" · "}{numberFormatter.format(publicCoverage.publishedSourceCount)} {copy.coverageSources}
+              {" · "}{numberFormatter.format(publicCoverage.observedObservationCount)} {copy.coverageObserved}
+              {" / "}{numberFormatter.format(publicCoverage.estimatedObservationCount)} {copy.coverageEstimated}
+            </p>
+          )}
+          <p className="whv-national-evidence-caution">{copy.coverageCaveat}</p>
+        </section>
         {status === "loading" && <p role="status">{copy.loading}</p>}
         {status === "unavailable" && <p role="status">{copy.unknown}</p>}
         {status === "ready" && data?.localSourceCount === 0 && <p>{copy.empty}</p>}
