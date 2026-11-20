@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -206,6 +207,13 @@ class SignedRightsRegistryIntegrationTest {
                 SignedTestRightsFixture.defaultDecision("WORLD_BANK", "WDI", "FRA", ind));
         mockMvc.perform(authorizedHeader(request(key, ind))).andExpect(status().isOk());
         assertEquals(1, countRuns(key));
+        // The public API is allowed to read a signed valid observation.
+        mockMvc.perform(get("/api/timeseries/series")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", ind)
+                        .param("sourceCode", "WORLD_BANK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1));
         jdbc.update("""
                 insert into timeseries.rights_revocation(decision_id,operator_id,reason_code)
                 values (?, 'CI_REVOKER', 'SYNTHETIC_REVIEW_WITHDRAWN')
@@ -214,6 +222,22 @@ class SignedRightsRegistryIntegrationTest {
         // run identity and its immutable hash are unchanged.
         mockMvc.perform(authorizedHeader(request(key, ind)))
                 .andExpect(status().isForbidden());
+        // Revocation must take effect on PUBLIC READS, not just future writes.
+        mockMvc.perform(get("/api/timeseries/series")
+                        .param("countryIso3", "FRA")
+                        .param("indicatorCode", ind)
+                        .param("sourceCode", "WORLD_BANK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(0));
+        mockMvc.perform(get("/api/timeseries/source-runs")
+                        .param("sourceCode", "WORLD_BANK")
+                        .param("datasetCode", "WDI"))
+                .andExpect(status().isOk());
+        assertEquals(1, jdbc.queryForObject("""
+                select count(*) from timeseries.observation o
+                join timeseries.source_run sr on sr.id=o.source_run_id
+                where sr.run_key=?
+                """, Integer.class, key));
         assertEquals(1, countRuns(key));
         assertEquals(1, jdbc.queryForObject("""
                 select count(*) from timeseries.source_run_rights_decision
