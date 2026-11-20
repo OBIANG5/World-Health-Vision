@@ -232,6 +232,8 @@ const path="https://github.com/OBIANG5/World-Health-Vision/blob/feature/worldvis
 
 export default function CinematicProductionBoard() {
   const [projectName,setProjectName]=useState("Nouvelle production World-Vision");
+  // Preserve the original stable project identifier through revisions.
+  const [loadedProjectId,setLoadedProjectId]=useState<string|null>(null);
   const [script,setScript]=useState("");
   const [files,setFiles]=useState<Asset[]>([]);
   const [shots,setShots]=useState<Shot[]>([initialShot()]);
@@ -387,7 +389,8 @@ export default function CinematicProductionBoard() {
       const necessary=studioAssetNames(saved);
       const missing=necessary.filter(name=>!files.some(f=>f.name===name));
       // An invalid project must never overwrite an in-progress edit.
-      setProjectName(saved.title);setScript(saved.script);setShots(restored);setSelectedId(restored[0].id);
+      setProjectName(saved.title);setLoadedProjectId(saved.id);
+      setScript(saved.script);setShots(restored);setSelectedId(restored[0].id);
       setVoiceFile(saved.voice?.file??"");setComparisonVoice("");
       setMusicFile(saved.music?.file??"");setOutroFile(saved.outro?.file??"");
       setAccent(saved.style?.accent??"#8bbecf");
@@ -441,7 +444,7 @@ export default function CinematicProductionBoard() {
     if(!canExport){setFeedback("Ajoute un script et les médias indispensables aux plans choisis.");return;}
     if(!captionValid){setFeedback("Corrige les sous-titres avant export : "+(parsedCaptions.error||captionIssues[0]?.reason));return;}
     const project={
-      schema_version:"worldvision-creative-project-v1",id:mkSlug(projectName),
+      schema_version:"worldvision-creative-project-v1",id:loadedProjectId??mkSlug(projectName),
       title:projectName,script,fps:30,aspect_ratio:"9:16",
       ...(parsedCaptions.cues.length?{captions:parsedCaptions.cues}:{}),
       style:{background:"#0b1721",ink:"#f6f8fa",accent},
@@ -467,7 +470,7 @@ export default function CinematicProductionBoard() {
     };
     const blob=new Blob([JSON.stringify(project,null,2)+"\n"],{type:"application/json"});
     const url=URL.createObjectURL(blob);
-    const link=document.createElement("a");link.href=url;link.download=mkSlug(projectName)+".json";
+    const link=document.createElement("a");link.href=url;link.download=(loadedProjectId??mkSlug(projectName))+".json";
     document.body.append(link);link.click();link.remove();
     window.setTimeout(()=>URL.revokeObjectURL(url),1000);
     setFeedback("Projet JSON exporté. Conserve les fichiers médias dans un dossier assets/ portant les mêmes noms avant rendu.");
