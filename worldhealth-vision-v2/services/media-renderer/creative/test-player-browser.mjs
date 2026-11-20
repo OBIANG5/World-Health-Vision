@@ -75,6 +75,20 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
     for(const frame of frames){
       await page.evaluate(f=>window.__wvSmokeSeek?.(f),frame);
       await sleep(600);
+      if(mode==="editorial"&&[145,300,455].includes(frame)){
+        // Measure the actual DOM heading opacity of the INCOMING shot during
+        // a cross-dissolve, not a paper assumption about our easing formula.
+        const next=frame===145?"film-territory-context":
+          frame===300?"film-source-photo":"film-verified-data-contract";
+        const opacity=await page.evaluate(id=>{
+          const title=document.querySelector('[data-wv-title="'+id+'"]');
+          return title?.parentElement?Number(getComputedStyle(title.parentElement).opacity):null;
+        },next);
+        if(opacity===null||opacity>.02)
+          throw Error("Two readable headlines collide in a real transition: "+
+            JSON.stringify({frame,next,opacity}));
+        console.log("[player-smoke] verified single-headline real transition",frame,next,opacity);
+      }
       if(mode==="editorial"){
         const stage=frame>=650?"document":frame>=485&&frame<=580?"data":
           frame>=335&&frame<=420?"photo":frame>=180&&frame<=270?"country":
