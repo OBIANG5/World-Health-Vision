@@ -747,3 +747,40 @@ Route GET publique `/api/timeseries/compare/countries/latest` identifiée comme 
 ---
 ## 20 novembre 2026 — PRODUCT-P2C1 : premier explorateur de vraies séries éligibles dans Atlas
 PR #102 (DRAFT) https://github.com/OBIANG5/World-Health-Vision/pull/102, base PR #101→#100→#99→#97. Nouveau GET `/api/timeseries/countries/{iso3}/published-indicators`, uniquement sur latest_observation sous droits/Bronze, liste bornée d'indicateurs réellement publiables (observé/estimé/sources/date). Nouveau `PublishedIndicatorExplorer` dans CountryLocalEvidencePanel : sélection d'indicateur, derniers relevés par source via Timeseries non caché, unité et méthode Catalog, dates sourcePublishedAt/fetchedAtUtc, notices de droits sans prétendre à une licence de revente. Revalidation coverage et liste au retour focus/onglet, pas de stale sur une nouvelle réponse. **CI SUCCESS SHA `9b6a4dadce66b5d3afb02d5942f9e78e4be6a8e9`** https://github.com/OBIANG5/World-Health-Vision/actions/runs/44731981979 : 33 Timeseries+46 Gateway, build TypeScript/Vite/ESLint, Chromium 320px/iPhone/desktop PASS avec scénario synthétique de révocation, artefact 14626323587. PREUVE UI **SYNTHÉTIQUE**, pas de dataset public réel ni combinaison CI UI+ingestion signée dans la même stack. Document de reprise précis : `docs/continuity/WORLD_VISION_PRODUCT_P2C1_REAL_INDICATOR_EXPLORER_2026-11-20.md`. Prochain P2C2 : vrai jeu test-only signé et révoqué DANS PostgreSQL via six services, observer son apparition/disparition DANS le navigateur, puis P2C3 premier dataset fournisseur sous licence et URL staging privée. Déploiement Vercel inchangé, aucune fusion/dépense. Préserver #95/#94, GDELT/média et toutes les Visions.
+
+---
+## 20 novembre 2026 — PRODUCT-P2C2 (PR #106) : signatures + vraie stack, révocation iPhone
+Branche `product/v2-p2c2-signed-live-atlas-revocation-2026-11-20`, base PR #102. Issue #103, puis #107 pour P2C3 source officielle.
+Fichiers : `infra/tests/p2c2_signed_fixture.py` (2 clés privées indépendantes créées en mémoire, raw/normalized/manifest/journal SYNTHÉTIQUES avec SHA et item fingerprint ; signe le scope CI et le témoin distinct, pas de licence fournisseur), `infra/tests/compose.ci-synthetic-rights.yml` (trust public + token éphémère), `frontend/web-v2/p2c2-signed-live-browser.mjs` (même onglet iPhone avant/après vraie révocation en DB), `.github/workflows/whv-v2-p2c2-signed-live-atlas-e2e.yml`.
+Code SHAs `e274c7e9`, `5546feda`, `49fe188c`, navigateur Chrome runner optimisé `49f45e89`.
+Premier run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44769022804 : signatures, 6 services, refus bad token et valeur altérée, vrai POST SYNTHETIC, Gateway renvoie 1 observation et 1 indicateur, source-runs HTTP401 = SUCCESS des étapes ; téléchargement Chromium ancien chemin lent, **conclusion navigateur À VÉRIFIER**.
+Second run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44770455822 : browser Chrome installé ou repli borné, **conclusion à vérifier** avant validation P2C2.
+Handoff dédié : `docs/continuity/WORLD_VISION_PRODUCT_P2C2_SIGNED_LIVE_ATLAS_2026-11-20.md`.
+PROCHAIN : finaliser CI de la révocation DANS le même navigateur ; P2C3 issue #107 candidat Insee Melodi sous Licence Ouverte avec dataset précis/méthode/quota/licence à vérifier, 1 série réelle avant staging privé. Ne rien déployer sur Vercel, ne jamais autoriser IBGE/WDI réel via des signatures CI, préserver 11 Visions/médias/GDELT.
+
+---
+## 20 novembre 2026 — PRODUCT-P2C2 FINI ET VALIDÉ en vraie stack (CI uniquement)
+PR #106 DRAFT `product/v2-p2c2-signed-live-atlas-revocation-2026-11-20` ;
+**code SHA `49f45e89af16f66131a925acb8a625218886dcdb`,
+CI https://github.com/OBIANG5/World-Health-Vision/actions/runs/44770455822 SUCCESS**.
+Démonstration avec deux signatures Ed25519 éphémères indépendantes sur des
+octets/source/normalisés/manifest/journal **ENTIÈREMENT SYNTHÉTIQUES** ;
+vraie ingestion private Timeseries acceptée (bad key et changement signé refusés),
+6 services Compose, SQL latest_observation / Gateway, vrais Atlas navigateur
+320px, iPhone390 et desktop1440 PASS ; révocation physique rights_revocation
+pendant le même navigateur iPhone → disparition de valeur partout sur API
+publique et UI PASS. Forensic : 1 raw observation conservée, 0 observation
+publiable, 1 décision révoquée. Screenshots GitHub Actions artefact ID
+`14647466570` (test-only, pas de vraies statistiques).
+Documentation détaillée
+`docs/continuity/WORLD_VISION_PRODUCT_P2C2_SIGNED_LIVE_ATLAS_2026-11-20.md`
+section 8. Les précédents textes « CI en cours » sont historiques, **résultat
+final SUCCESS confirmé**.
+Aucun vrai droit fournisseur, ni chiffre INSEE/IBGE/WDI ou Gabon réel,
+aucun merge, aucun Vercel nouveau, VPS, ni coût. **Prochain travail #107** :
+première source réelle vérifiée juridiquement et scientifiquement, pilote
+France INSEE Melodi (Licence Ouverte générale et 30 requêtes/minute, à
+confirmer pour le dataset choisi), pipeline source→Bronze→witness/parseur/
+revue droits→Timeseries→Atlas et PREVIEW privée, ne pas prétendre couvrir
+217 pays en séries statistiques. #95/#94 doivent être examinés avant diffusion
+commerciale. Conserver l'intégralité des onze Visions, média et GDELT.

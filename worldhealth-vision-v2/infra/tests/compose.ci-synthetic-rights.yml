@@ -1,0 +1,12 @@
+# PRODUCT-P2C2 — CI ONLY: ephemeral public trust anchors and private ingestion key.
+# NEVER use this Compose overlay with production credentials or real datasets.
+# The two Ed25519 private keys stay in the disposable runner process memory.
+services:
+  timeseries-service:
+    environment:
+      WHV_RIGHTS_TRUST_PUBLIC_KEY_BASE64: ${WHV_RIGHTS_TRUST_PUBLIC_KEY_BASE64:?CI reviewer public key required}
+      WHV_EVIDENCE_TRUST_PUBLIC_KEY_BASE64: ${WHV_EVIDENCE_TRUST_PUBLIC_KEY_BASE64:?CI witness public key required}
+      WHV_TIMESERIES_INTERNAL_INGESTION_KEY: ${WHV_TIMESERIES_INTERNAL_INGESTION_KEY:?CI ingestion transport token required}
+  ingestion-service:
+    environment:
+      WHV_TIMESERIES_INTERNAL_INGESTION_KEY: ${WHV_TIMESERIES_INTERNAL_INGESTION_KEY:?CI ingestion transport token required}
