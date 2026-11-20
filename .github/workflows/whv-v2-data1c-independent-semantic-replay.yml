@@ -45,8 +45,10 @@ jobs:
           p=Path("worldhealth-vision-v2/services/ingestion-service/src/ingestion_service")
           ref=(p/"semantic_source_replay.py").read_text()
           witness=(p/"private_bronze_witness.py").read_text()
-          assert "parse_ibge_national_population" not in ref.replace("# or IbgeNationalCensusPilot, so it can catch pipeline changes.", "")
-          assert "parse_wdi_brazil_2022_population" not in ref
+          imports = [line.strip() for line in ref.splitlines() if line.strip().startswith(("from ", "import "))]
+          assert all("ibge_national_census_client" not in line for line in imports)
+          assert all("worldbank_population_2022_research" not in line for line in imports)
+          assert all("pipelines" not in line for line in imports)
           assert "verify_original_to_normalized(" in witness
           assert "PRIVATE_RESEARCH_VALIDATION" in witness
           assert '"PUBLIC_API_INGEST"' not in witness
