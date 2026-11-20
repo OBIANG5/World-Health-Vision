@@ -43,6 +43,25 @@ class TimeseriesClient:
         manifest: RunManifest,
         observations: list[IndicatorObservation],
     ) -> dict[str, Any]:
+        # Producer-side defense in depth. Receiver-side Java gate independently
+        # enforces these restrictions so an attacker cannot bypass using HTTP.
+        src, ds = source_code.strip().upper(), dataset_code.strip().upper()
+        if src == "IBGE" or ds.startswith(("CENSO2022_4714", "WDI_POP_TOTAL_BRA_2022")):
+            raise PermissionError("Private research source has no reviewed Timeseries publication rights.")
+        if any(
+            obs.indicator_code.startswith("IBGE.CENSUS2022.RESIDENT_POP")
+            or (obs.country_iso3 == "BRA" and obs.indicator_code == "SP.POP.TOTL"
+                and obs.period_start.year <= 2022 <= obs.period_end.year)
+            for obs in observations
+        ):
+            raise PermissionError("Protected national 2022 population observation cannot be published.")
+        for marker in ("licenseReviewStatus", "rightsReviewStatus", "publicationStatus", "timeseriesPublication"):
+            if str(manifest.notes.get(marker, "")).upper() in (
+                "REVIEW_REQUIRED", "NEEDS_PROVIDER_CLARIFICATION",
+                "BRONZE_ONLY_UNREVIEWED", "NOT_ATTEMPTED",
+                "REVOKED", "DENIED", "EXPIRED",
+            ):
+                raise PermissionError("Unreviewed source manifest must remain private.")
         payload = {
             "sourceCode": source_code,
             "datasetCode": dataset_code,
@@ -52,7 +71,7 @@ class TimeseriesClient:
             "bronzeNormalizedPayloadPath": str(manifest.normalized_payload_path),
             "recordCount": manifest.record_count,
             "notes": manifest.notes,
-            "items": [self._serialize_observation(item) for item in observations],
+            "items": [self._serialize_observation(item, source_code=src) for item in observations],
         }
 
         if not self._ingestion_key or len(self._ingestion_key) < 32:
@@ -70,8 +89,20 @@ class TimeseriesClient:
             response.raise_for_status()
             return response.json()
 
-    def _serialize_observation(self, observation: IndicatorObservation) -> dict[str, Any]:
+    def _serialize_observation(
+        self, observation: IndicatorObservation, *, source_code: str | None = None,
+    ) -> dict[str, Any]:
         value_status = observation.value_status or ("OBSERVED" if observation.value is not None else "MISSING")
+        if source_code == "WORLD_BANK" and observation.indicator_code == "SP.POP.TOTL":
+            # WDI population is a demographic midyear ESTIMATE. Older generic
+            # connector observations have no explicit status; they must not be
+            # silently promoted to a direct field observation.
+            if observation.value_status in (None, "MIDYEAR_ESTIMATE", "ESTIMATED"):
+                value_status = "ESTIMATED" if observation.value is not None else "MISSING"
+            elif observation.value_status == "OBSERVED":
+                raise ValueError("WDI population estimate cannot be published as an observed census.")
+        if value_status not in {"OBSERVED", "ESTIMATED", "MISSING", "SUPPRESSED"}:
+            raise ValueError("Observation status unsupported by canonical Timeseries model.")
 
         return {
             "indicatorCode": observation.indicator_code,
