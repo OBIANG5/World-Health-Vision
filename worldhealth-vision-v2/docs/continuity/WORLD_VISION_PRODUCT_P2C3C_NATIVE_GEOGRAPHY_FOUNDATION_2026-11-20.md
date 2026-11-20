@@ -202,3 +202,38 @@ partager la qualité de provenance, mais on ne confond pas la veille
 6. issue #107 première série légale, #68 site public Vercel ;
 7. `HANDOFF_CORE_F12B_2026-11-19.md` ;
 8. respect de l'empilement DRAFT #113→#111→#108→#106→#102→#101→#100→#99→#97 et du reste historique.
+
+### 8. CI FINAL VERIFIÉE et passage vers le produit (2026-11-20)
+**Code validé EXACT** : `2a35495f8673a54cbe44ef29be5c721da5b6aa3e`.
+Run : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44784951860
+**SUCCESS**, journal vérifié :
+- `PASS: V6 national view = exact V5 signed public view + one restrictive geography predicate`. La vue publique V6 a gardé toutes les garanties antérieures
+  de preuve Bronze, SHA des items, droits signés, validité et révocation ;
+  seul un prédicat **RESTRICTIF** sur les périmètres géographiques est ajouté.
+- `PASS: geographic scope history is append-only and no country equivalence is auto-granted` ;
+  aucune validation automatique de correspondance ISO3.
+- `Tests run: 42, Failures: 0, Errors: 0, Skipped: 0`,
+  `BUILD SUCCESS` sur Java 21 + PostgreSQL 16 + toutes les
+  migrations Flyway incluant V6.
+- Les trois tests additionnels de ce SHA couvrent vrai changement de
+  version/release, fausse année, un pays FRA vs DEU, faux libellé full-country
+  et zone transfrontalière à millésime administratif alphanumérique.
+- Le **SHA documentaire** est postérieur au SHA de code et porte
+  `[skip ci]` ; ne pas les confondre. Le code effectivement testé
+  ne change pas lors de la rédaction du présent dossier.
+
+**Prochaine issue préparée** :
+https://github.com/OBIANG5/World-Health-Vision/issues/114
+= P2C3C2, une vraie valeur institutionnelle géographiquement exacte,
+sous droits signés, sur un Atlas de staging authentifié ; chemin critique
+sans nouvelle stagnation sur une série de détails de catalogue. Cette
+issue inclut source-native read API séparée des comparaisons nationales,
+droits et méthodologie de CE dataset, sécurité/compatibilité mobile,
+et stockage Bronze privé DURABLE.
+
+**État au handoff** :
+P2C3C — REGISTER+NATIONAL DENY **TESTED** ;
+P2C3C2 — SCOPE GRANT+PUBLISHED STAGING **NOT IMPLEMENTED**.
+Le blocage `DS_POPULATIONS_REFERENCE` reste entièrement actif.
+N'afficher aucune statistique réelle INSEE comme déjà publiée
+ou accessible dans Vercel ; le site public existant reste déconnecté.
