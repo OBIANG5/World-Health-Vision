@@ -60,3 +60,87 @@ Si le shape réel diffère des exemples : **FAIL CLOSED**. Corriger le parseur s
 
 ## 7. Handoff inter-chat
 Lire ce document, PR #108 et sa CI finale, issue #107, PR #106 P2C2 et le dossier P2C2, HANDOFF_CORE_F12B, PR #95/issue #94, issue #68 Vercel, puis PR #102/#101/#100/#99/#97 pour la dépendance. Reprendre d'abord l'audit réel de la source puis droits/méthodes avant le premier chiffre officiel publié. Respecter les onze Visions, médias/GDELT, Money/Watch, géographie et sources locales par pays ; aucun site international opérationnel encore déclaré.
+
+## 8. ADDENDUM FINAL : premier vrai GET Insee validé, aucune publication
+Ce paragraphe **remplace le statut provisoire** du §4/5. Un diagnostic réseau
+en lecture seule a été exécuté de façon répétée et limitée dans des branches
+AUDIT ISOLÉES, sans collecte publique ni export d'observations dans GitHub.
+
+**Échec documentaire utile et correction, sans masquer les régressions :**
+1. Run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773502271 :
+   première réponse réelle HTTP 200 Insee obtenue, parseur refusant
+   l'encodage de `GEO` non identique au paramètre d'URL `FRANCE-F`.
+   Octets temporaires supprimés, zéro API Timeseries.
+2. Run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773788927 :
+   essai de reconnaissance par codes raccourcis non justifiés,
+   toujours refusé. Le programme est resté **fail closed**.
+3. Run **SUCCESS de DIAGNOSTIC DES CODES SEULEMENT** :
+   https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773997299
+   sur branche `audit/insee-melodi-schema-codes-2026-11-20`.
+   Ce run a inspecté les seules structures et codes, PAS les valeurs.
+   Réponse officielle actuelle :
+   - `observations` contient exactement 1 observation, enveloppe top-level
+     `identifier,observations,paging,publisher,title`.
+   - `dimensions` contient `FREQ,GEO,POPREF_MEASURE,TIME_PERIOD`.
+   - `GEO = 2025-FRANCE-F` (le préfixe **2025 est une VERSION
+     GÉOGRAPHIQUE**, distincte de `TIME_PERIOD=2023`).
+   - `FREQ=A`, `POPREF_MEASURE=PTOT`, `TIME_PERIOD=2023`.
+   - `measures` contient `OBS_VALUE_NIVEAU` avec sous-clé `value`.
+   Les autres champs `GEO_REF/GEO_OBJECT` ne sont PAS présents dans ce JSON
+   effectif. Le parseur doit accepter le code composite vérifié, sans
+   inférer silencieusement un périmètre ISO3.
+4. Code `2b8c746a0d33421b94fdf1cb266cf3744a7b8c16` : adaptation
+   STRICTE au `GEO=2025-FRANCE-F` ou à la syntaxe composite datée
+   `20xx-FRANCE-F`, avec cohérence de version et tests d'anti-usurpation.
+   Run de relecture
+   https://github.com/OBIANG5/World-Health-Vision/actions/runs/44774306006 :
+   la géographie passe, le type numérique de la valeur ne passe pas :
+   preuve d'un encodage JSON flottant, non d'une autorisation de l'arrondir.
+5. Code **final testé** `f21ccc0b2010175fe715ca8e61cfcf7734a766e2` :
+   accepte UNIQUEMENT les JSON doubles finis et INTÉGRAUX (bornes
+   population et représentation exacte, sans arrondi), refuse fractions,
+   NaN, nombres négatifs ou supprimés. Correction sans affaiblir les
+   conditions de confidentialité et de provenance.
+6. **CI OFFLINE FINALE SUCCESS** :
+   https://github.com/OBIANG5/World-Health-Vision/actions/runs/44774479821
+   avec **47 tests source Insee PASS + 27 tests droits/Bronze PASS = 74/74**.
+7. **AUDIT RÉEL FINAL SUCCESS** :
+   https://github.com/OBIANG5/World-Health-Vision/actions/runs/44774548064
+   sur branche unique
+   `audit/insee-melodi-one-time-final-schema-2026-11-20`.
+   Sur le code `f21ccc0b` issu de P2C3, UN seul GET HTTPS officiel a été
+   accepté, la réponse 2023 `PTOT` d'une seule observation a été parsée
+   **sans afficher la valeur chiffrée**, conservée temporairement en
+   **Bronze immuable par hash des octets d'origine**, puis relue et vérifiée.
+   Résultat log : `PASS single source-allowlisted official HTTPS GET and
+   private Bronze verification` ; géographie/attribution/méthode/droits
+   laissés en `REVIEW_REQUIRED` ; `Timeseries writes=ZERO`,
+   `PUBLIC_API_INGEST=NOT_GRANTED`. Répertoire temporaire détruit et
+   vérification `PASS: no provider data retained/uploaded on public GitHub`.
+
+**ÉTAT RÉEL :** World-Vision a désormais un **premier pipeline de réception
+et quarantaine de vrais octets institutionnels** qui refuse les encodages
+ambigus et résiste aux altérations. Cela NE signifie toujours PAS une
+statistique INSEE publiée dans Atlas, ni une licence commerciale,
+ni une version d'API de production connectée. Le fait qu'une source
+soit appelée `PTOT` ne valide pas à lui seul le type
+OBSERVED/ESTIMATED ou la comparabilité avec des estimations internationales.
+
+### Prochain GO/NO-GO de P2C3 avant mise à disposition sur le site
+A. Conserver durablement dans un **stockage privé autorisé et sauvegardé**
+l'original de la réponse et son hash, métadonnées/dictionnaire officiel,
+   méthode, millésime, règle des révisions, statut et unité. Le contrôle
+   éphémère ci-dessus efface ses fichiers et NE constitue pas une capture
+   d'audit institutionnelle durable.
+B. Revoir les **permissions exactes du jeu DS_POPULATIONS_REFERENCE** :
+   source du droit, attribution, opérations publication web/API/revente,
+   exceptions, droits de redistribution, conditions commerciales, et avis
+   juridique humain si nécessaire ; inscription d'une décision signée
+   distincte sans réutiliser les signatures fictives P2C2.
+C. Fixer le parseur `INSEE...V1` avec version+empreinte code (PR #95),
+   témoin cryptographique indépendant raw→normalized, contrôle des clés et
+   de leur révocation (#94), puis SI et SEULEMENT SI droits/méthodes OK
+   première ingestion réelle dans Timeseries et Atlas EN STAGING protégé.
+D. Mesurer performances/échecs, quotas, sauvegarde/restauration, coûts,
+   mobile iPhone/Safari et rollback. La promotion sur le site Vercel
+   public n'est pas incluse ; pas de nouveau VPS sans décision explicite.
