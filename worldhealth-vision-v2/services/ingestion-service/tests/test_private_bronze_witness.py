@@ -232,3 +232,25 @@ def test_projection_rejects_dangerous_unsupported_non_finite_and_duplicate(tmp_p
     invalid = [{**items[0], "sourceMetadata": {"unsafe key with spaces": "X"}}]
     with pytest.raises(EvidenceIntegrityError):
         items_sha256(invalid)
+
+
+
+def test_cross_language_java_python_projection_vector_is_stable():
+    # EXACT same test fixture as Java EvidenceItemsFingerprintTest.java.
+    golden = "cd3c0117ff783f8f0c18aa6075eb8062ffb60f68ab44544edc6268ae79a7fb4d"
+    fixture = [{
+        "indicatorCode": "SYNTH.RIGHTS.GDP", "countryIso3": "FRA",
+        "periodGranularity": "ANNUAL", "periodStart": "2024-01-01",
+        "periodEnd": "2024-12-31", "periodLabel": "2024",
+        "numericValue": 17.0, "textValue": None, "valueStatus": "OBSERVED",
+        "sourcePublishedAt": None,
+        "sourceMetadata": {
+            "sourcePeriodLabel": "2024",
+            "sourceYear": "2024",
+            "syntheticTestOnly": True,
+        },
+        "qualityFlags": ["SYNTHETIC_ONLY"],
+    }]
+    assert items_sha256(fixture) == golden
+    fixture[0]["sourceMetadata"]["sourceYear"] = "2025"
+    assert items_sha256(fixture) != golden
