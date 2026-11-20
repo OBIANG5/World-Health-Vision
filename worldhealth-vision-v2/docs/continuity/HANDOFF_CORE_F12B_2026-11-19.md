@@ -821,3 +821,16 @@ Java/Flyway Postgres16 https://github.com/OBIANG5/World-Health-Vision/actions/ru
 **151 tests réussis** en tout sur le même SHA. GET Insee catalogue réel 44777513706 et deux GET catalogue+valeur réels 44778754616 PASS, sans valeurs exposées ni artifact de source, pas de publication réelle. `spatial.id=FEHM` = « France hors Mayotte », pas la France entière/FRA ; correction Python `countryIso3Candidate=null`, lien SHA catalog, verrou Java `ProtectedSourcePublicationGate` pour datasets INSEE `DS_POPULATIONS_REFERENCE` et `..._CATALOG`, même avec source forgée.
 Document complet : `docs/continuity/WORLD_VISION_PRODUCT_P2C3B_INSEE_FEHM_METADATA_2026-11-20.md` §8.
 **Next** modèle international source-native geo scope (version, inclusions), licence dataset/signature humaine et attribuée, migration de comparaison/Atlas, stockage privé durable et staging HTTPS protégée. Ne pas confondre les 151 tests CI avec licence réelle, droits commercial ou publication. Aucun VPS/Vercel modifié.
+
+---
+## Suite à prendre après P2C3B : issue #112 (périmètres mondiaux / FEHM)
+Créer une RFC puis implémenter sans casser la pile réussie le modèle
+`geographicScopeId` source-native, version, inclusions/exclusions et
+relation ISO3 uniquement après revue ; propagation en SQL comparaison,
+Gateway et Atlas mobile, tests d'incompatibilité/droits. **Issue #112**
+https://github.com/OBIANG5/World-Health-Vision/issues/112 .
+Le premier pipeline de données réelles INSEE (P2C3B #111) est testé
+**151 PASS + 2 vrais GETs source** mais AUCUN droit réutilisation
+signé ni chiffre dans Atlas ou Vercel public. Les instructions de reprise
+sont dans `docs/continuity/WORLD_VISION_PRODUCT_P2C3B_INSEE_FEHM_METADATA_2026-11-20.md`
+§8–9, puis PR #108, #106, #95/issue #94 et issue #107.

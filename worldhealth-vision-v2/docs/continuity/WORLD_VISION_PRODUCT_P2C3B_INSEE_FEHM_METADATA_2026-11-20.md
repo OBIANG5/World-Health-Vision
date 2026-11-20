@@ -238,3 +238,24 @@ remplir un dossier de licence précis Insee (avec attribution), intégrer
 identité du parseur et révocation (#95/#94), enchaîner vers une seule
 série réelle sous droits en **staging protégé**. Continuer médias,
 GDELT et onze Visions sans refaire les moteurs déjà prouvés.
+
+### 9. Prochaine implémentation multi-pays priorisée — issue #112
+https://github.com/OBIANG5/World-Health-Vision/issues/112
+
+Cette issue trace explicitement la RFC/implémentation du modèle de **scope
+géographique typé** (source-native, version, inclusions/exclusions,
+mapping ISO3 REVIEWED, compatibilité avec les unités/méthodes), la
+propagation Timeseries→Gateway→Analytics→Atlas, le filtrage strict
+des comparaisons pays et tests de révocation sur mobile.
+
+**Prochaine étape la plus rentable** : ne pas ré-ouvrir le dossier de
+signatures synthétiques P2C2 ni multiplier les pays « connectés ».
+D'abord définir et tester comment une vraie observation FEHM sera représentée
+et non confondue avec `FRA` entier ; un dossier de licence signé et un
+stockage Bronze **durable privé**, puis une seule série officielle sous droits
+dans STAGING protégé, avec rollback et validation humaine.
+
+Toute interprétation `Public/Libre = APPROVED_PUBLIC_API` reste refusée ;
+les véritables droits commerciaux se lisent selon la Licence Ouverte 2.0
+`https://www.insee.fr/fr/information/2008466`, les exceptions du jeu précis,
+les obligations d'attribution et les deux signatures opérationnelles.
