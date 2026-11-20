@@ -571,6 +571,18 @@ export default function CinematicProductionBoard() {
             </select>
             <span className="wvc-hint">Utiliser uniquement un premier plan transparent préparé avec un outil spécialisé ; le studio effectue le compositing et le mouvement 2,5D sans inventer une image.</span>
           </label>
+          <label className="wvc-wide">CRÉDIT / PROVENANCE DU MÉDIA
+            <input value={active.mediaCredit} maxLength={200} onChange={e=>updateShot({mediaCredit:e.target.value})}
+              placeholder="Auteur, institution et attribution approuvée"/>
+          </label>
+          {files.find(f=>f.name===active.mediaName)?.kind==="video"&&<label className="wvc-wide">
+            POINT D'ENTRÉE VIDÉO (IMAGES À 30 FPS)
+            <input type="number" min="0" max="30000" step="1" value={active.mediaTrimBefore}
+              onChange={e=>{const n=Number(e.target.value);if(Number.isInteger(n)&&n>=0&&n<=30000)updateShot({mediaTrimBefore:n});}}/>
+          </label>}
+          {active.foregroundName&&<label className="wvc-wide">CRÉDIT DU DÉTOURAGE
+            <input value={active.foregroundCredit} maxLength={200} onChange={e=>updateShot({foregroundCredit:e.target.value})}/>
+          </label>}
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
           {active.template==="photo_story"&&<div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
