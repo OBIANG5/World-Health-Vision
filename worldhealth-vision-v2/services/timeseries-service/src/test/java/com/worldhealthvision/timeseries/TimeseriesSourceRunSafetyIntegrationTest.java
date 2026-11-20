@@ -291,6 +291,12 @@ class TimeseriesSourceRunSafetyIntegrationTest {
         String key = runKey();
         String invalid = sample(key).replace("\"countryIso3\":\"FRA\"",
                                              "\"countryIso3\":\"ZZZ\"");
+        // The precise signed research review is SYNTHETIC and permits the
+        // request to reach SQL; ZZZ remains an intentionally absent catalog
+        // country, so its FK failure must rollback the source run atomically.
+        SignedTestRightsFixture.insert(jdbc, SignedTestRightsFixture.defaultDecision(
+                "WORLD_BANK", "WDI", "ZZZ", "NY.GDP.MKTP.CD"
+        ));
         mockMvc.perform(authenticated(invalid)).andExpect(status().isBadRequest());
         assertEquals(0, runCount(key));
     }
