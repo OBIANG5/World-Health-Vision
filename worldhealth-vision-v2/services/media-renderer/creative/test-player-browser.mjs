@@ -89,7 +89,7 @@ async function testCase(browser,{mode,frames,expectedDuration,expectVoice}){
             currentTitles:Array.from(document.querySelectorAll('[data-wv-title]'))
               .map(x=>x.getAttribute("data-wv-title"))
           }));
-          if(!scene[stage]||!scene.currentTitles.includes({
+          if(!(stage==="geo"?scene.globe:scene[stage])||!scene.currentTitles.includes({
             geo:"film-world-overview",country:"film-territory-context",
             photo:"film-source-photo",data:"film-verified-data-contract",
             document:"film-evidence-closing"
