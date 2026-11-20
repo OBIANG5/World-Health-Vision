@@ -122,7 +122,13 @@ def parse_private_insee_population(payload: Any, *, original_http_bytes: bytes
             and math.isfinite(value) and abs(value) <= 2**53)
     )
     if not valid_integer:
-        raise ValueError("Missing, suppressed, fractional or invalid municipal count")
+        # Error includes ONLY schema types/keys, never provider numbers or body.
+        field_shape = type(value).__name__
+        available_keys = ",".join(sorted(value_record))
+        raise ValueError(
+            "Missing, suppressed, fractional or invalid municipal count "
+            + "(type=" + field_shape + "; measureFields=" + available_keys + ")"
+        )
     population = int(value)
     if not 1_000_000 <= population <= 100_000_000:
         raise ValueError("Insee 2023 municipal value outside reviewable range")

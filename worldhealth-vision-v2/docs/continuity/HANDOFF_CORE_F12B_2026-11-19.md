@@ -792,3 +792,14 @@ Périmètre strict Insee Melodi `DS_POPULATIONS_REFERENCE` / population MUNICIPA
 CI code SHA `e88fa30d24acaae445bf10a9e1041ee3b17d2044` https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773353575 **SUCCESS 19/19 ciblés et 235/235 Python global, LIVE SKIPPED**. Premier run #44773111830 avait échoué sur lecture httpx MockTransport déjà consommée, bug corrigé.
 Doc de reprise `docs/continuity/WORLD_VISION_PRODUCT_P2C3A_INSEE_PRIVATE_SOURCE_2026-11-20.md`.
 Suite immédiate : run LIVE INSEE **2 GETs en lecture seule** déclenché 1 fois par commit dédié avec `[insee-once-live-probe]` (ou manual), résultats à documenter ; revoir licence dataset et signatures par vrais décideurs ; témoin Bronze indépendamment vérifié + version parseur, Atlas sans confondre population municipale hors Mayotte avec FRA entier ; staging privé à décision/coût séparés. Conserver onze Visions, GDELT, média, Watch et toutes les branches.
+
+## P2C3A — 20/11/2026 : test source LIVE #1 diagnostiqué et borne conservée
+Sonde GitHub Actions #44773713496 : la réponse officielle Insee a atteint
+le parseur mais le type de `OBS_VALUE_NIVEAU.value` a été refusé ;
+job LIVE FAILED, première seule consultation (aucune valeur diffusée).
+Fix borne numérique `f96739d02d7db1415dbda7aebba2dd28f9013811` :
+décimal accepté seulement SI exactement entier, fini et borné ;
+22/22 tests spécifiques, 238/238 Python global SUCCESS
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773961917 .
+Nouvelle sonde LIVE 2 GETs contrôlés à conclure et documenter ;
+historique détaillé `docs/continuity/WORLD_VISION_PRODUCT_P2C3A_INSEE_PRIVATE_SOURCE_2026-11-20.md`.

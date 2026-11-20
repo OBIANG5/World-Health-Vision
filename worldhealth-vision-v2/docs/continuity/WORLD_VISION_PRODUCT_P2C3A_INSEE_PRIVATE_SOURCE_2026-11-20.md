@@ -159,3 +159,25 @@ par cette exécution**.
 7. Réviser la pile de PR DRAFT proprement, conserver toutes les
    Visions, médias GDELT, voix/vidéo, Watch/Money et le globe.
 8. Tenir HANDOFF_CORE et issue #107 à jour à chaque incrément.
+
+## 7. Sonde réseau numéro 1 : anomalie réelle et correction circonscrite
+Run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773713496
+sur `520e7366` : job hors réseau **SUCCESS** (235 tests) ; job privé
+OFFICIEL **FAILED**, source HTTP accessible et valide jusqu'à la lecture
+du type numérique ; la fonction a levé
+`Missing, suppressed, rounded or invalid municipal count` à la ligne de
+validation de `OBS_VALUE_NIVEAU.value`. La sonde a cessé après cette
+première requête : aucune seconde requête, aucune révision d'une valeur
+invalidée, aucun import Timeseries ni publication.
+
+Fix `f96739d02d7db1415dbda7aebba2dd28f9013811` : accepte
+`int`, chiffre ASCII positif, ou `float` EXPLICITEMENT fini et
+mathématiquement entier (<= 2^53, plage 1M..100M). Refuse toujours
+`68_094_280.1`, null, bool, inconnu, territoire/date/mesure erronés.
+Trois tests supplémentaires pour les représentations numériques.
+Run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773961917
+**SUCCESS**, **22 tests P2C3A + 238 tests Python global**, probe live
+SKIPPED volontairement. Une nouvelle sonde unique est déclenchée
+séparément, ses résultats définitifs doivent être consignés ensuite.
+Le diagnostic d'échec ne journalise que des types et noms de champs,
+jamais les valeurs de fournisseur ni le corps complet HTTP.
