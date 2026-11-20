@@ -100,6 +100,19 @@ def test_official_catalog_pins_the_underlying_territory_and_unit():
     assert x.data_reuse_review == "REVIEW_REQUIRED"
 
 
+def test_catalog_datetimes_are_compared_as_instants_not_string_sorting():
+    data = fake_catalog()
+    # The same timezone-independent timestamp range is accepted.
+    data["issued"] = "2025-12-17T14:35:21+06:00"
+    data["modified"] = "2025-12-18T12:00:16+00:00"
+    assert parse_insee_reference_catalog(canonical(data)).issued_at.endswith("+06:00")
+    # Lexicographically later local clock can represent earlier UTC instant.
+    data["issued"] = "2025-12-17T12:00:00+00:00"
+    data["modified"] = "2025-12-17T12:30:00+02:00"
+    with pytest.raises(EvidenceIntegrityError):
+        parse_insee_reference_catalog(canonical(data))
+
+
 def test_catalog_and_observation_must_reconcile_but_not_publish():
     validate_population_and_metadata(fake_population(), metadata())
     with pytest.raises(EvidenceIntegrityError):

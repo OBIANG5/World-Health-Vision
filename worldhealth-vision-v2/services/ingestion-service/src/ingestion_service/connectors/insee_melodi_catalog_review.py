@@ -92,20 +92,25 @@ def _localized(data: dict[str, Any], key: str, lang: str = "fr") -> str:
     return _text(translated[0], key)
 
 
-def _parse_catalog_date(value: Any, key: str) -> str:
+def _parse_catalog_date(value: Any, key: str) -> tuple[str, datetime]:
     label = _text(value, key)
     if not re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?(?:Z|[+-]\d\d:\d\d)?", label):
         raise EvidenceIntegrityError("Malformed metadata timestamp " + key)
     try:
-        # Insee metadata timestamps may have nine decimal digits (nano)
+        # Insee metadata may contain 9-digit fractional seconds; Python
+        # decodes to microseconds. Keep exact ORIGINAL label for provenance.
         dt = datetime.fromisoformat(label.replace("Z", "+00:00"))
-        # Date-only and nonsensical future-dated catalogs may not be considered
-        # operationally current; note that timestamps do not prove license.
-        if dt.year < 2000 or dt.year > datetime.now(UTC).year + 1:
+        if dt.tzinfo is None:
+            # Official Melodi returns timezone-less timestamp strings.
+            # Treat both issued/modified in the same UTC frame for ordering;
+            # this timezone assumption is about ordering, NOT publication time.
+            dt = dt.replace(tzinfo=UTC)
+        instant = dt.astimezone(UTC)
+        if instant.year < 2000 or instant.year > datetime.now(UTC).year + 1:
             raise EvidenceIntegrityError("Implausible metadata timestamp " + key)
     except ValueError as err:
         raise EvidenceIntegrityError("Invalid metadata timestamp " + key) from err
-    return label
+    return label, instant
 
 
 def _year_at_start(value: Any, key: str) -> int:
@@ -171,9 +176,9 @@ def parse_insee_reference_catalog(body: bytes, *, source_url: str = CATALOG_URL)
     geo_vintage = _year_at_start(data.get("spatialTemporal"), "spatialTemporal")
     if geo_vintage != 2025:
         raise EvidenceIntegrityError("Geographic reference vintage changed")
-    issued = _parse_catalog_date(data.get("issued"), "issued")
-    modified = _parse_catalog_date(data.get("modified"), "modified")
-    if _parse_catalog_date(modified, "modified") < issued:
+    issued, issued_instant = _parse_catalog_date(data.get("issued"), "issued")
+    modified, modified_instant = _parse_catalog_date(data.get("modified"), "modified")
+    if modified_instant < issued_instant:
         raise EvidenceIntegrityError("Metadata modified before issued")
     return InseePopulationCatalogEvidence(
         original_metadata_bytes=body, original_http_sha256=sha256(body).hexdigest(),
