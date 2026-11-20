@@ -7,6 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,6 +42,18 @@ class TimeseriesControllerIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @DynamicPropertySource
+    static void signedReviewTrustAnchor(DynamicPropertyRegistry registry) {
+        registry.add("whv.timeseries.rights-trust-public-key-base64",
+                SignedTestRightsFixture::publicKeyBase64);
+    }
+
+    @BeforeEach
+    void syntheticReviewDecisions() {
+        SignedTestRightsFixture.authorizeExistingSyntheticFixtures(jdbcTemplate);
+    }
+
+
     @Autowired
     private MeterRegistry meterRegistry;
 
@@ -65,7 +80,7 @@ class TimeseriesControllerIntegrationTest {
                                   "bronzeRawPayloadPath": "/tmp/worldbank.raw.json",
                                   "bronzeNormalizedPayloadPath": "/tmp/worldbank.normalized.ndjson",
                                   "recordCount": 3,
-                                  "notes": {
+                                  "notes": {"httpBodySha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                                     "indicatorName": "GDP (current US$)"
                                   },
                                   "items": [
@@ -130,7 +145,7 @@ class TimeseriesControllerIntegrationTest {
                                   "bronzeRawPayloadPath": "/tmp/imf.raw.json",
                                   "bronzeNormalizedPayloadPath": "/tmp/imf.normalized.ndjson",
                                   "recordCount": 1,
-                                  "notes": {
+                                  "notes": {"httpBodySha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                                     "indicatorName": "GDP (current US$)"
                                   },
                                   "items": [
@@ -339,7 +354,7 @@ class TimeseriesControllerIntegrationTest {
                               "bronzeRawPayloadPath":"/tmp/pop.synthetic.raw",
                               "bronzeNormalizedPayloadPath":"/tmp/pop.synthetic.ndjson",
                               "recordCount":4,
-                              "notes":{"syntheticTestOnly":true},
+                              "notes":{"httpBodySha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","syntheticTestOnly":true},
                               "items":[
                                 {"indicatorCode":"SP.POP.TOTL","countryIso3":"FRA",
                                  "periodGranularity":"ANNUAL","periodStart":"2022-01-01",
