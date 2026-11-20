@@ -1,0 +1,84 @@
+name: World-Vision P2C3 - Insee Melodi source evidence private audit
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2c3-insee-melodi-private-evidence-*'
+  workflow_dispatch:
+    inputs:
+      provider_network_probe:
+        description: 'Make exactly ONE real Insee GET in PRIVATE_RESEARCH mode'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# No publication, no provider observation uploaded, no Vercel.
+jobs:
+  offline-contract-and-bronze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing ingestion package and test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -e './worldhealth-vision-v2/services/ingestion-service[dev]'
+      - name: Validate fixed national PTOT schema and adversarial source cases
+        run: |
+          python -m pytest -q \
+            worldhealth-vision-v2/services/ingestion-service/tests/test_insee_melodi_reference_research.py
+      - name: Preserve previous Bronze/rights-negative research regression
+        run: |
+          python -m pytest -q \
+            worldhealth-vision-v2/services/ingestion-service/tests/test_source_evidence_revisions.py \
+            worldhealth-vision-v2/services/ingestion-service/tests/test_timeseries_private_publication_gate.py
+      - name: Keep publication, signer and unsafe follow-redirect outside research client
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('worldhealth-vision-v2/services/ingestion-service/src/ingestion_service')
+          source=(root/'connectors/insee_melodi_reference_client.py').read_text()
+          assert 'PRIVATE_RESEARCH_VALIDATION' in source
+          assert '"timeseriesPublication": "NOT_ATTEMPTED"' in source
+          assert '"licenseReviewStatus": "REVIEW_REQUIRED"' in source
+          assert 'follow_redirects=False' in source
+          assert 'Ed25519PrivateKey' not in source
+          assert 'TimeseriesClient' not in source
+          print("PASS: fixed, bounded and non-publishing provider audit contract")
+          PY
+
+  optional-real-provider-read:
+    if: github.event_name == 'workflow_dispatch' && inputs.provider_network_probe == true
+    needs: offline-contract-and-bronze
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing ingestion module
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -e './worldhealth-vision-v2/services/ingestion-service'
+      - name: One reviewed HTTPS GET with private verifiable research archive
+        env:
+          WHV_INSEE_PRIVATE_PROBE_ENABLED: YES_RESEARCH_READ_ONLY
+        run: |
+          umask 077
+          python3 worldhealth-vision-v2/infra/tests/p2c3_insee_readonly_probe.py
+      - name: No retained private source evidence
+        if: always()
+        run: |
+          test ! -e "$RUNNER_TEMP/whv-insee-research-quarantine"
+          echo "PASS: all private Insee probe bytes deleted, no public artifact"
