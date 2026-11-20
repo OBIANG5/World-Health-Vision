@@ -1,0 +1,129 @@
+name: World-Vision P2C1 — real published indicators, never catalog guesses
+on:
+  push:
+    branches:
+      - 'product/v2-p2c1-published-indicator-discovery-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  published-indicator-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Audit rights-eligible indicator discovery, bounded response and public Gateway
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("worldhealth-vision-v2")
+          repo=(root/"services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/persistence/JdbcTimeseriesRepository.java").read_text()
+          start=repo.index("public List<CountryPublishedIndicatorResponse> listCountryPublishedIndicators(")
+          end=repo.index("@Override",start)
+          s=repo[start:end]
+          assert "from timeseries.latest_observation lo" in s
+          assert "from timeseries.observation" not in s
+          assert "numeric_value is not null or lo.text_value is not null" in s
+          assert "value_status in ('OBSERVED', 'ESTIMATED')" in s
+          assert "limit :limit" in s
+          routes=(root/"services/gateway-service/src/main/java/com/worldhealthvision/gateway/security/PublicReadRoutes.java").read_text()
+          assert '"/api/timeseries/countries/*/published-indicators"' in routes
+          assert '"/api/timeseries/source-runs"' not in routes
+          print("PASS: discovery is bounded and uses only rights-gated canonical observations")
+          PY
+      - name: Run Java 21 PostgreSQL16/Flyway Timeseries and Gateway integration
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service,services/gateway-service -am test
+
+  atlas-mobile-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Locked dependencies, strict lint and real React/Vite production compilation
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npx eslint src/components/country/PublishedIndicatorExplorer.tsx src/components/country/CountryLocalEvidencePanel.tsx src/api/whvApi.ts
+          npm run build
+      - name: Enforce truthful source and indicator read behavior
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('worldhealth-vision-v2/frontend/web-v2/src')
+          panel=(root/'components/country/CountryLocalEvidencePanel.tsx').read_text()
+          explorer=(root/'components/country/PublishedIndicatorExplorer.tsx').read_text()
+          api=(root/'api/whvApi.ts').read_text()
+          assert 'PUBLISHED_DATA_AVAILABLE' in panel
+          assert 'PublishedIndicatorExplorer' in panel
+          assert 'fetchPublishedLatestSources' in explorer
+          assert 'visibilitychange' in explorer
+          assert 'fetchCountryPublishedIndicators' in api
+          assert 'fetchCatalogSourceDetail' in api
+          assert 'NO_PUBLICLY_ELIGIBLE_DATA' in panel
+          assert 'sourceInfo' in explorer and 'licenseSummary' in explorer
+          print('PASS: interactive indicator exploration remains separated from catalogue-only claims')
+          PY
+      - name: Checkout archival country registry for isolated browser testing only
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: archive
+          persist-credentials: false
+      - name: Assemble temporary NOINDEX Atlas test with archival country fixtures
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from shutil import copy2,copytree
+          source=Path("worldhealth-vision-v2/frontend/web-v2/dist")
+          target=Path("preview")
+          assert (source/"index.html").is_file()
+          copytree(source,target)
+          fixtures=("preview-countries.js","preview-sources.js",
+                    "preview-local-catalog.js","preview-bootstrap.js")
+          for name in fixtures:
+              p=Path("archive")/name
+              assert p.is_file(),name
+              copy2(p,target/name)
+          html=(target/"index.html").read_text(encoding="utf-8")
+          assert "<head>" in html
+          block='<meta name="robots" content="noindex,nofollow">\n'
+          block+=''.join('<script src="./'+name+'"></script>\n' for name in fixtures)
+          (target/"index.html").write_text(html.replace("<head>","<head>\n"+block,1),encoding="utf-8")
+          (target/"OFFLINE_SYNTHETIC_ONLY.txt").write_text(
+              "World-Vision QA ONLY. Source numbers in Playwright init script are synthetic, not provider data.\n",
+              encoding="utf-8")
+          PY
+      - name: Install temporary Chromium for real mobile/tablet browser QA
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Test visible indicator value, source terms and synthetic revocation on 320px iPhone and desktop
+        env:
+          WHV_PREVIEW_DIRECTORY: preview
+        run: node worldhealth-vision-v2/frontend/web-v2/p2c1-indicators-smoke.mjs
+      - name: Archive clearly labelled synthetic-only browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-p2c1-synthetic-indicator-mobile-qa
+          path: p2c1-artifacts/
+          if-no-files-found: warn

@@ -92,6 +92,8 @@ class GatewayPublicReadIntegrationTest {
                 .exchange().expectStatus().isOk();
         client.get().uri("/api/timeseries/countries/GAB/published-coverage")
                 .exchange().expectStatus().isOk();
+        client.get().uri("/api/timeseries/countries/GAB/published-indicators?limit=50")
+                .exchange().expectStatus().isOk();
         client.get().uri("/api/product/countries/GAB/national-comparisons")
                 .exchange().expectStatus().isOk()
                 .expectBody().jsonPath("$.forwarded")
@@ -100,7 +102,7 @@ class GatewayPublicReadIntegrationTest {
                 .exchange().expectStatus().isOk();
         client.get().uri("/api/product/continents/AFRICA/economic-snapshot")
                 .exchange().expectStatus().isOk();
-        assertThat(requests.get()).isEqualTo(6);
+        assertThat(requests.get()).isEqualTo(7);
     }
 
     @Test

@@ -232,6 +232,11 @@ class SignedRightsRegistryIntegrationTest {
                         .param("includeMissing", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(1));
+        var indicatorListBefore = mapper.readTree(mockMvc.perform(
+                get("/api/timeseries/countries/FRA/published-indicators"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertTrue(indicatorListBefore.findValuesAsText("indicatorCode").contains(ind));
         jdbc.update("""
                 insert into timeseries.rights_revocation(decision_id,operator_id,reason_code)
                 values (?, 'CI_REVOKER', 'SYNTHETIC_REVIEW_WITHDRAWN')
@@ -255,6 +260,12 @@ class SignedRightsRegistryIntegrationTest {
                         .param("sourceCode", "WORLD_BANK"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(0));
+        var indicatorListAfter = mapper.readTree(mockMvc.perform(
+                get("/api/timeseries/countries/FRA/published-indicators"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertFalse(indicatorListAfter.findValuesAsText("indicatorCode").contains(ind),
+                "Revocation MUST remove the indicator from the public country explorer");
         // A once-authorized row MUST disappear immediately from all anonymous
         // cross-country comparisons, including includeMissing=true.
         mockMvc.perform(get("/api/timeseries/compare/countries/latest")
@@ -375,6 +386,12 @@ class SignedRightsRegistryIntegrationTest {
                         .param("indicatorCode", indicator))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(0));
+        var unpublishedIndicators = mapper.readTree(mockMvc.perform(
+                get("/api/timeseries/countries/FRA/published-indicators"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertFalse(unpublishedIndicators.findValuesAsText("indicatorCode").contains(indicator),
+                "Unsigned archive MUST NOT appear as a discoverable indicator");
         // Regression: previously this route queried timeseries.observation
         // directly, leaking unsigned/unattested V1 raw values publicly.
         mockMvc.perform(get("/api/timeseries/compare/countries/latest")

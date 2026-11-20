@@ -482,6 +482,49 @@ export interface IndicatorRankResponse {
  * current Timeseries database. Not the count of registered institutions.
  * NO_PUBLICLY_ELIGIBLE_DATA never means worldwide data does not exist.
  */
+/** Counts from public, witness/rights-filtered Timeseries only. */
+export interface CountryPublishedIndicator {
+  indicatorCode: string;
+  indicatorDisplayName: string;
+  availableObservationCount: number;
+  observedObservationCount: number;
+  estimatedObservationCount: number;
+  publishedSourceCount: number;
+  latestAvailablePeriodStart: string | null;
+}
+export interface CountryPublishedIndicatorsResponse {
+  count: number;
+  items: CountryPublishedIndicator[];
+}
+export interface PublishedLatestSourceObservation {
+  sourceCode: string;
+  sourceDisplayName: string;
+  datasetCode: string;
+  datasetDisplayName: string;
+  countryIso3: string;
+  indicatorCode: string;
+  periodLabel: string;
+  periodStart: string;
+  periodEnd: string;
+  numericValue: number | null;
+  textValue: string | null;
+  valueStatus: "OBSERVED" | "ESTIMATED" | string;
+  sourcePublishedAt: string | null;
+  fetchedAtUtc: string | null;
+}
+export interface PublishedLatestSourcesResponse {
+  count: number;
+  items: PublishedLatestSourceObservation[];
+}
+export interface CatalogIndicatorDetail {
+  code: string;
+  displayName: string;
+  topic: string;
+  unitLabel: string;
+  description: string | null;
+  methodologyNotes: string | null;
+}
+
 export interface CountryPublishedCoverage {
   countryIso3: string;
   coverageStatus: "PUBLISHED_DATA_AVAILABLE" | "NO_PUBLICLY_ELIGIBLE_DATA";

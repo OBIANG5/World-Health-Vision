@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { fetchCountryLocalContext, fetchCountryNationalComparisons, fetchCountryPublishedCoverage } from "../../api/whvApi";
 import type { CountryLocalContext, CountryNationalComparisons, CountryPublishedCoverage } from "../../api/types";
+import PublishedIndicatorExplorer from "./PublishedIndicatorExplorer";
 
 type Props = {
   iso3: string;
@@ -153,17 +154,19 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
   const [data, setData] = useState<CountryLocalContext | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "unavailable">("loading");
   // Per-country result prevents stale responses and a failure being mistaken for zero.
+  const [coverageRevision, setCoverageRevision] = useState(0);
+  const coverageKey = iso3 + ":" + coverageRevision;
   const [coverageState, setCoverageState] = useState<{
-    countryIso3: string;
+    key: string;
     status: "ready" | "unavailable";
     data: CountryPublishedCoverage | null;
   } | null>(null);
   const [comparisons, setComparisons] = useState<CountryNationalComparisons | null>(null);
   const [comparisonStatus, setComparisonStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const copy = lang === "fr" ? COPY.fr : COPY.en;
-  const publicCoverageStatus = coverageState?.countryIso3 === iso3
+  const publicCoverageStatus = coverageState?.key === coverageKey
     ? coverageState.status : "loading";
-  const publicCoverage = coverageState?.countryIso3 === iso3 && coverageState.status === "ready"
+  const publicCoverage = coverageState?.key === coverageKey && coverageState.status === "ready"
     ? coverageState.data : null;
 
   // One source never becomes the privileged default. The visitor explicitly
@@ -210,21 +213,33 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
     return () => { active = false; };
   }, [iso3, enabled]);
 
-  // Independent from local Catalog and Analytics: rights-gated Timeseries coverage
-  // must remain independently verifiable and never reuse a stale country answer.
-  // The API intentionally does not cache revocable permissions.
+  // Independent from Catalog and Analytics: no cache of revocable permissions.
+  // Recheck on focus and page visibility; stale previous coverage is hidden
+  // while the new response is outstanding or the gateway is unavailable.
+  useEffect(() => {
+    if (!enabled) return;
+    const refresh = () => setCoverageRevision((n) => n + 1);
+    const visible = () => { if (document.visibilityState === "visible") refresh(); };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, [enabled]);
+
   useEffect(() => {
     if (!enabled || !/^[A-Z]{3}$/.test(iso3)) return;
     let active = true;
     fetchCountryPublishedCoverage(iso3)
       .then((result) => {
-        if (active) setCoverageState({ countryIso3: iso3, status: "ready", data: result });
+        if (active) setCoverageState({ key: coverageKey, status: "ready", data: result });
       })
       .catch(() => {
-        if (active) setCoverageState({ countryIso3: iso3, status: "unavailable", data: null });
+        if (active) setCoverageState({ key: coverageKey, status: "unavailable", data: null });
       });
     return () => { active = false; };
-  }, [iso3, enabled]);
+  }, [iso3, enabled, coverageKey]);
 
   // The national registry remains visible if the analytics/timeseries
   // backend is unavailable. Never claim 'no international observations' when
@@ -289,6 +304,10 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
           )}
           <p className="whv-national-evidence-caution">{copy.coverageCaveat}</p>
         </section>
+        {publicCoverageStatus === "ready" &&
+          publicCoverage?.coverageStatus === "PUBLISHED_DATA_AVAILABLE" && (
+            <PublishedIndicatorExplorer key={iso3} iso3={iso3} lang={lang} />
+          )}
         {status === "loading" && <p role="status">{copy.loading}</p>}
         {status === "unavailable" && <p role="status">{copy.unknown}</p>}
         {status === "ready" && data?.localSourceCount === 0 && <p>{copy.empty}</p>}

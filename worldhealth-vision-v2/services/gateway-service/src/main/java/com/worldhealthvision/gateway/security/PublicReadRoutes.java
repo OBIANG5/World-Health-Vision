@@ -40,6 +40,7 @@ final class PublicReadRoutes {
             // Public counts only; the underlying SQL view already filters
             // unlicensed, revoked and not-attested series.
             "/api/timeseries/countries/*/published-coverage",
+            "/api/timeseries/countries/*/published-indicators",
             "/api/timeseries/series",
             "/api/timeseries/series/latest",
             "/api/timeseries/series/availability",

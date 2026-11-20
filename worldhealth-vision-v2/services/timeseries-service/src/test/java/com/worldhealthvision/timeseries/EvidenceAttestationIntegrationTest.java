@@ -236,11 +236,28 @@ class EvidenceAttestationIntegrationTest {
                 .andExpect(jsonPath("$.publishedIndicatorCount")
                         .value(indicatorsBefore + 1));
 
+        // P2C1 product discovery MUST include this authorized indicator, and
+        // MUST NOT list the full catalog just because its metadata exists.
+        var publishedIndicators = mapper.readTree(mockMvc.perform(
+                get("/api/timeseries/countries/FRA/published-indicators"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString());
+        assertTrue(publishedIndicators.findValuesAsText("indicatorCode").contains(indicator),
+                "A signed, witnessed and publishable indicator must be discoverable");
+
         // Malformed country codes are not accepted or turned into zero data.
         mockMvc.perform(get("/api/timeseries/countries/FRANCE/published-coverage"))
                 .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/timeseries/countries/FRANCE/published-indicators"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/timeseries/countries/FRA/published-indicators")
+                        .param("limit", "501"))
+                .andExpect(status().isBadRequest());
 
         // ISO3 syntax alone is not evidence of collected data.
+        mockMvc.perform(get("/api/timeseries/countries/ZZZ/published-indicators"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(0));
         mockMvc.perform(get("/api/timeseries/countries/ZZZ/published-coverage"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.coverageStatus").value("NO_PUBLICLY_ELIGIBLE_DATA"))

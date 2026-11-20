@@ -6,6 +6,7 @@ import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.CountryPublishedCoverageResponse;
+import com.worldhealthvision.timeseries.api.dto.CountryPublishedIndicatorResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
 import com.worldhealthvision.timeseries.api.internal.dto.IngestionObservationBatchRequest;
@@ -19,6 +20,9 @@ public interface TimeseriesRepository {
 
     /** Actual publicly eligible observations for ONE country; no catalog guesses. */
     CountryPublishedCoverageResponse getCountryPublishedCoverage(String countryIso3);
+
+    /** Bounded discovery of indicator codes with ACTUAL publishable records. */
+    List<CountryPublishedIndicatorResponse> listCountryPublishedIndicators(String countryIso3, int limit);
 
     /** V2 catalog registry + actual available values, one row per registered source. */
     List<SourceDataCoverageResponse> listSourceDataCoverage();

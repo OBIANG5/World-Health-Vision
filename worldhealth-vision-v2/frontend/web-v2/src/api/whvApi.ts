@@ -18,6 +18,9 @@ import type {
   SourceDetail,
   SourceDataCoverage,
   CountryPublishedCoverage,
+  CountryPublishedIndicatorsResponse,
+  PublishedLatestSourcesResponse,
+  CatalogIndicatorDetail,
   TimeseriesSeriesResponse,
 } from "./types";
 
@@ -132,6 +135,79 @@ export async function fetchCountryPublishedCoverage(
     throw new Error("Inconsistent public coverage data");
   }
   return data;
+}
+
+/** Rights can be revoked: NO client cache for these requests. */
+export async function fetchCountryPublishedIndicators(
+  iso3: string,
+  limit = 100,
+): Promise<CountryPublishedIndicatorsResponse> {
+  const code = iso3.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(code) || !Number.isInteger(limit) || limit < 1 || limit > 500)
+    throw new Error("Invalid public indicator discovery request");
+  const response = await whvApi.get<CountryPublishedIndicatorsResponse>(
+    `/api/timeseries/countries/${code}/published-indicators`, { params: { limit }, timeout: 12000 },
+  );
+  const data = response.data;
+  if (!data || !Array.isArray(data.items) || !Number.isSafeInteger(data.count) ||
+      data.count !== data.items.length || data.items.length > limit ||
+      !data.items.every((item) => item && typeof item.indicatorCode === "string" &&
+        /^[A-Z0-9._-]{1,120}$/.test(item.indicatorCode) &&
+        typeof item.indicatorDisplayName === "string" &&
+        [item.availableObservationCount, item.observedObservationCount,
+         item.estimatedObservationCount, item.publishedSourceCount].every(
+           (value) => Number.isSafeInteger(value) && value >= 0,
+         ) &&
+        item.availableObservationCount > 0 && item.publishedSourceCount > 0 &&
+        item.availableObservationCount === item.observedObservationCount + item.estimatedObservationCount))
+    throw new Error("Inconsistent published indicator discovery response");
+  return data;
+}
+
+/** Do not memoize source values: a signed grant can be revoked after viewing. */
+export async function fetchPublishedLatestSources(
+  iso3: string, indicatorCode: string,
+): Promise<PublishedLatestSourcesResponse> {
+  const code = iso3.trim().toUpperCase();
+  const indicator = indicatorCode.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(code) || !/^[A-Z0-9._-]{1,120}$/.test(indicator))
+    throw new Error("Invalid latest-source query");
+  const response = await whvApi.get<PublishedLatestSourcesResponse>(
+    "/api/timeseries/series/latest",
+    { params: { countryIso3: code, indicatorCode: indicator }, timeout: 12000 },
+  );
+  const data = response.data;
+  if (!data || !Array.isArray(data.items) || !Number.isSafeInteger(data.count) ||
+      data.count !== data.items.length || data.count > 1000 ||
+      !data.items.every((item) =>
+        item && item.countryIso3 === code && item.indicatorCode === indicator &&
+        typeof item.sourceCode === "string" && typeof item.datasetCode === "string"))
+    throw new Error("Inconsistent latest-source observation response");
+  // Never render a SUPPRESSED/MISSING or null-valued record as a public value.
+  const items = data.items.filter((item) =>
+    ["OBSERVED", "ESTIMATED"].includes(item.valueStatus) &&
+    (Number.isFinite(item.numericValue) || (typeof item.textValue === "string" && item.textValue.length > 0)));
+  return { count: items.length, items };
+}
+
+export async function fetchCatalogIndicatorDetail(code: string): Promise<CatalogIndicatorDetail> {
+  if (!/^[A-Z0-9._-]{1,120}$/.test(code)) throw new Error("Invalid indicator code");
+  const response = await whvApi.get<CatalogIndicatorDetail>(
+    `/api/catalog/indicators/${encodeURIComponent(code)}`, { timeout: 10000 },
+  );
+  if (!response.data || response.data.code !== code)
+    throw new Error("Inconsistent catalog indicator information");
+  return response.data;
+}
+
+export async function fetchCatalogSourceDetail(code: string): Promise<SourceDetail> {
+  if (!/^[A-Z0-9._-]{1,120}$/.test(code)) throw new Error("Invalid source code");
+  const response = await whvApi.get<SourceDetail>(
+    `/api/catalog/sources/${encodeURIComponent(code)}`, { timeout: 10000 },
+  );
+  if (!response.data || response.data.code !== code)
+    throw new Error("Inconsistent catalog source information");
+  return response.data;
 }
 
 export async function fetchCountries(): Promise<CountrySummary[]> {
