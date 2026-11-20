@@ -23,6 +23,7 @@ import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.CountryPublishedCoverageResponse;
+import com.worldhealthvision.timeseries.api.dto.CountryPublishedIndicatorResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesListResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
@@ -62,6 +63,17 @@ public class TimeseriesController {
     @GetMapping("/countries/{iso3}/published-coverage")
     public CountryPublishedCoverageResponse getCountryPublishedCoverage(@PathVariable String iso3) {
         return timeseriesQueryService.getCountryPublishedCoverage(iso3);
+    }
+
+    /**
+     * Country indicators backed by rights-gated observations, NOT the registry.
+     * Limit is bounded; zero means no eligible records in this Timeseries DB.
+     */
+    @GetMapping("/countries/{iso3}/published-indicators")
+    public TimeseriesListResponse<CountryPublishedIndicatorResponse> listCountryPublishedIndicators(
+            @PathVariable String iso3,
+            @RequestParam(defaultValue = "100") @Min(1) @Max(500) int limit) {
+        return timeseriesQueryService.listCountryPublishedIndicators(iso3, limit);
     }
 
     @GetMapping("/sources/coverage")

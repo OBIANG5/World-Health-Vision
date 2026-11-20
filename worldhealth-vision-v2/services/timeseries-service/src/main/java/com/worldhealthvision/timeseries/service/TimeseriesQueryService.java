@@ -6,6 +6,7 @@ import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.CountryPublishedCoverageResponse;
+import com.worldhealthvision.timeseries.api.dto.CountryPublishedIndicatorResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesListResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
@@ -47,6 +48,20 @@ public class TimeseriesQueryService {
             throw new IllegalArgumentException("Country code must be exactly ISO3.");
         }
         return timeseriesRepository.getCountryPublishedCoverage(normalized);
+    }
+
+    public TimeseriesListResponse<CountryPublishedIndicatorResponse> listCountryPublishedIndicators(
+            String iso3, int limit) {
+        String code = normalizeRequiredCode(iso3);
+        if (!code.matches("[A-Z]{3}")) {
+            throw new IllegalArgumentException("Country code must be exactly ISO3.");
+        }
+        if (limit < 1 || limit > 500) {
+            throw new IllegalArgumentException("Published indicator list is limited to 1..500.");
+        }
+        List<CountryPublishedIndicatorResponse> rows =
+                timeseriesRepository.listCountryPublishedIndicators(code, limit);
+        return new TimeseriesListResponse<>(rows.size(), rows);
     }
 
     public TimeseriesListResponse<SourceDataCoverageResponse> listSourceDataCoverage() {

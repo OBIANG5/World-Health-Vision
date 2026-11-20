@@ -23,6 +23,7 @@ import com.worldhealthvision.timeseries.api.dto.SeriesAvailabilityResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceRunSummaryResponse;
 import com.worldhealthvision.timeseries.api.dto.SourceDataCoverageResponse;
 import com.worldhealthvision.timeseries.api.dto.CountryPublishedCoverageResponse;
+import com.worldhealthvision.timeseries.api.dto.CountryPublishedIndicatorResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesObservationResponse;
 import com.worldhealthvision.timeseries.api.dto.TimeseriesReadinessResponse;
 import com.worldhealthvision.timeseries.api.internal.dto.IngestionObservationBatchRequest;
@@ -167,6 +168,51 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                     );
                 })
                 .single();
+    }
+
+    /**
+     * Discover ONLY indicators with eligible source-attested, non-revoked values.
+     * One aggregation per country, not N requests to all catalog indicators.
+     * Catalog membership alone never qualifies as published data.
+     */
+    @Override
+    public List<CountryPublishedIndicatorResponse> listCountryPublishedIndicators(
+            String countryIso3, int limit) {
+        return jdbcClient.sql("""
+                with eligible as (
+                    select lo.indicator_code, lo.source_code, lo.value_status,
+                           lo.period_start
+                    from timeseries.latest_observation lo
+                    where lo.country_iso3 = :countryIso3
+                      and lo.value_status in ('OBSERVED', 'ESTIMATED')
+                      and (lo.numeric_value is not null or lo.text_value is not null)
+                )
+                select
+                    e.indicator_code,
+                    coalesce(i.display_name, e.indicator_code) as indicator_display_name,
+                    count(*) as available_count,
+                    count(*) filter (where e.value_status = 'OBSERVED') as observed_count,
+                    count(*) filter (where e.value_status = 'ESTIMATED') as estimated_count,
+                    count(distinct e.source_code) as source_count,
+                    max(e.period_start) as latest_period_start
+                from eligible e
+                left join catalog.indicator i on i.code = e.indicator_code
+                group by e.indicator_code, i.display_name
+                order by latest_period_start desc nulls last, e.indicator_code
+                limit :limit
+                """)
+                .param("countryIso3", countryIso3)
+                .param("limit", limit)
+                .query((rs, row) -> new CountryPublishedIndicatorResponse(
+                        rs.getString("indicator_code"),
+                        rs.getString("indicator_display_name"),
+                        rs.getLong("available_count"),
+                        rs.getLong("observed_count"),
+                        rs.getLong("estimated_count"),
+                        rs.getLong("source_count"),
+                        rs.getObject("latest_period_start", LocalDate.class)
+                ))
+                .list();
     }
 
     @Override
