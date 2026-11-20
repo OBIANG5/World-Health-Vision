@@ -1,0 +1,60 @@
+name: World-Vision P2C3 metadata-only Insee catalog audit — one-off
+
+on:
+  push:
+    branches:
+      - 'audit/insee-melodi-metadata-structure-2026-11-20'
+
+permissions:
+  contents: read
+
+# ONE public-institution metadata GET; no statistical values/observations,
+# no new provider asset uploaded, no credentials, no publishing or runners saved.
+jobs:
+  inspect-provider-catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: One official dataset metadata GET; log only bounded public metadata fields
+        run: |
+          python3 - <<'PY'
+          import json,re,urllib.request
+          url='https://api.insee.fr/melodi/catalog/DS_POPULATIONS_REFERENCE'
+          request=urllib.request.Request(url,headers={
+              'Accept':'application/json',
+              'User-Agent':'World-Vision-Metadata-Research-Only/1'
+          })
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):
+                  raise ValueError('Redirect refused')
+          with urllib.request.build_opener(NoRedirect()).open(request,timeout=16) as resp:
+              assert resp.geturl()==url and resp.status==200
+              assert resp.headers.get_content_type()=='application/json'
+              raw=resp.read(500001)
+              assert 0<len(raw)<=500000
+          payload=json.loads(raw.decode('utf-8'))
+          assert isinstance(payload,dict)
+          print('SOURCE: api.insee.fr/melodi/catalog/DS_POPULATIONS_REFERENCE')
+          print('top-level-keys:',','.join(sorted(payload)))
+          def examine(name,value,depth=0):
+              if depth>2:return
+              if isinstance(value,dict):
+                  print(name+': object keys='+','.join(sorted(value)[:50]))
+                  for key in ('id','label','content','lang','startPeriod','endPeriod'):
+                      if key in value:examine(name+'.'+key,value[key],depth+1)
+              elif isinstance(value,list):
+                  print(name+': list length='+str(len(value)))
+                  for ix,item in enumerate(value[:2]):examine(name+'['+str(ix)+']',item,depth+1)
+              elif isinstance(value,(str,int,float)) and len(str(value))<=160:
+                  printable=str(value).replace('\n',' ')
+                  if re.fullmatch(r'[\w\sÀ-ÿ.,:+/()_-]{1,160}',printable):
+                      print(name+': '+printable)
+                  else:print(name+': value omitted (not safe to display)')
+              elif value is None:print(name+': null')
+              else:print(name+': unrecognized value TYPE '+type(value).__name__)
+          for key in ('identifier','issued','modified','spatial','spatialResolution',
+                      'accessRights','confidentialityStatus','publisher','status',
+                      'temporal','statisticalUnit','structure','accrualPeriodicity'):
+              if key in payload:examine(key,payload[key])
+          print('PASS: exactly one official metadata GET; no numeric observation values output or written')
+          PY
