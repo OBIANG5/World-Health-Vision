@@ -23,3 +23,14 @@ test("the pilot is a real-media silent review, not a falsely aligned news report
  assert.ok(project.shots.every(s=>metadata.assets.some(a=>a.file===s.media?.file)));
  assert.ok(project.shots.some(s=>s.subtitle?.includes("PAS une photo")));
 });
+
+test("NASA originals have permanent SHA-256 pins and exact approved dimensions",()=>{
+  const sources=JSON.parse(fs.readFileSync(new URL("./sources.json",import.meta.url),"utf8"));
+  assert.equal(sources.assets.length,3);
+  assert.deepEqual(sources.assets.map(a=>[a.id,a.width,a.height]),[
+    ["art002e009627",5568,3712],
+    ["art002e009288",5568,3712],
+    ["art002e016252_impactflash_annotation_cropped",3840,2160]]);
+  for(const a of sources.assets)assert.match(a.sha256,/^[a-f0-9]{64}$/);
+  assert.equal(new Set(sources.assets.map(a=>a.sha256)).size,3);
+});
