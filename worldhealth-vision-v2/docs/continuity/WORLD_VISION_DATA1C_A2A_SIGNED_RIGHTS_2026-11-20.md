@@ -91,3 +91,10 @@ Workflow dédié : .github/workflows/whv-v2-data1c-signed-rights.yml.
 5. Documenter chaque correction et nouvelle PR sur GitHub, et lier issue #86/#82, sans dévier vers la page d'accueil de l'iPhone ou des médias lorsque la priorité explicitement poursuivie est DATA.
 
 **Aucune promesse de licence, déploiement en production ou sécurité juridique définitive n'a été faite par ces tests.**
+
+
+## 6. Preuves acceptées et référence du prochain chantier
+
+Sur commit 063307bf320c95e551e63304c990aaffc4b20510, le run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44708660259 est SUCCESS, 24 tests Java/PostgreSQL et 164 tests Python. Nouveaux scénarios : ancien source_run V1 avec une valeur physique mais aucun droit signé → lecture publique nulle, et absence/invalidité de trust anchor → refus d'approuver. Lors de l'ajout de ce document, toujours re-vérifier que le HEAD de la PR #88 a réussi les mêmes contrôles : GitHub Actions concurrence annule les runs intermédiaires.
+
+**PROCHAINE ISSUE DÉTAILLÉE DATA-1C-A2B #89** : https://github.com/OBIANG5/World-Health-Vision/issues/89, vérification des bytes Bronze/SHA/journal de l'autre côté du service, preuve signée de provenance et identité workload. Ce chantier demeure requis avant toute publication de sources dont la licence n'a pas été dûment revue. La suppression de valeurs révoquées des lectures n'efface ni les liens de preuve ni l'observation conservée dans le stockage privé.
