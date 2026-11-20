@@ -492,3 +492,16 @@ test("DATA time axis preserves irregularly spaced dated observations",()=>{
   assert.ok(pts[1].x<155,"1 day must remain near the first date on a 90-day timeline");
   assert.notEqual(pts[1].x,(pts[0].x+pts[2].x)/2,"Never plot irregular dates as equal-distance categories");
 });
+
+
+test("global caption cues are checked against the crossfaded film, not its silent outro",()=>{
+  const p=clone(sample);
+  p.captions=[{startFrame:1,endFrame:61,text:"EXEMPLE TECHNIQUE UNIQUEMENT",position:"upper"}];
+  assert.equal(inspectProject(p).ok,true);
+  p.captions.push({startFrame:61,endFrame:152,text:"Out of film",position:"lower"});
+  assert.ok(reasons(p).includes("captions[1].time"));
+  p.captions[1].endFrame=100;
+  assert.equal(inspectProject(p).ok,true);
+  p.captions[1].startFrame=40;
+  assert.ok(reasons(p).includes("captions[1].time"));
+});
