@@ -8,7 +8,10 @@ create table timeseries.rights_decision (
     dataset_code varchar(64) not null,
     country_iso3 char(3) not null,
     indicator_code varchar(64) not null,
-    operation varchar(64) not null check (operation in ('PUBLIC_API_INGEST')),
+    operation varchar(64) not null check (operation in (
+        'PRIVATE_ARCHIVE', 'PUBLIC_WEB_DISPLAY', 'PUBLIC_API_INGEST',
+        'API_REDISTRIBUTION', 'COMMERCIAL_REUSE', 'DERIVED_DATASET'
+    )),
     original_http_sha256 char(64) not null
         check (original_http_sha256 ~ '^[a-f0-9]{64}$'),
     period_start date not null,
