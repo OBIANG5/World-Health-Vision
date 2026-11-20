@@ -38,10 +38,10 @@ jobs:
           node-version: '22'
       - name: Verify original World-Vision agent skills without third-party execution
         run: node --test worldhealth-vision-v2/services/media-renderer/creative/test-media-skills.mjs
-      - name: Prevent accidental external installer in skills folder
+      - name: Refuse third-party executable code in media skill folders until reviewed
         run: |
-          if grep -REn 'curl[[:space:]].*\\|[[:space:]]*(bash|sh)|wget[[:space:]].*\\|[[:space:]]*(bash|sh)' \
-            .agents/skills/worldvision-media-director \
-            .claude/skills/worldvision-media-director; then
-            echo "Review any download-and-execute instructions before merge"; exit 1
+          if find .agents/skills/worldvision-media-director .claude/skills/worldvision-media-director \
+            -type f ! -name SKILL.md | grep -q .; then
+            echo "Executable skill resources must receive their own review, pin and security checks"; exit 1
           fi
+          echo "Skills are instruction-only. No untrusted installer or scripts executed."
