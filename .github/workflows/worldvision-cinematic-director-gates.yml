@@ -17,6 +17,8 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/CountryFocus.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/PhotoMultilayer.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/DataMotion.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/editorial-text-handoff.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/editorial-text-handoff.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/data-motion-engine.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/data-motion-engine.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.mjs'
@@ -47,6 +49,8 @@ on:
       - 'worldhealth-vision-v2/services/media-renderer/src/CountryFocus.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/PhotoMultilayer.tsx'
       - 'worldhealth-vision-v2/services/media-renderer/src/DataMotion.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/src/editorial-text-handoff.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/editorial-text-handoff.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/data-motion-engine.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/data-motion-engine.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.mjs'
@@ -67,6 +71,12 @@ on:
       - 'worldhealth-vision-v2/frontend/web-v2/vite.config.ts'
       - '.github/workflows/worldvision-cinematic-director-gates.yml'
   workflow_dispatch:
+
+# The same branch can receive both push and pull_request events. Do not run
+# duplicate expensive full-film encodes for superseded commits.
+concurrency:
+  group: worldvision-media-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
