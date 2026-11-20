@@ -281,12 +281,18 @@ class TimeseriesSourceRunSafetyIntegrationTest {
     @Test
     void duplicateSourceObservationWithinOneBatchFailsBeforeInsert() throws Exception {
         String key = runKey();
-        var doc = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(sample(key));
+        // Sign the valid ONE-item request, then maliciously append a second
+        // identical observation without an independent witness re-signing.
+        var doc = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(
+                SignedTestEvidenceFixture.attach(sample(key), mapper, evidenceProjection));
         doc.put("recordCount", 2);
         var items = (com.fasterxml.jackson.databind.node.ArrayNode) doc.get("items");
         items.add(items.get(0).deepCopy());
-        mockMvc.perform(authenticated(mapper.writeValueAsString(doc)))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post(ROUTE)
+                        .header("X-WHV-Ingestion-Key", KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(doc)))
+                .andExpect(status().isForbidden());
         assertEquals(0, runCount(key));
     }
 
