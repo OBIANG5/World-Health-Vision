@@ -1,0 +1,30 @@
+/* PRODUCT-P2C1: compact accessible country series explorer, no false live indicators */
+.whv-published-explorer { margin: 16px 0; padding: 14px; border: 1px solid rgba(85,208,234,.36);
+  border-radius: 14px; color: #eaf7ff; background: rgba(6,27,43,.94); min-width: 0; }
+.whv-published-explorer * { box-sizing: border-box; }
+.whv-published-explorer p { margin: 8px 0; line-height: 1.5; }
+.whv-published-head { display: flex; gap: 10px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+.whv-published-head h4, .whv-published-details h5 { margin: 0; font-size: 1rem; color: #a8f5ff; }
+.whv-published-explorer button { cursor: pointer; border: 1px solid rgba(95,211,237,.56); border-radius: 9px;
+  padding: 9px 11px; background: #092c49; color: #f0fbff; font: inherit; text-align: left; }
+.whv-published-explorer button:focus-visible, .whv-published-explorer a:focus-visible {
+  outline: 3px solid #b3f7ff; outline-offset: 3px; }
+.whv-published-explorer button:hover { border-color: #a3f1ff; }
+.whv-published-indicator-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 9px; }
+.whv-published-indicator { display: flex; flex-direction: column; gap: 6px; min-width: 0; width: 100%; overflow-wrap: anywhere; }
+.whv-published-indicator.chosen { border-color: #b4f8ff; background: #123c56; }
+.whv-published-indicator strong { font-size: .95rem; line-height: 1.35; }
+.whv-published-indicator small { color: #c6dce8; font-size: .77rem; }
+.whv-published-details { border-top: 1px solid rgba(85,208,234,.35); margin-top: 14px; padding-top: 12px; min-width: 0; }
+.whv-published-note { display: block; margin: 5px 0; color: #cbdce7; }
+.whv-published-value { display: flex; flex-direction: column; min-width: 0; gap: 5px;
+  padding: 12px 0; border-bottom: 1px solid rgba(85,208,234,.18); overflow-wrap: anywhere; }
+.whv-published-figure { font-weight: 800; font-size: clamp(1.25rem, 4vw, 1.9rem); color: #b2faff; }
+.whv-published-value small, .whv-published-disclaimer { color: #c5dce9; font-size: .78rem; }
+.whv-published-source-note { margin: 10px 0; padding: 12px; border-left: 3px solid #70e9f9;
+  background: rgba(15,60,78,.48); overflow-wrap: anywhere; }
+.whv-published-source-note p { font-size: .84rem; }
+.whv-published-source-note a { color: #a6eeff; text-decoration: underline; }
+.whv-published-source-note small { display: block; margin-top: 8px; color: #cee0eb; }
+@media (max-width: 400px) { .whv-published-explorer { padding: 10px; }
+ .whv-published-head button { width: 100%; text-align: center; } }

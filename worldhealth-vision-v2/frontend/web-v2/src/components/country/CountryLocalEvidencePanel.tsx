@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { fetchCountryLocalContext, fetchCountryNationalComparisons, fetchCountryPublishedCoverage } from "../../api/whvApi";
 import type { CountryLocalContext, CountryNationalComparisons, CountryPublishedCoverage } from "../../api/types";
+import PublishedIndicatorExplorer from "./PublishedIndicatorExplorer";
 
 type Props = {
   iso3: string;
@@ -289,6 +290,10 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
           )}
           <p className="whv-national-evidence-caution">{copy.coverageCaveat}</p>
         </section>
+        {publicCoverageStatus === "ready" &&
+          publicCoverage?.coverageStatus === "PUBLISHED_DATA_AVAILABLE" && (
+            <PublishedIndicatorExplorer key={iso3} iso3={iso3} lang={lang} />
+          )}
         {status === "loading" && <p role="status">{copy.loading}</p>}
         {status === "unavailable" && <p role="status">{copy.unknown}</p>}
         {status === "ready" && data?.localSourceCount === 0 && <p>{copy.empty}</p>}
