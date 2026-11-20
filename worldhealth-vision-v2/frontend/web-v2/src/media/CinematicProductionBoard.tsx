@@ -569,7 +569,7 @@ export default function CinematicProductionBoard() {
           <label className="wvc-wide">DÉTOURAGE POUR EFFET DE PROFONDEUR
             <select value={active.foregroundName} onChange={e=>updateShot({foregroundName:e.target.value})}>
               <option value="">Aucun — composition classique</option>
-              {active.foregroundName&&!files.some(f=>f.name===active.foregroundName)&&<option value={active.foregroundName} disabled>Fichier absent : {active.foregroundName}</option>
+              {active.foregroundName&&!files.some(f=>f.name===active.foregroundName)&&<option value={active.foregroundName} disabled>Fichier absent : {active.foregroundName}</option>}
               {files.filter(f=>f.kind==="image"&&/\.(png|webp)$/i.test(f.name)).map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
             </select>
             <span className="wvc-hint">Utiliser uniquement un premier plan transparent préparé avec un outil spécialisé ; le studio effectue le compositing et le mouvement 2,5D sans inventer une image.</span>
