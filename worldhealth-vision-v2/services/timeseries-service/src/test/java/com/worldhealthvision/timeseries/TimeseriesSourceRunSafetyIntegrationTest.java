@@ -220,4 +220,64 @@ class TimeseriesSourceRunSafetyIntegrationTest {
                     """, Integer.class, key));
         }
     }
+
+    @Test
+    void sameObservationSetInDifferentOrderIsReadOnlyCanonicalReplay() throws Exception {
+        String key = runKey();
+        var doc = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(sample(key));
+        doc.put("recordCount", 2);
+        var items = (com.fasterxml.jackson.databind.node.ArrayNode) doc.get("items");
+        var second = ((com.fasterxml.jackson.databind.node.ObjectNode) items.get(0)).deepCopy();
+        second.put("countryIso3", "DEU");
+        second.put("numericValue", 234.0);
+        items.add(second);
+        String first = mapper.writeValueAsString(doc);
+        mockMvc.perform(authenticated(first))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.upsertedCount").value(2));
+        String before = jdbc.queryForObject("""
+                select string_agg(o.country_iso3 || ':' || o.numeric_value::text,
+                                  ';' order by o.country_iso3)
+                from timeseries.observation o
+                join timeseries.source_run sr on sr.id = o.source_run_id
+                where sr.run_key = ?
+                """, String.class, key);
+        var reverse = mapper.createArrayNode();
+        reverse.add(items.get(1).deepCopy());
+        reverse.add(items.get(0).deepCopy());
+        doc.set("items", reverse);
+        mockMvc.perform(authenticated(mapper.writeValueAsString(doc)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.upsertedCount").value(0));
+        assertEquals(1, runCount(key));
+        assertEquals(before, jdbc.queryForObject("""
+                select string_agg(o.country_iso3 || ':' || o.numeric_value::text,
+                                  ';' order by o.country_iso3)
+                from timeseries.observation o
+                join timeseries.source_run sr on sr.id = o.source_run_id
+                where sr.run_key = ?
+                """, String.class, key));
+    }
+
+    @Test
+    void duplicateSourceObservationWithinOneBatchFailsBeforeInsert() throws Exception {
+        String key = runKey();
+        var doc = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(sample(key));
+        doc.put("recordCount", 2);
+        var items = (com.fasterxml.jackson.databind.node.ArrayNode) doc.get("items");
+        items.add(items.get(0).deepCopy());
+        mockMvc.perform(authenticated(mapper.writeValueAsString(doc)))
+                .andExpect(status().isBadRequest());
+        assertEquals(0, runCount(key));
+    }
+
+    @Test
+    void failedForeignKeyObservationRollsBackNewSourceRunAtomically() throws Exception {
+        String key = runKey();
+        String invalid = sample(key).replace("\"countryIso3\":\"FRA\"",
+                                             "\"countryIso3\":\"ZZZ\"");
+        mockMvc.perform(authenticated(invalid)).andExpect(status().isBadRequest());
+        assertEquals(0, runCount(key));
+    }
+
 }
