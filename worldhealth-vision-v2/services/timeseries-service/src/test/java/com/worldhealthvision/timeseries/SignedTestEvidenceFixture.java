@@ -44,6 +44,13 @@ final class SignedTestEvidenceFixture {
     static String attach(
             String json, ObjectMapper mapper, EvidenceItemsFingerprint fingerprint
     ) {
+        return attachWithPolicy(json, mapper, fingerprint, "PUBLIC_API_INGEST", 0, 180);
+    }
+
+    static String attachWithPolicy(
+            String json, ObjectMapper mapper, EvidenceItemsFingerprint fingerprint,
+            String operation, long issuedOffsetSeconds, long expiresOffsetSeconds
+    ) {
         try {
             ObjectNode root = (ObjectNode) mapper.readTree(json);
             ObjectNode notes = (ObjectNode) root.with("notes");
@@ -61,13 +68,14 @@ final class SignedTestEvidenceFixture {
                     MessageDigest.getInstance("SHA-256").digest(KEY.getPublic().getEncoded()));
             var unsigned = new SignedEvidenceAttestation(
                     "WORLD_VISION_BRONZE_WITNESS_V1",
-                    "PUBLIC_API_INGEST",
+                    operation,
                     request.sourceCode(), request.datasetCode(), request.runKey(),
                     request.fetchedAtUtc().toInstant().getEpochSecond(),
                     request.fetchedAtUtc().toInstant().getNano(),
                     notes.get("httpBodySha256").asText(),
                     NORMALIZED_SHA, MANIFEST_SHA, EVENT, OUTCOME_SHA,
-                    projection, now, now + 180, publicHash, ""
+                    projection, now + issuedOffsetSeconds,
+                    now + expiresOffsetSeconds, publicHash, ""
             );
             var signature = Signature.getInstance("Ed25519");
             signature.initSign(KEY.getPrivate());
