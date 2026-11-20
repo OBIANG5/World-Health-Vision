@@ -39,11 +39,11 @@ function validateMedia(media,label){
   if(media.trimBefore!=null&&(!integer(media.trimBefore,0,30000)||media.kind!=="video"))
     fail(label+".trimBefore invalide.");
 }
-function validateAudio(value,label,requiredVolume){
+function validateAudio(value,label,requiredVolume,expectedLabel){
   if(value==null)return;
   only(value,["file","label","volume"],label);
   filename(value.file,AUDIO,label+".file");
-  if(value.label!=null&&typeof value.label!=="string")fail(label+".label invalide.");
+  if(value.label!=null&&value.label!==expectedLabel)fail(label+" : libellé audio non pris en charge sans perte.");
   if(value.volume!=null&&value.volume!==requiredVolume)
     fail(label+" : ce Studio ne sait pas encore préserver un volume autre que "+requiredVolume+".");
 }
@@ -96,6 +96,20 @@ export function parseStudioProject(text){
       filename(s.foreground.file,new Set(["png","webp"]),label+".foreground.file");
       if(s.foreground.credit!=null&&typeof s.foreground.credit!=="string")fail(label+".foreground.credit invalide.");
     }
+    if(s.photo!=null)only(s.photo,["camera","subject","mask","focus","metric"],label+".photo");
+    if(s.geo!=null){
+      only(s.geo,["center","look","spinDegrees","camera","spotlight","target","route","metric"],label+".geo");
+      if(s.geo.metric?.precision!=null&&s.geo.metric.precision!==0)
+        fail(label+".geo.metric : précision non prise en charge.");
+      if(s.geo.route&&(!s.geo.target||s.geo.route.to?.lon!==s.geo.target.lon||
+        s.geo.route.to?.lat!==s.geo.target.lat))
+        fail(label+".geo.route : destination différente du repère de cible, non modifiable par Studio.");
+    }
+    if(s.data!=null){
+      only(s.data,["mode","series","source","domain","precision","unit","locale"],label+".data");
+      if(Array.isArray(s.data.series)&&s.data.series.some(row=>typeof row.label!=="string"||/[|\\n\\r]/.test(row.label)))
+        fail(label+".data.series : le séparateur | ou les retours ligne ne peuvent pas être préservés.");
+    }
     if(s.template==="photo_story"&&(!toObject(s.photo)||!toObject(s.photo.camera)))
       fail(label+" : PHOTO requiert ses pistes caméra originales.");
     if(s.template==="data_story"&&(!toObject(s.data)||!Array.isArray(s.data.series)||
@@ -107,8 +121,8 @@ export function parseStudioProject(text){
        !["x","y","width","height"].every(k=>finite(s.documentRegion[k]))))
       fail(label+" : zone documentaire invalide.");
   }
-  validateAudio(p.voice,"voice",1);
-  validateAudio(p.music,"music",0.1);
+  validateAudio(p.voice,"voice",1,"Voix choisie ou enregistrée");
+  validateAudio(p.music,"music",0.1,"Bande-son fournie");
   if(p.outro!=null){
     only(p.outro,["file","durationFrames"],"outro");
     filename(p.outro.file,VID,"outro.file");
@@ -137,4 +151,60 @@ export function studioAssetNames(project){
   }
   for(const a of [project.voice,project.music,project.outro])if(a?.file)all.push(a.file);
   return [...new Set(all)];
+}
+
+/**
+ * Rehydrate the complete editable form without guessing geographic/data values.
+ * Defaults are provided by the board to keep one source of initial UI values.
+ * Unknown/additional supported fields must be handled before accepting import.
+ */
+export function studioShotToEditor(s,defaults){
+  const geo=s.geo??{},photo=s.photo??{},data=s.data??{};
+  const d=(data.series??[]).map(row=>data.mode==="line"
+    ? [row.date,row.label,String(row.value)].join("|")
+    : [row.label,String(row.value)].join("|")).join("\n");
+  const settings=defaults.photoSettings??{};
+  return {
+    ...defaults,
+    id:s.id,title:s.title??"",subtitle:s.subtitle??"",eyebrow:s.eyebrow??"",
+    durationFrames:s.durationFrames,template:s.template,
+    motion:s.motion??"locked",transitionAfter:s.transitionAfter??"cut",
+    transitionFrames:s.transitionFrames??0,
+    mediaName:s.media?.file??"",mediaCredit:s.media?.credit??"",
+    mediaTrimBefore:s.media?.trimBefore??0,
+    foregroundName:s.foreground?.file??"",foregroundCredit:s.foreground?.credit??"",
+    focusX:s.focus?.x??0.5,focusY:s.focus?.y??0.5,
+    documentX:s.documentRegion?.x??defaults.documentX,documentY:s.documentRegion?.y??defaults.documentY,
+    documentW:s.documentRegion?.width??defaults.documentW,documentH:s.documentRegion?.height??defaults.documentH,
+    geoLon:geo.center?.lon??defaults.geoLon,geoLat:geo.center?.lat??defaults.geoLat,
+    geoSpin:geo.spinDegrees??defaults.geoSpin,geoLook:geo.look??defaults.geoLook,
+    geoShowCamera:Boolean(geo.camera),geoToLon:geo.camera?.to?.lon??defaults.geoToLon,
+    geoToLat:geo.camera?.to?.lat??defaults.geoToLat,
+    geoCameraStart:geo.camera?.startFrame??defaults.geoCameraStart,
+    geoCameraEnd:geo.camera?.endFrame??defaults.geoCameraEnd,
+    geoCameraZoom:geo.camera?.zoom??defaults.geoCameraZoom,
+    geoShowCountry:Boolean(geo.spotlight),geoCountryId:geo.spotlight?.countryId??"",
+    geoShowTarget:Boolean(geo.target),geoTargetLon:geo.target?.lon??defaults.geoTargetLon,
+    geoTargetLat:geo.target?.lat??defaults.geoTargetLat,
+    geoTargetLabel:geo.target?.label??"",
+    geoShowRoute:Boolean(geo.route),geoFromLon:geo.route?.from?.lon??defaults.geoFromLon,
+    geoFromLat:geo.route?.from?.lat??defaults.geoFromLat,
+    geoShowMetric:Boolean(geo.metric),geoMetricLabel:geo.metric?.label??"",
+    geoMetricValue:geo.metric?String(geo.metric.value):"",geoMetricUnit:geo.metric?.unit??"",
+    photoSettings:{
+      ...settings,camera:{...settings.camera,...photo.camera},
+      subject:{...settings.subject,...photo.subject},
+      mask:{...settings.mask,...photo.mask},
+      focus:{...settings.focus,...photo.focus},
+      metric:{...settings.metric,...photo.metric}
+    },
+    photoUseSubject:Boolean(photo.subject),photoUseMask:Boolean(photo.mask),
+    photoUseFocus:Boolean(photo.focus),photoUseMetric:Boolean(photo.metric),
+    dataMode:data.mode??defaults.dataMode,dataRaw:d,
+    dataPublisher:data.source?.publisher??"",dataDataset:data.source?.dataset??"",
+    dataAsOf:data.source?.asOf??"",dataUrl:data.source?.url??"",
+    dataUnit:data.unit??"",dataPrecision:data.precision??0,dataLocale:data.locale??"fr-FR",
+    dataMin:data.domain?.min!==undefined?String(data.domain.min):"",
+    dataMax:data.domain?.max!==undefined?String(data.domain.max):""
+  };
 }
