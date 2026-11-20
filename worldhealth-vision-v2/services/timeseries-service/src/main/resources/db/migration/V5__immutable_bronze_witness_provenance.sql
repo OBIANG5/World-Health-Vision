@@ -20,27 +20,76 @@ comment on column timeseries.source_run.attested_items_sha256 is
 -- revocation and source-version selection criteria, adding a positive witness
 -- requirement to EVERY public observation. Old runs stay stored privately.
 create or replace view timeseries.latest_observation as
-with ranked as (
+select
+    ranked.id,
+    ranked.source_run_id,
+    ranked.source_code,
+    ranked.dataset_code,
+    ranked.indicator_code,
+    ranked.country_iso3,
+    ranked.period_granularity,
+    ranked.period_start,
+    ranked.period_end,
+    ranked.period_label,
+    ranked.numeric_value,
+    ranked.text_value,
+    ranked.value_status,
+    ranked.source_published_at,
+    ranked.source_metadata,
+    ranked.quality_flags,
+    ranked.ingested_at,
+    ranked.run_key,
+    ranked.fetched_at_utc,
+    ranked.persisted_at_utc
+from (
     select
-        o.id, o.source_run_id, o.source_code, o.dataset_code,
-        o.indicator_code, o.country_iso3, o.period_granularity,
-        o.period_start, o.period_end, o.period_label, o.numeric_value,
-        o.text_value, o.value_status, o.source_published_at, o.source_metadata,
-        o.quality_flags, o.ingested_at,
-        sr.run_key, sr.fetched_at_utc, sr.persisted_at_utc,
+        o.id,
+        o.source_run_id,
+        o.source_code,
+        o.dataset_code,
+        o.indicator_code,
+        o.country_iso3,
+        o.period_granularity,
+        o.period_start,
+        o.period_end,
+        o.period_label,
+        o.numeric_value,
+        o.text_value,
+        o.value_status,
+        o.source_published_at,
+        o.source_metadata,
+        o.quality_flags,
+        o.ingested_at,
+        sr.run_key,
+        sr.fetched_at_utc,
+        sr.persisted_at_utc,
         row_number() over (
-            partition by o.source_code, o.dataset_code, o.indicator_code,
-                         o.country_iso3, o.period_granularity, o.period_start
-            order by sr.fetched_at_utc desc, sr.persisted_at_utc desc, o.ingested_at desc
-        ) rn
+            partition by
+                o.source_code,
+                o.dataset_code,
+                o.indicator_code,
+                o.country_iso3,
+                o.period_granularity,
+                o.period_start
+            order by
+                sr.fetched_at_utc desc,
+                sr.persisted_at_utc desc,
+                o.ingested_at desc,
+                o.id desc
+        ) as rn
     from timeseries.observation o
     join timeseries.source_run sr on sr.id = o.source_run_id
+    -- Source history can remain stored after revocation, but current public
+    -- reads MUST show only versions linked to STILL-VALID reviewed rights.
+    -- Historical V1/V2 rows without signed rights links are not auto-approved.
     where sr.evidence_attestation_sha256 is not null
       and sr.attested_items_sha256 is not null
       and sr.notes -> 'evidenceAttestation' ->> 'itemsSha256' = sr.attested_items_sha256
       and exists (
-        select 1 from timeseries.source_run_rights_decision linked
-        join timeseries.rights_decision rights on linked.decision_id = rights.decision_id
+        select 1
+        from timeseries.source_run_rights_decision linked
+        join timeseries.rights_decision rights
+          on rights.decision_id = linked.decision_id
         where linked.source_run_id = sr.id
           and rights.source_code = o.source_code
           and rights.dataset_code = o.dataset_code
@@ -53,14 +102,10 @@ with ranked as (
           and rights.valid_from_utc <= statement_timestamp()
           and rights.valid_until_utc > statement_timestamp()
           and not exists (
-            select 1 from timeseries.rights_revocation revoked
-            where revoked.decision_id = rights.decision_id
+              select 1
+              from timeseries.rights_revocation revoked
+              where revoked.decision_id = rights.decision_id
           )
-      )
-) select
-    id, source_run_id, source_code, dataset_code, indicator_code,
-    country_iso3, period_granularity, period_start, period_end,
-    period_label, numeric_value, text_value, value_status, source_published_at,
-    source_metadata, quality_flags, ingested_at, run_key, fetched_at_utc,
-    persisted_at_utc
-from ranked where rn = 1;
+    )
+) ranked
+where ranked.rn = 1;
