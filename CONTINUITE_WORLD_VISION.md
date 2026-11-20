@@ -1,5 +1,17 @@
 # WORLD-VISION — COMMENCE ICI POUR REPRENDRE UN CHAT BLOQUÉ
 
+## 20 NOV. 2026 — MEDIA SPRINT 12 : FILM MULTICOUCHE COMPLET
+
+**BRANCHE À REPRENDRE :** `feature/worldvision-editorial-film-five-scene-integration-2026-11-20`, fille de PR #84 DATA ; historique empilé #44→#72→#74→#80→#84→Sprint12. **AUCUNE FUSION/DEPLOIEMENT/PUBLICATION.** Rapport obligatoire : [WORLDVISION_INTEGRATED_FILM_SPRINT12_2026-11-20.md](worldhealth-vision-v2/docs/media/WORLDVISION_INTEGRATED_FILM_SPRINT12_2026-11-20.md).
+
+**Objectif unique de Sprint12 :** ne plus démontrer des plans isolés. Construire/valider **un master de 24,833s et 745 frames** reliant **globe Natural Earth → pays 10m/50m → photographie multicouche → graphique daté/sourcé → document inspecté**, avec **quatre fondus de 10 frames et un vrai audio AAC continu**. Tous les médias non-cartographiques et les chiffres restent **synthétiques et explicitement non journalistiques**, le son est un oscillateur de QA et absolument pas un narrateur. Les cinq scènes doivent être identiques dans le Player V2 et le rendu H.264, avec 11 frames Chromium et rapport EDL de durées exactes. Code : `creative/build-ci-fixtures.mjs`, `creative/editorial-timeline.mjs` et tests, `creative-player-smoke.tsx`, `creative/test-player-browser.mjs`, workflow vidéo. **STATUT : code et garde-fous ajoutés, attendre CI du SHA final et contrôler les vraies images avant d'annoncer réussite.**
+
+**CERTIFICATION précédente :** Sprint11 PR #84 sur `00b3e822c92794ef477aca36002c664d8759c47c` a réussi Actions **#44705502118**, 27/27 tests Node, 10 parcours Chromium, data H264 495 frames, vrai temps ISO proportionnel et titre visible frame 0 ; rapport Sprint11 amendé. La PR #83 DATA concurrente a un ajout potentiel de comparaisons signées, mais ne pas la fusionner ; PR #79 PHOTO archivée. Ne pas compromettre les bonnes valeurs du rendu Gabon.
+
+**PROCHAINE ÉTAPE après film vert :** film éditorial **réel** (sujet vérifié + photo/rush sous licence + sources primaires datées + voix humaine sélectionnée + sous-titres mot à mot + mixage professionnel), revue TikTok réelle sur iPhone/Android, test du rendu niveau média international, et validations explicites avant mise en ligne. BAOCOM séparé ; script/recherche dans ChatGPT ; GDELT/blog hors de cette branche.
+
+---
+
 ### 20 NOV. 2026 — REPRISE EXACTE SPRINT 11 APRÈS INTERRUPTIONS
 
 Le dernier run **#44634270490** (SHA `4c3494e507b53b5c72d73e856ca3cfcc41d1c656`) est **2 jobs SUCCESS** et le run jumeau #44634282857 est lui aussi vert. **26/26 tests Node, 10/10 paths Chromium**, vrai H264 DATA de **16,5 s / 495 frames / 1080×1920**, artefact **#14582924805** vérifié par extraction des 9 véritables captures du Player. Espacements mobiles métriques contrôlés, ancienne collision sous-titre/source corrigée. Le rendu demeure silencieux, synthétique et pas encore prêt au reportage réel.
