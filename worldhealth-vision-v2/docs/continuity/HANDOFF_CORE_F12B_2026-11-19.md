@@ -784,3 +784,24 @@ confirmer pour le dataset choisi), pipeline source→Bronze→witness/parseur/
 revue droits→Timeseries→Atlas et PREVIEW privée, ne pas prétendre couvrir
 217 pays en séries statistiques. #95/#94 doivent être examinés avant diffusion
 commerciale. Conserver l'intégralité des onze Visions, média et GDELT.
+
+---
+## 20 novembre 2026 — PRODUCT-P2C3 PIlOTE INSEE : Quarantaine réelle prête, aucune série officielle publiée
+Branche `product/v2-p2c3-insee-melodi-private-evidence-2026-11-20`, PR #108 DRAFT sur P2C2 PR #106, issue #107. Connecteur officiel Insee Melodi `DS_POPULATIONS_REFERENCE` + `GEO=FRANCE-F`, `POPREF_MEASURE=PTOT`, recherche sans réseau par défaut, parseur fail-closed avec allowlist HTTPS exacte et statuts, archive immuable `QuarantinedJsonEvidenceStore`, `PRIVATE_RESEARCH_VALIDATION` / `NOT_ATTEMPTED` uniquement. Pas de Timeseries ni signature de licence.
+**Code SHA `3b0d3e8a70605ceb551a625494fc612d76a7fe42` ; CI `44772963402` SUCCESS**, 44 tests source/provenance/quarantaine + 27 régressions droits/Bronze, 71/71 PASS. Le job GET réel `optional-real-provider-read` a été SKIPPED volontairement (le workflow permet un `workflow_dispatch provider_network_probe=true` pour exactement un GET privé, aucun artefact source divulgué). Les chiffres des fixtures = exemple documentaire historique et NON donnée actuelle ou officielle ingérée. Les pages Insee annoncent Licence Ouverte générale et accès Melodi 30/min mais le droit/méthode précis d'une série reste EN REVUE. Aucune licence commerciale automatiquement accordée, aucune valeur sur Vercel public, aucune dépense.
+Handoff complet : `docs/continuity/WORLD_VISION_PRODUCT_P2C3_INSEE_PRIVATE_AUDIT_2026-11-20.md`.
+Prochain : premier GET source officiel privé, revue de shape/territoire (FRANCE-F != FRA sans validation), PTOT vs PMUN, périodes, unité, attribution et droits web/API/commercial ; dossier de licence distinct et reviewer signé ; PR #95/#94 comme gates avant ingestion institutionnelle, témoin Bronze indépendant puis une vraie série sous droits dans Atlas, et PREVIEW privée avec backup/restore/rollback. Preserve projet international, 11 Visions, sources locales INSTAT/BEAC, médias/GDELT.
+
+---
+## 20 novembre 2026 — PRODUCT-P2C3 PREMIÈRE VRAIE SOURCE INSEE : audit réel réussi, PAS de publication
+PR #108 DRAFT sur P2C2 #106 : branche
+`product/v2-p2c3-insee-melodi-private-evidence-2026-11-20`.
+**Code final validé SHA `f21ccc0b2010175fe715ca8e61cfcf7734a766e2`**,
+offline GitHub Actions https://github.com/OBIANG5/World-Health-Vision/actions/runs/44774479821
+**SUCCESS 47 tests Insee + 27 régressions droits/Bronze = 74/74**.
+**PREMIER GET RÉEL OFFICIEL INSEE RÉUSSI** en audit GitHub éphémère :
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/44774548064,
+br. `audit/insee-melodi-one-time-final-schema-2026-11-20`.
+Source HTTP GET uniquement `DS_POPULATIONS_REFERENCE?GEO=FRANCE-F&POPREF_MEASURE=PTOT&maxResult=20` ; réponse effective `GEO=2025-FRANCE-F` (VERSION géographique 2025) et `TIME_PERIOD=2023`, JSON float codant ENTIER exact. Le parseur a été corrigé sur preuve réelle, sans arrondir. La source a été vérifiée en **Bronze temporaire privé**, puis supprimée du runner ; AUCUN CHIFFRE affiché dans GitHub, AUCUN POST Timeseries et aucune licence/revue PUBLIC_API_INGEST accordée. Échecs intermédiaires utiles audités : 44773502271, 44773788927, 44774306006 ; diagnostic sans valeur 44773997299. La CI de code final et le GET réel sont SUCCESS. Les fixtures des tests NE SONT PAS des chiffres officiels actuels.
+Documentation exhaustive : `worldhealth-vision-v2/docs/continuity/WORLD_VISION_PRODUCT_P2C3_INSEE_PRIVATE_AUDIT_2026-11-20.md` §8.
+**Prochain travail** : première archive Bronze durable privée sous droits, dossier de licence du dataset précis (usage WEB/API/commercial, attribution, exceptions, méthodes), identité du parseur #95 / gouvernance #94, signature indépendante et vraie ingestion en PREVIEW protégée, puis promotion séparée. Les sources locales Gabon INSTAT/BEAC et l'internationalisation restent prioritaires ; préserver les onze Visions, média/GDELT, Watch/Money/Transport/Price et tous les anciens travaux GitHub.
