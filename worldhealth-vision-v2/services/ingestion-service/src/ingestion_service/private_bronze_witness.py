@@ -28,8 +28,9 @@ from ingestion_service.source_evidence_store import (
     EvidenceIntegrityError, QuarantinedJsonEvidenceStore,
 )
 from ingestion_service.semantic_source_replay import verify_original_to_normalized
+from ingestion_service import semantic_source_replay as reference_semantics
 
-_SCHEMA = "WORLD_VISION_BRONZE_WITNESS_V1"
+_SCHEMA = "WORLD_VISION_BRONZE_WITNESS_V2"
 _OPERATION = "PRIVATE_RESEARCH_VALIDATION"
 _SHA = re.compile(r"^[0-9a-f]{64}$")
 _EVENT = re.compile(r"^[0-9a-f]{32}$")
@@ -42,7 +43,9 @@ def _signing_payload(record: dict[str, Any]) -> bytes:
         str(record["fetchedAtNano"]), record["originalHttpSha256"],
         record["normalizedNdjsonSha256"], record["manifestSha256"],
         record["acquisitionEventId"], record["acquisitionOutcomeSha256"],
-        record["itemsSha256"], str(record["issuedAtEpochSec"]),
+        record["itemsSha256"],
+        record["semanticVerifierVersion"], record["semanticVerifierCodeSha256"],
+        str(record["issuedAtEpochSec"]),
         str(record["expiresAtEpochSec"]), record["signingPublicKeySha256"],
     ]
     out = bytearray()
@@ -165,6 +168,13 @@ class PrivateBronzeWitness:
             "acquisitionEventId": acquisition_event_id,
             "acquisitionOutcomeSha256": sha256(outcome_bytes).hexdigest(),
             "itemsSha256": items_sha256(observations),
+            "semanticVerifierVersion": semantic.verifier_version,
+            # Code digest pins actual independently authored verifier source
+            # bytes. Java must have an OUT-OF-BAND reviewed identical SHA
+            # configured: a producer-supplied code hash is never trusted.
+            "semanticVerifierCodeSha256": sha256(
+                Path(reference_semantics.__file__).read_bytes()
+            ).hexdigest(),
             "issuedAtEpochSec": int(now.timestamp()),
             "expiresAtEpochSec": int(now.timestamp()) + lifetime_seconds,
             "signingPublicKeySha256": sha256(encoded_public).hexdigest(),
