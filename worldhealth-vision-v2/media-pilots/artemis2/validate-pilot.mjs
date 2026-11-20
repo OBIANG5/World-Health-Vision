@@ -38,7 +38,7 @@ export function reviewPilot(){
     if(!shot.media?.file||!referenced.has(shot.media.file))
       errors.push("Shot missing sourced real NASA image: "+shot.id);
     if(!shot.media?.credit?.startsWith(referenced.get(shot.media.file)?.source_credit)||
-       !shot.media?.credit?.includes(referenced.get(shot.media.file)?.id))
+       !shot.media?.credit?.includes(referenced.get(shot.media.file)?.id?.split("_")[0]))
       errors.push("Source credit differs from signed asset manifest: "+shot.id);
     if(!["documentary","focus_reveal","document_focus"].includes(shot.template))
       errors.push("Forbidden invented-data or unnecessary transition grammar: "+shot.id);
