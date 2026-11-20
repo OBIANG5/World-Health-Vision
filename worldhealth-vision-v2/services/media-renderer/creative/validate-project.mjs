@@ -8,6 +8,7 @@ import fs from "node:fs";
 import {createRequire} from "node:module";
 import {feature} from "topojson-client";
 import {geoContains} from "d3-geo";
+import {captionCueIssues} from "../src/caption-timeline.mjs";
 
 // Keep spotlight IDs bound to the exact Natural Earth atlas used by Remotion.
 const requireAtlas=createRequire(import.meta.url);
@@ -349,6 +350,8 @@ export function inspectProject(project) {
     for(const k of ["accent","background","ink"])
       if(project.style[k]!=null&&!COLOR.test(project.style[k]))bad(errors,"style."+k,"Use six-digit hex color.");
   }
+  // Captions are timed to the narration film, never the (often silent) G0 outro.
+  errors.push(...captionCueIssues(project.captions,durationFrames(project)-(project.outro?.durationFrames??0)));
   if(durationFrames(project)>18000)bad(errors,"duration","This profile is limited to 10 minutes; use a long-form workflow for longer films.");
   return {ok:errors.length===0,errors,frames:durationFrames(project)};
 }
