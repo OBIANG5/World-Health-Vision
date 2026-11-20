@@ -784,3 +784,49 @@ confirmer pour le dataset choisi), pipeline source→Bronze→witness/parseur/
 revue droits→Timeseries→Atlas et PREVIEW privée, ne pas prétendre couvrir
 217 pays en séries statistiques. #95/#94 doivent être examinés avant diffusion
 commerciale. Conserver l'intégralité des onze Visions, média et GDELT.
+
+---
+## 20/11/2026 — PRODUCT-P2C3A : première source réelle en lecture PRIVÉE, INSEE
+PR #109 DRAFT branche `product/v2-p2c3a-insee-private-population-2026-11-20` issue #107 ; base PR #106 P2C2 réussite réelle.
+Périmètre strict Insee Melodi `DS_POPULATIONS_REFERENCE` / population MUNICIPALE `PMUN` / 2023 / `2025-FRANCE-F` = **France hors Mayotte**, pas population de la France entière ; référentiel officiel historique de cohérence 68 094 280, date d'effet 2026 et frontières 2025 séparées ; comparabilité recensements normalement 5 ans, exceptionnellement 6 ans pour millésime 2023. Sources pages Insee sous Licence Ouverte à revue détaillée. Code Python : connecteur HTTP exact sans redirection, validation géo/mesure/date/confidentialité, Bronze immutable + journal audit avec whitelist précise, notes `REVIEW_REQUIRED`/`BRONZE_ONLY_UNREVIEWED`/`NOT_ATTEMPTED`. **AUCUNE ingestion Timeseries, grant réel ou mise en ligne.**
+CI code SHA `e88fa30d24acaae445bf10a9e1041ee3b17d2044` https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773353575 **SUCCESS 19/19 ciblés et 235/235 Python global, LIVE SKIPPED**. Premier run #44773111830 avait échoué sur lecture httpx MockTransport déjà consommée, bug corrigé.
+Doc de reprise `docs/continuity/WORLD_VISION_PRODUCT_P2C3A_INSEE_PRIVATE_SOURCE_2026-11-20.md`.
+Suite immédiate : run LIVE INSEE **2 GETs en lecture seule** déclenché 1 fois par commit dédié avec `[insee-once-live-probe]` (ou manual), résultats à documenter ; revoir licence dataset et signatures par vrais décideurs ; témoin Bronze indépendamment vérifié + version parseur, Atlas sans confondre population municipale hors Mayotte avec FRA entier ; staging privé à décision/coût séparés. Conserver onze Visions, GDELT, média, Watch et toutes les branches.
+
+## P2C3A — 20/11/2026 : test source LIVE #1 diagnostiqué et borne conservée
+Sonde GitHub Actions #44773713496 : la réponse officielle Insee a atteint
+le parseur mais le type de `OBS_VALUE_NIVEAU.value` a été refusé ;
+job LIVE FAILED, première seule consultation (aucune valeur diffusée).
+Fix borne numérique `f96739d02d7db1415dbda7aebba2dd28f9013811` :
+décimal accepté seulement SI exactement entier, fini et borné ;
+22/22 tests spécifiques, 238/238 Python global SUCCESS
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/44773961917 .
+Nouvelle sonde LIVE 2 GETs contrôlés à conclure et documenter ;
+historique détaillé `docs/continuity/WORLD_VISION_PRODUCT_P2C3A_INSEE_PRIVATE_SOURCE_2026-11-20.md`.
+
+---
+## 20/11/2026 — PRODUCT-P2C3A : PREMIÈRE ACQUISITION OFFICIELLE INSEE VALIDÉE EN PRIVÉ
+PR #109, branche `product/v2-p2c3a-insee-private-population-2026-11-20`.
+**Code SHA `4e51423cb28bfadbb651a73c8abfbd13d743cbaa` ; CI
+https://github.com/OBIANG5/World-Health-Vision/actions/runs/44774203052
+SUCCESS : 22/22 tests Insee, 238/238 tests Python ingestion, DEUX vrais HTTP GETs
+Insee Melodi PMUN 2023 France hors Mayotte, SHA256 original exact identique
+`86e21971a8734eea9cba89fcee0cdf7d9b8f16f0c04a3a9384470c27cdf92927`,
+UNE révision Bronze immuable/deux acquisitions SUCCESS, archives privées
+supprimées après test. Le parseur distingue PMUN/PTOT, l'année 2023,
+le référentiel géographique 2025, le statut et les valeurs. La valeur
+de référence 68 094 280 ne doit JAMAIS être présentée comme population
+actuelle de la France entière. La source officielle a été jointe
+directement avec succès (aucun serveur public World-Vision nouveau).
+**0 écriture publique Timeseries / 0 licence de fournisseur signée
+/ 0 Vercel déployé / 0 nouveau coût.**
+Handoff détaillé
+`docs/continuity/WORLD_VISION_PRODUCT_P2C3A_INSEE_PRIVATE_SOURCE_2026-11-20.md`
+section 8 et dossier juridique/statistique
+`docs/data/INSEE_MELODI_POPREF_2023_FEHM_LICENSE_SCOPE_REVIEW.md`.
+Issue #107 P2C3B : revue licence exacte et attribution date MAJ,
+décision humaine signée pour opérations permises, capture Bronze durable,
+témoin indépendant/version parseur #95 + révocations #94,
+publication indicateur clairement limité à France hors Mayotte,
+vraie preuve du navigateur puis staging privé/noindex/backup/rollback.
+Préserver onze Visions, toutes branches médias/GDELT, Money/Watch.
