@@ -23,6 +23,11 @@ const dateOK=x=>typeof x==="string"&&RE_DATE.test(x)&&
   new Date(x+"T12:00:00Z").toISOString().slice(0,10)===x;
 const unique=values=>new Set(values).size===values.length;
 const shaFile=f=>createHash("sha256").update(fs.readFileSync(f)).digest("hex");
+const canonical=x=>Array.isArray(x)?x.map(canonical):
+  x&&typeof x==="object"?Object.fromEntries(Object.entries(x)
+    .sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>[k,canonical(v)])):x;
+const stableJSON=x=>JSON.stringify(canonical(x));
+export const shaJSON=x=>createHash("sha256").update(stableJSON(x)).digest("hex");
 
 /** No path traversal, absolute path, directories or escaping symlink allowed. */
 export function resolveEvidenceFile(root,relative){
@@ -51,9 +56,12 @@ export function referencedClaimSlots(project){
   const slots=[];
   for(const shot of project.shots??[]){
     if(shot.template==="data_story"&&shot.data?.series?.length)
-      slots.push({shotId:shot.id,kind:"data_series"});
-    if(shot.geo?.metric)slots.push({shotId:shot.id,kind:"geo_metric"});
-    if(shot.photo?.metric)slots.push({shotId:shot.id,kind:"photo_metric"});
+      slots.push({shotId:shot.id,kind:"data_series",
+        valueSha256:shaJSON(shot.data)});
+    if(shot.geo?.metric)slots.push({shotId:shot.id,kind:"geo_metric",
+      valueSha256:shaJSON(shot.geo.metric)});
+    if(shot.photo?.metric)slots.push({shotId:shot.id,kind:"photo_metric",
+      valueSha256:shaJSON(shot.photo.metric)});
   }
   return slots;
 }
@@ -100,9 +108,15 @@ export function auditEditorialRelease({project,manifest,assetRoot,evidenceRoot})
     block("editorial","Synthetic/technical material cannot masquerade as released news");
   if(!isText(manifest.projectSha256,64)||!RE_HEX.test(manifest.projectSha256))
     block("projectSha256","Fingerprint of exact source project JSON bytes required");
-  else if(manifest.sourceProjectFile)
+  else if(manifest.sourceProjectFile){
     observe("projectSha256",manifest.sourceProjectFile,manifest.projectSha256,evidenceRoot);
-  else
+    try{
+      const original=JSON.parse(fs.readFileSync(
+        resolveEvidenceFile(evidenceRoot,manifest.sourceProjectFile),"utf8"));
+      if(stableJSON(original)!==stableJSON(project))
+        block("sourceProjectFile","Provided project does not match exact separately fingerprinted storyboard");
+    }catch(e){block("sourceProjectFile","Cannot parse original storyboard packet: "+String(e.message).slice(0,90));}
+  }else
     block("sourceProjectFile","Original machine-readable storyboard file required for exact-byte replay");
   const sources=Array.isArray(manifest.sources)?manifest.sources:[];
   if(sources.length===0)block("sources","At least one grounded primary documentary source required");
@@ -141,6 +155,25 @@ export function auditEditorialRelease({project,manifest,assetRoot,evidenceRoot})
   for(const slot of referencedClaimSlots(project)){
     if(slotIds.get(slot.shotId+"::"+slot.kind)!==1)
       block("claims."+slot.shotId+"."+slot.kind,"Every source numerical series/metric must have exactly one explicit claim record");
+    const claim=claims.find(c=>c?.shotId===slot.shotId&&c.kind===slot.kind);
+    if(claim?.valueSha256!==slot.valueSha256)
+      block("claims."+slot.shotId+"."+slot.kind+".valueSha256",
+        "Claim proof must be bound to SHA-256 of the exact numeric series/metric and methodology");
+    const shot=project.shots.find(s=>s.id===slot.shotId);
+    if(slot.kind==="data_series"&&claim){
+      const datum=shot?.data?.source;
+      if(!datum||!claim.sourceIds?.some(id=>{
+        const s=bySource.get(id);
+        return s?.publisher===datum.publisher&&
+          (s?.dataset===datum.dataset||s?.title===datum.dataset)&&
+          (!datum.url||s.url===datum.url);
+      }))
+        block("claims."+slot.shotId+".sourceIdentity",
+          "The real DATA series publisher/dataset/url must match a cited primary/secondary source record");
+      if(!dateOK(datum?.asOf)||claim.checkedAt<datum.asOf)
+        block("claims."+slot.shotId+".sourceDate",
+          "Data snapshot must be valid and not later than the editorial fact-check");
+    }
   }
   if(claims.some(c=>c?.shotId&&!project.shots.some(s=>s.id===c.shotId)))
     block("claims","Claim references a nonexistent storyboard shot");
