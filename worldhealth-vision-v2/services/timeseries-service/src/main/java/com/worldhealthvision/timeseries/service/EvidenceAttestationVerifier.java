@@ -82,6 +82,10 @@ public final class EvidenceAttestationVerifier {
         }
         try {
             SignedEvidenceAttestation token = mapper.convertValue(raw, SignedEvidenceAttestation.class);
+            if (request.recordCount() == null
+                    || request.recordCount() != request.items().size()) {
+                throw new EvidenceAttestationException();
+            }
             long now = Instant.now().getEpochSecond();
             if (!SCHEMA.equals(token.schema())
                     || !OPERATION.equals(token.operation())
