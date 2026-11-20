@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,6 +49,18 @@ class TimeseriesSourceRunSafetyIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper mapper;
 
+    @DynamicPropertySource
+    static void signedReviewTrustAnchor(DynamicPropertyRegistry registry) {
+        registry.add("whv.timeseries.rights-trust-public-key-base64",
+                SignedTestRightsFixture::publicKeyBase64);
+    }
+
+    @BeforeEach
+    void syntheticReviewDecisions() {
+        SignedTestRightsFixture.authorizeExistingSyntheticFixtures(jdbc);
+    }
+
+
     private String runKey() {
         return "safe_" + UUID.randomUUID();
     }
@@ -59,7 +74,7 @@ class TimeseriesSourceRunSafetyIntegrationTest {
               "bronzeRawPayloadPath":"private/test.raw",
               "bronzeNormalizedPayloadPath":"private/test.normalized",
               "recordCount":1,
-              "notes":{"syntheticTestOnly":true,"runScope":"FRA-GDP"},
+              "notes":{"httpBodySha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","syntheticTestOnly":true,"runScope":"FRA-GDP"},
               "items":[{
                 "indicatorCode":"NY.GDP.MKTP.CD","countryIso3":"FRA",
                 "periodGranularity":"ANNUAL","periodStart":"2024-01-01",
@@ -115,7 +130,7 @@ class TimeseriesSourceRunSafetyIntegrationTest {
                 .replace("\"indicatorCode\":\"NY.GDP.MKTP.CD\"", "\"indicatorCode\":\"SP.POP.TOTL\"")
                 .replace("\"periodStart\":\"2024-01-01\"", "\"periodStart\":\"2022-01-01\"")
                 .replace("\"periodEnd\":\"2024-12-31\"", "\"periodEnd\":\"2022-12-31\""),
-            base.replace("\"notes\":{\"syntheticTestOnly\":true,\"runScope\":\"FRA-GDP\"}",
+            base.replace("\"notes\":{\"httpBodySha256\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"syntheticTestOnly\":true,\"runScope\":\"FRA-GDP\"}",
                 "\"notes\":{\"licenseReviewStatus\":\"REVIEW_REQUIRED\",\"claim\":\"APPROVED\"}"),
             base.replace("\"qualityFlags\":[]", "\"qualityFlags\":[\"REUSE_RIGHTS_REVIEW_REQUIRED\"]"),
             base.replace("\"sourceMetadata\":{\"syntheticTestOnly\":true}",
@@ -276,6 +291,12 @@ class TimeseriesSourceRunSafetyIntegrationTest {
         String key = runKey();
         String invalid = sample(key).replace("\"countryIso3\":\"FRA\"",
                                              "\"countryIso3\":\"ZZZ\"");
+        // The precise signed research review is SYNTHETIC and permits the
+        // request to reach SQL; ZZZ remains an intentionally absent catalog
+        // country, so its FK failure must rollback the source run atomically.
+        SignedTestRightsFixture.insert(jdbc, SignedTestRightsFixture.defaultDecision(
+                "WORLD_BANK", "WDI", "ZZZ", "NY.GDP.MKTP.CD"
+        ));
         mockMvc.perform(authenticated(invalid)).andExpect(status().isBadRequest());
         assertEquals(0, runCount(key));
     }

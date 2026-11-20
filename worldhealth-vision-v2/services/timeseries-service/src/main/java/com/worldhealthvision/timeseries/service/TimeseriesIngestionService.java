@@ -10,35 +10,45 @@ import java.util.Locale;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 @Service
 public class TimeseriesIngestionService {
     private final TimeseriesRepository timeseriesRepository;
     private final CanonicalIngestionFingerprint fingerprint;
     private final ProtectedSourcePublicationGate rightsGate;
+    private final SignedRightsRegistry signedRightsRegistry;
 
     public TimeseriesIngestionService(
             TimeseriesRepository timeseriesRepository,
             CanonicalIngestionFingerprint fingerprint,
-            ProtectedSourcePublicationGate rightsGate
+            ProtectedSourcePublicationGate rightsGate,
+            SignedRightsRegistry signedRightsRegistry
     ) {
         this.timeseriesRepository = timeseriesRepository;
         this.fingerprint = fingerprint;
         this.rightsGate = rightsGate;
+        this.signedRightsRegistry = signedRightsRegistry;
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public IngestionBatchAcceptedResponse ingestObservationBatch(IngestionObservationBatchRequest request) {
         IngestionObservationBatchRequest normalizedRequest = normalize(request);
         // Reject private research data before ANY write or SQL transaction
         // resolving a source-run identity. The gate is server-owned, never
         // overridden by user-supplied status flags or a synthetic test note.
         rightsGate.requirePublishable(normalizedRequest);
+        // The signed permission is checked under a DB row lock in THIS
+        // transaction. Without the server trust anchor or a specific signed
+        // grant, even a correctly authenticated producer is DENIED.
+        List<java.util.UUID> verifiedDecisions =
+                signedRightsRegistry.requireCurrentPublicIngestRights(normalizedRequest);
         String canonicalSha256 = fingerprint.calculate(normalizedRequest);
         SourceRunInsertResult sourceRun = timeseriesRepository.insertSourceRunIfAbsent(
                 normalizedRequest, canonicalSha256
         );
         if (!sourceRun.newlyInserted()) {
+            signedRightsRegistry.recheckReplay(verifiedDecisions);
             // True idempotency: do not update fetchedAt, source notes, path,
             // persistedAt, observation numeric value or ingestedAt on replay.
             return new IngestionBatchAcceptedResponse(
@@ -48,6 +58,9 @@ public class TimeseriesIngestionService {
         int insertedCount = timeseriesRepository.upsertObservations(
                 sourceRun.sourceRunId(), normalizedRequest
         );
+        // Recheck close to COMMIT with fresh READ COMMITTED snapshot, and
+        // preserve exactly which signed decisions authorized each new run.
+        signedRightsRegistry.recheckAndLink(sourceRun.sourceRunId(), verifiedDecisions);
         return new IngestionBatchAcceptedResponse(
                 sourceRun.sourceRunId(), normalizedRequest.items().size(), insertedCount
         );
