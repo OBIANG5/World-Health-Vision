@@ -40,14 +40,18 @@ async function fetchOriginal(entry){
   const bytes=Buffer.from(await response.arrayBuffer());
   if(bytes.length<25000||bytes.length>maxBytes||bytes[0]!==0xff||bytes[1]!==0xd8)
     throw Error("Missing/invalid JPEG original: "+entry.id+" bytes="+bytes.length);
+  const sha=createHash("sha256").update(bytes).digest("hex");
+  if(!/^[0-9a-f]{64}$/.test(entry.sha256)||sha!==entry.sha256)
+    throw Error("NASA original content SHA256 changed: "+entry.id+
+      ". Do not silently render a different image; investigate official source and update provenance.");
   const target=path.join(root,entry.file);
   fs.writeFileSync(target,bytes,{flag:"w",mode:0o600});
   const [width,height]=execFileSync("ffprobe",[
     "-v","error","-select_streams","v:0","-show_entries","stream=width,height",
     "-of","csv=s=x:p=0",target],{encoding:"utf8",timeout:18000}).trim().split("x").map(Number);
-  if(!Number.isInteger(width)||!Number.isInteger(height)||width<2300||height<1080)
+  if(!Number.isInteger(width)||!Number.isInteger(height)||width!==entry.width||height!==entry.height)
     throw Error("NASA asset resolution too low for cinematic review "+entry.id+" "+width+"x"+height);
-  return {id:entry.id,file:entry.file,sha256:createHash("sha256").update(bytes).digest("hex"),
+  return {id:entry.id,file:entry.file,sha256:sha,
     original_url:entry.original_url,source_page:entry.source_page,credit:entry.source_credit,
     media_type:entry.media_type,is_impact_observation:false,
     width,height,bytes:bytes.length,verified_host:finalUrl.hostname,
