@@ -40,7 +40,7 @@ jobs:
           assert 'trustedSemanticCodeSha256' in verifier
           assert 'SEMANTIC_VERSION.equals' in verifier
           assert 'trustedSemanticCodeSha256.equals' in verifier
-          main=(root.parent.parent/'resources/application.yml').read_text()
+          main=Path('worldhealth-vision-v2/services/timeseries-service/src/main/resources/application.yml').read_text()
           assert 'WHV_SEMANTIC_REPLAY_CODE_SHA256' in main
           assert 'PUBLIC_API_INGEST' in verifier
           print('PASS V2 proof requires signed independent parser version and pin')
