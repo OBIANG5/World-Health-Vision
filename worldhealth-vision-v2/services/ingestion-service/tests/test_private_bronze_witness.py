@@ -54,6 +54,11 @@ def test_officially_pinned_synthetic_source_creates_cryptographic_research_proof
     private_key, evidence, event_id, proof = token(tmp_path)
     assert proof["operation"] == "PRIVATE_RESEARCH_VALIDATION"
     assert proof["schema"] == "WORLD_VISION_BRONZE_WITNESS_V2"
+    from ingestion_service import semantic_source_replay as replay_source
+    assert proof["semanticVerifierVersion"] == replay_source.SEMANTIC_REPLAY_VERSION
+    assert proof["semanticVerifierCodeSha256"] == sha256(
+        Path(replay_source.__file__).read_bytes()
+    ).hexdigest()
     assert proof["acquisitionEventId"] == event_id
     assert proof["sourceCode"] == "IBGE"
     assert proof["datasetCode"] == "CENSO2022_4714"
@@ -87,7 +92,8 @@ def test_officially_pinned_synthetic_source_creates_cryptographic_research_proof
     "sourceCode", "datasetCode", "runKey", "originalHttpSha256",
     "normalizedNdjsonSha256", "manifestSha256", "itemsSha256",
     "acquisitionEventId", "acquisitionOutcomeSha256",
-    "operation", "issuedAtEpochSec", "expiresAtEpochSec",
+    "operation", "semanticVerifierVersion", "semanticVerifierCodeSha256",
+    "issuedAtEpochSec", "expiresAtEpochSec",
 ])
 def test_any_changed_scope_or_content_breaks_witness_signature(tmp_path, field):
     private, _, _, proof = token(tmp_path)
