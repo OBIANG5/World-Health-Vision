@@ -1,0 +1,47 @@
+name: World-Vision — cross-agent editorial skills contract
+
+on:
+  pull_request:
+    paths:
+      - '.agents/skills/worldvision-media-director/**'
+      - '.claude/skills/worldvision-media-director/**'
+      - 'worldhealth-vision-v2/docs/media/MEDIA_AGENT_SKILLS_EVALUATION_2026-11-20.md'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/test-media-skills.mjs'
+      - '.github/workflows/worldvision-media-skills-guard.yml'
+  push:
+    branches:
+      - 'feature/worldvision-media-agent-skills-*'
+    paths:
+      - '.agents/skills/worldvision-media-director/**'
+      - '.claude/skills/worldvision-media-director/**'
+      - 'worldhealth-vision-v2/docs/media/MEDIA_AGENT_SKILLS_EVALUATION_2026-11-20.md'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/test-media-skills.mjs'
+      - '.github/workflows/worldvision-media-skills-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worldvision-media-skills-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  skill-contracts:
+    name: Portable Codex/Claude skill source audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify original World-Vision agent skills without third-party execution
+        run: node --test worldhealth-vision-v2/services/media-renderer/creative/test-media-skills.mjs
+      - name: Prevent accidental external installer in skills folder
+        run: |
+          if grep -REn 'curl[[:space:]].*\\|[[:space:]]*(bash|sh)|wget[[:space:]].*\\|[[:space:]]*(bash|sh)' \
+            .agents/skills/worldvision-media-director \
+            .claude/skills/worldvision-media-director; then
+            echo "Review any download-and-execute instructions before merge"; exit 1
+          fi
