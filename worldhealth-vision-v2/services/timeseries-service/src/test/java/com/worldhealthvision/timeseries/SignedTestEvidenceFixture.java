@@ -53,6 +53,17 @@ final class SignedTestEvidenceFixture {
             String json, ObjectMapper mapper, EvidenceItemsFingerprint fingerprint,
             String operation, long issuedOffsetSeconds, long expiresOffsetSeconds
     ) {
+        return attachWithParser(
+                json, mapper, fingerprint, operation, issuedOffsetSeconds,
+                expiresOffsetSeconds, SEMANTIC_VERSION, SEMANTIC_SHA
+        );
+    }
+
+    static String attachWithParser(
+            String json, ObjectMapper mapper, EvidenceItemsFingerprint fingerprint,
+            String operation, long issuedOffsetSeconds, long expiresOffsetSeconds,
+            String semanticVersion, String semanticSha256
+    ) {
         try {
             ObjectNode root = (ObjectNode) mapper.readTree(json);
             ObjectNode notes = (ObjectNode) root.with("notes");
@@ -76,7 +87,7 @@ final class SignedTestEvidenceFixture {
                     request.fetchedAtUtc().toInstant().getNano(),
                     notes.get("httpBodySha256").asText(),
                     NORMALIZED_SHA, MANIFEST_SHA, EVENT, OUTCOME_SHA,
-                    projection, SEMANTIC_VERSION, SEMANTIC_SHA,
+                    projection, semanticVersion, semanticSha256,
                     now + issuedOffsetSeconds,
                     now + expiresOffsetSeconds, publicHash, ""
             );
