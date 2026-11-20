@@ -137,3 +137,50 @@ PR #95/issue #94 et issue #68 Vercel. Contrôler la dernière CI et SHA.
 Ne pas confondre « source catalogue », « données présentes », « droits
 PUBLIC_API_INGEST synthétiques CI », « licence institutionnelle réelle »,
 « environnement CI » et « site public international ».
+
+## 8. CONCLUSION VÉRIFIÉE : P2C2 SUCCESS — preuve bout en bout complète
+**Cette section remplace le statut provisoire du §3 ci-dessus.**
+GitHub Actions : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44770455822
+Commit **de code** `49f45e89af16f66131a925acb8a625218886dcdb`.
+Job `signed-synthetic-end-to-end` : **SUCCESS**, logs intégralement examinés.
+Capture artefact `worldvision-p2c2-real-synthetic-revocation-mobile-qa` ID
+`14647466570`, 628190 octets ; les captures proviennent du vrai navigateur
+interrogeant le vrai réseau Gateway, mais toutes les observations restent
+**SYNTHETIC QA ONLY**. Les clés privées n'ont jamais été écrites sur disque.
+
+Étapes SUCCESS dans **une seule exécution** :
+1. Génération de deux signataires Ed25519 distincts en mémoire, octets bruts/
+   normalisés/manifeste/journal, vérification SHA256, empreinte de l'observation
+   et signatures avec les deux clés publiques.
+2. Vrai PostgreSQL16/TimescaleDB, 6 services de la pile existante, JWT actif,
+   Gateway loopback seulement et absence de valeur publique avant ingestion.
+3. Mauvais token de transport refusé ; valeur passée de 17.0 à 18.0 après
+   signature refusée ; POST intègre et signée **ACCEPTÉ** via l'API privée du
+   vrai Timeseries et un `source_run` créé.
+4. Gateway autorise UNE observation synthétique GAB à la fois sur la couverture,
+   la découverte d'indicateurs et la dernière source ; source-runs privé
+   refuse les requêtes anonymes.
+5. **PASS iphone-320**, **PASS iphone-390**, **PASS desktop-1440** :
+   l'Atlas réel affiche la série test-only signée, l'unité, les dates et
+   les conditions du catalogue ; aucune source sélectionnée par défaut.
+6. Pendant que le **même iPhone** affiche la valeur, SQL insère la révocation
+   append-only dans la DB véritable ; `PASS same-iPhone` : la valeur
+   disparaît de l'interface ainsi que de `published-coverage`,
+   `published-indicators`, `series/latest` et de la comparaison pays.
+7. Contrôle forensique final en base : **1 observation conservée physiquement,
+   0 observation dans latest_observation publiable, 1 révocation append-only**.
+8. Captures QA envoyées et nettoyage des conteneurs, volumes, secrets et
+   preuves temporaires effectué. L'amélioration de l'étape navigateur utilise
+   Chrome déjà présent sur les runners GitHub, évitant un téléchargement lent.
+
+Ce résultat démontre **un vrai circuit technique complet de publication/retrait
+sous des permissions cryptographiquement vérifiées mais synthétiques**.
+Il ne démontre PAS une licence réelle d'un fournisseur, la fiabilité d'une
+statistique extérieure, la validation humaine d'une autorisation commerciale,
+une infrastructure accessible via Internet ou une SLA internationale.
+
+Prochaine issue **#107 P2C3** : pilote France INSEE Melodi, confirmer dataset
+précis, droits de réutilisation et attribution de la série ; pipeline source
+réelle à preuve Bronze et version du parseur, puis premier aperçu STAGING privé
+et mesuré avec retour arrière. Ne pas toucher à la PROD Vercel, et garder
+les branches média, GDELT et onze Visions.

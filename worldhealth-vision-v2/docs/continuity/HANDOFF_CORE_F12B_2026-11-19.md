@@ -757,3 +757,30 @@ Premier run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44769022
 Second run https://github.com/OBIANG5/World-Health-Vision/actions/runs/44770455822 : browser Chrome installé ou repli borné, **conclusion à vérifier** avant validation P2C2.
 Handoff dédié : `docs/continuity/WORLD_VISION_PRODUCT_P2C2_SIGNED_LIVE_ATLAS_2026-11-20.md`.
 PROCHAIN : finaliser CI de la révocation DANS le même navigateur ; P2C3 issue #107 candidat Insee Melodi sous Licence Ouverte avec dataset précis/méthode/quota/licence à vérifier, 1 série réelle avant staging privé. Ne rien déployer sur Vercel, ne jamais autoriser IBGE/WDI réel via des signatures CI, préserver 11 Visions/médias/GDELT.
+
+---
+## 20 novembre 2026 — PRODUCT-P2C2 FINI ET VALIDÉ en vraie stack (CI uniquement)
+PR #106 DRAFT `product/v2-p2c2-signed-live-atlas-revocation-2026-11-20` ;
+**code SHA `49f45e89af16f66131a925acb8a625218886dcdb`,
+CI https://github.com/OBIANG5/World-Health-Vision/actions/runs/44770455822 SUCCESS**.
+Démonstration avec deux signatures Ed25519 éphémères indépendantes sur des
+octets/source/normalisés/manifest/journal **ENTIÈREMENT SYNTHÉTIQUES** ;
+vraie ingestion private Timeseries acceptée (bad key et changement signé refusés),
+6 services Compose, SQL latest_observation / Gateway, vrais Atlas navigateur
+320px, iPhone390 et desktop1440 PASS ; révocation physique rights_revocation
+pendant le même navigateur iPhone → disparition de valeur partout sur API
+publique et UI PASS. Forensic : 1 raw observation conservée, 0 observation
+publiable, 1 décision révoquée. Screenshots GitHub Actions artefact ID
+`14647466570` (test-only, pas de vraies statistiques).
+Documentation détaillée
+`docs/continuity/WORLD_VISION_PRODUCT_P2C2_SIGNED_LIVE_ATLAS_2026-11-20.md`
+section 8. Les précédents textes « CI en cours » sont historiques, **résultat
+final SUCCESS confirmé**.
+Aucun vrai droit fournisseur, ni chiffre INSEE/IBGE/WDI ou Gabon réel,
+aucun merge, aucun Vercel nouveau, VPS, ni coût. **Prochain travail #107** :
+première source réelle vérifiée juridiquement et scientifiquement, pilote
+France INSEE Melodi (Licence Ouverte générale et 30 requêtes/minute, à
+confirmer pour le dataset choisi), pipeline source→Bronze→witness/parseur/
+revue droits→Timeseries→Atlas et PREVIEW privée, ne pas prétendre couvrir
+217 pays en séries statistiques. #95/#94 doivent être examinés avant diffusion
+commerciale. Conserver l'intégralité des onze Visions, média et GDELT.
