@@ -239,4 +239,93 @@ dataProject.shots=[
 dataProject.voice=null;dataProject.music=null;dataProject.outro=null;
 const dataPath=path.join(path.dirname(outputJson),"worldvision-data-motion-project.json");
 fs.writeFileSync(dataPath,JSON.stringify(dataProject,null,2)+String.fromCharCode(10));
+
+// FILM-1 — The first genuine connected editorial sequence of FIVE DIFFERENT
+// SOURCE-PRESERVING SCENE GRAMMARS. This is entirely fictional audiovisual QA,
+// NOT a news report. Sequence and transitions are deliberately explicit.
+const editorialFilm=structuredClone(p);
+editorialFilm.id="wv-five-scene-integrated-fictional-qa";
+editorialFilm.title="WORLD-VISION / FILM 1 : UNE HISTOIRE EN CINQ COUCHES";
+editorialFilm.script=[
+  "TEST AUDIOVISUEL — CE FILM NE REPRÉSENTE AUCUN ÉVÉNEMENT.",
+  "Une carte de référence fait place à un territoire réel, à un paysage abstrait,",
+  "à une série de chiffres FICTIFS puis à un DOCUMENT ABSTRAIT.",
+  "Aucun chiffre d'actualité, photographie de presse, voix humaine ou citation réelle."
+].join(" ");
+const filmTransition={transitionAfter:"dissolve",transitionFrames:10};
+const fictionalCredit="Synthetic geometry generated in CI; never use as real news imagery";
+editorialFilm.shots=[
+  {
+    id:"film-world-overview",template:"geo_story",durationFrames:150,
+    title:"DU GLOBE AU CONTEXTE",
+    subtitle:"Géographie vérifiable, scénario d'essai sans événement.",
+    eyebrow:"WORLD-VISION · FILM TEST NON JOURNALISTIQUE",
+    geo:{center:{lon:0,lat:10},spinDegrees:12,look:"photo",
+      camera:{to:{lon:11.6,lat:-.7},startFrame:15,endFrame:100,zoom:1.09},
+      spotlight:{countryId:"266"},target:{lon:11.6,lat:-.7,label:"POINT DE TEST"}},
+    motion:"locked",...filmTransition
+  },
+  {
+    ...structuredClone(countryProject.shots[0]),
+    id:"film-territory-context",
+    title:"LE TERRITOIRE · CONTEXTE",
+    eyebrow:"FILM TEST · CARTOGRAPHIE RÉELLE",
+    subtitle:"Contours Natural Earth et illustration abstraite, sans événement.",
+    media:{kind:"image",file:"synthetic-landscape.png",credit:fictionalCredit},
+    ...filmTransition
+  },
+  {
+    ...structuredClone(photoProject.shots[0]),
+    id:"film-source-photo",
+    title:"UNE IMAGE · PLUSIEURS PISTES",
+    eyebrow:"FILM TEST · PHOTO SYNTHÉTIQUE",
+    subtitle:"Même image abstraite, caméra, masque et premier plan indépendants.",
+    ...filmTransition
+  },
+  {
+    ...structuredClone(dataProject.shots[0]),
+    id:"film-verified-data-contract",
+    title:"LES DONNÉES · AVEC SOURCE",
+    eyebrow:"FILM TEST · DONNÉES FICTIVES",
+    subtitle:"Chiffres fictifs, dates, unités et échelle sont explicites.",
+    ...filmTransition
+  },
+  {
+    ...structuredClone(documentProject.shots[0]),
+    id:"film-evidence-closing",
+    title:"REMONTER À LA SOURCE",
+    eyebrow:"FILM TEST · DOCUMENT NON AUTHENTIQUE",
+    subtitle:"Document purement géométrique, aucune citation inventée.",
+    media:{kind:"image",file:"synthetic-document.png",credit:fictionalCredit},
+    transitionAfter:"cut",transitionFrames:0
+  }
+];
+// A deterministic NON-SPEECH WAV tests real full-film audio persistence,
+// continuity, encoding and attribution. It is NOT a synthetic human narrator.
+const filmFps=30;
+const filmDurationFrames=editorialFilm.shots.reduce((n,s)=>n+s.durationFrames,0)-
+  editorialFilm.shots.slice(0,-1).reduce((n,s)=>n+s.transitionFrames,0);
+const filmDurationSeconds=filmDurationFrames/filmFps;
+const filmAudioSeconds=filmDurationSeconds+0.2;
+const filmSamples=Math.ceil(sampleRate*filmAudioSeconds);
+const filmPcm=Buffer.alloc(44+filmSamples*2);
+wav.copy(filmPcm,0,0,44);
+filmPcm.writeUInt32LE(36+filmSamples*2,4);
+filmPcm.writeUInt32LE(filmSamples*2,40);
+for(let i=0;i<filmSamples;i++){
+  const t=i/sampleRate;
+  // A deliberately quiet original audio test oscillator, not a music cue.
+  const envelope=Math.min(1,t/.16,(filmAudioSeconds-t)/.24);
+  const level=(Math.floor(t/5)%2===0?270:195)*Math.max(0,envelope);
+  filmPcm.writeInt16LE(Math.round(Math.sin(2*Math.PI*184*t)*level),44+i*2);
+}
+fs.writeFileSync(path.join(assetsDir,"synthetic-film-oscillator.wav"),filmPcm);
+editorialFilm.voice={
+  file:"synthetic-film-oscillator.wav",
+  label:"NON SPEECH TEST OSCILLATOR — NOT A NARRATOR",volume:.35
+};
+editorialFilm.music=null;editorialFilm.outro=null;
+const filmPath=path.join(path.dirname(outputJson),"worldvision-integrated-film-five-scenes.json");
+fs.writeFileSync(filmPath,JSON.stringify(editorialFilm,null,2)+String.fromCharCode(10));
+
 console.log("Synthetic image/video/audio/document fixtures created; not authentic news assets.");
