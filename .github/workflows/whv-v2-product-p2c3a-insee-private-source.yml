@@ -1,0 +1,82 @@
+name: World-Vision P2C3A - INSEE pinned private read and immutable Bronze audit
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2c3a-insee-private-population-*'
+  workflow_dispatch:
+    inputs:
+      live_probe:
+        description: "Manually run bounded private INSEE HTTPS research probes (never publish)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  insee-private-offline-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing ingestion dependency set and test runner
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pip install --disable-pip-version-check -e '.[dev]' 'cryptography>=44,<47'
+      - name: Check malicious geography/measurement/rights, immutable revisions and all Python ingestion regressions
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pytest -q tests/test_insee_melodi_private_population.py
+          python -m pytest -q tests
+      - name: Audit hard-coded research-only boundary and locked source URL
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          r=Path("worldhealth-vision-v2/services/ingestion-service/src/ingestion_service")
+          connector=(r/"connectors/insee_melodi_population_research.py").read_text()
+          pilot=(r/"pipelines/insee_melodi_population_research.py").read_text()
+          journal=(r/"acquisition_journal.py").read_text()
+          assert 'PINNED_GEO = "2025-FRANCE-F"' in connector
+          assert 'MEASURE = "PMUN"' in connector
+          assert 'YEAR = "2023"' in connector
+          assert 'FRANCE_HORS_MAYOTTE_NOT_FULL_FRA' in pilot
+          assert 'reuseRights": "REVIEW_REQUIRED"' in pilot
+          assert 'timeseriesPublication": "NOT_ATTEMPTED"' in pilot
+          assert 'BRONZE_ONLY_UNREVIEWED' in pilot
+          assert 'INSEE' in journal and '_INSEE_URL' in journal
+          assert 'publish_indicator_observations' not in pilot
+          print("PASS: INSEE historical source cannot be passed off as live FRA totals or public API rights")
+          PY
+
+  insee-private-official-live-probe:
+    needs: insee-private-offline-regressions
+    # Explicit, ONE-TIME probe only. Ordinary pushes NEVER contact INSEE.
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.live_probe) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[insee-once-live-probe]')) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only existing ingestion package + HTTP client
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m pip install --disable-pip-version-check -e .
+      - name: 2 strictly pinned official GETs, no permanent artifact and no source publication
+        run: |
+          set -euo pipefail
+          private="$(mktemp -d)"
+          chmod 0700 "$private"
+          trap 'rm -rf "$private"' EXIT
+          python3 worldhealth-vision-v2/infra/tests/p2c3a_insee_official_readonly_probe.py \
+            --bronze-root "$private" --twice
+          echo "PASS: private source only; raw response bytes deleted with runner, no Vercel or Timeseries"
