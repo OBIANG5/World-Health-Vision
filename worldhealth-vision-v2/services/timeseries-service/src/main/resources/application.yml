@@ -70,3 +70,8 @@ whv:
     # Empty = no signed permissions can validate, all new ingestion denied.
     # NEVER provision a private signing key to the Timeseries service.
     rights-trust-public-key-base64: ${WHV_RIGHTS_TRUST_PUBLIC_KEY_BASE64:}
+
+    # SEPARATE trust anchor for the private Bronze evidence witness.
+    # Empty => public Timeseries writes DENIED (even with reviewer rights).
+    # Never deploy the witness private signing key to Timeseries or web.
+    evidence-trust-public-key-base64: ${WHV_EVIDENCE_TRUST_PUBLIC_KEY_BASE64:}
