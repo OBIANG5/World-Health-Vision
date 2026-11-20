@@ -1,0 +1,159 @@
+name: World-Vision PRODUCT-P2B - live six-service Atlas browser integration
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2b-live-stack-gateway-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never publish, open firewall, use provider data, or deploy to Vercel.
+# Authenticated services are private and only the Gateway binds to loopback.
+env:
+  WHV_TIMESCALE_IMAGE: timescale/timescaledb:2.15.3-pg16
+  WHV_OIDC_ISSUER_URI: https://ci-only.invalid/realms/worldvision
+  WHV_OIDC_JWKS_URI: https://ci-only.invalid/realms/worldvision/jwks
+  WHV_SECURITY_AUDIENCE: worldvision-ci-p2b
+  WHV_DB_PASSWORD_FILE: /tmp/whv_ci_product_p2b_password
+  WHV_GATEWAY_HOST_PORT: "18080"
+
+jobs:
+  real-stack-and-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout exact candidate, no credential persistence
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node22 and npm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Build normal V2 production frontend, NO offline preview mode
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-fund --no-audit
+          npx tsc -b --pretty false
+          npx vite build
+          test -f dist/index.html
+          test -f dist/countries.geojson
+          test ! -f dist/preview-bootstrap.js
+          test ! -f dist/preview-local-catalog.js
+      - name: Syntax-check read-only same-origin CI proxy and live browser test
+        run: |
+          python3 -m py_compile worldhealth-vision-v2/infra/tests/p2b_same_origin_preview.py
+          node --check worldhealth-vision-v2/frontend/web-v2/p2b-live-stack-smoke.mjs
+      - name: Prepare one-off DB password and safe build directory
+        run: |
+          openssl rand -hex 40 > "$WHV_DB_PASSWORD_FILE"
+          chmod 0644 "$WHV_DB_PASSWORD_FILE"
+          mkdir -p worldhealth-vision-v2/infra/benchmarks/artifacts
+      - name: Assert isolated six services and explicit public read allowlist
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            config --format json > "$RUNNER_TEMP/p2b-compose.json"
+          python3 - "$RUNNER_TEMP/p2b-compose.json" <<'PY'
+          import json,sys
+          s=json.load(open(sys.argv[1]))['services']
+          expected={'whv-timescaledb','catalog-service','timeseries-service',
+                    'analytics-service','ingestion-service','gateway-service'}
+          assert set(s)==expected,(set(s),expected)
+          for name,v in s.items():
+              ports=v.get('ports') or []
+              if name=='gateway-service':
+                  assert len(ports)==1 and ports[0]['host_ip']=='127.0.0.1'
+                  env=v['environment']
+                  assert env['WHV_SECURITY_ENABLED']=='true'
+                  assert env['WHV_PUBLIC_READ_ENABLED']=='true'
+                  assert env['WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS']=='false'
+              else:
+                  assert not ports,(name,ports)
+          print("PASS: no public DB or internal service ports and JWT remains enabled")
+          PY
+      - name: Start existing six-service stack, real migrations and data contracts
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            up -d --build --wait whv-timescaledb catalog-service timeseries-service analytics-service ingestion-service gateway-service
+      - name: Validate public Gateway and deny private operations
+        run: |
+          set -euo pipefail
+          for n in $(seq 1 50); do
+            if curl -fsS --max-time 3 http://127.0.0.1:18080/actuator/health > /dev/null; then break; fi
+            sleep 2
+          done
+          code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' 'http://127.0.0.1:18080/api/timeseries/source-runs')"
+          test "$code" = "401" || { echo "Private API not denied: $code" >&2; exit 1; }
+          code="$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' -H 'Content-Type: application/json' \
+            -d '{"question":"CI only"}' http://127.0.0.1:18080/api/analytics/advisor/chat)"
+          test "$code" = "401" || { echo "Private POST not denied: $code" >&2; exit 1; }
+          for iso in GAB FRA BRA; do
+            curl -fsS --max-time 25 "http://127.0.0.1:18080/api/timeseries/countries/$iso/published-coverage" \
+              > "$RUNNER_TEMP/p2b-$iso-coverage.json"
+            curl -fsS --max-time 20 "http://127.0.0.1:18080/api/catalog/countries/$iso/local-context" \
+              > "$RUNNER_TEMP/p2b-$iso-catalog.json"
+          done
+          python3 - "$RUNNER_TEMP" <<'PY'
+          import json,sys,pathlib
+          root=pathlib.Path(sys.argv[1])
+          for iso in ('GAB','FRA','BRA'):
+              coverage=json.loads((root/f'p2b-{iso}-coverage.json').read_text())
+              assert coverage['countryIso3']==iso,coverage
+              assert coverage['coverageStatus']=='NO_PUBLICLY_ELIGIBLE_DATA',coverage
+              assert coverage['availableObservationCount']==0,coverage
+              assert coverage['publishedSourceCount']==0,coverage
+              catalog=json.loads((root/f'p2b-{iso}-catalog.json').read_text())
+              assert catalog['countryIso3']==iso
+          print('PASS: three real Catalog country contexts and zero rights-gated public observations')
+          PY
+      - name: Chromium browser against REAL Gateway + DB, without archived fixtures
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          npx playwright install --with-deps chromium
+      - name: Test iPhone country navigation and actual Gateway for GAB/FRA/BRA
+        run: node worldhealth-vision-v2/frontend/web-v2/p2b-live-stack-smoke.mjs --mode=baseline
+      - name: Simulate a real Timeseries outage without poisoning the source catalog
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml stop timeseries-service
+          node worldhealth-vision-v2/frontend/web-v2/p2b-live-stack-smoke.mjs --mode=outage
+      - name: Restart Timeseries and confirm visible country coverage recovery
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml up -d --wait timeseries-service
+          node worldhealth-vision-v2/frontend/web-v2/p2b-live-stack-smoke.mjs --mode=recovery
+      - name: Bounded p50/p95/p99 real Gateway coverage benchmark
+        run: |
+          python3 worldhealth-vision-v2/infra/tests/benchmark_gateway.py \
+            --path /api/timeseries/countries/GAB/published-coverage \
+            --path /api/timeseries/countries/FRA/published-coverage \
+            --path /api/timeseries/countries/BRA/published-coverage \
+            --requests-per-path 12 --workers 3 \
+            --output worldhealth-vision-v2/infra/benchmarks/artifacts/p2b-real-gateway-benchmark.json
+          docker stats --no-stream --format '{{json .}}' \
+            $(docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+              -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml ps -q) \
+            > worldhealth-vision-v2/infra/benchmarks/artifacts/p2b-container-stats.jsonl
+      - name: Archive only test metrics and browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-p2b-disposable-real-stack-test-evidence
+          path: |
+            p2b-artifacts/
+            worldhealth-vision-v2/infra/benchmarks/artifacts/p2b-*
+          if-no-files-found: warn
+      - name: Remove ephemeral database, containers and CI password
+        if: always()
+        run: |
+          docker compose -f worldhealth-vision-v2/infra/compose.secure-staging.yml \
+            -f worldhealth-vision-v2/infra/tests/compose.ci-public-read.yml \
+            down -v --remove-orphans || true
+          rm -f "$WHV_DB_PASSWORD_FILE"
