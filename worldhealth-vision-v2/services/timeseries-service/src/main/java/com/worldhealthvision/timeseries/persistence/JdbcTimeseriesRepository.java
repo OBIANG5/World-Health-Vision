@@ -824,6 +824,9 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 where (cast(:sourceCode as varchar) is null or sr.source_code = :sourceCode)
                   and (cast(:datasetCode as varchar) is null or sr.dataset_code = :datasetCode)
                   and (cast(:status as varchar) is null or sr.status = :status)
+                  and sr.evidence_attestation_sha256 is not null
+                  and sr.attested_items_sha256 is not null
+                  and sr.notes -> 'evidenceAttestation' ->> 'itemsSha256' = sr.attested_items_sha256
                   -- Public source-run metadata must not reveal unreviewed,
                   -- expired or revoked runs while their underlying history is
                   -- kept for authorized investigations.
@@ -874,7 +877,8 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
      */
     @Override
     public SourceRunInsertResult insertSourceRunIfAbsent(
-            IngestionObservationBatchRequest request, String canonicalBatchSha256
+            IngestionObservationBatchRequest request, String canonicalBatchSha256,
+            String evidenceAttestationSha256, String attestedItemsSha256
     ) {
         if (canonicalBatchSha256 == null || !canonicalBatchSha256.matches("[a-f0-9]{64}")) {
             throw new IllegalArgumentException("Canonical ingestion batch SHA-256 is required.");
@@ -887,12 +891,14 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                     id, source_code, dataset_code, run_key,
                     fetched_at_utc, bronze_raw_payload_path,
                     bronze_normalized_payload_path, record_count,
-                    status, notes, canonical_batch_sha256
+                    status, notes, canonical_batch_sha256,
+                    evidence_attestation_sha256, attested_items_sha256
                 ) values (
                     :id, :sourceCode, :datasetCode, :runKey,
                     :fetchedAtUtc, :bronzeRawPayloadPath,
                     :bronzeNormalizedPayloadPath, :recordCount,
-                    'PERSISTED', cast(:notes as jsonb), :canonicalSha
+                    'PERSISTED', cast(:notes as jsonb), :canonicalSha,
+                    :evidenceSha, :itemsSha
                 )
                 on conflict (source_code, dataset_code, run_key) do nothing
                 returning id
@@ -907,6 +913,8 @@ public class JdbcTimeseriesRepository implements TimeseriesRepository {
                 .param("recordCount", request.recordCount())
                 .param("notes", notesJson)
                 .param("canonicalSha", canonicalBatchSha256)
+                .param("evidenceSha", evidenceAttestationSha256)
+                .param("itemsSha", attestedItemsSha256)
                 .query(UUID.class).optional();
         if (inserted.isPresent()) {
             return new SourceRunInsertResult(inserted.get(), true);

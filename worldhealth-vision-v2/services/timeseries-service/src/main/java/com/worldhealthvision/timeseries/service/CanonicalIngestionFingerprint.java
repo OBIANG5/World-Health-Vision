@@ -49,7 +49,7 @@ public final class CanonicalIngestionFingerprint {
                 request.sourceCode(), request.datasetCode(), request.runKey(),
                 request.fetchedAtUtc(), request.bronzeRawPayloadPath(),
                 request.bronzeNormalizedPayloadPath(), request.recordCount(),
-                request.notes(), sorted
+                notesWithoutExpiringWitness(request.notes()), sorted
         );
         try {
             byte[] payload = canonicalMapper.writeValueAsBytes(canonical);
@@ -58,4 +58,15 @@ public final class CanonicalIngestionFingerprint {
             throw new IllegalStateException("Cannot determine canonical source run identity.", exc);
         }
     }
+    private static java.util.Map<String, Object> notesWithoutExpiringWitness(
+            java.util.Map<String, Object> notes
+    ) {
+        if (notes == null || notes.isEmpty()) return java.util.Map.of();
+        var copy = new java.util.HashMap<>(notes);
+        // Same source bytes + same values => same identity after witness
+        // rotates or expires. Every replay still verifies fresh signature.
+        copy.remove("evidenceAttestation");
+        return copy;
+    }
+
 }

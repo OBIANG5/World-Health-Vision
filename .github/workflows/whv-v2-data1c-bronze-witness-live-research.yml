@@ -1,0 +1,136 @@
+name: World-Vision DATA-1C-A2B — research-only real IBGE/WDI Bronze witness
+
+on:
+  push:
+    branches:
+      - 'data/v2-bronze-evidence-attestation-*'
+    paths:
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/private_bronze_witness.py'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/evidence_items_fingerprint.py'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/acquisition_journal.py'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/source_evidence_store.py'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/connectors/**'
+      - 'worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/pipelines/**'
+      - '.github/workflows/whv-v2-data1c-bronze-witness-live-research.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data1c-a2b-live-${{ github.ref }}
+  cancel-in-progress: true
+
+# Exactly 4 official GETs: IBGE 2022 BRA population, IBGE 4714 metadata,
+# IBGE periods; WDI BRA 2022 SP.POP.TOTL source2. Two short-lived research
+# attestations are signed in RAM, NEVER PUBLIC_API_INGEST. Original bytes,
+# population values, manifests and private events stay in TemporaryDirectory
+# and are NEVER logged/artifacted/committed/redistributed.
+jobs:
+  private-witness-real-provider-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout exact candidate; no persistent GitHub token
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install only normal ingestion and test-only witness verifier
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python -m pip install --disable-pip-version-check -e '.[dev]'
+          python -m pip install --disable-pip-version-check 'cryptography>=43,<47'
+      - name: Four official requests; audit, SHA, private-only Ed25519 and zero exposed values
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+          from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+          import base64
+          import json
+          import time
+          import httpx
+          from ingestion_service.bronze_store import BronzeStore
+          from ingestion_service.connectors.ibge_national_census_client import IbgeNationalCensusClient
+          from ingestion_service.connectors.ibge_census_metadata_client import IbgeCensusMetadataClient
+          from ingestion_service.connectors.worldbank_population_2022_research import WdiPopulation2022ResearchClient
+          from ingestion_service.pipelines.ibge_national_census import IbgeNationalCensusPilot
+          from ingestion_service.pipelines.ibge_census_metadata import IbgeCensusMetadataPilot
+          from ingestion_service.pipelines.worldbank_population_2022_research import WdiPopulation2022ResearchPilot
+          from ingestion_service.source_composite_receipt import IbgeCompositeReceiptStore
+          from ingestion_service.acquisition_journal import AcquisitionJournal
+          from ingestion_service.private_bronze_witness import PrivateBronzeWitness, _signing_payload
+          with TemporaryDirectory(prefix='worldvision-real-evidence-private-') as temp:
+              root = Path(temp)
+              bronze = BronzeStore(root)
+              ibge = IbgeNationalCensusPilot(
+                  client=IbgeNationalCensusClient(timeout_seconds=25),
+                  bronze_store=bronze,
+              ).capture_population_2022()
+              metadata = IbgeCensusMetadataPilot(
+                  client=IbgeCensusMetadataClient(timeout_seconds=25),
+                  bronze_store=bronze,
+              ).capture_census2022_contract()
+              wdi_pilot = WdiPopulation2022ResearchPilot(
+                  client=WdiPopulation2022ResearchClient(timeout_seconds=25),
+                  bronze_store=bronze,
+              )
+              for n in range(3):
+                  try:
+                      wdi = wdi_pilot.capture()
+                      break
+                  except httpx.HTTPStatusError as exc:
+                      if n == 2 or exc.response.status_code not in (429,500,502,503,504):
+                          raise
+                      time.sleep(2 * (n+1))
+              audit = AcquisitionJournal(root)
+              for source, dataset in (
+                  ('IBGE', 'CENSO2022_4714'),
+                  ('IBGE', 'CENSO2022_4714_METADATA'),
+                  ('IBGE', 'CENSO2022_4714_PERIODS'),
+                  ('WORLD_BANK', 'WDI_POP_TOTAL_BRA_2022'),
+              ):
+                  state = audit.audit(source, dataset)
+                  assert state['successCount'] == 1
+                  assert state['versionCount'] == 1
+              composite = IbgeCompositeReceiptStore(root)
+              bundle = composite.create(
+                  population_sha256=ibge.notes['httpBodySha256'],
+                  metadata_sha256=metadata.aggregate_receipt.notes['httpBodySha256'],
+                  periods_sha256=metadata.periods_receipt.notes['httpBodySha256'],
+              )
+              assert composite.verify(bundle['receiptSha256'])['publicDisplayAuthorised'] is False
+              signer = Ed25519PrivateKey.generate()
+              witness = PrivateBronzeWitness(bronze_root=root, signing_key=signer)
+              for source, dataset, manifest in (
+                  ('IBGE', 'CENSO2022_4714', ibge),
+                  ('WORLD_BANK', 'WDI_POP_TOTAL_BRA_2022', wdi),
+              ):
+                  event_dir = root / source.lower() / dataset.lower() / '_acquisitions'
+                  successful = [
+                      e.name for e in event_dir.iterdir()
+                      if (e/'outcome.json').is_file() and
+                      json.loads((e/'outcome.json').read_text())['kind'] == 'SUCCESS'
+                  ]
+                  assert len(successful) == 1
+                  token = witness.certify_research_only(
+                      source_code=source, dataset_code=dataset,
+                      original_http_sha256=manifest.notes['httpBodySha256'],
+                      acquisition_event_id=successful[0],
+                  )
+                  signer.public_key().verify(
+                      base64.b64decode(token['signatureBase64']), _signing_payload(token)
+                  )
+                  assert token['operation'] == 'PRIVATE_RESEARCH_VALIDATION'
+                  assert token['itemsSha256'] and token['originalHttpSha256']
+                  assert 'numericValue' not in token and 'PUBLIC_API_INGEST' not in token.values()
+              assert not list(root.rglob('timeseries'))
+              print('PASS: 4 pinned official GET resources, 2 independent verified research witness attestations.')
+              print('PASS: composite IBGE rights block and WDI estimate remain private; zero public write.')
+          print('PASS: all original official bytes, numeric values, event journals, private signatures erased.')
+          PY

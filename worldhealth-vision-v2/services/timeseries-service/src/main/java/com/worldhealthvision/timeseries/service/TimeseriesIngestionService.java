@@ -18,17 +18,20 @@ public class TimeseriesIngestionService {
     private final CanonicalIngestionFingerprint fingerprint;
     private final ProtectedSourcePublicationGate rightsGate;
     private final SignedRightsRegistry signedRightsRegistry;
+    private final EvidenceAttestationVerifier evidenceVerifier;
 
     public TimeseriesIngestionService(
             TimeseriesRepository timeseriesRepository,
             CanonicalIngestionFingerprint fingerprint,
             ProtectedSourcePublicationGate rightsGate,
-            SignedRightsRegistry signedRightsRegistry
+            SignedRightsRegistry signedRightsRegistry,
+            EvidenceAttestationVerifier evidenceVerifier
     ) {
         this.timeseriesRepository = timeseriesRepository;
         this.fingerprint = fingerprint;
         this.rightsGate = rightsGate;
         this.signedRightsRegistry = signedRightsRegistry;
+        this.evidenceVerifier = evidenceVerifier;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -38,6 +41,8 @@ public class TimeseriesIngestionService {
         // resolving a source-run identity. The gate is server-owned, never
         // overridden by user-supplied status flags or a synthetic test note.
         rightsGate.requirePublishable(normalizedRequest);
+        SignedEvidenceAttestation sourceProof =
+                evidenceVerifier.requireSourceProof(normalizedRequest);
         // The signed permission is checked under a DB row lock in THIS
         // transaction. Without the server trust anchor or a specific signed
         // grant, even a correctly authenticated producer is DENIED.
@@ -45,7 +50,8 @@ public class TimeseriesIngestionService {
                 signedRightsRegistry.requireCurrentPublicIngestRights(normalizedRequest);
         String canonicalSha256 = fingerprint.calculate(normalizedRequest);
         SourceRunInsertResult sourceRun = timeseriesRepository.insertSourceRunIfAbsent(
-                normalizedRequest, canonicalSha256
+                normalizedRequest, canonicalSha256,
+                sourceProof.signedPayloadSha256(), sourceProof.itemsSha256()
         );
         if (!sourceRun.newlyInserted()) {
             signedRightsRegistry.recheckReplay(verifiedDecisions);

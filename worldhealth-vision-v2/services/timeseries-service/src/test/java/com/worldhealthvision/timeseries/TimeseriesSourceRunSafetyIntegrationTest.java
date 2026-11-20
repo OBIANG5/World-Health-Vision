@@ -48,9 +48,12 @@ class TimeseriesSourceRunSafetyIntegrationTest {
     @Autowired MockMvc mockMvc;
     @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper mapper;
+    @Autowired com.worldhealthvision.timeseries.service.EvidenceItemsFingerprint evidenceProjection;
 
     @DynamicPropertySource
     static void signedReviewTrustAnchor(DynamicPropertyRegistry registry) {
+        registry.add("whv.timeseries.evidence-trust-public-key-base64",
+                SignedTestEvidenceFixture::publicKeyBase64);
         registry.add("whv.timeseries.rights-trust-public-key-base64",
                 SignedTestRightsFixture::publicKeyBase64);
     }
@@ -89,7 +92,8 @@ class TimeseriesSourceRunSafetyIntegrationTest {
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder authenticated(String json) {
         return post(ROUTE).header("X-WHV-Ingestion-Key", KEY)
-                .contentType(MediaType.APPLICATION_JSON).content(json);
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(SignedTestEvidenceFixture.attach(json, mapper, evidenceProjection));
     }
 
     private int runCount(String key) {
@@ -277,12 +281,18 @@ class TimeseriesSourceRunSafetyIntegrationTest {
     @Test
     void duplicateSourceObservationWithinOneBatchFailsBeforeInsert() throws Exception {
         String key = runKey();
-        var doc = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(sample(key));
+        // Sign the valid ONE-item request, then maliciously append a second
+        // identical observation without an independent witness re-signing.
+        var doc = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(
+                SignedTestEvidenceFixture.attach(sample(key), mapper, evidenceProjection));
         doc.put("recordCount", 2);
         var items = (com.fasterxml.jackson.databind.node.ArrayNode) doc.get("items");
         items.add(items.get(0).deepCopy());
-        mockMvc.perform(authenticated(mapper.writeValueAsString(doc)))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post(ROUTE)
+                        .header("X-WHV-Ingestion-Key", KEY)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(doc)))
+                .andExpect(status().isForbidden());
         assertEquals(0, runCount(key));
     }
 

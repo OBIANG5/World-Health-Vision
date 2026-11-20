@@ -50,6 +50,8 @@ class SignedRightsRegistryIntegrationTest {
 
     @DynamicPropertySource
     static void ephemeralTestPublicKey(DynamicPropertyRegistry properties) {
+        properties.add("whv.timeseries.evidence-trust-public-key-base64",
+                SignedTestEvidenceFixture::publicKeyBase64);
         properties.add("whv.timeseries.rights-trust-public-key-base64",
                 SignedTestRightsFixture::publicKeyBase64);
     }
@@ -57,6 +59,7 @@ class SignedRightsRegistryIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper mapper;
+    @Autowired com.worldhealthvision.timeseries.service.EvidenceItemsFingerprint evidenceProjection;
     @Autowired SignedRightsRegistry rights;
     @Autowired PlatformTransactionManager transactions;
 
@@ -97,7 +100,8 @@ class SignedRightsRegistryIntegrationTest {
             String body
     ) {
         return post(ROUTE).contentType(MediaType.APPLICATION_JSON)
-                .header("X-WHV-Ingestion-Key", KEY).content(body);
+                .header("X-WHV-Ingestion-Key", KEY)
+                .content(SignedTestEvidenceFixture.attach(body, mapper, evidenceProjection));
     }
 
     private int countRuns(String runKey) {

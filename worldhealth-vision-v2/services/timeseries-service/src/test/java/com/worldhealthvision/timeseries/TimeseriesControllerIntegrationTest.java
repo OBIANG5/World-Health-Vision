@@ -42,8 +42,16 @@ class TimeseriesControllerIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private ObjectMapper evidenceMapper;
+
+    @Autowired
+    private com.worldhealthvision.timeseries.service.EvidenceItemsFingerprint evidenceProjection;
+
     @DynamicPropertySource
     static void signedReviewTrustAnchor(DynamicPropertyRegistry registry) {
+        registry.add("whv.timeseries.evidence-trust-public-key-base64",
+                SignedTestEvidenceFixture::publicKeyBase64);
         registry.add("whv.timeseries.rights-trust-public-key-base64",
                 SignedTestRightsFixture::publicKeyBase64);
     }
@@ -71,7 +79,7 @@ class TimeseriesControllerIntegrationTest {
         mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-WHV-Ingestion-Key", "integration-test-only-not-secret-0123456789abcdef")
-                        .content("""
+                        .content(SignedTestEvidenceFixture.attach("""
                                 {
                                   "sourceCode": "WORLD_BANK",
                                   "datasetCode": "WDI",
@@ -128,7 +136,7 @@ class TimeseriesControllerIntegrationTest {
                                     }
                                   ]
                                 }
-                                """))
+                                """, evidenceMapper, evidenceProjection)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.itemCount").value(3))
                 .andExpect(jsonPath("$.upsertedCount").value(3));
@@ -136,7 +144,7 @@ class TimeseriesControllerIntegrationTest {
         mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-WHV-Ingestion-Key", "integration-test-only-not-secret-0123456789abcdef")
-                        .content("""
+                        .content(SignedTestEvidenceFixture.attach("""
                                 {
                                   "sourceCode": "IMF",
                                   "datasetCode": "IMF_PUBLIC_DATA",
@@ -167,7 +175,7 @@ class TimeseriesControllerIntegrationTest {
                                     }
                                   ]
                                 }
-                                """))
+                                """, evidenceMapper, evidenceProjection)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.itemCount").value(1))
                 .andExpect(jsonPath("$.upsertedCount").value(1));
@@ -346,7 +354,7 @@ class TimeseriesControllerIntegrationTest {
         mockMvc.perform(post("/internal/timeseries/ingestion/observation-batches")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-WHV-Ingestion-Key", "integration-test-only-not-secret-0123456789abcdef")
-                        .content("""
+                        .content(SignedTestEvidenceFixture.attach("""
                             {
                               "sourceCode":"WORLD_BANK","datasetCode":"WDI",
                               "runKey":"20260411_010101_synthetic_pop_history",
@@ -378,7 +386,7 @@ class TimeseriesControllerIntegrationTest {
                                  "sourceMetadata":{"syntheticTestOnly":true},"qualityFlags":[]}
                               ]
                             }
-                            """))
+                            """, evidenceMapper, evidenceProjection)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.itemCount").value(4));
 

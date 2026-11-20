@@ -88,7 +88,8 @@ public interface TimeseriesRepository {
 
     /** First-write source run; exact replay returns false without any data mutation. */
     SourceRunInsertResult insertSourceRunIfAbsent(
-            IngestionObservationBatchRequest request, String canonicalBatchSha256
+            IngestionObservationBatchRequest request, String canonicalBatchSha256,
+            String evidenceAttestationSha256, String attestedItemsSha256
     );
 
     int upsertObservations(UUID sourceRunId, IngestionObservationBatchRequest request);
