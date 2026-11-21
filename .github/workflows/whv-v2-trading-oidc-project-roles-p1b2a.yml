@@ -1,0 +1,43 @@
+name: WHV Trading OIDC Project Roles P1B2A
+on:
+  push:
+    branches:
+      - product/v2-trading-oidc-project-roles-p1b2a-2026-11-21
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/libs/whv-common-java/**'
+      - 'worldhealth-vision-v2/services/gateway-service/**'
+      - 'worldhealth-vision-v2/services/research-workspace-service/**'
+      - '.github/workflows/whv-v2-trading-oidc-project-roles-p1b2a.yml'
+permissions:
+  contents: read
+jobs:
+  role-jwt-and-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Require actual Docker for PostgreSQL/Flyway integration
+        run: |
+          docker info > /dev/null
+          java -version
+      - name: Real signed RSA JWKS issuer-audience-role Gateway + Research DB tests
+        run: |
+          mvn -B -ntp -f worldhealth-vision-v2/pom.xml \
+            -pl services/gateway-service,services/research-workspace-service \
+            -am test
+      - name: Synthetic JUnit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1b2a-signed-project-roles-test-reports
+          path: |
+            worldhealth-vision-v2/services/gateway-service/target/surefire-reports/
+            worldhealth-vision-v2/services/research-workspace-service/target/surefire-reports/
+          if-no-files-found: warn
