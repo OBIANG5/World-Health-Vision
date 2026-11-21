@@ -571,6 +571,55 @@
 .whv-page .country-drawer .whv-country-profile-content .expanded-chart-label {
   color: #546f7e !important;
 }
+/* Existing OverviewTab uses .overview-kpi-card, not .kpi-card.
+ * This explicit audit fixes the actual rendered component, including nested
+ * descriptions, shortcuts and decision notes. */
+.whv-page .country-drawer .whv-country-overview .overview-kpi-card {
+  background: #fff !important;
+  border: 1px solid #dfe9ed !important;
+  color: #203d50 !important;
+  border-radius: 13px;
+  box-shadow: 0 3px 12px rgba(17,44,61,.025);
+}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-card:hover {
+  background: #f2f8fa !important;
+  border-color: #accfde !important;
+  transform: none;
+}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-label {
+  color: #5f7b89 !important;
+  font-size: 11px;
+  font-weight: 750;
+}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-value {
+  color: #143c54 !important;
+  font-size: clamp(24px,3vw,34px);
+}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-desc {
+  color: #5e7380 !important;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.whv-page .country-drawer .whv-country-overview .overview-shortcut-btn {
+  background: #fff !important;
+  color: #23546e !important;
+  border-color: #dde8ed !important;
+  min-height: 40px;
+}
+.whv-page .country-drawer .whv-country-overview .overview-shortcut-btn:hover {
+  background: #eaf5f9 !important; color: #0f688d !important;
+}
+.whv-page .country-drawer .whv-country-overview .signal-chip {
+  background: #f6f9fa !important;
+  border: 1px solid #e0e9ed !important;
+  color: #254c62;
+}
+.whv-page .country-drawer .whv-country-overview :is(.signal-chip-name,.signal-chip-headline) {
+  color: #2a4c60 !important;
+}
+.whv-page .country-drawer .whv-country-overview .signal-chip-conf {
+  color: #667f8b !important;
+}
 @media(max-width:1200px) {
   .whv-page .country-drawer { width: min(740px, 87vw); }
   .whv-page .country-drawer.fullscreen { width: 100%; }
