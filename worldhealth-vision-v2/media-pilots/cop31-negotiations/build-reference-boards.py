@@ -90,38 +90,45 @@ def source_pdf_crop(pdf_path,page_number,normalized_rect):
 def create_hook(pdf,cop_sign, output):
     image=Image.new("RGB",(W,H),NAVY)
     d=ImageDraw.Draw(image)
-    # The document, not an illustration of an actual event, is the principal proof.
-    copy_text(d,(82,178),"COP31  /  ANTALYA",38,CYAN)
-    copy_text(d,(80,298),"ÉNERGIES\nFOSSILES",99,INK)
-    copy_text(d,(84,548),"LE PASSAGE ABSENT DU PROJET DU 19",34,AMBER)
-    panel(d,72,704,1008,1342)
-    # The source PDF is displayed UNEDITED, with World-Vision editorial typesetting outside it.
-    crop,_=source_pdf_crop(pdf,8,(.17,.64,.88,.81))
-    target=ImageOps.contain(crop,(870,402),Image.Resampling.LANCZOS)
-    background=Image.new("RGB",(888,414),(238,239,239))
-    background.paste(target,((888-target.width)//2,(414-target.height)//2))
-    image.paste(background,(96,818))
+    copy_text(d,(80,175),"COP31  /  ANTALYA",36,CYAN)
+    # Strong factual hook in very large type; NOT a fabricated original document screenshot.
+    copy_text(d,(77,286),"FOSSILES :\nLE PASSAGE\nA DISPARU",91,INK,True,10)
+    copy_text(d,(82,650),"PROJETS DU 16  →  19 NOVEMBRE",35,AMBER)
+    panel(d,72,772,1008,1363)
+    copy_text(d,(105,805),"16 NOV.   ·   SOURCE OFFICIELLE",30,CYAN)
+    copy_text(d,(104,888),"SORTIE DES\nÉNERGIES FOSSILES",64,INK,True,12)
+    copy_text(d,(105,1070),"SYNTHÈSE ÉDITORIALE WORLD-VISION",22,MUTED,False)
+    # Authentic source remains unmodified. Its small print is not the primary
+    # mobile message; paraphrase above is deliberately a separate editorial layer.
+    crop,_=source_pdf_crop(pdf,8,(.17,.66,.88,.83))
+    target=ImageOps.contain(crop,(854,190),Image.Resampling.LANCZOS)
+    background=Image.new("RGB",(866,202),(239,241,240))
+    background.paste(target,((866-target.width)//2,(202-target.height)//2))
+    image.paste(background,(107,1135))
     d=ImageDraw.Draw(image)
-    copy_text(d,(102,728),"16 NOV. 2026   •   DOCUMENT CCNUCC",31,INK)
-    d.rectangle((96,1247,972,1256),fill=CYAN)
-    copy_text(d,(83,1395),"19 NOV. : LE NOUVEAU PROJET\nNE REPREND PLUS CE PASSAGE",46,INK)
-    source_strip(d,"Source : CCNUCC · projets du 16 et du 19 novembre 2026",1644)
+    copy_text(d,(85,1431),"19 NOV. : LE NOUVEAU PROJET\nNE REPREND PLUS CE PASSAGE",42,INK)
+    copy_text(d,(86,1570),"Projet de négociation  ·  PAS un accord signé",25,AMBER,False)
+    source_strip(d,"CCNUCC · textes préparatoires du 16 et 19/11/2026",1662)
     image.save(output,optimize=True)
 
-def create_negotiation(photo,output):
+def create_negotiation(photo,participant_photo,output):
     image=Image.new("RGB",(W,H),NAVY)
     d=ImageDraw.Draw(image)
-    copy_text(d,(80,178),"COP31  /  ANTALYA",38,CYAN)
-    copy_text(d,(80,278),"UN ACCORD\nOU RIEN ?",91,INK)
-    panel(d,68,590,1012,1428)
-    photo=fit_crop(photo,(88,618,992,1345))
-    photo=ImageEnhance.Contrast(photo).enhance(1.06)
-    image.paste(photo,(88,618))
+    copy_text(d,(80,179),"COP31  /  ANTALYA",36,CYAN)
+    copy_text(d,(80,280),"UN ACCORD\nOU RIEN ?",91,INK)
+    panel(d,68,578,1012,1440)
+    # Main: genuine COP31 participant image. Inset: genuine negotiation-room context.
+    portrait=fit_crop(participant_photo,(88,607,992,1289))
+    image.paste(ImageEnhance.Contrast(portrait).enhance(1.05),(88,607))
+    room=fit_crop(photo,(560,1043,974,1258))
+    image.paste(room,(560,1043))
     d=ImageDraw.Draw(image)
-    d.rectangle((88,1295,992,1345),fill=(10,35,49))
-    copy_text(d,(114,1301),"DISCUSSIONS À LA COP31  ·  ARCHIVES UE",23,INK)
-    copy_text(d,(82,1460),"LES NÉGOCIATIONS\nSE PROLONGENT.",52,INK)
-    source_strip(d,"Photo UE : date exacte de prise de vue À CONFIRMER",1650)
+    d.rounded_rectangle((552,1035,981,1265),radius=10,outline=CYAN,width=4)
+    d.rectangle((88,1289,992,1386),fill=(8,33,46))
+    copy_text(d,(113,1302),"IMAGES DE RÉUNIONS COP31 · UE",27,INK)
+    copy_text(d,(112,1349),"Date exacte de vue : à confirmer",22,MUTED,False)
+    copy_text(d,(82,1490),"SAMEDI 21 :\nNÉGOCIATIONS PROLONGÉES",41,INK)
+    source_strip(d,"Statut : Reuters, 21/11 · photos d'illustration UE",1664)
     image.save(output,optimize=True)
 
 def mobile_contact(paths,target):
@@ -171,7 +178,7 @@ def main():
     hook=OUT/"direction-a-hook-1080x1920.png"
     negotiation=OUT/"direction-b-negotiation-1080x1920.png"
     create_hook(SOURCE/"C16.pdf",pics["EU-COP31-ANTALYA-SIGN"],hook)
-    create_negotiation(pics["EU-COP31-MEETING-WIDE"],negotiation)
+    create_negotiation(pics["EU-COP31-MEETING-WIDE"],pics["EU-COP31-HOEKSTRA-SIDE"],negotiation)
     sheet=OUT/"contact-sheet-390px.png"
     mobile_contact([hook,negotiation],sheet)
     for p in (hook,negotiation,sheet):
