@@ -1,3 +1,20 @@
+# DÉCISION VOCALE LA PLUS RÉCENTE — 21 NOVEMBRE 2026 (PRIORITAIRE SUR LES ARCHIVES CI-DESSOUS)
+
+**VOIX CHOISIE PAR LE PROPRIÉTAIRE POUR LES PROCHAINES VIDÉOS QU'IL DOIT ÉCOUTER : Vivienne C5.2 — Impact média.** Ne pas utiliser Kokoro, Remy, Henri, C5.1 ou l'ancienne Vivienne à +11% pour lui montrer un nouveau résultat. **Ne rien produire maintenant au titre du retour utilisateur du 21/11 ; respecter ce choix lors de la PROCHAINE production réelle.**
+
+**Provenance réellement retrouvée dans GitHub (pas seulement de mémoire) :**
+- Identifiant du modèle vocal : `fr-FR-VivienneMultilingualNeural`. Audition C5.2 **MÉDIA**, fichier `media-lab/nextgen/vivienne-c5-linked/c5_broadcast-review-only.mp3` sur branche `whv-media-studio-browser-preview`.
+- Débit enregistré pour C5.2 : **`+8%`**. Durée audio de relecture : **14,088 s** (rapport de la même branche `media-lab/nextgen/vivienne-c5-linked/c5_broadcast-report.json`). **Pas +11%** : ce dernier est un ancien essai et NE DOIT PAS se substituer au dernier choix.
+- Échantillon exact de comparaison (Git SHA-1 d'objet blob) : `cd2254c1557b815fd63a4861af9086d26d960da6`, 338733 octets. Brut de la même audition : `c5_broadcast-raw-service.mp3`, blob `b36aca061d634e68be464e805284d3aa1735a5f6`, 84384 octets.
+- Rapport complet : <https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/nextgen/vivienne-c5-linked/c5_broadcast-report.json>. Écoute de comparaison historique : <https://github.com/OBIANG5/World-Health-Vision/blob/whv-media-studio-browser-preview/media-lab/nextgen/vivienne-c5-linked/index.html>.
+- **Attention :** ces 14 secondes prononcent un texte sur une collision fluviale à La Nouvelle-Orléans. C'est une **RÉFÉRENCE DE TIMBRE ET D'INTENTION**, pas une prise à coller sur un autre reportage. La prise dédiée au prochain film doit prononcer **exactement son script validé**, conserver le même profil C5.2 et être écoutée et évaluée avant approbation. Les droits de synthèse/distribution commerciale et les images ne sont PAS certifiés par l'essai.
+- **Retour propriétaire du 21/11 :** la succession de previews NASA avec la voix d'essai Kokoro était une erreur de réalisation, même étiquetée interne. **Aucun film montré comme résultat destiné au jugement du propriétaire ne doit utiliser une voix de test non choisie**, et aucune voix de remplacement ne doit être inventée faute d'accès au modèle. S'il manque une prise C5.2 conforme au script, préparer storyboard / repérage / montage muet ou indiquer explicitement que le film sonore destiné à la relecture est BLOQUÉ, plutôt que substituer.
+- **Développement technique :** `services/media-renderer/creative/owner-review-voice-gate.mjs` et `--owner-review-voice-manifest` dans `creative/render-project.mjs` : pour marquer un MP4 comme `owner_audiovisual_review_not_publication`, imposer métadonnées du profil C5.2, script du même film, **empreinte des vrais octets voix** et fichier non repris de l'audition C5.2. Sans manifeste, tout rendu est seulement `internal_technical_qa_only` : il n'a pas vocation à être montré comme livraison artistique. Le contrôle de provenance est documentaire, PAS une reconnaissance de locuteur par IA ; l'écoute humaine et les droits restent indispensables.
+
+Les références anciennes du 14/11 à `+11%`, les candidatures intermédiaires, les exemples et les audits historiques sont conservés **ci-dessous à titre chronologique**, mais ne peuvent plus rétablir un vieux choix de voix.
+
+---
+
 # World-Vision — référence vocale canonique
 
 **Décision utilisateur confirmée le 14 novembre 2026 : choisir Vivienne pour le Media Studio, y compris le reportage World-Vision n°001 consacré à la rencontre annoncée à Shenzhen.**
