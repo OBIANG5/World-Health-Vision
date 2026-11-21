@@ -85,7 +85,7 @@ try {
     const editorialCompare = editorial.locator(".radar-case-comparison");
     await editorialCompare.waitFor();
     assert.equal(await editorialCompare.locator(".radar-case-source").count(), 2);
-    assert((await editorialCompare.innerText()).includes("ne prouvent"),
+    assert((await editorialCompare.innerText()).includes("ne prouve"),
       "Two different time periods must not become an automatic agreement");
     await editorial.locator(".radar-case-toggle").click();
     assert.equal(await editorial.locator(".radar-case-comparison").count(), 0,
