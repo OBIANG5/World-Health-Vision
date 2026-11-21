@@ -10,6 +10,7 @@ import {feature} from "topojson-client";
 import {geoContains} from "d3-geo";
 import {captionCueIssues} from "../src/caption-timeline.mjs";
 import {attentionCueIssues} from "./attention-cues.mjs";
+import {photoComparisonIssues} from "../src/photo-comparison-motion.mjs";
 
 // Keep spotlight IDs bound to the exact Natural Earth atlas used by Remotion.
 const requireAtlas=createRequire(import.meta.url);
@@ -167,6 +168,12 @@ export function inspectProject(project) {
           if(!timing(f,20)||!within(f.x,.07,.93)||!within(f.y,.09,.76)||
             !within(f.radius,35,190))
             bad(errors,p+".photo.focus","Manual focus stays in usable image area with valid radius and motion beats.");
+        }
+        if(ph.comparison!==undefined){
+          if(ph.metric!==undefined)
+            bad(errors,p+".photo.comparison","Choose either the source count or the comparison for the same mobile overlay zone.");
+          for(const issue of photoComparisonIssues(ph.comparison,scene.durationFrames))
+            bad(errors,p+".photo.comparison."+issue.field,issue.reason);
         }
         if(ph.metric!==undefined){
           const m=ph.metric;
