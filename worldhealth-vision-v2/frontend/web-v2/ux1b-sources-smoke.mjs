@@ -116,6 +116,17 @@ try {
     }));
     assert(storyBounds.actual <= storyBounds.inner + 3,
       device.name + " country story horizontal overflow: " + JSON.stringify(storyBounds));
+    // Screenshot must not race the image fetch. CDN failure remains an honest
+    // fallback, not a fake photo or an automatic bypass of image rights.
+    await page.waitForFunction(() => {
+      const image = document.querySelector(".whv-country-story-photo");
+      return !image || (image.complete && image.naturalWidth > 0);
+    }, null, { timeout: 8000 }).catch(() => undefined);
+    const loadedPicture = await page.locator(".whv-country-story-photo").evaluateAll(
+      images => images.some(img => img instanceof HTMLImageElement && img.naturalWidth > 0),
+    );
+    console.log("COUNTRY IMAGE " + device.name + ": " +
+      (loadedPicture ? "REAL COMMONS PHOTO LOADED" : "PHOTO UNAVAILABLE — GRADIENT FALLBACK"));
     await page.screenshot({
       path: "ux1b-artifacts/" + device.name + "-country-editorial-top.png",
       fullPage: false,
