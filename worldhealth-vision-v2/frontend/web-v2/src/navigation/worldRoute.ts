@@ -15,6 +15,7 @@ export type WorldRoute =
   | { kind: "country"; iso3: string }
   | { kind: "sources" }
   | { kind: "money" }
+  | { kind: "trading" }
   | { kind: "tourism" }
   | { kind: "search" }
   | { kind: "invalid" };
@@ -34,7 +35,7 @@ export function parseWorldRoute(search: string): WorldRoute {
     const iso3 = (params.get("iso3") ?? "").toUpperCase();
     return /^[A-Z]{3}$/.test(iso3) ? { kind: "country", iso3 } : { kind: "invalid" };
   }
-  if (view === "sources" || view === "money" || view === "tourism" || view === "search") {
+  if (view === "sources" || view === "money" || view === "trading" || view === "tourism" || view === "search") {
     return { kind: view };
   }
   return { kind: "invalid" };
@@ -58,6 +59,7 @@ export function urlForWorldRoute(currentUrl: string, next: WorldRoute): string {
       url.searchParams.set("iso3", next.iso3);
       break;
     case "money":
+    case "trading":
     case "tourism":
     case "sources":
     case "search":
