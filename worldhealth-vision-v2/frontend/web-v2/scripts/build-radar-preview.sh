@@ -45,5 +45,24 @@ else
 fi
 
 npm run build
-# build must succeed even with empty archive (accurate provider availability)
-echo "RADAR_PREVIEW: complete. Content provenance shown in UI; this is NOT production."
+
+# PREVIEW-ONLY robots policy. Never put a global noindex in vercel.json:
+# that would unintentionally deindex the international production website
+# if this draft branch were ever merged. This script is not the default
+# npm run build command, and it runs ONLY for an explicitly selected preview.
+node --input-type=module <<'NODE'
+import { readFileSync, writeFileSync } from "node:fs";
+const path = "dist/index.html";
+const html = readFileSync(path, "utf8");
+if (!/<head(?:\\s[^>]*)?>/i.test(html)) throw new Error("Missing HTML head in Vite build");
+if (/<meta\\s+[^>]*name=["']robots["']/i.test(html)) {
+  throw new Error("Existing robots meta must be reviewed; will not silently override");
+}
+const stamped = html.replace(/<head(\\s[^>]*)?>/i, (tag) =>
+  tag + '<meta name="robots" content="noindex, nofollow, noarchive">');
+if (stamped === html) throw new Error("Preview robots policy could not be applied");
+writeFileSync(path, stamped);
+console.log("RADAR_PREVIEW: preview-only robots meta injected in built dist/index.html");
+NODE
+# Build succeeds with genuinely absent snapshot. This is not a live news feed.
+echo "RADAR_PREVIEW: complete; preview-only noindex injected, production untouched."
