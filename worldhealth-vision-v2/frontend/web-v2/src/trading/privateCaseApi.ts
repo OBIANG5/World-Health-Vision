@@ -22,8 +22,12 @@ export type CaseApiErrorCode =
   | "precondition" | "quota" | "invalid" | "offline" | "unavailable" | "untrusted";
 
 export class PrivateCaseApiError extends Error {
-  constructor(public readonly code: CaseApiErrorCode, public readonly status?: number) {
+  readonly code: CaseApiErrorCode;
+  readonly status?: number;
+  constructor(code: CaseApiErrorCode, status?: number) {
     super(code);
+    this.code = code;
+    this.status = status;
     this.name = "PrivateCaseApiError";
   }
 }
@@ -109,8 +113,11 @@ function mapHttpError(status: number): PrivateCaseApiError {
  */
 export class PrivateCaseApi {
   private readonly transport: PrivateCaseHttp;
-  constructor(private readonly identity: ResearchIdentity, transport?: PrivateCaseHttp,
-    private readonly signal?: AbortSignal) {
+  private readonly identity: ResearchIdentity;
+  private readonly signal?: AbortSignal;
+  constructor(identity: ResearchIdentity, transport?: PrivateCaseHttp, signal?: AbortSignal) {
+    this.identity = identity;
+    this.signal = signal;
     this.transport = transport ?? { fetch: (url, init) => fetch(url, init) };
   }
 
