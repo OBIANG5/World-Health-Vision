@@ -55,3 +55,35 @@ Puis :
 
 ## 5. Pointeur du dernier état avant suspension
 Ne pas reprendre à `v2` ni reconstruire la PR #120 : P1B1 est au-dessus de #124. Vérifier le dernier SHA de `product/v2-trading-private-client-p1b1-2026-11-21` et les logs CI. Ce document doit recevoir un checkpoint final **avec état exact** avant clôture. Privilégier corrections réelles sur tests/produit plutôt qu'un nouveau rapport.
+
+
+---
+
+## 6. CHECKPOINT VÉRIFIÉ — état exact pour une reprise sans perte
+
+**PR en cours : [#125 DRAFT](https://github.com/OBIANG5/World-Health-Vision/pull/125)**, base `product/v2-trading-private-workspace-p1a-2026-11-21` (PR #124, déjà verte).
+**Code fonctionnel P1B1 validé sur commit `26fc0982644f0e666c21ca30a8d37fe8c4e2c6c3`.**
+**Preuve CI : [run 44901887512](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44901887512), status `completed`, conclusion `success`.** Les [runs 44901881820](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44901881820) et [44901887522](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44901887522) sont également `success` sur ce SHA.
+
+**Étapes vérifiées dans le job 136839318567 :**
+- `npm ci` reproductible, `test:trading` sept étapes, `test:cases` bibliothèque locale et `test:private-cases` client HTTP sécurisé: **success**;
+- `eslint` ciblé des nouveaux fichiers: **success** (ne pas prétendre avoir corrigé toute la dette de lint hors sujet);
+- `npm run build` TypeScript 6 strict `erasableSyntaxOnly` + Vite: **success** (les erreurs de syntaxe TypeScript initiales ont été corrigées dans le commit `26fc098`, ne pas réintroduire les parameter properties);
+- Chrome/Playwright réel: **success** sur **320px**, **390px** et **1440px**, local case UI P0C toujours utilisable; espace distant affiche clairement l'absence d'OIDC/PKCE et **zéro bouton cloud** tant que l'identité n'existe pas;
+- artefact `p1b1-browser-synthetic-evidence` uploadé (258044 octets), **captures de données fictives uniquement**.
+
+**Pourquoi ce n'est PAS une preuve de login/sync :** `ResearchIdentity` n'a aucun adaptateur connecté et `researchIdentityNotConfigured = null` dans le code de production; les tests API injectent uniquement un bearer de test dans un transport HTTP simulé. Les vrais JWT signés, l'isolation des titulaires et PostgreSQL16 sont testés **séparément par P1A** [run 44901193280](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44901193280). La tranche P1B1 ne prétend ni connecter deux appareils, ni fournir un fournisseur OIDC, ni déployer la base.
+
+**Document transversal ajouté :** `docs/security/OBABAP_CROSS_PRODUCT_OIDC_IDENTITY_DECISION_RFC_2026-11-21.md`. Objectif mutualiser l'authentification World-Vision et ABAA-Lingo **sans partager les données privées par défaut**, avec différents audiences/scopes et coût maîtrisé. Le document décrit BFF vs SPA, règles de session et choix fournisseur à faire avant P1B2. Aucune installation n'a été engagée pour ABAA.
+
+### Ordre rigoureux pour P1B2
+1. Inspecter la PR #125 + ce handoff, **le dernier HEAD exact** de sa branche, tous les checks et [l'issue #122](https://github.com/OBIANG5/World-Health-Vision/issues/122). **Ne pas redémarrer depuis P0C/PR #120.**
+2. Confirmer la topologie réellement déployable (Vercel frontend, API gateway HTTPS, DNS), comparer fournisseur IdP **et BFF vs SPA** sur coût par utilisation, régions/pays, sécurité et maintenance (pas d'achat par réflexe). Un SSO mutualisé peut servir d'autres apps OBABAP, mais pas de partage automatique de données.
+3. Créer **une session réelle, pas fictive** via librairie OIDC éprouvée, Authorization Code + PKCE, `iss`, `aud`, nonce, state, CSRF, rotation/expiry/logout, et config HTTPS. Intégrer la capability `ResearchIdentity` puis remonter l'interface cloud avec clé `sessionInstanceId` qui change à chaque login/logout.
+4. Tester en staging HTTPS sous rôle Postgres runtime limité : utilisateurs A/B, appareils A1/A2, liste/lecture/POST/PUT/DELETE isolées, 401/403/404/412, fermeture/reconnexion, migration de JSON local **uniquement** après consentement explicite, no cross-account display.
+5. Ajouter une pagination revue de `/api/trading/cases/{id}/history` avant de l'exposer massivement dans l'UI : le serveur P1A autorise jusqu'à 200 versions et chaque plan ~200KB, tandis que le client P1B1 limite explicitement les réponses historiques à ~4MB pour éviter une réception déraisonnable en navigateur. **Cette limite signifie que les historiques volumineux ne sont pas encore navigables depuis l'UI.**
+6. Une fois une expérience réelle prouvée, prioriser le Workbench DataAnalyse (événements, consensus et historiques vérifiés), sans abandonner Atlas, Global Radar, Bourse Afrique et les modules immédiatement utiles.
+
+**Révision de sécurité avant déploiement** : Swagger/équivalent API contractuel, dérive/rotation issuer, accès RLS/DB runtime, sauvegardes chiffrées, test de restauration, logs sans tokens/notes et RGPD. **Ne pas déployer ni fusionner la PR #125 prématurément.**
+
+**Note technique** : le commit qui ajoute cette section et tout commit documentaire ultérieur sont postérieurs au SHA fonctionnel ci-dessus; vérifier leur CI sur le HEAD exact avant de dire que la PR entière est verte.
