@@ -191,3 +191,15 @@
   .tvp-macro-pairs{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tvp-macro-pair-detail{padding:9px}
 }
+
+/* Official institutional shortcuts are not evidence or a live data source. */
+.tvp-macro-official{margin:12px 0 0;padding:12px;border:1px solid #3e5a68;border-radius:10px;background:#102638}
+.tvp-macro-official>strong{display:block;color:#bce9df;font-size:.82rem;margin-bottom:9px}
+.tvp-macro-official-links{display:flex;gap:9px;flex-wrap:wrap}
+.tvp-macro-official-links a{display:inline-block;max-width:100%;padding:9px 11px;border:1px solid #456579;border-radius:8px;background:#1a3545;color:#98e5d9;font-size:.81rem;overflow-wrap:anywhere}
+.tvp-macro-official>small{display:block;margin-top:8px;color:#adcad0;line-height:1.4}
+.tvp-macro-source a,.tvp-macro-pair-sources a{color:#9febe0;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.tvp-macro-pair-sources{list-style:none;margin:8px 0 0;padding:0}
+.tvp-macro-pair-sources li{margin:5px 0;padding:6px;border-top:1px solid #315066}
+.tvp-macro-pair-sources li a,.tvp-macro-pair-sources li span{display:block;font-size:.78rem;line-height:1.4}
+.tvp-macro-pair-sources li span{color:#b5cad1;margin-top:2px}
