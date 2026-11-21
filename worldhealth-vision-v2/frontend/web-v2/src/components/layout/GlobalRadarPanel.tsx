@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import "../../styles/global-radar.css";
 import { createPortal } from "react-dom";
 import { useLang } from "../../context/LanguageContext";
 import GlobalRadarStaticArchive from "./GlobalRadarStaticArchive";
