@@ -125,9 +125,11 @@ export default function ScopedValueExplorer({ iso3, enabled, lang }: Props) {
               <div className="whv-scoped-label">
                 <small>{copy.scope}</small>
                 <h5>{item.scopeDisplayLabel}</h5>
-                <span>{item.coverageKind === "PARTIAL_COUNTRY" ?
-                  (lang === "fr" ? "Périmètre partiel" : "Partial territory") :
-                  (lang === "fr" ? "Échelle infranationale" : "Subnational area")}</span>
+                <span>{item.coverageKind === "PARTIAL_COUNTRY"
+                  ? (lang === "fr" ? "Périmètre partiel" : "Partial territory")
+                  : item.coverageKind === "SUBNATIONAL"
+                    ? (lang === "fr" ? "Échelle infranationale" : "Subnational area")
+                    : (lang === "fr" ? "Périmètre non vérifiable" : "Unverified geography")}</span>
               </div>
               <div className="whv-scoped-value">
                 <span>{number.format(item.numericValue)} <small>{item.unitCode}</small></span>
