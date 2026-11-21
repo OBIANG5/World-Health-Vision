@@ -42,7 +42,7 @@ export function isCompleteTradePlan(value: unknown): value is TradePlan {
     typeof e.originalPublisher === "string" && e.originalPublisher.length <= 240 &&
     // Source metadata may be user-authored, but it must have valid shape.
     // Unverified claims or incomplete historical drafts are still retained.
-    (e.url === "" || sourceUrlSafe(e.url)))
+    sourceUrlSafe(e.url))
     && (plan.updates === undefined || plan.updates.every(validThesisUpdate))
     && (plan.events === undefined || plan.events.every(validEventPreparation));
 }
