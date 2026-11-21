@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLang } from "../../context/LanguageContext";
+import GlobalRadarClaimEvidence from "./GlobalRadarClaimEvidence";
 import {
   EDITORIAL_GABON_IMF_CASE, validateEditorialSourceCase,
   type EditorialSourceLink,
@@ -94,6 +95,7 @@ export default function GlobalRadarEditorialPilot() {
           "Les documents datent d'étapes différentes et citent parfois d'autres communiqués ou interviews. La différence d'origine ne prouve ni accord des faits ni contradiction. Les textes complets restent à examiner.",
           "These sources cover different stages and may repeat other releases or interviews. Separate outlets prove neither agreement nor contradiction. Full texts still require review.")}</p>
       </section>}
+      <GlobalRadarClaimEvidence />
       <div className="radar-case-analysis">
         <strong>{phrase(lang, "Question de vérification : quel statut est réellement démontré ?",
           "Verification question: which procedural stage is actually evidenced?")}</strong>
