@@ -4,6 +4,16 @@ export type PhotoMotion = {
   mask?:{axis:"horizontal"|"vertical";startFrame:number;endFrame:number};
   focus?:{x:number;y:number;radius:number;startFrame:number;endFrame:number};
   metric?:{label:string;value:number;unit:string;precision:number;sourceLabel:string;startFrame:number;endFrame:number};
+  /** Optional authored, sourced two-value data layer rendered simultaneously over PHOTO. */
+  comparison?:{
+    title:string;
+    first:{label:string;value:number};
+    second:{label:string;value:number};
+    domain:{min:number;max:number};
+    unit:string;precision:number;locale:"fr-FR"|"en-US";
+    source:{publisher:string;dataset:string;asOf:string;url?:string};
+    startFrame:number;endFrame:number;
+  };
 };
 export type PhotoTrackPose = {
   camera:{progress:number;scale:number;panX:number;panY:number};
