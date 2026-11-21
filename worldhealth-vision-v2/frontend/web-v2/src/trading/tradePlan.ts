@@ -103,19 +103,17 @@ export const STAGES: readonly Stage[] = [
   { id: "execution", title: pair("07 · Décision supervisée", "07 · Supervised decision"),
     question: pair("Les conditions sont-elles observées, sans confondre préparation et ordre exécuté ?", "Are conditions observed, without confusing preparation with an executed order?"),
     fields: [
-      field("orderType", "Type d'ordre envisagé", "Planned order type", true, "select"),
+      { ...field("orderType", "Type d'ordre envisagé", "Planned order type", true, "select"), options: [
+        { value: "wait", label: pair("En attente — aucun ordre", "Waiting — no order") },
+        { value: "market", label: pair("Ordre au marché envisagé", "Market order considered") },
+        { value: "limit", label: pair("Ordre limite envisagé", "Limit order considered") },
+        { value: "stop", label: pair("Ordre stop envisagé", "Stop order considered") },
+      ] },
       field("trigger", "Condition exacte avant toute action humaine", "Exact condition before any human action", true),
       field("quoteAsOf", "Horodatage d'une cotation vérifiée (ou indiquer inconnue)", "Timestamp of verified quote (or state unavailable)", true),
       field("humanDecision", "Décision et justification (attendre / refuser / réexaminer)", "Decision and rationale (wait / reject / review)", true),
     ] },
 ];
-STAGES[6].fields.find((entry) => entry.key === "orderType")!.options = [
-  { value: "wait", label: pair("En attente — aucun ordre", "Waiting — no order") },
-  { value: "market", label: pair("Ordre au marché envisagé", "Market order considered") },
-  { value: "limit", label: pair("Ordre limite envisagé", "Limit order considered") },
-  { value: "stop", label: pair("Ordre stop envisagé", "Stop order considered") },
-];
-
 export const STAGE_IDS: readonly StageId[] = STAGES.map((stage) => stage.id);
 
 export function newTradePlan(): TradePlan {
@@ -159,7 +157,7 @@ export function validEvidence(e: Evidence): boolean {
   try {
     const url = new URL(e.url);
     const date = new Date(e.publishedAt);
-    return url.protocol === "https:" && Boolean(url.hostname) && Number.isFinite(date.valueOf());
+    return url.protocol === "https:" && Boolean(url.hostname) && !url.username && !url.password && Number.isFinite(date.valueOf()) && date.valueOf() <= Date.now();
   } catch { return false; }
 }
 export function independentSourceCount(items: readonly Evidence[]): number {
@@ -198,8 +196,12 @@ export function isTradePlan(value: unknown): value is TradePlan {
     Object.keys(obj.fields).length <= 100 &&
     Object.values(obj.fields).every((v) => typeof v === "string" && v.length < 10000) &&
     Array.isArray(obj.evidence) && obj.evidence.length <= 50 &&
-    obj.evidence.every((e) => e && typeof e === "object" &&
-      ["id","name","originalPublisher","url","publishedAt","perspective","stance","observation"].every((k) =>
-        typeof (e as unknown as Record<string, unknown>)[k] === "string" &&
-        ((e as unknown as Record<string, string>)[k]).length < 3000));
+    obj.evidence.every((e) => {
+      if (!e || typeof e !== "object") return false;
+      const row = e as unknown as Record<string, unknown>;
+      if (!["id", "name", "originalPublisher", "url", "publishedAt", "perspective", "stance", "observation"]
+        .every((key) => typeof row[key] === "string" && (row[key] as string).length < 3000)) return false;
+      return ["national", "regional", "international", "field", "media", "market", "other"].includes(row.perspective as string)
+        && ["supports", "challenges", "context"].includes(row.stance as string);
+    });
 }
