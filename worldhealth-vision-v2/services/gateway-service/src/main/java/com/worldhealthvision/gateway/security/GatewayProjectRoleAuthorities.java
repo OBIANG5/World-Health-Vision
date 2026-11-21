@@ -36,7 +36,16 @@ public class GatewayProjectRoleAuthorities {
         JwtGrantedAuthoritiesConverter standard = new JwtGrantedAuthoritiesConverter();
         ReactiveJwtAuthenticationConverter converter = new ReactiveJwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            LinkedHashSet<GrantedAuthority> grants = new LinkedHashSet<>(standard.convert(jwt));
+            LinkedHashSet<GrantedAuthority> grants = new LinkedHashSet<>();
+            // When the provider-specific project-role gate is ON, signed
+            // self-requested trading scopes must NEVER bypass user role grants.
+            // Unrelated legacy authorities retain their existing behavior.
+            for (GrantedAuthority granted : standard.convert(jwt)) {
+                if (!granted.getAuthority().equals("SCOPE_trading:read")
+                    && !granted.getAuthority().equals("SCOPE_trading:write")) {
+                    grants.add(granted);
+                }
+            }
             for (String permission : policy.grantedPermissions(jwt.getAudience(), jwt.getClaims())) {
                 grants.add(new SimpleGrantedAuthority("SCOPE_" + permission));
             }
