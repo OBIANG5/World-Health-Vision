@@ -128,3 +128,37 @@
  .radar-form input,.radar-form select{height:38px}
  .radar-candidate-actions button,.radar-candidate-actions a{width:100%}
 }
+
+
+/* R2B — source snapshot on actual preview builds. Clear provenance and age. */
+.radar-manual-heading{margin:25px 0 10px;font-size:15px;font-weight:800;color:#114f75;border-top:1px solid #d2e4ee;padding-top:17px}
+.radar-archive{background:#f8fcff;border:1px solid #d5e8f1;border-radius:13px;margin:0 0 16px;padding:17px}
+.radar-archive-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:15px}
+.radar-archive-heading h3{font-size:18px;color:#0c3762;line-height:1.25;margin:5px 0 10px}
+.radar-archive-tag{white-space:nowrap;border:1px solid #e3cdb4;color:#85541d;background:#fff6e8;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:790}
+.radar-archive-meta,.radar-archive-warning{font-size:12px;line-height:1.5;color:#426477;margin:9px 0 13px}
+.radar-archive-warning{background:#fff3e3;border:1px solid #f0d4b2;border-radius:9px;padding:10px;color:#775021}
+.radar-archive-absence{margin:8px 0;color:#506b7f;background:#f0f6fa;border-radius:9px;padding:12px;font-size:12px;line-height:1.5}
+.radar-archive-disclaimer{margin:11px 0;border-left:3px solid #1491b9;background:#ebf9fe;padding:11px;font-size:12px;color:#3d6378;line-height:1.5}
+.radar-archive-toolbar{display:flex;align-items:end;gap:9px;justify-content:space-between;flex-wrap:wrap;margin:12px 0}
+.radar-archive-toolbar label{flex:1 1 230px;font-size:12px;color:#234e70;font-weight:740}
+.radar-archive-toolbar input{display:block;min-height:40px;width:100%;margin-top:5px;border:1px solid #bfd5e4;background:#fff;border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;color:#112d4e}
+.radar-archive-toolbar span{font-size:12px;font-weight:800;color:#31617d;padding-bottom:8px}
+.radar-archive-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;min-width:0}
+.radar-archive-candidate{background:#fff;min-width:0;border:1px solid #d5e2eb;border-radius:10px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;overflow-wrap:anywhere}
+.radar-archive-candidate .radar-candidate-meta{flex:1 1 100%;margin:4px 0}
+.radar-archive-candidate .radar-candidate-actions{flex:1 1 100%;margin-top:4px}
+.radar-archive-host{font-size:13px;font-weight:800;color:#0e5e84;flex:1 1 150px}
+.radar-archive-comparison{border:1px solid #9acbdf;border-radius:11px;background:#eff9fc;padding:12px;margin:11px 0}
+.radar-archive-comparison h4{margin:0 0 7px;color:#135579;font-size:14px}
+.radar-archive-comparison>p{font-size:12px;color:#76502b;background:#fff3e2;padding:8px;border-radius:7px;margin:8px 0}
+.radar-archive-credit{font-size:11px;line-height:1.55;color:#4d667d;overflow-wrap:anywhere;margin:14px 0 0}
+.radar-archive-credit a{font-size:11px;color:#006ba5;text-decoration:underline}
+.radar-archive-more{display:block;width:100%;padding:10px 12px;font:inherit;font-size:12px;font-weight:800;color:#165c85;border:1px solid #b9d1de;border-radius:8px;background:#eaf7fe;cursor:pointer;margin-top:12px}
+@media(max-width:760px){
+ .radar-archive{padding:12px 10px}
+ .radar-archive-heading h3{font-size:15px}
+ .radar-archive-heading{gap:7px}
+ .radar-archive-tag{font-size:10px}
+ .radar-archive-grid{grid-template-columns:1fr}
+}
