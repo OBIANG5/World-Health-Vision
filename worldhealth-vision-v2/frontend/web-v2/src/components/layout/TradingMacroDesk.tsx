@@ -56,6 +56,9 @@ export default function TradingMacroDesk({ onStartPair }: {
   }, []);
 
   function readSaved() {
+    if (draftDirty && !window.confirm(tr(lang,
+      "Relire le stockage effacera les notes non enregistrées de cette édition. Continuer ?",
+      "Reloading storage will discard unsaved draft notes. Continue?"))) return;
     try {
       const raw = localStorage.getItem(FX_MACRO_KEY);
       const parsed = parseMacroDesk(raw);
@@ -324,7 +327,8 @@ export default function TradingMacroDesk({ onStartPair }: {
           <h5>{tr(lang, "Sources originales datées de cette version", "Dated original references for this revision")}</h5>
           {draft.sources.map((entry, index) => <div key={entry.url} className="tvp-macro-source">
             <strong>{entry.originalPublisher} · {entry.publishedAt}</strong>
-            <span>{entry.name} · {entry.perspective} · {entry.stance}</span>
+            <a href={entry.url} target="_blank" rel="noopener noreferrer">{entry.name}</a>
+            <span>{entry.perspective} · {entry.stance}</span>
             <p>{entry.observation}</p>
             <button type="button" onClick={() => change("sources", draft.sources.filter((_, i) => i !== index))}>
               {tr(lang, "Retirer de cette nouvelle version", "Remove from this new revision")}</button>
