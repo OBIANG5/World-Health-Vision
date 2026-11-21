@@ -76,6 +76,93 @@ try {
     // archival fixture. This is a catalog comparison, NOT three live feeds.
     await page.goto(origin + "/?wv=country&iso3=GAB", { waitUntil: "domcontentloaded" });
     await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 15000 });
+    // COUNTRY-LIVE U1 is a REAL feature on this same compiled country sheet,
+    // not a screenshot-only redesign or a synthetic dynamic news feed.
+    const story = page.locator(".whv-country-story");
+    await story.waitFor({ state: "visible", timeout: 15000 });
+    assert((await story.locator("h2").innerText()).includes("Gabon"),
+      "Country identity must be visible before data widgets");
+    const picture = story.locator("img.whv-country-story-photo");
+    // The Commons CDN may be unreachable from CI; verify license metadata and
+    // graceful visual fallback separately, not an arbitrary external response.
+    if (await picture.count()) {
+      assert((await picture.getAttribute("src")).includes("Libreville_bord_de_mer"),
+        "Only a reviewed Gabon photograph may represent GAB");
+      assert((await story.locator(".whv-country-story-credit").innerText()).includes("Shirmy25"),
+        "Photographer attribution must remain visible");
+      const licenseUrl = await story.locator('a[href*="creativecommons.org/licenses/by-sa/4.0"]').getAttribute("href");
+      assert(licenseUrl?.startsWith("https://"), "Photo license link is required");
+    } else {
+      assert(await story.locator(".whv-country-story-no-photo").isVisible(),
+        "No image must fail visibly without showing unrelated scenery");
+    }
+    // CRITICAL REGRESSION GUARD: news must NOT precede the main country
+    // profile; the initial view must show six peer sections and an overview.
+    const navigation = page.locator(".whv-country-section-nav");
+    await navigation.waitFor({ state: "visible" });
+    assert.equal(await navigation.locator("button").count(), 6,
+      "Complete country hierarchy must expose exactly six sections");
+    assert(await page.locator(".whv-country-overview").isVisible(),
+      "Country overview must be first, regardless of backend availability");
+    assert.equal(await page.locator(".whv-country-news").count(), 0,
+      "FMI/media may not be imposed before country profile data");
+    await navigation.getByRole("button", { name: "Actualités" }).click();
+    const news = page.locator(".whv-country-news");
+    await news.waitFor({ state: "visible" });
+    const topic = news.locator(".whv-country-news-article");
+    assert((await topic.locator("h4").innerText()).includes("FMI"),
+      "Human-researched Gabon dossier must be accessible ONLY inside News");
+    assert.equal(await topic.locator(".whv-country-news-source-list a").count(), 0,
+      "Original sources belong to the voluntary drill-down, not a wall of links");
+    await topic.locator(".whv-country-news-expand").click();
+    assert.equal(await topic.locator(".whv-country-news-source-list a").count(), 3,
+      "Expanded dossier must offer original national/regional/international links");
+    const newsUrls = await topic.locator(".whv-country-news-source-list a").evaluateAll(
+      elements => elements.map(a => a.getAttribute("href")),
+    );
+    assert(newsUrls.every(url => url?.startsWith("https://")),
+      "Only HTTPS original publications may be linked");
+    assert.equal(await topic.locator(".whv-country-news-research-link").getAttribute("href"),
+      "?wv=radar", "Deep research navigation must work");
+    await page.screenshot({
+      path: "ux1b-artifacts/" + device.name + "-country-news-rubric.png",
+      fullPage: false,
+    });
+    await navigation.getByRole("button", { name: "Données" }).click();
+    await page.locator(".whv-country-data-subnav").waitFor({ state: "visible" });
+    assert.equal(await page.locator(".whv-country-data-subnav button").count(), 5,
+      "Economy, health, governance, markets and forecasts must remain accessible");
+    await navigation.getByRole("button", { name: "Comparer" }).click();
+    assert(await page.locator(".whv-country-compare").isVisible(),
+      "Country-to-country comparison must remain a peer action");
+    await navigation.getByRole("button", { name: "Services" }).click();
+    assert.equal(await page.locator(".whv-country-services .whv-country-data-subnav button").count(), 2,
+      "Safety and currency tools must remain accessible");
+    await navigation.getByRole("button", { name: "Vue d’ensemble" }).click();
+    assert(await page.locator(".whv-country-overview").isVisible(),
+      "Returning to the country profile must not lose country context");
+    const storyBounds = await story.evaluate(node => ({
+      inner: node.clientWidth, actual: node.scrollWidth,
+    }));
+    assert(storyBounds.actual <= storyBounds.inner + 3,
+      device.name + " country story horizontal overflow: " + JSON.stringify(storyBounds));
+    // Screenshot must not race the image fetch. CDN failure remains an honest
+    // fallback, not a fake photo or an automatic bypass of image rights.
+    await page.waitForFunction(() => {
+      const image = document.querySelector(".whv-country-story-photo");
+      return !image || (image.complete && image.naturalWidth > 0);
+    }, null, { timeout: 8000 }).catch(() => undefined);
+    const loadedPicture = await page.locator(".whv-country-story-photo").evaluateAll(
+      images => images.some(img => img instanceof HTMLImageElement && img.naturalWidth > 0),
+    );
+    console.log("COUNTRY IMAGE " + device.name + ": " +
+      (loadedPicture ? "REAL COMMONS PHOTO LOADED" : "PHOTO UNAVAILABLE — GRADIENT FALLBACK"));
+    await page.screenshot({
+      path: "ux1b-artifacts/" + device.name + "-country-editorial-top.png",
+      fullPage: false,
+    });
+
+    await navigation.getByRole("button", { name: "Sources" }).click();
     const evidence = page.locator(".whv-national-evidence");
     await evidence.waitFor({ state: "attached", timeout: 12000 });
     await page.locator(".whv-national-evidence-source").first().waitFor({ state: "attached", timeout: 15000 });
