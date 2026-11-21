@@ -193,3 +193,27 @@ test("strict byte caps prevent giant snapshots without modifying existing archiv
   assert.equal(deskModel.appendMacroSnapshot(mutated, snapshot("NZD")), null);
   assert.equal(normal.assessments.JPY.length, 1);
 });
+
+test("16 institutional source starting points cover all 8 economies without pretending to provide data", () => {
+  const directory = deskModel.FX_OFFICIAL_RESEARCH_STARTS;
+  assert.equal(Object.keys(directory).length, 8);
+  const all = [];
+  for (const currency of deskModel.FX_CURRENCIES) {
+    const entry = directory[currency];
+    assert(entry, "No official source starting points for " + currency);
+    for (const item of [entry.monetary, entry.statistics]) {
+      assert(item.name.length > 4);
+      const url = new URL(item.url);
+      assert.equal(url.protocol, "https:");
+      assert.equal(url.username, "");
+      assert.equal(url.password, "");
+      all.push(url.hostname);
+    }
+  }
+  assert.equal(all.length, 16);
+  assert(all.includes("www.ecb.europa.eu"));
+  assert(all.includes("www.boj.or.jp"));
+  assert(all.includes("www.bankofengland.co.uk"));
+  assert.equal(JSON.stringify(directory).includes("livePrice"), false);
+  assert.equal(JSON.stringify(directory).includes("forecastValue"), false);
+});
