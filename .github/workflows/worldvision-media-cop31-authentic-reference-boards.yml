@@ -42,12 +42,28 @@ jobs:
           assert all(x['status']=='official_draft_not_adopted' for x in d['documents'])
           print('PASS: authentic documentary drafts; 3 EU official reference previews; 390px images only; NO OWNER VOICE')
           PY
+      - name: Inspect TWO official EU photo detail pages for public originals (NO guessed URL or login)
+        run: |
+          set -euo pipefail
+          python worldhealth-vision-v2/media-pilots/cop31-negotiations/discover-eu-originals.py /tmp/cop31-reference
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/cop31-reference/eu-photo-originals-discovery.json').read_text())
+          assert len(d['files']) == 2
+          assert not d['new_vivienne_c52_take_recorded']
+          assert not d['public_master_created'] and not d['publication_approved']
+          for item in d['files']:
+              print(item['eu_photo_ref'],item['status'])
+              assert item['full_resolution_production_master_cleared'] is False
+          PY
       - name: Archive verified previews and honest rights gate for human quality review
         uses: actions/upload-artifact@v4
         with:
           name: worldvision-media-cop31-primary-evidence-static-review-NOT-PUBLIC
           path: |
             /tmp/cop31-reference/audit.json
+            /tmp/cop31-reference/eu-photo-originals-discovery.json
             /tmp/cop31-reference/direction-a-hook-1080x1920.png
             /tmp/cop31-reference/direction-b-negotiation-1080x1920.png
             /tmp/cop31-reference/contact-sheet-390px.png
