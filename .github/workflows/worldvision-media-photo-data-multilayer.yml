@@ -1,9 +1,10 @@
-name: World-Vision MEDIA P0.8 — PHOTO + DATA same-frame motion contract (NO NEW VIDEO)
+name: World-Vision MEDIA P0.8 — PHOTO + DATA same-frame motion contract + INTERNAL PIXEL QA (NO OWNER VOICE)
 on:
   push:
     branches:
       - 'feature/worldvision-media-semantic-multilayer-photo-data-*'
     paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/build-ci-fixtures.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-comparison-motion.mjs'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-comparison-motion.d.mts'
       - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.d.mts'
@@ -33,7 +34,7 @@ concurrency:
 jobs:
   sourced-multi-layer-contract:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -55,10 +56,67 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npm run build
-      - name: Confirm no new user-facing video or voice was generated
+      - name: Create strictly fictional source image and signed data for internal pixel review
+        working-directory: worldhealth-vision-v2/services/media-renderer
         run: |
-          find worldhealth-vision-v2/services/media-renderer \
-            -type f \( -iname '*.mp4' -o -iname '*.wav' -o -iname '*.mp3' \) \
-            -not -path '*/node_modules/*' -not -path '*/public/*' -print -quit |
-            grep . && { echo 'Unexpected AV fixture created' >&2; exit 1; } || true
-          echo 'PASS: multilayer source-data code contract; no audiovisual demonstration'
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          fi
+          mkdir -p output/creative/p08-mobile/assets
+          ffmpeg -hide_banner -loglevel error -y -f lavfi \
+            -i 'color=c=black:s=540x960:r=30:d=1' -frames:v 30 \
+            -pix_fmt yuv420p output/creative/p08-mobile/previous.mp4
+          node creative/build-ci-fixtures.mjs \
+            "$PWD/output/creative/p08-mobile/assets" \
+            "$PWD/output/creative/p08-mobile/previous.mp4" \
+            "$PWD/output/creative/p08-mobile/base.json"
+          node creative/validate-project.mjs \
+            output/creative/p08-mobile/worldvision-photo-data-same-shot.json
+      - name: Render real 1080×1920 Remotion PHOTO+DATA and export mobile inspection frames
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          set -euo pipefail
+          node creative/render-project.mjs \
+            --project "$PWD/output/creative/p08-mobile/worldvision-photo-data-same-shot.json" \
+            --assets "$PWD/output/creative/p08-mobile/assets" \
+            --output "$PWD/output/creative/p08-mobile/photo-data-technical.mp4"
+          ffprobe -v error -select_streams v:0 -show_entries \
+            stream=codec_name,width,height,nb_frames,r_frame_rate -of json \
+            output/creative/p08-mobile/photo-data-technical.mp4 \
+            > output/creative/p08-mobile/ffprobe-video.json
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const dir="output/creative/p08-mobile";
+            const p=JSON.parse(fs.readFileSync(dir+"/worldvision-photo-data-same-shot.json"));
+            const r=JSON.parse(fs.readFileSync(dir+"/photo-data-technical.mp4.report.json"));
+            const q=JSON.parse(fs.readFileSync(dir+"/ffprobe-video.json")).streams[0];
+            if(q.codec_name!=="h264"||q.width!==1080||q.height!==1920||
+               Number(q.nb_frames)!==165||q.r_frame_rate!=="30/1")throw Error("Invalid actual 1080x1920x165 H264");
+            if(r.intended_audience!=="internal_technical_qa_only"||
+              r.episode_id!==p.id||r.track_voice!=="no_narration"||
+              r.media.some(x=>!x.sha256)||!r.exact_script_unchanged ||
+              r.caption_cues!==2||r.duration_frames!==165)throw Error("Missing honest internal audit provenance");
+            console.log("PASS: real 165-frame PHOTO+DATA film, captions and SHA provenance without owner voice");
+          '
+          for frame in 0 48 82 124 164; do
+            ffmpeg -hide_banner -loglevel error -y \
+              -i output/creative/p08-mobile/photo-data-technical.mp4 \
+              -vf "select=eq(n\,$frame),scale=390:693" -vsync 0 -frames:v 1 \
+              "output/creative/p08-mobile/mobile-frame-$frame.png"
+            test -s "output/creative/p08-mobile/mobile-frame-$frame.png"
+          done
+          echo 'This is an INTERNAL fictional visual QA clip, NOT a user-approved film or a narrator selection'
+      - name: Upload exact evidence for honest phone-pixel inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-p08-photo-data-internal-pixels
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/creative/p08-mobile/photo-data-technical.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/p08-mobile/photo-data-technical.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/p08-mobile/worldvision-photo-data-same-shot.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/p08-mobile/ffprobe-video.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/p08-mobile/mobile-frame-*.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/p08-mobile/photo-data-technical.mp4.stills/**
