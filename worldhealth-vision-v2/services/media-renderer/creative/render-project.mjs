@@ -123,6 +123,7 @@ async function run(argv){
     }
     const props={
       version:1,title:project.title,script:project.script,shots,
+      showOfficialBrand:project.brandMark==="worldvision",
       // Same project-supplied global frame cues in browser Player and exported MP4.
       captions:shotId?[]:(project.captions??[]),
       wordCaptions:shotId?[]:(project.wordCaptions??[]),
