@@ -67,6 +67,22 @@ const OFFLINE_PILOT_LABELS: Readonly<Record<string, {
   CIV: { name: { fr: "Côte d’Ivoire", en: "Côte d’Ivoire" }, flag: "🇨🇮" },
 };
 
+const PILOT_REGIONS: Readonly<Record<string, { fr: string; en: string }>> = {
+  GAB: { fr: "Afrique centrale", en: "Central Africa" },
+  FRA: { fr: "Europe occidentale", en: "Western Europe" },
+  CIV: { fr: "Afrique de l’Ouest", en: "West Africa" },
+};
+const WORLD_BANK_REGIONS_FR: Readonly<Record<string, string>> = {
+  "Sub-Saharan Africa": "Afrique subsaharienne",
+  "Europe & Central Asia": "Europe et Asie centrale",
+  "Europe and Central Asia": "Europe et Asie centrale",
+  "East Asia & Pacific": "Asie de l’Est et Pacifique",
+  "South Asia": "Asie du Sud",
+  "Middle East & North Africa": "Moyen-Orient et Afrique du Nord",
+  "Latin America & Caribbean": "Amérique latine et Caraïbes",
+  "North America": "Amérique du Nord",
+};
+
 function bilingual(locale: Locale, fr: string, en: string) {
   return locale === "fr" ? fr : en;
 }
@@ -86,6 +102,9 @@ export default function CountryEditorialStory({
   const fallback = OFFLINE_PILOT_LABELS[iso3];
   const headingName = name === iso3 ? fallback?.name[locale] ?? name : name;
   const headingFlag = flag === "—" ? fallback?.flag ?? "🌍" : flag;
+  const rawRegion = subtitle.split(" • ")[0];
+  const regionLabel = PILOT_REGIONS[iso3]?.[locale] ??
+    (locale === "fr" ? WORLD_BANK_REGIONS_FR[rawRegion] ?? rawRegion : rawRegion);
   const photo = REVIEWED_COUNTRY_PHOTOS[iso3];
   const [imageFailed, setImageFailed] = useState(false);
   const hasPhoto = !!photo && !imageFailed;
@@ -110,7 +129,7 @@ export default function CountryEditorialStory({
               <span className="whv-country-story-flag" aria-hidden="true">{headingFlag}</span>
               <h2 id="whv-country-story-heading">{headingName}</h2>
             </div>
-            {subtitle && <p className="whv-country-story-region">{subtitle}</p>}
+            {regionLabel && <p className="whv-country-story-region">{regionLabel}</p>}
             {(capital || currencyCode) && <div className="whv-country-story-facts">
               {capital && <span>{bilingual(locale, "Capitale", "Capital")} <strong>{capital}</strong></span>}
               {currencyCode && <span>{bilingual(locale, "Devise", "Currency")} <strong>{currencyCode}</strong></span>}
