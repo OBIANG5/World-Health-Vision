@@ -1,0 +1,106 @@
+name: World-Vision MEDIA — safe imported word alignment, no TTS
+
+on:
+  push:
+    branches:
+      - 'feature/worldvision-media-voice-word-alignment-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/word-alignment-import*'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/import-word-cues.mjs'
+      - '.github/workflows/worldvision-media-word-alignment.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/word-alignment-import*'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/import-word-cues.mjs'
+      - '.github/workflows/worldvision-media-word-alignment.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: wv-media-word-align-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+
+jobs:
+  verify-safe-caption-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reuse existing official Remotion project dependencies
+        run: npm install --no-audit --no-fund
+      - name: Verify pure word import, safety and backward compatibility
+        run: |
+          node --check creative/import-word-cues.mjs
+          node --test creative/word-alignment-import.test.mjs creative/attention-cues.test.mjs
+      - name: Generate labelled synthetic LOCAL test voice and Remotion Caption array
+        run: |
+          mkdir -p /tmp/worldvision-align/assets
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {scriptWords} from './creative/word-alignment-import.mjs';
+          const p=JSON.parse(fs.readFileSync('creative/project.example.json','utf8'));
+          p.voice={file:'synthetic.wav',label:'TECHNICAL OSCILLATOR — NOT NEWS VOICE'};
+          const words=scriptWords(p.script);
+          const captions=words.map((text,i)=>({
+            text:text.toLowerCase(),startMs:i*260,endMs:(i+1)*260,timestampMs:i*260+130,confidence:null
+          }));
+          const wav=Buffer.alloc(44+48000*5*2);
+          wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);wav.write('WAVE',8);
+          wav.write('fmt ',12);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);
+          wav.writeUInt32LE(48000,24);wav.writeUInt32LE(96000,28);
+          wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);
+          wav.write('data',36);wav.writeUInt32LE(wav.length-44,40);
+          for(let i=0;i<48000*5;i++)wav.writeInt16LE(Math.round(1500*Math.sin(2*Math.PI*260*i/48000)),44+2*i);
+          fs.writeFileSync('/tmp/worldvision-align/assets/synthetic.wav',wav);
+          fs.writeFileSync('/tmp/worldvision-align/project.json',JSON.stringify(p,null,2));
+          fs.writeFileSync('/tmp/worldvision-align/captions.json',JSON.stringify({captions},null,2));
+          fs.writeFileSync('/tmp/worldvision-align/emphasis.json',JSON.stringify([words[0],words[2]]));
+          JS
+      - name: Prove exact project script and voice preserved, new project created
+        run: |
+          node creative/import-word-cues.mjs \
+            --project /tmp/worldvision-align/project.json \
+            --assets /tmp/worldvision-align/assets \
+            --captions /tmp/worldvision-align/captions.json \
+            --emphasis-file /tmp/worldvision-align/emphasis.json \
+            --output /tmp/worldvision-align/project-aligned.json
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {inspectProject} from './creative/validate-project.mjs';
+          const root='/tmp/worldvision-align/';
+          const p=JSON.parse(fs.readFileSync(root+'project.json','utf8'));
+          const a=JSON.parse(fs.readFileSync(root+'project-aligned.json','utf8'));
+          const report=JSON.parse(fs.readFileSync(root+'project-aligned.json.alignment-review.json','utf8'));
+          if(a.script!==p.script||a.voice.file!==p.voice.file||a.wordCaptions.length===0||
+             report.source_script_unchanged!==true||
+             report.human_audio_visual_review!=='required_before_publication'||
+             !report.source_voice_sha256||!report.aligned_caption_json_sha256||
+             !inspectProject(a).ok)throw Error('Script lock, audio provenance or project safety check failed');
+          const before=createHash('sha256').update(p.script).digest('hex');
+          if(report.source_script_sha256!==before)throw Error('Script mutated by importer');
+          console.log('PASS: verified approved source text, real source audio hash and valid timed words');
+          JS
+      - name: Reject a hallucinated transcription token without writing target
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {spawnSync} from 'node:child_process';
+          const root='/tmp/worldvision-align/';
+          const d=JSON.parse(fs.readFileSync(root+'captions.json','utf8'));
+          d.captions[0].text='MOTINVENTÉ';
+          fs.writeFileSync(root+'false-captions.json',JSON.stringify(d));
+          const cmd=spawnSync('node',['creative/import-word-cues.mjs',
+            '--project',root+'project.json','--assets',root+'assets',
+            '--captions',root+'false-captions.json','--output',root+'must-not-exist.json'],{encoding:'utf8'});
+          if(cmd.status===0||fs.existsSync(root+'must-not-exist.json')||!cmd.stderr.includes('Alignment mismatch'))
+            throw Error('Unsafe hallucination accepted: '+cmd.stderr);
+          console.log('PASS: hallucinated word rejected with no output');
+          JS
