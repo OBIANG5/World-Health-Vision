@@ -71,8 +71,15 @@ jobs:
             "$PWD/output/creative/p08-mobile/assets" \
             "$PWD/output/creative/p08-mobile/previous.mp4" \
             "$PWD/output/creative/p08-mobile/base.json"
-          node creative/validate-project.mjs \
-            output/creative/p08-mobile/worldvision-photo-data-same-shot.json
+          node --input-type=module -e '
+            import fs from "node:fs";
+            import {inspectProject} from "./creative/validate-project.mjs";
+            const file="output/creative/p08-mobile/worldvision-photo-data-same-shot.json";
+            const p=JSON.parse(fs.readFileSync(file,"utf8"));
+            const check=inspectProject(p);
+            if(!check.ok||check.frames!==165)throw Error(JSON.stringify(check.errors));
+            console.log("PASS: complete authored same-shot project validated before Remotion");
+          '
       - name: Render real 1080×1920 Remotion PHOTO+DATA and export mobile inspection frames
         working-directory: worldhealth-vision-v2/services/media-renderer
         run: |
