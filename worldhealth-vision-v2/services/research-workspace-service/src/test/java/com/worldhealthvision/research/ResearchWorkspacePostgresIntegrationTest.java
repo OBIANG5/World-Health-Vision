@@ -56,7 +56,8 @@ class ResearchWorkspacePostgresIntegrationTest {
 
     private JwtRequestPostProcessor user(String subject, String... scopes) {
         var authorities = java.util.Arrays.stream(scopes)
-            .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope)).toList();
+            .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
+            .toArray(org.springframework.security.core.GrantedAuthority[]::new);
         return jwt().jwt(token -> token.issuer("https://identity.tests.invalid/issuer")
                 .subject(subject).audience(java.util.List.of("worldvision-api-ci")))
             .authorities(authorities);
@@ -134,7 +135,7 @@ class ResearchWorkspacePostgresIntegrationTest {
         String id = mapper.readTree(created.getResponse().getContentAsString()).path("id").asText();
         mvc.perform(put("/api/trading/cases/" + id).with(user(subject, "trading:write"))
                 .contentType(MediaType.APPLICATION_JSON).content(sample("CHFJPY")))
-            .andExpect(status().isPreconditionRequired());
+            .andExpect(status().is(428));
 
         mvc.perform(put("/api/trading/cases/" + id).with(user(subject, "trading:write"))
                 .header("If-Match", "\"v0\"")
@@ -166,7 +167,7 @@ class ResearchWorkspacePostgresIntegrationTest {
             });
 
         mvc.perform(delete("/api/trading/cases/" + id).with(user(subject, "trading:write")))
-            .andExpect(status().isPreconditionRequired());
+            .andExpect(status().is(428));
         mvc.perform(delete("/api/trading/cases/" + id).with(user(subject, "trading:write"))
                 .header("If-Match", "\"v1\""))
             .andExpect(status().isPreconditionFailed());
