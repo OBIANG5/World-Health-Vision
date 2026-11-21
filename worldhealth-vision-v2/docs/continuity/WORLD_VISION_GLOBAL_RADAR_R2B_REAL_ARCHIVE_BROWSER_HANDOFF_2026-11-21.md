@@ -173,3 +173,32 @@ Les trois références historiques du dossier `editorialSourceCase.ts` ont été
 - **PROCHAINE PRIORITÉ APRES DÉBLOCAGE VERCEL** : preview distincte utilisable sur iPhone avec parcours réel Gabon/AGP/FMI/EcoMatin et GDELT daté, mesurer onboarding/temps pour 1 source vérifiable. Puis source document originale et comparateur avec distinction reprises/indépendances, Atlas pays, média, puis Trading/DataAnalyse. Ne pas créer un nouveau système de 10 microservices ni refaire des panels Forex pendant ce blocage.
 
 **En cas de nouveau « a cessé de réfléchir » : relire cette section, la PR #139 et le dernier workflow R2B, récupérer SHA/CI exact, reprendre à la première étape non terminée; ne jamais repartir de zéro ni inventer un déploiement.**
+
+
+---
+
+## 11. CLÔTURE QUALITÉ / SEO SANS RISQUE PRODUCTION — correction importante APRÈS section 10
+
+**La section 10-C mentionne une configuration `vercel.json` qui n'est PLUS présente : cette méthode a été VOLONTAIREMENT RETIRÉE pour protéger le référencement international de World-Vision.** Le fonctionnement de référence est décrit ici.
+
+### Incident de conception intercepté avant merge
+Le fichier `frontend/web-v2/vercel.json` avec `X-Robots-Tag: noindex` sur **toutes** les routes aurait aussi pu rendre le futur site de PRODUCTION non indexable si la PR était fusionnée sans modification. Risque SEO sérieux pour un produit international :
+- `b6076f89164394a70fd33926f274ccc6df7b43e9` : suppression de `vercel.json` UNCONDITIONNEL.
+- `22153130c73fb22d2509d4f6fcbea80a1735ee71` : `scripts/build-radar-preview.sh` insère une **balise meta robots `noindex, nofollow, noarchive` UNIQUEMENT dans le fichier généré `dist/index.html`** après avoir construit la PREVIEW. Le build de production `npm run build` normal n'exécute pas ce script et ne reçoit AUCUNE règle noindex. Le script retire aussi tout snapshot préalable avant un fetch volontaire.
+- `f7424c389740d86ce20c4178f66c035360054d76` : la CI prouve qu'aucun `vercel.json` global n'existe, que le build standard reste indexable, et qu'un build Preview avec `WHV_RADAR_PREVIEW_FETCH=0` (zéro appel fournisseur) n'injecte le `noindex` que dans sa version compilée; sans recycler une archive synthétique ancienne.
+- `6d1383a082fe28c72330e319774211b349517fdf` : protection géométrique supplémentaire du navigateur iPhone 320/390 (dialogue et bouton de fermeture à l'intérieur du viewport) et desktop 1440, en plus du contrôle de CSS réellement chargé et de l'absence de débordements.
+- **Preuve exacte sur ce SHA `6d1383a...` : [CI #44948652850](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44948652850) job `source-archive-contract` `completed/success`.** Steps `Built real V2 browser — explicitly SYNTHETIC archive` et `Preview-only robots and no-network build acceptance` **success**; tests de code Python/Node, ESLint, TypeScript/Vite et Chromium 320/390/1440. Le job réel sur cette CI est SKIPPED par défaut, conformément au choix économique pay-on-demand. Une CI verte sans job réel ne prouve pas la disponibilité du lot fournisseur.
+- Artifacts de vraies captures Chrome R2B stylisées (mais source test synthétique) disponibles sur ce run; l'ancienne image mobile du SHA `8c967ea` qui montrait un HTML brut est OBSOLÈTE.
+
+### Staging : comment ne pas refaire le diagnostic Vercel
+Le déploiement PREVIEW Vercel tenté `dpl_9LY1gfbMEBvvGK9m7o6ZhX6DtiYz` est en `ERROR: git_info_fail`, aucun GitHub namespace Vercel (`git_namespaces({provider:"github"}) = []`). Le déploiement PRODUCTION `dpl_14j5vUmB1ZoDaMfBMxeFaEqZwEeS` est toujours READY selon `list_deployments({target:"production"})`. **La création d'un objet deployment en ERROR n'est pas un lien utilisable**, il faut une autorisation Vercel GitHub explicite du propriétaire.
+- Chemin d'autorisation : tableau de bord Vercel → intégrations Git/GitHub du compte/équipe → installer/autoriser Vercel GitHub App pour **seulement** `OBIANG5/World-Health-Vision`, puis Settings → Git du projet `world-health-vision-v2` ou un projet preview ISOLÉ. Éviter un auto-déploiement PROD non voulu et configurer si nécessaire `Ignored Build Step`/build déclenché à la demande. Documents : https://vercel.com/docs/git/vercel-for-github, https://vercel.com/docs/project-configuration/git-settings.
+- Une fois l'autorisation effective, vérifier par `Vercel.git_namespaces` et `Vercel.search_repo`, puis déployer une **preview uniquement**, branche et SHA exacts, root `worldhealth-vision-v2/frontend/web-v2`, `WHV_RADAR_PREVIEW_FETCH=1 bash scripts/build-radar-preview.sh`, Node22 Vite, output `dist`, accès SSO preview, vérifier robots meta HTTP rendu, sources, 320/390/1440, et ne rien promouvoir sur la prod sans validation.
+
+### Point d'arrêt EXACT pour l'autre chat
+- R2B a déjà livré : source GDELT officielle → archive MD5/ZIP → métadonnées HTTPS sans titres complets → page V2 Global Radar avec date/provenance, choix 2 sources, écran réel mobile ; dossier Gabon AGP/FMI/EcoMatin (texte primaire à revoir) et protections CORS/429/SEO. Les **PR #134, #136 et #139 restent DRAFT**; aucune fusion.
+- **Cette MISE À JOUR documentaire se termine par `[radar-live-probe]` dans son message de commit** afin de déclencher UN dernier job réel GDELT/Chrome sur l'ensemble du code récent, y compris CSS et preview-only SEO. Vérifier le run GitHub lié à cette empreinte et ses jobs distincts. Si 404 CDN, ne pas reconduire agressivement les appels; le run réel précédent #44946513565 a déjà prouvé une archive et 3 vrais navigateurs (avant corrections de CSS).
+- Dès que les derniers tests sont classés : **mettre à jour PR #139 et commenter issues #133/#135/#96/#76**, à cet instant, avec SHA, runs exacts, limitation de disponibilité GDELT, GitHub App Vercel non autorisée et prochain pas de connexion. **Ne PAS refaire un nouveau commit pour de simples liens de vérification**.
+- La suite après connexion Git n'est pas « développer 10 services Radar » : **livrer URL preview consultable sur iPhone et un premier parcours complet de source primaire/locale/internationale**. Puis l'intégrer aux autres produits (Atlas, Médias, BRVM, Trading-Vision, Watch). Aucun paiement ni VPS permanent avant mesure de valeur réelle.
+
+**NE JAMAIS CONFONDRE** : tests synthétiques navigués ≠ archive réelle accessible ≠ contenu d'article lu ≠ résultat fact-checké ≠ droit sur l'article ≠ site Vercel LIVE ≠ service premium Trading déjà livré.
