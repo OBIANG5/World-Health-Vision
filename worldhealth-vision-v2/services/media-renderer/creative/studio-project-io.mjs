@@ -73,7 +73,7 @@ export function parseStudioProject(text){
   const seen=new Set();
   for(const [i,s] of p.shots.entries()){
     const label="plan "+(i+1);
-    only(s,["id","durationFrames","template","title","subtitle","eyebrow","titleFrameZero","focus","documentRegion","photo","geo","data","motion","transitionAfter","transitionFrames","media","foreground"],label);
+    only(s,["id","durationFrames","template","title","subtitle","eyebrow","titleFrameZero","focus","documentRegion","evidencePresentation","documentZoomMax","photo","geo","data","motion","transitionAfter","transitionFrames","media","foreground"],label);
     if(!SLUG.test(s.id)||seen.has(s.id))fail(label+" : ID absent ou répété.");
     seen.add(s.id);
     if(!SHOT_TYPES.has(s.template)||!integer(s.durationFrames,1,3600))fail(label+" : modèle ou durée invalide.");
@@ -112,6 +112,13 @@ export function parseStudioProject(text){
       if(s.template!=="document_focus")fail(label+" : région documentaire incompatible avec ce modèle.");
       only(s.documentRegion,["x","y","width","height"],label+".documentRegion");
     }
+    if(s.evidencePresentation!==undefined&&
+      (s.template!=="document_focus"||s.evidencePresentation!=="mobile-safe"))
+      fail(label+" : la réserve mobile n'est autorisée que pour une preuve documentaire.");
+    if(s.documentZoomMax!==undefined&&
+      (s.evidencePresentation!=="mobile-safe"||!finite(s.documentZoomMax)||
+       s.documentZoomMax<1||s.documentZoomMax>2.25))
+      fail(label+" : zoom optique hors limites 1-2,25x ou mode mobile manquant.");
     if(s.geo!=null){
       if(!["geo_story","country_focus"].includes(s.template))
         fail(label+" : champs GEO incompatibles avec ce modèle.");
@@ -225,6 +232,8 @@ export function studioShotToEditor(s,defaults){
     focusX:s.focus?.x??0.5,focusY:s.focus?.y??0.5,
     documentX:s.documentRegion?.x??defaults.documentX,documentY:s.documentRegion?.y??defaults.documentY,
     documentW:s.documentRegion?.width??defaults.documentW,documentH:s.documentRegion?.height??defaults.documentH,
+    documentMobileSafe:s.evidencePresentation==="mobile-safe",
+    documentZoomMax:s.documentZoomMax??defaults.documentZoomMax,
     geoLon:geo.center?.lon??defaults.geoLon,geoLat:geo.center?.lat??defaults.geoLat,
     geoSpin:geo.spinDegrees??defaults.geoSpin,geoLook:geo.look??defaults.geoLook,
     geoShowCamera:Boolean(geo.camera),geoToLon:geo.camera?.to?.lon??defaults.geoToLon,

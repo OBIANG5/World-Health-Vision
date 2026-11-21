@@ -87,7 +87,12 @@ try{
       subtitle:'Image annotée, pas une vidéo des impacts',
       media:{kind:'image',file:'impact-annotations.jpg',
         credit:'NASA / CSA art002e016252 — astronaut annotations on a SIMULATION'},
-      documentRegion:{x:.13,y:.12,width:.74,height:.65},
+      // Source pixels are never retyped, touched or synthesized.
+      // Reserve separate mobile zones for the real NASA annotations and captions;
+      // choose the CENTER source region that contains the original markings.
+      documentRegion:{x:.34,y:.31,width:.34,height:.43},
+      evidencePresentation:'mobile-safe',
+      documentZoomMax:1.94,
       motion:'locked',transitionAfter:'cut',transitionFrames:0}
   ];
   const project={

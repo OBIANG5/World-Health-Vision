@@ -97,6 +97,17 @@ export function inspectProject(project) {
       bad(errors,p+".durationFrames","Cinematic focus reveal needs at least 90 frames to complete the composition.");
     if(scene.template==="focus_reveal"&&(!isText(scene.title,90)||!scene.title?.trim()))
       bad(errors,p+".title","Focus reveal requires a concise authored headline (max 90 characters).");
+    if(scene.evidencePresentation!==undefined &&
+       (scene.template!=="document_focus"||scene.evidencePresentation!=="mobile-safe"))
+      bad(errors,p+".evidencePresentation",
+        "Evidence-safe mobile placement is supported only on documentary evidence image shots.");
+    if(scene.documentZoomMax!==undefined&&
+       (scene.evidencePresentation!=="mobile-safe"||
+        typeof scene.documentZoomMax!=="number"||
+        !Number.isFinite(scene.documentZoomMax)||
+        scene.documentZoomMax<1||scene.documentZoomMax>2.25))
+      bad(errors,p+".documentZoomMax",
+        "Optical source pixel zoom must be 1.00-2.25x and requires mobile-safe evidence mode.");
     if(scene.template==="document_focus"){
       if(scene.durationFrames<115)
         bad(errors,p+".durationFrames","Document focus needs at least 115 frames for legible evidence and authored captions.");

@@ -1,3 +1,30 @@
+# WORLD-VISION MÉDIA — REPRISE PRIORITAIRE P0.6 : PREUVES LISIBLES SUR TÉLÉPHONE (21/11/2026)
+
+**Section active, plus récente que tout l'historique ci-dessous. Le champ de ce chat est uniquement MÉDIA AUDIOVISUEL, jamais l'Atlas/logiciel.** L'utilisateur choisit actualité, angle, script, voix et valide le film. La priorité internationale est un film très captivant avec hook immédiat, deux re-hooks qui incarnent les idées, documents/photos authentiques, sous-titres synchronisés, son propre, corrections ciblées. GEO/cartes sont des outils secondaires facultatifs. Pas de nouveau TTS, de compte externe connecté ou de nouveau moteur de montage par principe.
+
+## GitHub : état certain et code
+- **Parent PR #130 P0.5** https://github.com/OBIANG5/World-Health-Vision/pull/130, HEAD `1ea3eaa8e1d5345b2433a9a81cd258de11f3bee1` : **5 workflows SUCCESS** vérifiés (P0.5, P0.2 hooks/GEO, P0.1 audio context, film NASA audible, renderer/Studio). Vrai film NASA 8,235s 1080×1920 H264/AAC dans artefact #14707881294 ; images authentiques NASA et voix française Kokoro **d'audition uniquement**, non approuvée pour publication. Visuels et mix déjà inspectés. Sources et droits à revoir.
+- **NOUVELLE PR ACTIVE #132 P0.6 DRAFT** https://github.com/OBIANG5/World-Health-Vision/pull/132 ; branche `feature/worldvision-media-mobile-evidence-safe-director-2026-11-21`, enfant de #130. Voir le commentaire précis https://github.com/OBIANG5/World-Health-Vision/pull/132#issuecomment-7068052239 . Aucun merge/deploy/publication.
+- Observation réellement vérifiée sur `beat-2.png` et `beat-3.png` : la caption de la deuxième phrase couvre l'illustration scientifique NASA ; l'image de l'annotation manuscrite est trop petite dans une grande carte, donc l'effet est peu compréhensible à 390px.
+- P0.6 code déjà ajouté :
+  - `worldhealth-vision-v2/services/media-renderer/src/CreativeEdit.tsx` : opt-in `evidencePresentation="mobile-safe"` sur les documents, panneau 896×608 à y612 et titre séparé en bas, `documentZoomMax` optique sur les SEULS pixels originaux selon `documentRegion` fournie.
+  - `src/CaptionTrack.tsx` ET `src/AttentionTypography.tsx` : rails de sous-titres en haut lors du plan documentaire ; support des phrases et des vrais mots horodatés P0.3, sans mutation du script ni des timestamps.
+  - `creative/validate-project.mjs` : mode permis seulement au template `document_focus` et zoom fini borné [1, 2.25]. `creative/surgical-revision.mjs` P0.4 : retoucher la région/le zoom par patch SHA sur le seul plan, jamais le son ou l'ordre des autres plans.
+  - `creative/mobile-evidence.test.mjs` : cinq tests d'invariants, frontières, ROI source et conservation de la narration ; `media-voice-pilots/artemis2/build-semantic-microfilm.mjs` : image NASA et deux mêmes phrases, nouvelle prise d'audition mesurée sur son PCM, ROI vers vrais cercles/annotations, zoom 1,94, **aucune image ou son d'impact fabriqué**.
+  - CI `.github/workflows/worldvision-media-mobile-evidence.yml` : typecheck + tests P0.6/P0.4, vraie génération d'un MP4 H264/AAC, vrais photogrammes des 3 relances, planche 390px, SHA des JPEG NASA, loudness/true peak AAC. **CI nouvelle À CERTIFIER** sur le dernier HEAD, ne pas réutiliser le SUCCESS du parent comme preuve de P0.6. Premier run : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44941113814 (push initial annulé automatiquement au profit du run PR).
+- Aucune nouvelle actualité n'a été choisie pour publication dans ce chat. NASA est **un laboratoire d'éclairage sur sources vérifiées**, pas le programme éditorial à imposer. La voix Kokoro SIWIS n'est pas la référence Vivienne C5.2 et ne vaut pas autorisation commerciale.
+
+## Point EXACT de reprise
+1. Ouvrir PR #132, vérifier SHA `head` et le dernier run `World-Vision MEDIA P0.6 — caption-safe source evidence film`. Si échec, lire le job logs, corriger **sur la même branche**, documenter la cause et retester typecheck, tests Node, MP4 réel. Les premières suites #132 déclenchées incluent aussi P0.4/P0.5/Studio et hooks.
+2. **Télécharger et voir les VRAIS PNG** et MP4 P0.6 ; comparer précisément la scène document aux anciennes images P0.5 : sous-titre au-dessus de la preuve, non recouvrement, zoom sur les pixels/annotations authentiques, lisibilité réelle à 390px ; écouter le mix. Un CI SUCCESS n'est pas une approbation artistique.
+3. Si ROI trompeuse, retoucher la région avec P0.4 sans toucher aux vraies phrases ni aux autres plans. Consigner SHA, Actions, artefacts, défauts et correction dans commentaire PR. Éviter de perfectionner indéfiniment NASA.
+4. Ensuite prioriser **un vrai sujet choisi par l'utilisateur**, script approuvé, nouvelle prise vocale correspondante, médias authentiques sous droits, alignement P0.3 + montages P0.4/P0.6. Mesurer temps et coût du film jusqu'à validation humaine sur mobile, et seulement alors créer des presets réutilisables humain/géopolitique/finance.
+5. **Rien fusionner, publier, déployer ni acheter automatiquement.** Ne pas modifier Atlas, logiciel, GDELT, ABAA ni logo officiel source.
+
+Cette première section est la source de vérité chronologique. Les anciennes sections sont conservées comme historique, et les commentaires récents de #132 font foi pour la dernière conclusion CI lorsqu'elle change.
+
+---
+
 # REPRISE PRIORITAIRE — WORLD-VISION MEDIA P0.5 : ESSAI AUDIOVISUEL NASA À 3 RELANCES (21/11/2026)
 
 **PLUS RÉCENT QUE TOUTES LES SECTIONS HISTORIQUES CI-DESSOUS. MEDIA UNIQUEMENT, PAS ATLAS/LOGICIEL.** Priorité : à partir d'idées/scripts/médias/voix choisis ou approuvés par le propriétaire, produire des vidéos très captivantes : hook immédiat, re-hooks sémantiques, vrais visuels, mots synchronisés, sound design et correction rapide. GEO/cartes = spécialité secondaire et facultative, pas un globe imposé. Réutiliser Remotion/FFmpeg, P0.1–P0.4 sans nouvelle API/abonnement. Aucune connexion ChatGPT/Gemini par réflexe.

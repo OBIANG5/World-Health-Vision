@@ -123,6 +123,10 @@ async function run(argv){
         transitionAfter:shot.transitionAfter,transitionFrames:shot.transitionFrames,
         focus:shot.focus,
         documentRegion:shot.documentRegion,
+        // Keep the opt-in mobile evidence layout and bounded original-pixel zoom
+        // through the production JSON -> Remotion inputProps boundary.
+        evidencePresentation:shot.evidencePresentation,
+        documentZoomMax:shot.documentZoomMax,
         geo:shot.geo,
         // Pass the SAME independently authored tracks to the H264 engine
         // that CreativeCompositionPreview uses in the browser. Never freeze.
@@ -213,6 +217,15 @@ async function run(argv){
       word_caption_cues:review?props.wordCaptions.filter(cue=>cue.startFrame<=review.frameRange[1]&&cue.endFrame>review.frameRange[0]).length:props.wordCaptions.length,
       sound_cues:review?props.soundCues.filter(cue=>cue.startFrame<=review.frameRange[1]&&cue.startFrame+cue.durationFrames>review.frameRange[0]).length:props.soundCues.length,
       caption_timing_source:"editor_supplied_not_auto_verified",
+      // Audit the ACTUAL Remotion inputProps after JSON staging, not just
+      // the unrendered project manifest (P0.6 regression initially found).
+      mobile_evidence_inputprops:props.shots.filter(shot=>
+        shot.template==="document_focus"&&shot.evidencePresentation==="mobile-safe"
+      ).map(shot=>({
+        shot_id:shot.id,documentZoomMax:shot.documentZoomMax??1.85,
+        documentRegion:shot.documentRegion,
+        status:"STAGED_INPUTPROPS_NOT_ARTISTIC_APPROVAL"
+      })),
       media:ledger,
       actual_rendered_stills:stills,
       warnings:["Tech render only. Not an AI quality guarantee, not editorial verification or publication approval.",
