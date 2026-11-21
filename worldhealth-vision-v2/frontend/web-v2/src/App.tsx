@@ -20,6 +20,7 @@ import { t } from "./i18n/labels";
 // carte affichée plus vite (Recharts/jsPDF ne sont plus dans le bundle de départ).
 const CountryDrawer = lazy(() => import("./components/country/CountryDrawer"));
 const VisionHub = lazy(() => import("./components/layout/VisionHub"));
+const GlobalRadarPanel = lazy(() => import("./components/layout/GlobalRadarPanel"));
 const WorldDiscovery = lazy(() => import("./components/layout/WorldDiscovery"));
 const RegionDrawer = lazy(() => import("./components/region/RegionDrawer"));
 const SourceMethodologyModal = lazy(() => import("./components/layout/SourceMethodologyModal"));
@@ -347,6 +348,9 @@ function AppContent() {
         return;
       case "sources":
         navigate({ kind: "sources" });
+        return;
+      case "radar":
+        navigate({ kind: "radar" });
         return;
     }
   }
@@ -873,6 +877,8 @@ function AppContent() {
           if (route.kind === "money") navigate({ kind: "home" });
         }} />
       )}
+
+      {route.kind === "radar" && <GlobalRadarPanel onClose={() => navigate({ kind: "home" })} />}
 
       <VisionHub open={showVisionHub} language={lang}
         selectedId={route.kind === "visions" ? route.product : "atlas"}

@@ -14,6 +14,7 @@ export type WorldRoute =
   | { kind: "visions"; product: VisionId }
   | { kind: "country"; iso3: string }
   | { kind: "sources" }
+  | { kind: "radar" }
   | { kind: "money" }
   | { kind: "tourism" }
   | { kind: "search" }
@@ -34,7 +35,7 @@ export function parseWorldRoute(search: string): WorldRoute {
     const iso3 = (params.get("iso3") ?? "").toUpperCase();
     return /^[A-Z]{3}$/.test(iso3) ? { kind: "country", iso3 } : { kind: "invalid" };
   }
-  if (view === "sources" || view === "money" || view === "tourism" || view === "search") {
+  if (view === "sources" || view === "radar" || view === "money" || view === "tourism" || view === "search") {
     return { kind: view };
   }
   return { kind: "invalid" };
@@ -60,6 +61,7 @@ export function urlForWorldRoute(currentUrl: string, next: WorldRoute): string {
     case "money":
     case "tourism":
     case "sources":
+    case "radar":
     case "search":
       url.searchParams.set("wv", next.kind);
       break;

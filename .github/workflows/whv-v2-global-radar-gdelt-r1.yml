@@ -1,0 +1,156 @@
+name: WHV V2 Global Radar R1 — real app, safe GDELT discovery
+
+on:
+  push:
+    branches:
+      - product/v2-global-radar-gdelt-source-discovery-r1-2026-11-21
+  pull_request:
+    paths:
+      - "worldhealth-vision-v2/frontend/web-v2/src/radar/**"
+      - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarPanel.tsx"
+      - "worldhealth-vision-v2/frontend/web-v2/src/product/visionProducts.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/navigation/worldRoute.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/styles/global-radar.css"
+      - "worldhealth-vision-v2/frontend/web-v2/src/App.tsx"
+      - "worldhealth-vision-v2/frontend/web-v2/global-radar-browser-smoke.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar.mjs"
+      - ".github/workflows/whv-v2-global-radar-gdelt-r1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  global-radar-r1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Reproducible npm dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Actual TS GDELT domain tests — status, provenance, source rights, failures
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node --test scripts/test-global-radar.mjs
+      - name: Strict ESLint on new Radar boundary and all changed integration code
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx eslint src/radar/gdeltDoc.ts src/components/layout/GlobalRadarPanel.tsx \
+            src/product/visionProducts.ts src/navigation/worldRoute.ts \
+            src/App.tsx scripts/test-global-radar.mjs global-radar-browser-smoke.mjs
+      - name: Production TypeScript 6 and Vite bundle
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build
+      - name: Install Playwright browser launcher and use real Chrome when available
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 8
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo "WHV_BROWSER_CHANNEL=chrome" >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Real V2 React browser 320px / 390px / 1440px with injected SYNTHETIC provider responses
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node global-radar-browser-smoke.mjs
+      - name: Preserve only synthetic original-link browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: global-radar-r1-synthetic-browser-evidence
+          path: worldhealth-vision-v2/frontend/web-v2/global-radar-artifacts/
+          if-no-files-found: warn
+
+  provider-reachability-observation:
+    # This does NOT attest original publisher content, CORS in every country,
+    # GDELT global availability, rights or persistent sourcing. It is an
+    # operational, ONE-SHOT reachability check, deliberately non-gating.
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    continue-on-error: true
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: One real GDELT DOC request, statuses only — never ingest article bodies
+        run: |
+          node --input-type=module <<'NODE'
+          const url = new URL("https://api.gdeltproject.org/api/v2/doc/doc");
+          url.searchParams.set("query", "earthquake");
+          url.searchParams.set("mode", "artlist");
+          url.searchParams.set("format", "json");
+          url.searchParams.set("timespan", "1d");
+          url.searchParams.set("maxrecords", "3");
+          const signal = AbortSignal.timeout(12500);
+          const result = { provider: "GDELT DOC 2.0", checkedAt: new Date().toISOString(),
+            provenance: "real network from GitHub runner, not browser CORS", status: "unavailable" };
+          try {
+            const response = await fetch(url.toString(), { signal, credentials: "omit", cache: "no-store" });
+            result.httpStatus = response.status;
+            const raw = await response.text();
+            result.contentType = response.headers.get("content-type");
+            result.responseBytes = Buffer.byteLength(raw);
+            if (response.status === 429) result.status = "throttled";
+            else if (!response.ok) result.status = "upstream_error";
+            else if (!raw.trimStart().startsWith("{")) result.status = "non_json";
+            else {
+              const data = JSON.parse(raw);
+              result.rowsReturned = Array.isArray(data.articles) ? data.articles.length : null;
+              result.status = Array.isArray(data.articles) ? "article_metadata_response" : "unexpected_schema";
+            }
+          } catch (error) {
+            result.status = "network_error";
+            result.errorName = error?.name ?? "Unknown";
+          }
+          console.log("GDELT LIVE REACHABILITY (not news verification): " + JSON.stringify(result));
+
+          // Independently evaluate the OFFICIAL 15-minute batch manifest as a
+          // legitimate alternative transport to the throttled DOC query API.
+          // Fetch only the tiny text manifest; NEVER download ZIP archives in CI.
+          const manifestUrl = "https://data.gdeltproject.org/gdeltv2/lastupdate.txt";
+          const manifest = {
+            provider: "GDELT 2.0 public raw-batch manifest",
+            checkedAt: new Date().toISOString(),
+            provenance: "real network from GitHub runner",
+            status: "unavailable",
+            zipDownloads: 0,
+          };
+          try {
+            const response = await fetch(manifestUrl, {
+              signal: AbortSignal.timeout(12500),
+              method: "GET", credentials: "omit", cache: "no-store",
+            });
+            manifest.httpStatus = response.status;
+            const body = await response.text();
+            manifest.responseBytes = Buffer.byteLength(body);
+            if (response.status === 429) manifest.status = "throttled";
+            else if (!response.ok) manifest.status = "upstream_error";
+            else if (manifest.responseBytes > 15000) manifest.status = "unexpected_manifest_size";
+            else {
+              const lines = body.trim().split(/\r?\n/).filter(Boolean);
+              const entries = lines.map(line =>
+                line.match(/^\s*(\d+)\s+([a-f0-9]{32})\s+https?:\/\/data\.gdeltproject\.org\/gdeltv2\/(\d{14}\.(?:export|mentions|gkg)\.csv\.zip)\s*$/i)
+              );
+              manifest.lines = lines.length;
+              manifest.validManifestLines = entries.filter(Boolean).length;
+              manifest.status = lines.length === 3 && entries.every(Boolean)
+                ? "valid_official_manifest" : "unexpected_manifest_schema";
+              if (manifest.status === "valid_official_manifest") {
+                manifest.sampleTimestamp = entries[0][3].slice(0, 14);
+                manifest.kinds = entries.map(e => e[3].split(".")[1]);
+              }
+            }
+          } catch (error) {
+            manifest.status = "network_error";
+            manifest.errorName = error?.name ?? "Unknown";
+          }
+          console.log("GDELT STATIC-MANIFEST REACHABILITY (NOT INGESTED): " + JSON.stringify(manifest));
+          NODE

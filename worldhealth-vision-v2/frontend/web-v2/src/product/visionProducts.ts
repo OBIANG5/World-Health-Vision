@@ -11,7 +11,7 @@ export type VisionId =
 
 export type VisionFamily = "understand" | "monitor" | "compare" | "editorial";
 export type VisionStage = "explorable" | "partial" | "planned";
-export type VisionAction = "country" | "favorites" | "currency" | "travel" | "sources";
+export type VisionAction = "country" | "favorites" | "currency" | "travel" | "sources" | "radar";
 
 export interface LocalizedCopy {
   fr: string;
@@ -181,21 +181,21 @@ export const VISION_PRODUCTS: readonly VisionProduct[] = [
     },
   },
   {
-    id: "radar", family: "understand", stage: "planned", name: "Global Radar",
+    id: "radar", family: "understand", stage: "partial", name: "Global Radar",
     tagline: { fr: "GDELT, signaux et vérification", en: "GDELT, signals and verification" },
     description: {
-      fr: "Détecter des mentions et changements, rapprocher les sources puis construire des dossiers vérifiés.",
-      en: "Detect mentions and changes, corroborate sources and build verified case files.",
+      fr: "Chercher réellement des mentions GDELT, ouvrir les publications originales et comparer leurs métadonnées, sans publier de conclusion automatique.",
+      en: "Run actual GDELT discovery, open original links and compare source metadata without automated factual conclusions.",
     },
     objective: {
       fr: "Pipeline Signal→Cluster→Preuves→Revue→Watch ou sujet éditorial validé.",
       en: "Signal→Cluster→Evidence→Review→Watch or approved editorial lead.",
     },
     caveat: {
-      fr: "Une mention GDELT n'est ni un événement confirmé ni une statistique officielle. Radar non branché en V2.",
-      en: "A GDELT mention is neither confirmed news nor an official statistic. Radar is not connected to V2.",
+      fr: "Pilote GDELT à la demande : aucune collecte persistante, aucune vérification automatique du contenu ou des éditeurs, aucune alerte.",
+      en: "On-demand GDELT pilot: no persistent collection, automatic article verification, or notifications.",
     },
-    action: "sources", actionLabel: { fr: "Voir les règles de sources", en: "View source methodology" },
+    action: "radar", actionLabel: { fr: "Ouvrir le Radar de sources", en: "Open source Radar" },
   },
   {
     id: "media", family: "editorial", stage: "planned", name: "World-Vision Média",
