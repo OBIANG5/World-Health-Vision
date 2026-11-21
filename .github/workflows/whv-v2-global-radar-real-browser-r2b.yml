@@ -1,0 +1,226 @@
+name: WHV V2 Global Radar R2B — real GDELT source URLs to actual iPhone preview
+
+on:
+  push:
+    branches:
+      - product/v2-global-radar-source-archive-preview-r2b-2026-11-21
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/connectors/gdelt_events_feed.py"
+      - "worldhealth-vision-v2/services/ingestion-service/tests/test_gdelt_events_feed.py"
+      - "worldhealth-vision-v2/services/ingestion-service/export_gdelt_radar_snapshot.py"
+      - "worldhealth-vision-v2/services/ingestion-service/tests/test_export_gdelt_radar_snapshot.py"
+      - "worldhealth-vision-v2/frontend/web-v2/src/radar/gdeltStaticSnapshot.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/radar/editorialSourceCase.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarEditorialPilot.tsx"
+      - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarStaticArchive.tsx"
+      - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarPanel.tsx"
+      - "worldhealth-vision-v2/frontend/web-v2/src/styles/global-radar.css"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-static-snapshot.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-editorial-case.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/global-radar-real-archive-browser-smoke.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/build-radar-preview.sh"
+      - ".github/workflows/whv-v2-global-radar-real-browser-r2b.yml"
+
+permissions:
+  contents: read
+
+# Stop burning Github Actions minutes when a later commit supersedes a
+# previous CI run. The REAL provider probe also requires explicit opt-in.
+concurrency:
+  group: whv-radar-r2b-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-archive-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install only Python test dependencies
+        run: python -m pip install "httpx>=0.27,<0.28" "pytest>=8.3,<9"
+      - name: Test real ingestion snapshot producer and rights/freshness safety
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m compileall -q export_gdelt_radar_snapshot.py tests/test_export_gdelt_radar_snapshot.py
+          python -m pytest -q tests/test_gdelt_events_feed.py tests/test_export_gdelt_radar_snapshot.py
+      - name: Fully locked frontend dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Confirm preview build script and noindex policy are valid (no deployment)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          bash -n scripts/build-radar-preview.sh
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { existsSync } from 'node:fs';
+          assert(!existsSync('vercel.json'),
+            'Unconditional vercel.json noindex would destroy search discovery on eventual production merge');
+          const shell = readFileSync('scripts/build-radar-preview.sh', 'utf8');
+          assert(shell.includes('WHV_RADAR_PREVIEW_FETCH'), 'Live provider call requires explicit opt-in');
+          assert(shell.includes('rm -f -- "$SNAPSHOT"'), 'Cannot carry forward stale fetched data');
+          assert(shell.includes('noindex, nofollow, noarchive'),
+            'Preview-only robots policy must be stamped into compiled HTML');
+          console.log('PASS preview configuration: no global SEO block, opt-in GDELT, preview-only robots');
+          NODE
+      - name: Test production TypeScript snapshot boundary and 429 search fallback
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          node --test scripts/test-global-radar-static-snapshot.mjs
+          node --test scripts/test-global-radar-editorial-case.mjs
+          node --test scripts/test-global-radar.mjs
+      - name: ESLint strict on all R2B changes and existing R1 integration
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx eslint src/radar/gdeltStaticSnapshot.ts src/radar/editorialSourceCase.ts \
+            src/components/layout/GlobalRadarStaticArchive.tsx \
+            src/components/layout/GlobalRadarEditorialPilot.tsx \
+            src/components/layout/GlobalRadarPanel.tsx \
+            scripts/test-global-radar-static-snapshot.mjs \
+            scripts/test-global-radar-editorial-case.mjs \
+            global-radar-real-archive-browser-smoke.mjs
+      - name: Build deliberate SYNTHETIC preview fixture only in CI workspace
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          from datetime import UTC, datetime
+          from pathlib import Path
+          from ingestion_service.connectors.gdelt_events_feed import EventLink, GdeltEventBatch
+          from export_gdelt_radar_snapshot import atomic_write_json, create_snapshot
+          now=datetime.now(UTC)
+          slot=now.replace(second=0, microsecond=0).isoformat().replace("+00:00","Z")
+          links=tuple(
+            EventLink(
+              source_url=f"https://synthetic-{n}.example.org/fixture/source?id={n}",
+              canonical_key=f"https://synthetic-{n}.example.org/fixture/source?id={n}",
+              gdelt_event_id=str(100000+n),
+              gdelt_added_at_utc=slot, gdelt_event_date=now.strftime("%Y%m%d"),
+              coded_event="043", coded_action_country_fips="GB",
+            ) for n in range(1,5)
+          )
+          batch=GdeltEventBatch(
+            manifest_sha256="a"*64,
+            source_url="https://data.gdeltproject.org/gdeltv2/SYNTHETIC.export.CSV.zip",
+            export_md5_verified=True, archive_sha256="b"*64,
+            batch_at_utc=slot, retrieved_at_utc=now.isoformat().replace("+00:00","Z"),
+            total_rows_examined=7,candidate_rows=7,distinct_safe_article_urls=4,
+            duplicate_links=2,unsafe_or_missing_links=1,wrong_slot_rows=0,links=links,
+          )
+          target=Path("../../frontend/web-v2/public/radar/global-latest.json")
+          atomic_write_json(create_snapshot(batch,now=now),target)
+          print("SYNTHETIC 4-source preview only; no real GDELT data used in this test")
+          PY
+      - name: Strict TypeScript6 + Vite production frontend with synthetic fixture
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build
+      - name: Chrome launcher for real React/Chromium 320,390,1440 screenshots
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo "WHV_BROWSER_CHANNEL=chrome" >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Built real V2 browser — explicitly SYNTHETIC archive, source choice and responsive UI
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node global-radar-real-archive-browser-smoke.mjs
+      - name: Preview-only robots and no-network build acceptance (production default remains indexable)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          test ! -f vercel.json
+          if grep -q 'name="robots".*noindex' dist/index.html; then
+            echo "FAIL: default Vite production build must not be globally noindexed"
+            exit 1
+          fi
+          WHV_RADAR_PREVIEW_FETCH=0 bash scripts/build-radar-preview.sh
+          grep -Fq '<meta name="robots" content="noindex, nofollow, noarchive">' dist/index.html
+          test ! -f public/radar/global-latest.json
+          echo "PASS: only explicit preview has robots noindex; absent source remains absent"
+      - name: Screenshots from SYNTHETIC offline tests ONLY
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-radar-r2b-synthetic-archive-browser
+          path: worldhealth-vision-v2/frontend/web-v2/global-radar-r2b-artifacts/
+          if-no-files-found: ignore
+
+  real-source-to-browser-preview:
+    needs: source-archive-contract
+    # An external source can be temporarily unavailable; do NOT silently
+    # substitute synthetic news, and do not gate all V2 on one batch.
+    # No paid/continuous source sampling on every docs/code push.
+    # Trigger on workflow_dispatch after integration, or by committing a
+    # reviewed exact-HEAD checkpoint with [radar-live-probe] in its message.
+    # Ordinary pushes run only reproducible offline safety/browser tests.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[radar-live-probe]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install minimal real GDELT source client
+        run: python -m pip install "httpx>=0.27,<0.28"
+      - name: ONE genuine official GDELT archive -> static metadata-only source preview
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        env:
+          PYTHONPATH: src
+        run: python export_gdelt_radar_snapshot.py --output ../../frontend/web-v2/public/radar/global-latest.json
+      - name: Install reproducible frontend and build REAL provider snapshot
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+      - name: Install genuine Chromium launcher
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo "WHV_BROWSER_CHANNEL=chrome" >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Built real V2 browser 320/390/1440 with REAL GDELT provider URLs — no factual verification
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        env:
+          WHV_RADAR_REAL: "1"
+        run: node global-radar-real-archive-browser-smoke.mjs
+      - name: Preserve real-source browser evidence and deployable static PREVIEW artifact (not deployed)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-radar-r2b-real-gdelt-archive-built-preview
+          path: |
+            worldhealth-vision-v2/frontend/web-v2/dist/
+            worldhealth-vision-v2/frontend/web-v2/global-radar-r2b-artifacts/
+          if-no-files-found: error

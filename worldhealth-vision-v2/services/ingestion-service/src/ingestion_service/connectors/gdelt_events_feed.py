@@ -15,12 +15,14 @@ returns bounded diagnostics and optional candidate metadata for review only.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections.abc import Callable
 from datetime import datetime, timezone
 import csv
 from hashlib import md5, sha256
 import io
 import ipaddress
 import re
+import time
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 import zipfile
@@ -311,11 +313,13 @@ class GdeltStaticEventsClient:
     """Only manifest and its ONE pinned export ZIP; no arbitrary URL fetching."""
 
     def __init__(self, *, timeout_seconds: float = 14.0,
-                 transport: httpx.BaseTransport | None = None):
+                 transport: httpx.BaseTransport | None = None,
+                 sleep: Callable[[float], None] = time.sleep):
         if not 1 <= timeout_seconds <= 30:
             raise GdeltFeedError("invalid_timeout")
         self.timeout_seconds = timeout_seconds
         self.transport = transport
+        self._sleep = sleep
 
     def _client(self) -> httpx.Client:
         return httpx.Client(
@@ -349,5 +353,18 @@ class GdeltStaticEventsClient:
             export = manifest.export()
             if export.size_bytes > ARCHIVE_MAX_BYTES:
                 raise GdeltFeedError("export_archive_over_budget")
-            data = self._fetch(client, export.url, ARCHIVE_MAX_BYTES)
+            # A manifest may be published moments before its ZIP becomes
+            # accessible on a public CDN. Handle ONLY this precise 404 race:
+            # up to two delayed retries of the SAME MD5-pinned official file.
+            # NEVER retry 429/403/5xx, never re-fetch a moving manifest, never
+            # switch to arbitrary article links or silently use stale data.
+            # Total optional delay is capped at 15 seconds per explicit call.
+            for attempt in range(3):
+                try:
+                    data = self._fetch(client, export.url, ARCHIVE_MAX_BYTES)
+                    break
+                except GdeltFeedError as exc:
+                    if exc.code != "provider_http_404" or attempt >= 2:
+                        raise
+                    self._sleep((5.0, 10.0)[attempt])
             return parse_event_archive(manifest, data, max_candidates=max_candidates)

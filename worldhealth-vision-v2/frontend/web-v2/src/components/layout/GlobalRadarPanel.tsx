@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import "../../styles/global-radar.css";
 import { createPortal } from "react-dom";
 import { useLang } from "../../context/LanguageContext";
+import GlobalRadarStaticArchive from "./GlobalRadarStaticArchive";
+import GlobalRadarEditorialPilot from "./GlobalRadarEditorialPilot";
 import {
   GDELT_PROVIDER_PAGE, RADAR_CLIENT_MIN_INTERVAL_MS,
   RADAR_FETCH_TIMEOUT_MS, SOURCE_COUNTRIES,
@@ -107,7 +110,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    searchRef.current?.focus();
+    searchRef.current?.focus({ preventScroll: true });
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
       if (event.key !== "Tab") return;
@@ -197,7 +200,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
         ref={panelRef} tabIndex={-1}>
         <header className="radar-header">
           <div>
-            <span className="radar-kicker">WORLD-VISION · GLOBAL RADAR · GDELT DOC 2.0</span>
+            <span className="radar-kicker">WORLD-VISION · GLOBAL RADAR · SOURCES GDELT 2.0</span>
             <h2>{copy(lang, "Découvrir les publications. Confronter les sources.",
               "Discover coverage. Compare sources.")}</h2>
             <p>{copy(lang,
@@ -207,6 +210,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
           <button type="button" className="radar-close" onClick={onClose}
             aria-label={copy(lang, "Fermer Global Radar", "Close Global Radar")}>×</button>
         </header>
+        <div className="radar-scroll">
         <div className="radar-disclosure">
           <strong>{copy(lang, "Premier parcours pilote, sans collecte en arrière-plan", "First pilot, no background collection")}</strong>
           <p>{copy(lang,
@@ -247,6 +251,11 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
             "One explicit request, up to 40 links, no storage, no query added to the World-Vision URL. Provider limits can restrict results.")}</small>
         </form>
         <main className="radar-content">
+          <GlobalRadarEditorialPilot />
+          <GlobalRadarStaticArchive />
+          <h3 className="radar-manual-heading">{copy(lang,
+            "Recherche supplémentaire GDELT à la demande (peut être limitée)",
+            "Additional on-demand GDELT search (may be rate-limited)")}</h3>
           {loading && <p className="radar-status" role="status">
             {copy(lang, "Interrogation de GDELT DOC en cours…", "Requesting GDELT DOC…")}</p>}
           {error && <div className="radar-error" role="alert">
@@ -330,10 +339,11 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
           </div>}
           {feedback && <p className="radar-status" role="status">{feedback}</p>}
         </main>
+        </div>
         <footer className="radar-footer">
           <span>{copy(lang,
-            "R1 : recherche GDELT en direct si accessible · comparateur de MÉTADONNÉES · aucune preuve validée · aucun abonnement.",
-            "R1: live GDELT if reachable · METADATA comparison · no facts verified · no subscription.")}</span>
+            "R2B : archive GDELT datée si intégrée au build, recherche directe facultative · documents et faits non vérifiés.",
+            "R2B: dated GDELT batch if included in build, optional direct search · documents and facts not verified.")}</span>
           <button type="button" onClick={onClose}>{copy(lang, "Fermer", "Close")}</button>
         </footer>
       </section>
