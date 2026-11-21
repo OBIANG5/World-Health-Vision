@@ -26,7 +26,7 @@ import { useIndicatorRank } from "../../hooks/useIndicatorRank";
 import { t } from "../../i18n/labels";
 import { pdfSafe } from "../../utils/pdf";
 import TrendChart from "../charts/TrendChart";
-import {WorldIcon,type WorldIconName} from "../ui/WorldIcon";
+import {WorldIcon} from "../ui/WorldIcon";
 import ForecastChart from "../charts/ForecastChart";
 import "../../styles/charts.css";
 import "../../styles/country.css";
@@ -329,10 +329,6 @@ const TAB_LABELS: Record<DrawerTab,string> = {
  overview:"Résumé",economy:"Économie",health:"Santé",governance:"Finances pub.",
  markets:"Marchés",forecasts:"Projections",safety:"Sécurité",
  compare:"Comparer",fx:"Devises",
-};
-const TAB_ICONS:Record<DrawerTab,WorldIconName>={
- overview:"layers",economy:"currency",health:"info",governance:"scale",
- markets:"markets",forecasts:"destination",safety:"shield",compare:"regions",fx:"currency",
 };
 
 // ---------------------------------------------------------------------------
