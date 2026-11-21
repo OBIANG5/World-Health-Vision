@@ -9,10 +9,13 @@ on:
       - "worldhealth-vision-v2/services/ingestion-service/export_gdelt_radar_snapshot.py"
       - "worldhealth-vision-v2/services/ingestion-service/tests/test_export_gdelt_radar_snapshot.py"
       - "worldhealth-vision-v2/frontend/web-v2/src/radar/gdeltStaticSnapshot.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/radar/editorialSourceCase.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarEditorialPilot.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarStaticArchive.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarPanel.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/styles/global-radar.css"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-static-snapshot.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-editorial-case.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/global-radar-real-archive-browser-smoke.mjs"
       - ".github/workflows/whv-v2-global-radar-real-browser-r2b.yml"
 
@@ -51,14 +54,17 @@ jobs:
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
           node --test scripts/test-global-radar-static-snapshot.mjs
+          node --test scripts/test-global-radar-editorial-case.mjs
           node --test scripts/test-global-radar.mjs
       - name: ESLint strict on all R2B changes and existing R1 integration
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
-          npx eslint src/radar/gdeltStaticSnapshot.ts \
+          npx eslint src/radar/gdeltStaticSnapshot.ts src/radar/editorialSourceCase.ts \
             src/components/layout/GlobalRadarStaticArchive.tsx \
+            src/components/layout/GlobalRadarEditorialPilot.tsx \
             src/components/layout/GlobalRadarPanel.tsx \
             scripts/test-global-radar-static-snapshot.mjs \
+            scripts/test-global-radar-editorial-case.mjs \
             global-radar-real-archive-browser-smoke.mjs
       - name: Build deliberate SYNTHETIC preview fixture only in CI workspace
         working-directory: worldhealth-vision-v2/services/ingestion-service
