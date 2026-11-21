@@ -40,7 +40,7 @@ EXPECTED_COLUMNS = 61
 SCHEMA_ID = "GDELT_2_RAW_EVENTS_R2A_DISCOVERY_ONLY"
 LINE = re.compile(
     r"^(\d{1,9})\s+([0-9a-fA-F]{32})\s+https?://data\.gdeltproject\.org/gdeltv2/"
-    r"(\d{14})\.(export|mentions|gkg)\.CSV\.zip$"
+    r"(\d{14})\.(export|mentions|gkg)\.CSV\.zip$", re.I
 )
 TIMESTAMP = re.compile(r"^\d{14}$")
 TRACKING = re.compile(r"^(?:utm_[a-z0-9_]+|fbclid|gclid|mc_cid|mc_eid)$", re.I)
@@ -134,13 +134,15 @@ def parse_manifest(raw: bytes, *, as_of: datetime | None = None) -> GdeltManifes
         if not match:
             raise GdeltFeedError("invalid_manifest_row")
         size, digest, stamp, kind = match.groups()
+        kind = kind.lower()
+        provider_path = rawline.strip().split()[-1].split("/gdeltv2/", 1)[-1]
         bytes_expected = int(size)
         if bytes_expected < 1 or bytes_expected > 120_000_000:
             raise GdeltFeedError("invalid_manifest_file_size")
         entries.append(GdeltEntry(
             kind=kind, size_bytes=bytes_expected,
             md5_hex=digest.lower(), added_at_utc=_slot(stamp),
-            url=f"{BASE_URL}/{stamp}.{kind}.CSV.zip",
+            url=f"{BASE_URL}/{provider_path}",
         ))
     if set(item.kind for item in entries) != {"export", "mentions", "gkg"}:
         raise GdeltFeedError("unexpected_manifest_kind")
@@ -223,7 +225,9 @@ def parse_event_archive(
                 raise GdeltFeedError("unsafe_archive_entries")
             member = files[0]
             expected_name = entry.url.rsplit("/", 1)[-1].removesuffix(".zip")
-            if member.filename != expected_name or not re.fullmatch(r"\d{14}\.export\.CSV", member.filename):
+            if member.filename != expected_name or not re.fullmatch(
+                r"\d{14}\.export\.CSV", member.filename, re.I
+            ):
                 raise GdeltFeedError("unexpected_archive_member")
             if member.file_size < 1 or member.file_size > UNCOMPRESSED_MAX_BYTES:
                 raise GdeltFeedError("unsafe_uncompressed_size")
