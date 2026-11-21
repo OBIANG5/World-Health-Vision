@@ -2,7 +2,7 @@
 // Design : onglets + KPI hero + détail par indicateur + projections en avant.
 // Accessible aux professionnels et aux particuliers — termes vulgarisés.
 
-import { type ChangeEvent, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTip, ResponsiveContainer } from "recharts";
 import type {
   AgreementLevel,
@@ -1261,6 +1261,21 @@ export default function CountryDrawer({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState<DrawerTab>("overview");
   const [activeSection, setActiveSection] = useState<CountrySection>("overview");
+  const countryBodyRef = useRef<HTMLDivElement>(null);
+  function navigateToSection(section: CountrySection) {
+    setActiveSection(section);
+    // A chosen section must start below the sticky country navigation;
+    // otherwise users may land mid-article after switching from long data tabs.
+    const body = countryBodyRef.current;
+    const nav = body?.querySelector<HTMLElement>(".whv-country-section-nav");
+    if (body && nav) {
+      const top = body.scrollTop + nav.getBoundingClientRect().top
+        - body.getBoundingClientRect().top - 4;
+      body.scrollTo({ top: Math.max(0, top),
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    }
+  }
+
 
   const { countryDetail, economicSnapshot, relativeCostSnapshot, loading, error } =
     useCountrySheet(selectedCountryIso3, open);
@@ -1273,6 +1288,7 @@ export default function CountryDrawer({
   useEffect(() => {
     setActiveSection("overview");
     setActiveTab("overview");
+    countryBodyRef.current?.scrollTo({ top: 0, behavior: "auto" });
   }, [selectedCountryIso3]);
 
   const flag = countryFlag(countryDetail?.iso2 ?? selectedCountry?.iso2);
@@ -1419,7 +1435,7 @@ export default function CountryDrawer({
 
       {/* The COUNTRY is primary. All domains are peer sections below its
           identity; news never precedes the actual country profile. */}
-      <div className="country-drawer-body">
+      <div className="country-drawer-body" ref={countryBodyRef}>
         <CountryEditorialStory key={selectedCountryIso3}
           iso3={selectedCountryIso3}
           name={displayName} flag={flag} subtitle={subtitle}
@@ -1442,7 +1458,7 @@ export default function CountryDrawer({
               className={`whv-country-section-tab${activeSection === section ? " is-selected" : ""}`}
               aria-current={activeSection === section ? "page" : undefined}
               onClick={() => {
-                setActiveSection(section);
+                navigateToSection(section);
                 if (section === "data" && !["economy", "health", "governance", "markets", "forecasts"].includes(activeTab)) {
                   setActiveTab("economy");
                 }
@@ -1515,7 +1531,7 @@ export default function CountryDrawer({
               decisionSignals={decisionSignals} lang={lang}
               onTabChange={tab => {
                 setActiveTab(tab);
-                setActiveSection(tab === "fx" || tab === "safety" ? "services"
+                navigateToSection(tab === "fx" || tab === "safety" ? "services"
                   : tab === "compare" ? "compare" : "data");
               }}
               iso3={selectedCountryIso3}
@@ -1541,7 +1557,7 @@ export default function CountryDrawer({
               ] as const).map(([section, heading, description]) => <button
                 key={section} type="button" className="whv-country-overview-path"
                 onClick={() => {
-                  setActiveSection(section);
+                  navigateToSection(section);
                   if (section === "data") setActiveTab("economy");
                   if (section === "services") setActiveTab("safety");
                 }}>
