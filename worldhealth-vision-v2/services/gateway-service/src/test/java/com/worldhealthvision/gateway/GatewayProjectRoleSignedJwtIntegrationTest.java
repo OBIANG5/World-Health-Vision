@@ -156,6 +156,20 @@ class GatewayProjectRoleSignedJwtIntegrationTest {
     }
 
     @Test
+    void signedTradingScopeWithoutProjectUserRoleCannotBypassAuthorization() throws Exception {
+        int before = forwarded.get();
+        String spoof = sign(trusted, issuer, AUDIENCE, Map.of(),
+            "openid trading:read trading:write", true);
+        client.get().uri("/api/trading/cases")
+            .headers(h -> h.setBearerAuth(spoof))
+            .exchange().expectStatus().isForbidden();
+        client.post().uri("/api/trading/cases")
+            .headers(h -> h.setBearerAuth(spoof))
+            .bodyValue("{}").exchange().expectStatus().isForbidden();
+        assertThat(forwarded.get()).isEqualTo(before);
+    }
+
+    @Test
     void noTokenAndUnknownPathsRemainDeniedEvenWithValidProjectGrant() throws Exception {
         int before = forwarded.get();
         client.get().uri("/api/trading/cases").exchange().expectStatus().isUnauthorized();
