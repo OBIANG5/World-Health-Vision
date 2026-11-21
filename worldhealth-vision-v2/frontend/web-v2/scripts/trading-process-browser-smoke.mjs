@@ -187,6 +187,9 @@ try {
     await macro.getByRole("button", { name: /Ouvrir volontairement mon Macro Desk local/ }).click();
     assert.equal(await macro.locator(".tvp-macro-currencies button").count(), 8);
     assert.equal(await macro.locator(".tvp-macro-pairs button").count(), 28);
+    assert.equal(await macro.locator(".tvp-macro-official a").count(), 2,
+      "Institutional source shortcuts must be available for the selected currency");
+    assert((await macro.locator(".tvp-macro-official").innerText()).includes("European Central Bank"));
     assert.equal(await page.evaluate((key) => localStorage.getItem(key), macroKey), null,
       "Opening a missing Macro Desk must not silently persist a new library");
 
@@ -231,6 +234,10 @@ try {
     await macro.locator(".tvp-macro-pairs").getByRole("button", { name: /EUR\/GBP/ }).click();
     assert((await macro.locator(".tvp-macro-pair-detail").innerText()).includes("Deux contextes documentés"),
       "Pair view must use actual saved snapshots, not arbitrary rankings");
+    assert.equal(await macro.locator(".tvp-macro-pair-sources a").count(), 2,
+      "The pair comparison must expose original dated publication links for both economies");
+    assert.equal(await macro.locator(".tvp-macro-pair-sources a").first().getAttribute("href"),
+      "https://example.org/eur-synthetic");
 
     const casesBefore = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).cases.length, key);
     page.once("dialog", async (dialog) => { await dialog.accept(); });
