@@ -209,6 +209,16 @@ try {
         "Snapshot must be explicitly saved, never invented");
     }
     await recordMacro("EUR", "Synthetic publisher EUR");
+    // A half-entered citation is an unsaved draft: navigation must warn even
+    // if the other text fields have already been archived.
+    await macro.locator(".tvp-macro-source-form input").first().fill("UNFINISHED SOURCE — DO NOT LOSE");
+    page.once("dialog", async (dialog) => { await dialog.dismiss(); });
+    await macro.locator(".tvp-macro-currencies").getByRole("button", { name: /GBP/ }).click();
+    assert.equal(await macro.locator(".tvp-macro-currencies button.active strong").innerText(), "EUR",
+      "Currency navigation must respect refusal to discard a partially entered source");
+    assert.equal(await macro.locator(".tvp-macro-source-form input").first().inputValue(),
+      "UNFINISHED SOURCE — DO NOT LOSE", "Declined switch must preserve half-entered source");
+    await macro.locator(".tvp-macro-source-form input").first().fill("");
     await recordMacro("GBP", "Synthetic publisher GBP");
     const macroRaw = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), macroKey);
     assert.equal(macroRaw.schemaVersion, 1);
