@@ -8,6 +8,8 @@ import {photoComparisonIssues} from "../../../../services/media-renderer/src/pho
 import {reviewFrameRange} from "../../../../services/media-renderer/creative/review-range.mjs";
 import {directorBeatIssues,DIRECTOR_INTENTS} from "../../../../services/media-renderer/creative/director-beats.mjs";
 import type {DirectorBeat,DirectorIntent} from "../../../../services/media-renderer/creative/director-beats.mjs";
+import {attentionCueIssues} from "../../../../services/media-renderer/creative/attention-cues.mjs";
+import type {SourceSoundCue} from "../../../../services/media-renderer/creative/attention-cues.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
@@ -274,10 +276,12 @@ export default function CinematicProductionBoard() {
   const [previewMode,setPreviewMode]=useState<PreviewMode>("source");
   const [filmReview,setFilmReview]=useState<{shotId:string;frame:number;requestId:number}|null>(null);
   const [directorBeats,setDirectorBeats]=useState<DirectorBeat[]>([]);
+  const [soundCues,setSoundCues]=useState<SourceSoundCue[]>([]);
+  const [newSfxFile,setNewSfxFile]=useState("");
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
-  const requiredNames=new Set([...shots.flatMap(s=>[s.mediaName,s.foregroundName]),voiceFile,musicFile,outroFile].filter(Boolean));
+  const requiredNames=new Set([...shots.flatMap(s=>[s.mediaName,s.foregroundName]),voiceFile,musicFile,outroFile,...soundCues.map(cue=>cue.file)].filter(Boolean));
   const unresolvedAssets=[...requiredNames].filter(name=>!files.some(file=>file.name===name));
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const foregroundAsset=files.find(f=>f.name===active.foregroundName);
@@ -352,9 +356,10 @@ export default function CinematicProductionBoard() {
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
   const duration=shotsDuration+(outroFile?90:0);
   const directorIssues=directorBeatIssues({shots,script,directorBeats},shotsDuration);
+  const soundIssues=attentionCueIssues({soundCues},shotsDuration);
   const captionIssues=captionCueIssues(parsedCaptions.cues,shotsDuration);
   const captionValid=!parsedCaptions.error&&captionIssues.length===0;
-  const fullFilmCanRender=canExport&&captionValid&&duration>0&&duration<=18000;
+  const fullFilmCanRender=canExport&&captionValid&&soundIssues.length===0&&duration>0&&duration<=18000;
 
   /**
    * Complete local timeline for editorial review — EXACT Remotion composition
@@ -399,6 +404,9 @@ export default function CinematicProductionBoard() {
       };
     }),
     captions:parsedCaptions.cues,
+    soundCues:soundCues.map(cue=>({src:files.find(f=>f.name===cue.file)?.url??"",
+      startFrame:cue.startFrame,durationFrames:cue.durationFrames,
+      volume:cue.volume??0.25,label:cue.label})),
     narration:voiceFile&&files.find(f=>f.name===voiceFile)
       ? {src:files.find(f=>f.name===voiceFile)!.url,volume:1,label:"Narration sélectionnée"}
       :null,
@@ -409,7 +417,7 @@ export default function CinematicProductionBoard() {
       ? {src:files.find(f=>f.name===outroFile)!.url,durationFrames:90}
       :null,
     visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
-  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues]);
+  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues,soundCues]);
   const importProject=async(e:ChangeEvent<HTMLInputElement>)=>{
     const file=e.currentTarget.files?.[0];
     e.currentTarget.value="";
@@ -432,6 +440,7 @@ export default function CinematicProductionBoard() {
       setPreviewMode("source");
       setFilmReview(null);
       setDirectorBeats(saved.directorBeats??[]);
+      setSoundCues(saved.soundCues??[]);
       setFeedback("Projet repris : "+restored.length+" plan(s), "+(saved.captions?.length??0)+" sous-titre(s). "+
         (missing.length?"Réimporte les médias d'origine avant le rendu : "+missing.join(", "):"Médias correspondants déjà présents dans cette session."));
     }catch(error){setFeedback("Import refusé. Le montage en cours reste inchangé. "+
@@ -478,6 +487,23 @@ export default function CinematicProductionBoard() {
     if(next<0||next>=shots.length)return;
     const list=[...shots];[list[index],list[next]]=[list[next],list[index]];
     setShots(list);
+  };
+  const updateSoundCue=(index:number,change:Partial<SourceSoundCue>)=>
+    setSoundCues(old=>old.map((cue,i)=>i===index?{...cue,...change}:cue));
+  const addSoundCue=()=>{
+    const f=files.find(file=>file.name===newSfxFile&&file.kind==="audio");
+    if(!f){
+      setFeedback("Choisis explicitement un véritable fichier audio importé et autorisé pour ajouter un SFX.");
+      return;
+    }
+    const start=reviewFrameRange({shots},selectedId,0).selectedShotSourceFrames[0];
+    if(start+4>shotsDuration){
+      setFeedback("Durée restante insuffisante pour un accent sonore d'au moins quatre images.");
+      return;
+    }
+    setSoundCues(old=>[...old,{file:f.name,startFrame:start,
+      durationFrames:Math.min(12,shotsDuration-start),volume:.25,label:""}]);
+    setFeedback("Accent ajouté au film : écoute et corrige son timing, niveau et droit d'utilisation avant publication.");
   };
   const updateDirectorBeat=(id:string,change:Partial<DirectorBeat>)=>
     setDirectorBeats(old=>old.map(beat=>beat.id===id?{...beat,...change}:beat));
@@ -562,6 +588,10 @@ export default function CinematicProductionBoard() {
     }
   };
   const exportProject=()=>{
+    if(soundIssues.length){
+      setFeedback("Corrige les SFX sourcés avant export : "+soundIssues[0].field+" — "+soundIssues[0].reason);
+      return;
+    }
     if(directorIssues.length){
       setFeedback("Corrige la direction éditoriale avant export : "+
         directorIssues[0].field+" — "+directorIssues[0].reason);
@@ -574,6 +604,7 @@ export default function CinematicProductionBoard() {
       title:projectName,script,fps:30,aspect_ratio:"9:16",
       ...(parsedCaptions.cues.length?{captions:parsedCaptions.cues}:{}),
       ...(directorBeats.length?{directorBeats}:{}),
+      ...(soundCues.length?{soundCues}:{}),
       style:{background:"#0b1721",ink:"#f6f8fa",accent},
       shots:shots.map(s=>({
         id:s.id,durationFrames:s.durationFrames,template:s.template,
@@ -753,6 +784,54 @@ export default function CinematicProductionBoard() {
               </div>)}
             {directorIssues.length>0&&<p className="wvc-director-error" role="alert">
               Direction incomplète : {directorIssues[0].field} — {directorIssues[0].reason}
+            </p>}
+          </div>
+          <div className="wvc-sfx-sheet" aria-label="Accents sonores réels sur l'horloge du film">
+            <strong>ACCENTS SONORES · FILM ORIGINAL</strong>
+            <p className="wvc-hint">Les notes sonores ci-dessus ne jouent rien. Ici, chaque fichier doit être importé et autorisé.
+              Les cues sont rendus par Remotion au même timecode dans le Player et le MP4.</p>
+            <div className="wvc-sfx-add">
+              <label>FICHIER SOURCE SFX
+                <select value={newSfxFile} onChange={e=>setNewSfxFile(e.target.value)}>
+                  <option value="">Choisir un fichier audio importé</option>
+                  {files.filter(file=>file.kind==="audio").map(file=>
+                    <option key={file.name} value={file.name}>{file.name}</option>)}
+                </select>
+              </label>
+              <button type="button" disabled={!newSfxFile} onClick={addSoundCue}>
+                + Accenter ce plan
+              </button>
+            </div>
+            {soundCues.length===0&&<p className="wvc-hint">Aucun accent audio ajouté : les voix et la musique restent gérées séparément.</p>}
+            {soundCues.map((cue,index)=>
+              <div className="wvc-sfx-cue" key={index}>
+                <div className="wvc-director-row">
+                  <strong>SFX {index+1} · {cue.file}</strong>
+                  <button type="button" onClick={()=>setSoundCues(old=>old.filter((_,i)=>i!==index))}>Retirer</button>
+                </div>
+                <div className="wvc-two-col">
+                  <label>DÉBUT · SECONDES FILM
+                    <input type="number" min="0" step=".033333" value={(cue.startFrame/30).toFixed(3)}
+                      onChange={e=>updateSoundCue(index,{startFrame:Math.round(Number(e.target.value)*30)})}/>
+                  </label>
+                  <label>DURÉE · SECONDES
+                    <input type="number" min=".1333" step=".033333" value={(cue.durationFrames/30).toFixed(3)}
+                      onChange={e=>updateSoundCue(index,{durationFrames:Math.round(Number(e.target.value)*30)})}/>
+                  </label>
+                </div>
+                <div className="wvc-two-col">
+                  <label>GAIN MAX · 0 À 0,8
+                    <input type="number" min="0" max=".8" step=".05" value={cue.volume??.25}
+                      onChange={e=>updateSoundCue(index,{volume:Number(e.target.value)})}/>
+                  </label>
+                  <label>LIBELLÉ / PROVENANCE
+                    <input maxLength={90} value={cue.label??""}
+                      onChange={e=>updateSoundCue(index,{label:e.target.value})}/>
+                  </label>
+                </div>
+              </div>)}
+            {soundIssues.length>0&&<p role="alert" className="wvc-director-error">
+              SFX invalide : {soundIssues[0].field} — {soundIssues[0].reason}
             </p>}
           </div>
           <div className="wvc-context-review">
@@ -1174,7 +1253,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-export">
           <div className="wvc-export-top"><strong>MASTER VISÉ · 9:16 · 1080×1920 · 30 ips</strong><span>{(duration/30).toFixed(1)} secondes</span></div>
           <p>Une fois le JSON exporté, les médias peuvent être montés par le moteur Remotion de World‑Vision. Les effets professionnels avancés ou génératifs resteront accessibles par des outils spécialisés.</p>
-          <button type="button" disabled={!canExport||!captionValid||directorIssues.length>0} onClick={exportProject}>Exporter le projet de montage (.json)</button>
+          <button type="button" disabled={!canExport||!captionValid||directorIssues.length>0||soundIssues.length>0} onClick={exportProject}>Exporter le projet de montage (.json)</button>
           <a href={path} target="_blank" rel="noopener noreferrer">Voir le processus de rendu et les limites ↗</a>
           {feedback&&<div className="wvc-feedback" role="status">{feedback}</div>}
         </div>
