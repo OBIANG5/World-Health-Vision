@@ -61,20 +61,20 @@ jobs:
         run: |
           mkdir -p /tmp/wv-hook-assets/audio output/creative
           ffmpeg -hide_banner -nostdin -loglevel error -y \
-            -f lavfi -i 'sine=frequency=82:sample_rate=48000:duration=12.1' \
-            -af 'volume=0.25,afade=t=in:st=0:d=0.35,afade=t=out:st=11.65:d=0.4' \
+            -f lavfi -i 'aevalsrc=0.18*sin(2*PI*110*t)+0.08*sin(2*PI*220*t)+0.04*sin(2*PI*330*t):s=48000:d=12.1' \
+            -af 'afade=t=in:st=0:d=0.35,afade=t=out:st=11.65:d=0.4' \
             -ac 2 /tmp/wv-hook-assets/audio/ambience.wav
           ffmpeg -hide_banner -nostdin -loglevel error -y \
             -f lavfi -i 'anoisesrc=color=pink:sample_rate=48000:duration=0.8' \
-            -af 'highpass=f=440,lowpass=f=4400,afade=t=in:st=0:d=0.06,afade=t=out:st=0.40:d=0.36,volume=0.5' \
+            -af 'highpass=f=440,lowpass=f=4400,afade=t=in:st=0:d=0.06,afade=t=out:st=0.40:d=0.36,volume=0.8' \
             -ac 2 /tmp/wv-hook-assets/audio/first-whoosh.wav
           ffmpeg -hide_banner -nostdin -loglevel error -y \
             -f lavfi -i 'sine=frequency=210:sample_rate=48000:duration=0.8' \
-            -af 'afade=t=in:st=0:d=0.02,afade=t=out:st=0.38:d=0.40,volume=0.4' \
+            -af 'afade=t=in:st=0:d=0.02,afade=t=out:st=0.38:d=0.40,volume=1.0' \
             -ac 2 /tmp/wv-hook-assets/audio/geo-pulse.wav
           ffmpeg -hide_banner -nostdin -loglevel error -y \
             -f lavfi -i 'sine=frequency=580:sample_rate=48000:duration=0.9' \
-            -af 'afade=t=in:st=0:d=0.02,afade=t=out:st=0.32:d=0.58,volume=0.28' \
+            -af 'afade=t=in:st=0:d=0.02,afade=t=out:st=0.32:d=0.58,volume=0.8' \
             -ac 2 /tmp/wv-hook-assets/audio/reveal.wav
       - name: Render real 1080×1920 Remotion film with NEW word emphasis, 3 original sonic cues and existing GEO
         run: |
@@ -102,6 +102,19 @@ jobs:
             word_rehooks:report.word_caption_cues,sound_cues:report.sound_cues,media:report.media.length}));
           JS
           test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=nw=1:nk=1 output/creative/hook-rehook-worldvision-technical.mp4 | head -n1)" = "aac"
+          ffmpeg -hide_banner -nostdin -loglevel info -i output/creative/hook-rehook-worldvision-technical.mp4 \
+            -vn -af volumedetect -f null - 2> output/creative/audio-level-report.txt
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+          log=Path('output/creative/audio-level-report.txt').read_text()
+          m=re.search(r'max_volume:\\s*(-?[0-9.]+) dB',log)
+          if not m: raise SystemExit('No decoded audio level from actual AAC.')
+          maximum=float(m.group(1))
+          print('Original synthetic technical sound max_volume:',maximum,'dBFS')
+          if not (-28 < maximum < -3):
+              raise SystemExit(f'Audio too quiet or clipping risk: {maximum}dBFS')
+          PY
           ffmpeg -hide_banner -nostdin -loglevel error \
             -i output/creative/hook-rehook-worldvision-technical.mp4 \
             -vf "select='eq(n,0)+eq(n,26)+eq(n,64)+eq(n,116)+eq(n,172)+eq(n,275)+eq(n,314)+eq(n,361)'" \
