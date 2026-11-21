@@ -16,18 +16,21 @@ import {fileURLToPath} from "node:url";
 import {bundle} from "@remotion/bundler";
 import {renderMedia,renderStill,selectComposition} from "@remotion/renderer";
 import {FORMAT,inspectProject,resolveLocalFile} from "./validate-project.mjs";
+import {reviewFrameRange} from "./review-range.mjs";
 
 const rendererRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 function args(argv){
   const o={};
   for(let i=0;i<argv.length;i+=2){
     const key=argv[i],value=argv[i+1];
-    if(!["--project","--assets","--output","--shot"].includes(key)||!value||value.startsWith("--"))
+    if(!["--project","--assets","--output","--shot","--review-shot"].includes(key)||!value||value.startsWith("--"))
       throw new Error("Usage: --project <JSON> --assets <directory> --output <master.mp4>");
     o[key]=value;
   }
   if(![6,8].includes(argv.length)||!o["--project"]||!o["--assets"]||!o["--output"])
     throw new Error("Missing --project, --assets or --output.");
+  if(o["--shot"]&&o["--review-shot"])
+    throw new Error("Choose either the legacy silent --shot preview or the new --review-shot with original audio and captions.");
   return o;
 }
 async function hashFile(file){
@@ -48,11 +51,16 @@ async function run(argv){
     return 2;
   }
   const shotId=cli["--shot"]||null;
+  const reviewShotId=cli["--review-shot"]||null;
   if(shotId&&!fullProject.shots.some(s=>s.id===shotId)){
     throw new Error("Requested shot was not found: "+shotId);
   }
-  // This is a strictly isolated preview, not an edit of the original project.
-  // Never add or regenerate a voice, music or logo while examining one shot.
+  // Review is a frame range of the ORIGINAL movie; retain original captions,
+  // the approved voice and soundtrack, visual transitions and absolute time.
+  // The source project is never edited, regenerated or rewritten.
+  const review=reviewShotId?reviewFrameRange(fullProject,reviewShotId):null;
+  // Historical --shot remains a silent isolated composition for existing CI.
+  // Do not change its semantics without migrating existing users/tests.
   const project=shotId?{
     ...fullProject,
     shots:fullProject.shots.filter(s=>s.id===shotId).map(s=>({...s,transitionAfter:"cut",transitionFrames:0})),
@@ -148,18 +156,23 @@ async function run(argv){
       serveUrl,id:"WorldVisionCreativeEdit",inputProps:props
     });
     fs.mkdirSync(path.dirname(output),{recursive:true});
-    process.stdout.write("Rendering "+inspection.frames+" frames with your supplied media...\n");
+    const outputFrames=review?review.durationFrames:inspection.frames;
+    process.stdout.write("Rendering "+outputFrames+" frames with your supplied media"+(review?" and original timeline audio":"")+"...\n");
     await renderMedia({
       composition,serveUrl,inputProps:props,
       codec:"h264",audioCodec:"aac",outputLocation:output,
       pixelFormat:"yuv420p",crf:17,overwrite:true,
+      ...(review?{frameRange:review.frameRange}:{}),
     });
     const sha=await hashFile(output);
     // Use Remotion's pixel-accurate frame renderer, not a simulated browser
     // source preview or a generic screenshot of the unrendered input photo.
     const stillDir=output+".stills";
     fs.mkdirSync(stillDir,{recursive:true});
-    const frames=[0,Math.floor((inspection.frames-1)*0.5),inspection.frames-1];
+    // Stills are absolute SOURCE frames when reviewing a film segment.
+    const first=review?review.frameRange[0]:0;
+    const last=review?review.frameRange[1]:inspection.frames-1;
+    const frames=[first,Math.floor((first+last)*0.5),last];
     const stills=[];
     for(const [i,frame] of [...new Set(frames)].entries()){
       const name="frame-"+String(i+1).padStart(2,"0")+"-at-"+frame+".png";
@@ -169,20 +182,23 @@ async function run(argv){
     }
     const report={
       schema_version:FORMAT,episode_id:project.id,
-      mode:shotId?"single_shot_preview":"full_film",
-      shot_id:shotId,
+      mode:review?"audio_context_shot_review":shotId?"single_shot_preview":"full_film",
+      shot_id:reviewShotId??shotId,
+      ...(review?{review_source_frame_range:review.frameRange,review_selected_source_frames:review.selectedShotSourceFrames,
+        review_context_frames:review.actualContextFrames}:{}),
       input_manifest_sha256:await hashFile(projectPath),
       source_project_duration_frames:fullInspection.frames,
       source_script_sha256:createHash("sha256").update(project.script,"utf8").digest("hex"),
       exact_script_unchanged:true,
       output_path:output,output_sha256:sha,
-      duration_frames:inspection.frames,canvas:{width:1080,height:1920,fps:30},
+      duration_frames:outputFrames,canvas:{width:1080,height:1920,fps:30},
       track_voice:project.voice?.label??(project.voice?"externally_supplied":"no_narration"),
-      caption_cues:props.captions.length,
+      caption_cues:review?props.captions.filter(cue=>cue.startFrame<=review.frameRange[1]&&cue.endFrame>review.frameRange[0]).length:props.captions.length,
       caption_timing_source:"editor_supplied_not_auto_verified",
       media:ledger,
       actual_rendered_stills:stills,
-      warnings:["Tech render only. Not an AI quality guarantee, not editorial verification or publication approval."],
+      warnings:["Tech render only. Not an AI quality guarantee, not editorial verification or publication approval.",
+        ...(review?["Original film voice, soundtrack and captions retained; clip covers the selected shot with 15-frame context where available."]:[])],
     };
     fs.writeFileSync(output+".report.json",JSON.stringify(report,null,2)+"\n");
     process.stdout.write(JSON.stringify(report,null,2)+"\n");
