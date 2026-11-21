@@ -40,6 +40,14 @@ try {
     page.on("pageerror", err => errors.push(err.message));
     await page.goto(origin + "/?wv=country&iso3=GAB", { waitUntil: "domcontentloaded" });
     await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 18000 });
+    assert.equal(await page.locator(".whv-route-notice").count(), 0,
+      "Catalog outage must never mislabel a valid GAB country URL as invalid");
+    const catalogStatus = page.locator(".whv-country-catalog-status");
+    await catalogStatus.waitFor({ state: "visible", timeout: 15000 });
+    assert((await catalogStatus.innerText()).includes("La liste des pays ne peut pas être actualisée"),
+      "Show a human-readable catalog outage, never raw HTTP/404 traces");
+    assert.equal(await page.locator("#country-select").count(), 0,
+      "Do not show an empty/invalid country selector without a catalog");
     const editorial = page.locator(".whv-country-story");
     await editorial.waitFor({ state: "visible" });
     assert(await page.locator(".whv-country-now-feature").isVisible(),
@@ -73,6 +81,8 @@ try {
       await page.goto(origin + "/?wv=country&iso3=FRA",
         { waitUntil: "domcontentloaded" });
       await page.locator(".country-drawer.open").waitFor({ state: "visible" });
+      assert.equal(await page.locator(".whv-route-notice").count(), 0,
+        "Valid FRA country link cannot be flagged invalid because the backend is down");
       const absentFeed = page.locator(".whv-country-now-unavailable");
       await absentFeed.waitFor({ state: "visible" });
       assert.equal(await page.locator(".whv-country-now-feature").count(), 0,
