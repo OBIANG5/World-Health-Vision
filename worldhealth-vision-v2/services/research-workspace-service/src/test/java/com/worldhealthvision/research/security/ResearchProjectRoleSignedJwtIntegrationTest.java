@@ -138,7 +138,7 @@ class ResearchProjectRoleSignedJwtIntegrationTest {
     @Test
     void validJwtWithProjectAudienceButNoUserGrantCannotReadOrWrite() throws Exception {
         String user = "no-grants-" + UUID.randomUUID();
-        for (Map<String, Object> grants : java.util.List.of(
+        for (Map<String, Object> grants : java.util.List.<Map<String, Object>>of(
                 Map.<String, Object>of(),
                 Map.of(OidcProjectRolePermissions.ROLE_CLAIM, Map.of()),
                 Map.of(OidcProjectRolePermissions.ROLE_CLAIM,
