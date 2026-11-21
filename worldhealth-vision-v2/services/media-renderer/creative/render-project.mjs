@@ -17,13 +17,14 @@ import {bundle} from "@remotion/bundler";
 import {renderMedia,renderStill,selectComposition} from "@remotion/renderer";
 import {FORMAT,inspectProject,resolveLocalFile} from "./validate-project.mjs";
 import {reviewFrameRange} from "./review-range.mjs";
+import {verifyOwnerReviewVoice} from "./owner-review-voice-gate.mjs";
 
 const rendererRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 function args(argv){
   const o={};
   for(let i=0;i<argv.length;i+=2){
     const key=argv[i],value=argv[i+1];
-    if(!["--project","--assets","--output","--shot","--review-shot"].includes(key)||!value||value.startsWith("--"))
+    if(!["--project","--assets","--output","--shot","--review-shot","--owner-review-voice-manifest"].includes(key)||!value||value.startsWith("--"))
       throw new Error("Usage: --project <JSON> --assets <directory> --output <master.mp4>");
     o[key]=value;
   }
@@ -31,6 +32,8 @@ function args(argv){
     throw new Error("Missing --project, --assets or --output.");
   if(o["--shot"]&&o["--review-shot"])
     throw new Error("Choose either the legacy silent --shot preview or the new --review-shot with original audio and captions.");
+  if(o["--shot"]&&o["--owner-review-voice-manifest"])
+    throw new Error("Silent technical --shot renders cannot be marked as owner voice review.");
   return o;
 }
 async function hashFile(file){
@@ -50,6 +53,14 @@ async function run(argv){
     process.stderr.write(JSON.stringify({status:"invalid_project",issues:fullInspection.errors},null,2)+"\n");
     return 2;
   }
+  // An owner's audiovisual preview must NEVER substitute Kokoro or an older
+  // Vivienne take. Evaluate selected C5.2, script and real audio bytes BEFORE
+  // any expensive staging/bundling/rendering. No audio file is generated here.
+  const ownerVoiceReview=cli["--owner-review-voice-manifest"]
+    ? verifyOwnerReviewVoice({
+        project:fullProject,assetsRoot:assetRoot,
+        manifestPath:path.resolve(cli["--owner-review-voice-manifest"])
+      }) : null;
   const shotId=cli["--shot"]||null;
   const reviewShotId=cli["--review-shot"]||null;
   if(shotId&&!fullProject.shots.some(s=>s.id===shotId)){
@@ -210,6 +221,12 @@ async function run(argv){
       source_project_duration_frames:fullInspection.frames,
       source_script_sha256:createHash("sha256").update(project.script,"utf8").digest("hex"),
       exact_script_unchanged:true,
+      // Absent explicit owner voice manifest, all legacy output is clearly
+      // classified as a TECHNICAL TEST, never a voice-approved presentation.
+      owner_review_voice_gate:ownerVoiceReview,
+      intended_audience:ownerVoiceReview
+        ?"owner_audiovisual_review_not_publication"
+        :"internal_technical_qa_only",
       output_path:output,output_sha256:sha,
       duration_frames:outputFrames,canvas:{width:1080,height:1920,fps:30},
       track_voice:project.voice?.label??(project.voice?"externally_supplied":"no_narration"),
