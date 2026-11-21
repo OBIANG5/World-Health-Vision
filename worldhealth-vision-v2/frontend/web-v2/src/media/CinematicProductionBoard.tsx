@@ -6,6 +6,8 @@ import {parseStudioProject,studioShotToEditor,studioAssetNames,frameCaptionsToSr
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
 import {photoComparisonIssues} from "../../../../services/media-renderer/src/photo-comparison-motion.mjs";
 import {reviewFrameRange} from "../../../../services/media-renderer/creative/review-range.mjs";
+import {directorBeatIssues,DIRECTOR_INTENTS} from "../../../../services/media-renderer/creative/director-beats.mjs";
+import type {DirectorBeat,DirectorIntent} from "../../../../services/media-renderer/creative/director-beats.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
@@ -271,6 +273,7 @@ export default function CinematicProductionBoard() {
   const [croppedPreview,setCroppedPreview]=useState(true);
   const [previewMode,setPreviewMode]=useState<PreviewMode>("source");
   const [filmReview,setFilmReview]=useState<{shotId:string;frame:number;requestId:number}|null>(null);
+  const [directorBeats,setDirectorBeats]=useState<DirectorBeat[]>([]);
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
@@ -348,6 +351,7 @@ export default function CinematicProductionBoard() {
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
   const duration=shotsDuration+(outroFile?90:0);
+  const directorIssues=directorBeatIssues({shots,script,directorBeats},shotsDuration);
   const captionIssues=captionCueIssues(parsedCaptions.cues,shotsDuration);
   const captionValid=!parsedCaptions.error&&captionIssues.length===0;
   const fullFilmCanRender=canExport&&captionValid&&duration>0&&duration<=18000;
@@ -427,6 +431,7 @@ export default function CinematicProductionBoard() {
       setCaptionPosition(saved.captions?.[0]?.position??"upper");
       setPreviewMode("source");
       setFilmReview(null);
+      setDirectorBeats(saved.directorBeats??[]);
       setFeedback("Projet repris : "+restored.length+" plan(s), "+(saved.captions?.length??0)+" sous-titre(s). "+
         (missing.length?"Réimporte les médias d'origine avant le rendu : "+missing.join(", "):"Médias correspondants déjà présents dans cette session."));
     }catch(error){setFeedback("Import refusé. Le montage en cours reste inchangé. "+
@@ -461,6 +466,10 @@ export default function CinematicProductionBoard() {
   };
   const removeShot=()=>{
     if(shots.length===1)return;
+    if(directorBeats.some(beat=>beat.shotId===selectedId)){
+      setFeedback("Ce plan possède des décisions éditoriales : retire ou déplace explicitement ses séquences avant de le supprimer.");
+      return;
+    }
     const next=shots.filter(s=>s.id!==selectedId);
     setShots(next);setSelectedId(next[0].id);
   };
@@ -469,6 +478,63 @@ export default function CinematicProductionBoard() {
     if(next<0||next>=shots.length)return;
     const list=[...shots];[list[index],list[next]]=[list[next],list[index]];
     setShots(list);
+  };
+  const updateDirectorBeat=(id:string,change:Partial<DirectorBeat>)=>
+    setDirectorBeats(old=>old.map(beat=>beat.id===id?{...beat,...change}:beat));
+  const addDirectorBeat=()=>{
+    try{
+      const [shotStart,shotLast]=reviewFrameRange({shots},selectedId,0).selectedShotSourceFrames;
+      const shotEnd=shotLast+1;
+      let cursor=shotStart;
+      let end=shotEnd;
+      for(const beat of [...directorBeats].sort((a,b)=>a.startFrame-b.startFrame)){
+        if(beat.endFrame<=cursor)continue;
+        if(beat.startFrame>cursor){
+          end=Math.min(shotEnd,beat.startFrame);
+          if(end-cursor>=6)break;
+        }
+        cursor=Math.max(cursor,beat.endFrame);
+        end=shotEnd;
+      }
+      if(end-cursor<6||cursor>=shotEnd){
+        setFeedback("Aucune place pour une nouvelle séquence sur ce plan : ajuste les timecodes existants.");
+        return;
+      }
+      const used=new Set(directorBeats.map(beat=>beat.id));
+      let next=directorBeats.length+1;
+      while(used.has("beat-"+String(next).padStart(2,"0")))next++;
+      const beat:DirectorBeat={
+        id:"beat-"+String(next).padStart(2,"0"),shotId:selectedId,
+        startFrame:cursor,endFrame:Math.min(cursor+90,end),
+        intent:"explain",idea:"",spokenExcerpt:"",proofNote:"",
+        visualDirection:"",audioDirection:""
+      };
+      setDirectorBeats(old=>[...old,beat].sort((a,b)=>a.startFrame-b.startFrame));
+      setFeedback("Nouvelle séquence ajoutée au timecode original ; décris son sens, sa preuve et son mouvement avant export.");
+    }catch(error){
+      setFeedback("Impossible de placer une séquence sur un montage invalide : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
+  const reviewDirectorBeat=(beat:DirectorBeat)=>{
+    if(!fullFilmCanRender){
+      setFeedback("Corrige les médias et la timeline avant de revoir cette séquence dans le film.");
+      return;
+    }
+    if(directorIssues.length){
+      setFeedback("Corrige le conducteur avant cette revue : "+directorIssues[0].reason);
+      return;
+    }
+    setFilmReview(previous=>({
+      shotId:beat.shotId,frame:Math.max(0,beat.startFrame-15),
+      requestId:(previous?.requestId??0)+1
+    }));
+    setPreviewMode("film");
+    setFeedback("Revue du "+beat.intent+" : "+(beat.startFrame/30).toFixed(2)+
+      " s sur l'horloge originale; voix et musique conservées si elles sont importées.");
+    window.requestAnimationFrame(()=>{
+      document.getElementById("wvc-preview")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+    });
   };
   const reviewSelectedShotInContext=()=>{
     if(!fullFilmCanRender){
@@ -496,12 +562,18 @@ export default function CinematicProductionBoard() {
     }
   };
   const exportProject=()=>{
+    if(directorIssues.length){
+      setFeedback("Corrige la direction éditoriale avant export : "+
+        directorIssues[0].field+" — "+directorIssues[0].reason);
+      return;
+    }
     if(!canExport){setFeedback("Ajoute un script et les médias indispensables aux plans choisis.");return;}
     if(!captionValid){setFeedback("Corrige les sous-titres avant export : "+(parsedCaptions.error||captionIssues[0]?.reason));return;}
     const project={
       schema_version:"worldvision-creative-project-v1",id:loadedProjectId??mkSlug(projectName),
       title:projectName,script,fps:30,aspect_ratio:"9:16",
       ...(parsedCaptions.cues.length?{captions:parsedCaptions.cues}:{}),
+      ...(directorBeats.length?{directorBeats}:{}),
       style:{background:"#0b1721",ink:"#f6f8fa",accent},
       shots:shots.map(s=>({
         id:s.id,durationFrames:s.durationFrames,template:s.template,
@@ -617,6 +689,72 @@ export default function CinematicProductionBoard() {
         </div>
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
+          <div className="wvc-director-sheet" aria-label="Conducteur des hooks et re-hooks">
+            <div className="wvc-director-head">
+              <div><strong>DIRECTION DU RÉCIT · HOOKS ET RE-HOOKS</strong>
+                <small>Des idées vérifiables, à un timecode réel. Aucune phrase, donnée ou voix n'est créée par cet outil.</small>
+              </div>
+              <button type="button" onClick={addDirectorBeat}>+ Séquence</button>
+            </div>
+            {directorBeats.filter(beat=>beat.shotId===active.id).length===0&&
+              <p className="wvc-hint">Aucune séquence renseignée sur ce plan. Ajoute celles qui apportent une information nouvelle ; n'en invente pas pour remplir la vidéo.</p>}
+            {directorBeats.filter(beat=>beat.shotId===active.id).map(beat=>
+              <div className="wvc-director-beat" key={beat.id}>
+                <div className="wvc-director-row"><strong>{beat.id} · {(beat.startFrame/30).toFixed(2)}–{(beat.endFrame/30).toFixed(2)} s</strong>
+                  <div>
+                    <button type="button" disabled={!fullFilmCanRender||directorIssues.length>0}
+                      onClick={()=>reviewDirectorBeat(beat)}>▶ Écouter en contexte</button>
+                    <button type="button" onClick={()=>setDirectorBeats(old=>old.filter(item=>item.id!==beat.id))}>Retirer</button>
+                  </div>
+                </div>
+                <label>RÔLE NARRATIF
+                  <select value={beat.intent} onChange={e=>updateDirectorBeat(beat.id,{intent:e.target.value as DirectorIntent})}>
+                    {DIRECTOR_INTENTS.map(intent=><option key={intent} value={intent}>{
+                      ({hook:"Accroche",explain:"Explication",rehook:"Relance de sens",
+                        reveal:"Révélation",impact:"Conséquence",payoff:"Résolution"} as Record<DirectorIntent,string>)[intent]
+                    }</option>)}
+                  </select>
+                </label>
+                <div className="wvc-two-col">
+                  <label>DÉBUT · SECONDES DU FILM
+                    <input type="number" min="0" step=".033333" value={(beat.startFrame/30).toFixed(3)}
+                      onChange={e=>updateDirectorBeat(beat.id,{startFrame:Math.round(Number(e.target.value)*30)})}/>
+                  </label>
+                  <label>FIN · SECONDES DU FILM
+                    <input type="number" min="0" step=".033333" value={(beat.endFrame/30).toFixed(3)}
+                      onChange={e=>updateDirectorBeat(beat.id,{endFrame:Math.round(Number(e.target.value)*30)})}/>
+                  </label>
+                </div>
+                <label>CE QUE LE SPECTATEUR APPREND
+                  <textarea maxLength={280} rows={2} value={beat.idea}
+                    onChange={e=>updateDirectorBeat(beat.id,{idea:e.target.value})}
+                    placeholder="Un fait, un contraste ou une conséquence réellement nouvelle"/>
+                </label>
+                <label>PHRASE EXACTE DU SCRIPT · LAISSER VIDE SI SILENCE
+                  <textarea maxLength={420} rows={2} value={beat.spokenExcerpt}
+                    onChange={e=>updateDirectorBeat(beat.id,{spokenExcerpt:e.target.value})}
+                    placeholder="Copier un passage mot pour mot du texte approuvé (pas de synchronisation devinée)"/>
+                </label>
+                <label>PREUVE / SOURCE / DATE (À CONTRÔLER AVANT PUBLICATION)
+                  <textarea maxLength={320} rows={2} value={beat.proofNote}
+                    onChange={e=>updateDirectorBeat(beat.id,{proofNote:e.target.value})}
+                    placeholder="Source primaire, document, vrai rush, attribution ou représentation explicitée"/>
+                </label>
+                <label>MOUVEMENT DIRECTEUR · COMPOSITION DU PLAN EXISTANT
+                  <textarea maxLength={400} rows={2} value={beat.visualDirection}
+                    onChange={e=>updateDirectorBeat(beat.id,{visualDirection:e.target.value})}
+                    placeholder="Quel élément bouge, quand et pourquoi ? Photo + données + texte sans surcharge."/>
+                </label>
+                <label>INTENTION SONORE · NOTE, PAS UN SFX AUTOMATIQUE
+                  <input maxLength={240} value={beat.audioDirection}
+                    onChange={e=>updateDirectorBeat(beat.id,{audioDirection:e.target.value})}
+                    placeholder="Entrée voix, respiration, accent bref autorisé, baisse de musique"/>
+                </label>
+              </div>)}
+            {directorIssues.length>0&&<p className="wvc-director-error" role="alert">
+              Direction incomplète : {directorIssues[0].field} — {directorIssues[0].reason}
+            </p>}
+          </div>
           <div className="wvc-context-review">
             <button type="button" disabled={!fullFilmCanRender} onClick={reviewSelectedShotInContext}>
               ▶ Revoir ce plan avec son contexte
@@ -1036,7 +1174,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-export">
           <div className="wvc-export-top"><strong>MASTER VISÉ · 9:16 · 1080×1920 · 30 ips</strong><span>{(duration/30).toFixed(1)} secondes</span></div>
           <p>Une fois le JSON exporté, les médias peuvent être montés par le moteur Remotion de World‑Vision. Les effets professionnels avancés ou génératifs resteront accessibles par des outils spécialisés.</p>
-          <button type="button" disabled={!canExport||!captionValid} onClick={exportProject}>Exporter le projet de montage (.json)</button>
+          <button type="button" disabled={!canExport||!captionValid||directorIssues.length>0} onClick={exportProject}>Exporter le projet de montage (.json)</button>
           <a href={path} target="_blank" rel="noopener noreferrer">Voir le processus de rendu et les limites ↗</a>
           {feedback&&<div className="wvc-feedback" role="status">{feedback}</div>}
         </div>
