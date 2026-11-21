@@ -5,6 +5,7 @@ import type {CaptionCue} from "../../../../services/media-renderer/src/caption-t
 import {parseStudioProject,studioShotToEditor,studioAssetNames,frameCaptionsToSrt} from "../../../../services/media-renderer/creative/studio-project-io.mjs";
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
 import {photoComparisonIssues} from "../../../../services/media-renderer/src/photo-comparison-motion.mjs";
+import {reviewFrameRange} from "../../../../services/media-renderer/creative/review-range.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
@@ -269,6 +270,7 @@ export default function CinematicProductionBoard() {
   const [feedback,setFeedback]=useState("");
   const [croppedPreview,setCroppedPreview]=useState(true);
   const [previewMode,setPreviewMode]=useState<PreviewMode>("source");
+  const [filmReview,setFilmReview]=useState<{shotId:string;frame:number;requestId:number}|null>(null);
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
@@ -424,6 +426,7 @@ export default function CinematicProductionBoard() {
       setSrtInput(frameCaptionsToSrt(saved.captions??[]));
       setCaptionPosition(saved.captions?.[0]?.position??"upper");
       setPreviewMode("source");
+      setFilmReview(null);
       setFeedback("Projet repris : "+restored.length+" plan(s), "+(saved.captions?.length??0)+" sous-titre(s). "+
         (missing.length?"Réimporte les médias d'origine avant le rendu : "+missing.join(", "):"Médias correspondants déjà présents dans cette session."));
     }catch(error){setFeedback("Import refusé. Le montage en cours reste inchangé. "+
@@ -466,6 +469,31 @@ export default function CinematicProductionBoard() {
     if(next<0||next>=shots.length)return;
     const list=[...shots];[list[index],list[next]]=[list[next],list[index]];
     setShots(list);
+  };
+  const reviewSelectedShotInContext=()=>{
+    if(!fullFilmCanRender){
+      setFeedback("Impossible de revoir ce plan en contexte : renseigne les médias, le script et les sous-titres valides du film.");
+      return;
+    }
+    try{
+      // Re-use the already tested P0.1 frame clock. 15 source frames (0.5 s)
+      // before the shot let the editor hear the preceding narration/music.
+      const review=reviewFrameRange({shots},selectedId);
+      setFilmReview(previous=>({
+        shotId:selectedId,
+        frame:review.frameRange[0],
+        requestId:(previous?.requestId??0)+1
+      }));
+      setPreviewMode("film");
+      setFeedback("Lecture contextuelle prête : "+selectedId+" à "+(review.frameRange[0]/30).toFixed(2)+
+        " s sur la timeline originale, avec voix, musique et sous-titres uniquement s'ils sont fournis.");
+      window.requestAnimationFrame(()=>{
+        document.getElementById("wvc-preview")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+      });
+    }catch(error){
+      setFeedback("Le raccord ou la durée des plans empêche cette revue ciblée : "+
+        (error instanceof Error?error.message:String(error)));
+    }
   };
   const exportProject=()=>{
     if(!canExport){setFeedback("Ajoute un script et les médias indispensables aux plans choisis.");return;}
@@ -589,6 +617,13 @@ export default function CinematicProductionBoard() {
         </div>
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
+          <div className="wvc-context-review">
+            <button type="button" disabled={!fullFilmCanRender} onClick={reviewSelectedShotInContext}>
+              ▶ Revoir ce plan avec son contexte
+            </button>
+            <small>Aller directement au raccord précédent dans le vrai film Remotion : même voix, musique,
+              sous-titres et plans voisins. Aucun rendu complet supplémentaire.</small>
+          </div>
           <div className="wvc-two-col">
             <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus"||e.target.value==="photo_story"||e.target.value==="data_story")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
@@ -1006,13 +1041,13 @@ export default function CinematicProductionBoard() {
           {feedback&&<div className="wvc-feedback" role="status">{feedback}</div>}
         </div>
       </div>
-      <aside className="wvc-preview">
+      <aside className="wvc-preview" id="wvc-preview">
         <div className="wvc-preview-title">APERÇU DE PRODUCTION · 9:16</div>
         <div className="wvc-preview-switch" aria-label="Choisir le mode de visionnage">
           <button type="button" className={previewMode==="shot"?"selected":""} onClick={()=>setPreviewMode("shot")}>
             <span aria-hidden="true">▶</span> Plan animé
           </button>
-          <button type="button" className={previewMode==="film"?"selected":""} onClick={()=>setPreviewMode("film")}>
+          <button type="button" className={previewMode==="film"?"selected":""} onClick={()=>{setFilmReview(null);setPreviewMode("film");}}>
             <span aria-hidden="true">▶</span> Film entier
           </button>
           <button type="button" className={previewMode==="source"?"selected":""} onClick={()=>setPreviewMode("source")}>
@@ -1029,7 +1064,15 @@ export default function CinematicProductionBoard() {
             </Suspense> : <div className="wvc-player-loading">{active.template==="geo_story"?"Valide le titre, le centre géographique et les éventuels points, trajets ou chiffres avant de prévisualiser.":"Ajoute un visuel et un titre conforme à ce plan avant de visionner sa véritable animation."}</div>
           ) : previewMode==="film" ? (
             fullFilmCanRender ? <Suspense fallback={<div className="wvc-player-loading">Préparation de la timeline Remotion complète…</div>}>
-              <RealCreativePreview props={fullFilmProps} previewId="film-complet" label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"/>
+              <RealCreativePreview
+                props={fullFilmProps}
+                previewId="film-complet"
+                initialFrame={filmReview?.frame??0}
+                reviewRequestId={filmReview?.requestId??0}
+                label={filmReview
+                  ?"Révision ciblée du plan "+filmReview.shotId+" dans le film original, avec piste vocale et musique importées"
+                  :"Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"}
+              />
             </Suspense> : <div className="wvc-player-loading">Le film complet exige un script, des plans valides et leurs médias. Maximum 10 minutes dans ce profil.</div>
           ) : <>
           {active.template==="document_focus"&&activeAsset?.kind==="image"
