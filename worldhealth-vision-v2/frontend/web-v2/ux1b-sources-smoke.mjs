@@ -24,7 +24,13 @@ try {
     await sleep(250);
   }
   assert(serving, "Real compiled UX-1B preview failed to start");
-  browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
+  browser = await chromium.launch({
+    headless: true,
+    args: ["--no-sandbox"],
+    // Reuse the exact Chromium channel chosen by CI. A runner may have
+    // system Chrome but not the separately downloaded Playwright browser.
+    ...(process.env.WHV_BROWSER_CHANNEL ? { channel: process.env.WHV_BROWSER_CHANNEL } : {}),
+  });
 
   for (const device of [
     { name: "small-mobile", width: 320, height: 700, mobile: true },
