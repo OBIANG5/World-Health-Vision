@@ -40,7 +40,7 @@ export default function TradingCaseLibrary({ plan, onLoad }: {
     return () => window.removeEventListener("storage", changed);
   }, []);
 
-  const dirty = JSON.stringify(plan) !== savedFingerprint || title !== savedTitle || !caseId;
+  const dirty = JSON.stringify(plan) !== savedFingerprint || title !== savedTitle;
   const summary = reviewPlan(plan);
   function readStorage(): CaseLibrary | null {
     try {
