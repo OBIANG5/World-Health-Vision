@@ -1,3 +1,25 @@
+# REPRISE PRIORITAIRE — WORLD-VISION MEDIA P0.3 : ALIGNEMENT DE LA VRAIE VOIX AUX HOOKS (21/11/2026)
+
+**Cette section est PLUS RÉCENTE que tout l'historique conservé en dessous. UNIQUEMENT MEDIA ; l'Atlas logiciel relève d'un autre chat.**
+
+L'utilisateur choisit les idées/sujets/scripts, fournit au besoin des images et une voix approuvée. Notre priorité centrale est d'en faire **rapidement des vidéos extrêmement captivantes** : premier hook, re-hooks qui incarnent chaque nouvelle idée, mots cinétiques, photographies/cartes/graphes précis, bande-son cinématographique et corrections ciblées. **Cartes du monde/planète = petite priorité secondaire, GEO existant à réemployer sans nouveau moteur.** Pas de connexion des comptes ChatGPT/Gemini par principe, aucun nouveau TTS, aucun achat ou outil supplémentaire sans gain prouvé.
+
+## État exact
+
+- **PR parent #123 P0.2** `feature/worldvision-media-kinetic-hook-cues-2026-11-21` **HEAD b25c0a95d63d43cf763475ae153f1a78b27b116c** : 3 workflows `SUCCESS` [hook/SFX/GEO #44901041750](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44901041750), [audio-context #44901041766](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44901041766), [renderer+Studio #44901041754](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44901041754). Preuve **technique seulement** : essai de 12,074s H264/AAC avec SFX synthétiques, titres cyan, mots minutés, vrai globe Natural Earth Gabon. Premier plan toujours trop vide, logo G0 à cartouche blanc discordant de la charte récente, **aucune voix humaine, aucun reportage publiable**.
+- **NOUVEAU CHANTIER ACTIF P0.3** : branche `feature/worldvision-media-voice-word-alignment-adapter-2026-11-21` issue du SHA P0.2 ci-dessus ; rapport complet `worldhealth-vision-v2/docs/media/MEDIA_P0_3_WORD_ALIGNMENT_BRIDGE_2026-11-21.md`. Convertit des `Caption[]` avec timings issus d'un outil EXISTANT (Whisper.cpp, etc.) en `wordCaptions`, avec mot-pour-mot comparé au script, vérification de la vraie source voix par SHA, **nouveau projet sans écraser l'ancien**, emphases choisies. **N'infère aucun mot ni aucun minutage** et ne réalise ni TTS ni ASR nouveau.
+- **CI dédiée P0.3** sur commit code `e6c57e3b3424777bb77a30603e0d40aa201ae862` : [Actions #44901809564](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44901809564) `SUCCESS` — tests de contrat, vraie CLI, rejet d'un mot halluciné, contrôle SHA et projet original. **Test seulement sur faux minutages + oscillateur technique**, la précision sur une vraie voix reste à valider.
+- PR P0.3 DRAFT à ouvrir/consulter ; P0.3 ne doit PAS supprimer les correctifs #118/#123. Ne pas fusionner, publier, déployer ni changer la voix sans accord.
+
+## Première prochaine action intelligente
+1. Vérifier et commenter **HEAD SHA exact** PR P0.3 + dernière Actions ; réconcilier la documentation si le commit change.
+2. À la réception du sujet/script/voix et des médias réels approuvés, **utiliser** un aligner existant FR multilingue, inspecter la vraie waveform, importer les mots contrôlés sans modifier le texte ; ajouter deux re-hooks sémantiques visuels et un sound design sous droits, pas de simple effet cosmétique.
+3. Produit attendu : **une vraie séquence hook + deux re-hooks en 8–12 s**, vidéo et son authentiques, perçue à 390px, corrigible localement en langage naturel ; ensuite un film entier, mesurer temps/coût/qualité jusqu'au master accepté, puis transformer uniquement les effets approuvés en presets.
+4. GEO, finance, pays, documents et image restent des **outils du réalisateur**, pas des étapes imposées. Préserver Vivienne C5.2 Impact média comme référence validée sans recycler l'ancien MP3 d'une autre actualité.
+5. Lire [issue #116](https://github.com/OBIANG5/World-Health-Vision/issues/116), [PR #123](https://github.com/OBIANG5/World-Health-Vision/pull/123), [PR #118](https://github.com/OBIANG5/World-Health-Vision/pull/118) et le rapport P0.3 ci-dessus. **Les anciens titres de continuité ne représentent pas l'objectif actuel.**
+
+---
+
 # WORLD-VISION MEDIA — NOUVELLE PRIORITÉ 21/11/2026 : HOOKS, RE-HOOKS, SON ET CARTES OPPORTUNISTES (P0.2)
 
 **Plus récent que les sections historiques ci-dessous. Périmètre UNIQUEMENT MÉDIA, pas Atlas.**
