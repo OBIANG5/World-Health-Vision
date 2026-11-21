@@ -212,3 +212,29 @@ test("director sheet fails closed on unknown effects, stale script, illegal over
   rejects(x=>x.directorBeats=[beat,{...beat,id:"hook-002",startFrame:35,endFrame:55}]);
   rejects(x=>x.directorBeats[0].visualDirection="");
 });
+
+test("licensed source SFX reopens and remains a real separate Remotion-ready asset",()=>{
+  const p=clone();
+  p.soundCues=[{file:"impact-licensed.wav",startFrame:15,durationFrames:12,volume:.25,
+    label:"Original sound rights checked by producer"}];
+  const original=JSON.stringify(p);
+  const loaded=parseStudioProject(original);
+  assert.deepEqual(loaded.soundCues,p.soundCues);
+  assert.deepEqual(studioAssetNames(loaded),["impact-licensed.wav"]);
+  assert.equal(inspectProject(loaded).ok,true,JSON.stringify(inspectProject(loaded).errors));
+  assert.equal(JSON.stringify(p),original);
+});
+test("audio cue editing cannot silently import remote files, unknown fields, or unbounded gain",()=>{
+  const p=clone();
+  p.soundCues=[{file:"impact-licensed.wav",startFrame:15,durationFrames:12,volume:.25,label:"Verified"}];
+  const broken=mutation=>{
+    const next=structuredClone(p);mutation(next.soundCues[0]);
+    assert.throws(()=>parseStudioProject(JSON.stringify(next)),/Projet non importable/);
+  };
+  broken(cue=>cue.file="../secret.wav");
+  broken(cue=>cue.file="https://example.com/voice.wav");
+  broken(cue=>cue.durationFrames=500);
+  broken(cue=>cue.startFrame=150);
+  broken(cue=>cue.volume=.95);
+  broken(cue=>cue.inject="replace-script");
+});
