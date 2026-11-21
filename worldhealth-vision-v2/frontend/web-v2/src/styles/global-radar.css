@@ -1,0 +1,130 @@
+/* World-Vision R1 Global Radar — international provenance UI.
+ * Pure CSS, independent of Atlas globe, media editor and Trading overlays. */
+.radar-backdrop{
+ position:fixed;inset:0;z-index:2750;background:rgba(0,13,36,.78);
+ display:flex;justify-content:center;align-items:center;
+ padding:max(12px,env(safe-area-inset-top)) 14px max(12px,env(safe-area-inset-bottom));
+ backdrop-filter:blur(8px)
+}
+.radar-dialog{
+ box-sizing:border-box;display:flex;flex-direction:column;width:min(1140px,100%);
+ max-height:min(95dvh,930px);overflow:hidden;background:#f7fbff;
+ color:#0c2345;border:1px solid #d5e9f9;border-radius:20px;
+ box-shadow:0 22px 70px rgba(0,8,35,.38);font:inherit;outline:0
+}
+.radar-dialog *{box-sizing:border-box}
+.radar-header{
+ flex:0 0 auto;display:flex;justify-content:space-between;gap:20px;
+ padding:20px 24px 16px;border-bottom:1px solid #e1ebf3;
+ background:linear-gradient(100deg,#fff 0%,#f0fbff 55%,#e6f8ff 100%)
+}
+.radar-header h2{font-size:clamp(21px,2.6vw,31px);line-height:1.13;letter-spacing:-.035em;color:#05234a;margin:7px 0;font-weight:800}
+.radar-header p{font-size:13px;line-height:1.5;color:#49657e;max-width:690px;margin:6px 0 0}
+.radar-kicker{font-size:10px;font-weight:800;letter-spacing:.085em;color:#0074aa}
+.radar-close{
+ flex:0 0 auto;width:40px;height:40px;border:1px solid #c5d8e7;border-radius:10px;
+ background:#fff;color:#123a62;cursor:pointer;font-size:25px;line-height:1
+}
+.radar-close:hover,.radar-close:focus-visible{background:#d6f7fe}
+.radar-disclosure{background:#eef7fd;border-bottom:1px solid #d5e9f3;padding:12px 24px}
+.radar-disclosure strong{font-size:12px;color:#164f71}
+.radar-disclosure p{font-size:11px;color:#405d72;line-height:1.48;margin:5px 0 0}
+.radar-form{padding:14px 24px 12px;border-bottom:1px solid #d8e5ef;flex:0 0 auto;background:#fff}
+.radar-form label{font-size:12px;font-weight:730;color:#194361}
+.radar-form input,.radar-form select{
+ display:block;width:100%;min-width:0;height:39px;padding:9px 11px;
+ font:inherit;font-size:13px;background:#fff;color:#0d2b4d;
+ border:1px solid #bed3e4;border-radius:8px;margin-top:5px
+}
+.radar-form input:focus-visible,.radar-form select:focus-visible{outline:2px solid #1195cf;outline-offset:1px}
+.radar-form-controls{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.8fr) minmax(160px,.8fr);gap:10px;align-items:end;margin:9px 0}
+.radar-form-controls button{
+ min-height:40px;border:1px solid #006aba;border-radius:9px;background:#0566b6;
+ color:#fff;font:inherit;font-size:12px;font-weight:780;cursor:pointer;padding:9px 12px
+}
+.radar-form-controls button:disabled{opacity:.65;cursor:wait}
+.radar-form>small{display:block;color:#617b91;line-height:1.4;font-size:10px}
+.radar-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;flex:1;padding:17px 24px 30px}
+.radar-status{background:#e9f7fa;border:1px solid #b5dfe9;padding:10px;border-radius:8px;font-size:12px;color:#24596c}
+.radar-error{padding:12px;border-radius:9px;background:#fff0ed;border:1px solid #f0bab4;color:#8b2d25;font-size:12px;line-height:1.5}
+.radar-error a{display:block;color:#8a2a21;margin-top:7px;text-decoration:underline}
+.radar-empty{border:1px dashed #bdd8e8;background:#f9fcff;border-radius:12px;padding:19px;max-width:730px;color:#234763}
+.radar-empty strong{font-size:14px;color:#0f4970}
+.radar-empty p{font-size:12px;line-height:1.5;margin:8px 0 0}
+.radar-result-heading{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.radar-result-heading h3{font-size:19px;color:#092b51;margin:3px 0 5px}
+.radar-result-heading p{color:#5c7186;font-size:12px;margin:4px 0 9px;line-height:1.5}
+.radar-results-stats{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.radar-results-stats span{
+ border:1px solid #cadce9;border-radius:9px;background:#fff;padding:8px 9px;
+ font-size:10px;color:#607588;text-align:center;display:grid;gap:2px
+}
+.radar-results-stats strong{font-size:17px;line-height:1.2;color:#0b537b}
+.radar-filter-note{font-size:11px;color:#7b5660}
+.radar-compare-guide{
+ margin:13px 0;border-left:4px solid #159ab3;background:#eaf7fc;border-radius:8px;
+ padding:11px;display:flex;gap:7px;align-items:center;flex-wrap:wrap
+}
+.radar-compare-guide strong{font-size:12px;color:#0a5570}
+.radar-compare-guide span{font-size:11px;color:#50697a;line-height:1.4;flex:1 1 260px}
+.radar-compare-guide small{font-size:11px;font-weight:800;color:#005d83}
+.radar-candidates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;min-width:0}
+.radar-candidate{
+ background:#fff;border:1px solid #d9e8f2;border-radius:11px;padding:13px;
+ min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;
+ box-shadow:0 2px 5px rgba(2,27,58,.025)
+}
+.radar-candidate-top{display:flex;gap:7px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.radar-candidate-domain{font-size:12px;font-weight:800;color:#11608a}
+.radar-candidate-state{font-size:10px;font-weight:700;border:1px solid #d7e5eb;color:#5d6f7d;background:#f5f8fa;border-radius:20px;padding:2px 7px}
+.radar-candidate h3{font-size:14px;line-height:1.38;color:#122d50;margin:9px 0 13px;font-weight:750}
+.radar-candidate-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:auto 0 10px}
+.radar-candidate-meta div{min-width:0}
+.radar-candidate-meta dt{font-size:10px;color:#6a7e93;line-height:1.3}
+.radar-candidate-meta dd{font-size:11px;color:#274a61;font-weight:670;margin:2px 0;overflow-wrap:anywhere}
+.radar-candidate-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid #edf0f5}
+.radar-candidate-actions button,.radar-candidate-actions a{
+ padding:9px 10px;font:inherit;font-size:11px;font-weight:800;border-radius:8px;
+ cursor:pointer;display:inline-flex;align-items:center;gap:5px;justify-content:center;
+ text-align:center;text-decoration:none
+}
+.radar-pick{background:#fff;color:#14547d;border:1px solid #adc9dd}
+.radar-pick.active{background:#d4f4ee;color:#125743;border-color:#4c9c88}
+.radar-pick:disabled{opacity:.48;cursor:not-allowed}
+.radar-original{background:#0b5b9a;color:#fff;border:1px solid #0b5b9a}
+.radar-original:hover{background:#073f77}
+.radar-comparison{border:1px solid #abd6e3;border-radius:13px;padding:13px;margin:16px 0;background:#f0fafd}
+.radar-comparison h4{font-size:15px;color:#0c416c;margin:2px 0 8px}
+.radar-warning{border:1px solid #e4c8b2;background:#fff5e7;color:#79501f;border-radius:8px;padding:9px;font-size:11px;line-height:1.45}
+.radar-comparison-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.radar-comparison-caveat{color:#546977;font-size:11px;line-height:1.55}
+.radar-footer{
+ flex:0 0 auto;background:#ecf6fd;border-top:1px solid #d6e7f2;padding:10px 24px;
+ display:flex;align-items:center;justify-content:space-between;gap:12px
+}
+.radar-footer span{font-size:11px;color:#4a647c;line-height:1.4}
+.radar-footer button{font:inherit;font-size:12px;font-weight:750;border:1px solid #b6cede;border-radius:8px;background:#fff;color:#15537c;padding:8px 14px;cursor:pointer}
+.radar-dialog button:focus-visible,.radar-dialog a:focus-visible{outline:3px solid #28b0ec;outline-offset:2px}
+@media(max-width:760px){
+ .radar-backdrop{padding:max(3px,env(safe-area-inset-top)) 4px max(3px,env(safe-area-inset-bottom))}
+ .radar-dialog{max-height:99dvh;border-radius:13px}
+ .radar-header{padding:14px 13px 10px;gap:10px}
+ .radar-header h2{font-size:20px}
+ .radar-header p{font-size:11px}
+ .radar-close{width:36px;height:36px}
+ .radar-disclosure{padding:10px 13px}
+ .radar-form{padding:10px 13px}
+ .radar-form-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .radar-form-controls button{grid-column:1/-1}
+ .radar-content{padding:12px 11px 20px}
+ .radar-candidates,.radar-comparison-grid{grid-template-columns:1fr}
+ .radar-results-stats span{padding:6px 8px}
+ .radar-footer{padding:9px 12px}
+}
+@media(max-width:355px){
+ .radar-form-controls{grid-template-columns:1fr}
+ .radar-form-controls button{grid-column:auto}
+ .radar-header h2{font-size:18px}
+ .radar-form input,.radar-form select{height:38px}
+ .radar-candidate-actions button,.radar-candidate-actions a{width:100%}
+}
