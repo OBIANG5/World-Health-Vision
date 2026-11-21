@@ -184,15 +184,15 @@ jobs:
           }
           for name, target_blob in expected.items():
               raw = source.joinpath(name).read_bytes()
-              actual = sha1(("blob " + str(len(raw)) + "\\0").encode() + raw).hexdigest()
+              actual = sha1(("blob " + str(len(raw))).encode() + bytes([0]) + raw).hexdigest()
               assert actual == target_blob, "Archived UX fixture changed: " + name
               copy2(source.joinpath(name), dest.joinpath(name))
           path = dest / "index.html"
           html = path.read_text(encoding="utf-8")
           assert html.count("<head>") == 1
           assert not any("preview-bootstrap.js" in line for line in html.splitlines())
-          scripts = "".join('<script src="./' + name + '"></script>\\n' for name in expected)
-          path.write_text(html.replace("<head>", "<head>\\n" + scripts, 1), encoding="utf-8")
+          scripts = "".join('<script src="./' + name + '"></script>' + chr(10) for name in expected)
+          path.write_text(html.replace("<head>", "<head>" + chr(10) + scripts, 1), encoding="utf-8")
           print("CI-ONLY archived catalogue fixture integrity PASS. Not published, not a live backend.")
           PY
 
