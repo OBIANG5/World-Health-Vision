@@ -125,7 +125,7 @@ try {
     });
     assert.equal(upstreamCalls, 0, "Opening static archive must NOT issue costly DOC API query");
     assert.equal(staticCalls, 1, "One explicit same-origin asset load per panel mount");
-    await page.locator(".radar-content").evaluate((node) => { node.scrollTop = 0; });
+    await page.locator(".radar-scroll").evaluate((node) => { node.scrollTop = 0; });
     await page.screenshot({
       path: "global-radar-r2b-artifacts/" + device.name +
         (real ? "-real-gdelt-" : "-synthetic-") + "styled-editorial-overview.png",
@@ -178,7 +178,7 @@ try {
       "No matching URL does NOT mean no events occurred");
     await toolbar.fill("");
 
-    for (const selector of [".radar-dialog", ".radar-content", ".radar-archive"]) {
+    for (const selector of [".radar-dialog", ".radar-scroll", ".radar-content", ".radar-archive"]) {
       const width = await page.locator(selector).evaluate(el => ({
         client: el.clientWidth, scroll: el.scrollWidth,
       }));
@@ -186,6 +186,26 @@ try {
         device.name + " overflow: " + selector + JSON.stringify(width));
     }
 
+    // Scroll ONLY the body, never the header/close/footer, after the
+    // complete source-selection sequence. This caught a true 320px defect
+    // which initial DOM/overflow checks had missed.
+    const footerGeometry = await page.locator(".radar-dialog").evaluate((node) => {
+      const main = node.getBoundingClientRect();
+      const header = node.querySelector(".radar-header")?.getBoundingClientRect();
+      const footer = node.querySelector(".radar-footer")?.getBoundingClientRect();
+      const viewport = window.innerHeight;
+      return {
+        mainTop: main.top, mainBottom: main.bottom,
+        headerTop: header?.top ?? -999, footerBottom: footer?.bottom ?? 9999,
+        viewport,
+      };
+    });
+    assert(footerGeometry.mainTop >= 0 && footerGeometry.headerTop >= 0 &&
+      footerGeometry.mainBottom <= footerGeometry.viewport + 1 &&
+      footerGeometry.footerBottom <= footerGeometry.viewport + 1,
+      device.name + " must keep top/header/close and bottom footer inside viewport " +
+      JSON.stringify(footerGeometry));
+    await archive.locator(".radar-archive-candidate").first().scrollIntoViewIfNeeded();
     await page.screenshot({
       path: "global-radar-r2b-artifacts/" + device.name + (real ? "-real-gdelt-" : "-synthetic-") +
         "source-archive.png",
