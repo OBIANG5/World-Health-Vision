@@ -14,7 +14,7 @@ export default defineConfig({
     // from a shared renderer source file. Atlas stays a build-time dependency.
     alias: {
       '@remotion/captions': resolve(process.cwd(),'node_modules/@remotion/captions'),
-      '@remotion/google-fonts': resolve(process.cwd(),'node_modules/@remotion/google-fonts'),
+      '@remotion/google-fonts': resolve(process.cwd(),'node_modules/@remotion/google-fonts/dist/esm'),
       'world-atlas/countries-110m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-110m.json'),
       'world-atlas/countries-50m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-50m.json'),
       'world-atlas/countries-10m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-10m.json'),
