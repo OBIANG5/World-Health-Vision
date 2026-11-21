@@ -8,6 +8,7 @@ import {
   type RouteMode, type StageField, type TradePlan,
 } from "../../trading/tradePlan";
 import TradingResearchPanel from "./TradingResearchPanel";
+import { validEventPreparation, validThesisUpdate } from "../../trading/tradeResearch";
 import "../../styles/trading-process.css";
 
 const STORAGE_KEY = "world-vision:trading-mta-process:v1";
@@ -106,7 +107,8 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) { setFeedback(copy(lang, "Aucun brouillon local enregistré.", "No local draft saved.")); return; }
       const parsed: unknown = JSON.parse(stored);
-      if (!isTradePlan(parsed)) throw new Error("invalid version or shape");
+      if (!isTradePlan(parsed) || parsed.updates?.some((item) => !validThesisUpdate(item))
+        || parsed.events?.some((item) => !validEventPreparation(item))) throw new Error("invalid version, evidence or shape");
       setPlan(parsed);
       setFeedback(copy(lang, "Brouillon local rechargé.", "Local draft restored."));
     } catch {
