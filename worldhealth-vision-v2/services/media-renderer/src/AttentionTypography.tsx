@@ -37,7 +37,7 @@ export function ImpactSlabTitle({text,accent,opacity,offsetY}:{
   const {impact}=getFonts();
   const size=fitTextOnNLines({
     text,maxBoxWidth:812,maxLines:3,
-    fontFamily:impact,fontWeight:900,maxFontSize:138,minFontSize:56,
+    fontFamily:impact,fontWeight:900,maxFontSize:138,
   }).fontSize;
   return <div data-wv-impact-slab="true" style={{
     display:"inline-block",maxWidth:862,background:accent,
