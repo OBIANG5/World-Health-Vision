@@ -34,3 +34,24 @@ jobs:
       - name: Typescript and Vite build
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: npm run build
+      - name: Browser dependency (system Chrome preferred)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo 'WHV_BROWSER_CHANNEL=chrome' >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Real iPhone 320/390 and desktop 1440 interactive workflow
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node scripts/trading-process-browser-smoke.mjs
+      - name: Archive only SYNTHETIC browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trading-mta-synthetic-browser-evidence
+          path: worldhealth-vision-v2/frontend/web-v2/trading-process-artifacts/
+          if-no-files-found: warn
