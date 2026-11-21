@@ -2,16 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLang } from "../../context/LanguageContext";
 import {
-  STAGES, independentSourceCount, isTradePlan, newTradePlan, reviewPlan, reviewRisk,
+  STAGES, independentSourceCount, newTradePlan, reviewPlan, reviewRisk,
   stageMissing, validEvidence,
   type Direction, type Evidence, type EvidencePerspective, type EvidenceStance,
   type RouteMode, type StageField, type TradePlan,
 } from "../../trading/tradePlan";
 import TradingResearchPanel from "./TradingResearchPanel";
-import { validEventPreparation, validThesisUpdate } from "../../trading/tradeResearch";
+import TradingCaseLibrary from "./TradingCaseLibrary";
 import "../../styles/trading-process.css";
 
-const STORAGE_KEY = "world-vision:trading-mta-process:v1";
 const copy = (lang: "fr" | "en", fr: string, en: string) => lang === "fr" ? fr : en;
 const perspectiveLabels: Record<EvidencePerspective, { fr: string; en: string }> = {
   national: { fr: "Locale / nationale", en: "Local / national" },
@@ -94,44 +93,6 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
   const setField = (key: string, value: string) =>
     setPlan((current) => ({ ...current, fields: { ...current.fields, [key]: value } }));
 
-  const saveLocal = () => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
-      setFeedback(copy(lang, "Brouillon enregistré SUR CET APPAREIL seulement. Aucun envoi serveur.", "Draft saved ON THIS DEVICE only. No server upload."));
-    } catch {
-      setFeedback(copy(lang, "Stockage indisponible. Exportez plutôt votre dossier.", "Storage unavailable. Export your dossier instead."));
-    }
-  };
-  const loadLocal = () => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) { setFeedback(copy(lang, "Aucun brouillon local enregistré.", "No local draft saved.")); return; }
-      const parsed: unknown = JSON.parse(stored);
-      if (!isTradePlan(parsed) || parsed.updates?.some((item) => !validThesisUpdate(item))
-        || parsed.events?.some((item) => !validEventPreparation(item))) throw new Error("invalid version, evidence or shape");
-      setPlan(parsed);
-      setFeedback(copy(lang, "Brouillon local rechargé.", "Local draft restored."));
-    } catch {
-      setFeedback(copy(lang, "Brouillon illisible ou version incompatible. Rien n'a été importé.", "Unreadable draft or incompatible version. Nothing imported."));
-    }
-  };
-  const eraseLocal = () => {
-    if (!window.confirm(copy(lang, "Effacer le brouillon enregistré sur cet appareil ?", "Erase the draft saved on this device?"))) return;
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* private browser storage may be unavailable */ }
-    setFeedback(copy(lang, "Brouillon enregistré effacé. L'analyse ouverte reste disponible.", "Saved draft erased. Current open analysis remains."));
-  };
-  const exportDossier = () => {
-    const payload = JSON.stringify({ ...plan, exportedAt: new Date().toISOString(), advisory: "user-authored research notes; no live market data or executed trade" }, null, 2);
-    const url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "world-vision-trade-plan.json";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    setFeedback(copy(lang, "Dossier exporté au format JSON.", "Dossier exported as JSON."));
-  };
   const addEvidence = () => {
     if (!validEvidence(evidenceDraft)) {
       setFeedback(copy(lang, "Source incomplète : éditeur original, nom, URL HTTPS, date et observation nécessaires.", "Incomplete evidence: original publisher, name, HTTPS URL, date and observation required."));
@@ -324,20 +285,14 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
           </main>
         </div>
         <footer className="tvp-footer">
-          <div className="tvp-footer-actions">
-            <button type="button" onClick={saveLocal}>{copy(lang, "Enregistrer sur cet appareil", "Save on this device")}</button>
-            <button type="button" onClick={loadLocal}>{copy(lang, "Recharger", "Restore")}</button>
-            <button type="button" onClick={exportDossier}>{copy(lang, "Exporter JSON", "Export JSON")}</button>
-            <button type="button" onClick={eraseLocal}>{copy(lang, "Effacer l'enregistrement", "Erase saved draft")}</button>
-            <button type="button" onClick={() => {
-              if (window.confirm(copy(lang, "Réinitialiser le dossier non enregistré ?", "Reset unsaved dossier?"))) {
-                setPlan(newTradePlan()); setStepIndex(0); setShowEvidence(false); setShowResearch(false);
-              }
-            }}>{copy(lang, "Nouveau dossier", "New dossier")}</button>
-          </div>
-          <small className="tvp-storage-note">{copy(lang,
-            "Mémoire temporaire par défaut. L'enregistrement local est volontaire et non chiffré : évitez toute donnée personnelle ou secrète sur appareil partagé.",
-            "In-memory by default. Local saves are voluntary and unencrypted: do not store personal or confidential data on shared devices.")}</small>
+          <TradingCaseLibrary plan={plan} onLoad={(value) => {
+            setPlan(value);
+            setStepIndex(0);
+            setShowEvidence(false);
+            setShowResearch(false);
+            setEvidenceDraft(emptyEvidence());
+            setFeedback("");
+          }} />
           {blankAllowed(feedback) && <p className="tvp-feedback" role="status">{feedback}</p>}
         </footer>
       </section>
