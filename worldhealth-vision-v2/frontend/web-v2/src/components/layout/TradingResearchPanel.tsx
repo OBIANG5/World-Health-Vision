@@ -207,13 +207,13 @@ export default function TradingResearchPanel({ plan, onChange }: {
                     {txt("Documenter le résultat", "Document release result", lang)}
                   </button>
                   {activeResultId === item.id && <div className="tvp-result-entry">
-                    <label>{txt("Valeur officielle / publiée (même unité)", "Released value (same unit)")}
+                    <label>{txt("Valeur officielle / publiée (même unité)", "Released value (same unit)", lang)}
                       <input value={result.actual} onChange={(e) => setResult((p) => ({ ...p, actual: e.target.value }))}/></label>
-                    <label>{txt("Date et heure de publication", "Release publication date/time")}
+                    <label>{txt("Date et heure de publication", "Release publication date/time", lang)}
                       <input type="datetime-local" value={result.publishedAt} onChange={(e) => setResult((p) => ({ ...p, publishedAt: e.target.value }))}/></label>
-                    <label>{txt("URL HTTPS du résultat original", "Original result HTTPS URL")}
+                    <label>{txt("URL HTTPS du résultat original", "Original result HTTPS URL", lang)}
                       <input type="url" value={result.originalUrl} onChange={(e) => setResult((p) => ({ ...p, originalUrl: e.target.value }))}/></label>
-                    <label>{txt("Réaction observée / absence de réaction et limites", "Observed reaction / no reaction and caveats")}
+                    <label>{txt("Réaction observée / absence de réaction et limites", "Observed reaction / no reaction and caveats", lang)}
                       <textarea rows={3} value={result.reaction} onChange={(e) => setResult((p) => ({ ...p, reaction: e.target.value }))}/></label>
                     <button type="button" className="tvp-primary" onClick={() => addResult(item.id)}>{txt("Ajouter le résultat sourcé", "Attach sourced result", lang)}</button>
                   </div>}
