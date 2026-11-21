@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useLang } from "../../context/LanguageContext";
+import GlobalRadarStaticArchive from "./GlobalRadarStaticArchive";
 import {
   GDELT_PROVIDER_PAGE, RADAR_CLIENT_MIN_INTERVAL_MS,
   RADAR_FETCH_TIMEOUT_MS, SOURCE_COUNTRIES,
@@ -197,7 +198,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
         ref={panelRef} tabIndex={-1}>
         <header className="radar-header">
           <div>
-            <span className="radar-kicker">WORLD-VISION · GLOBAL RADAR · GDELT DOC 2.0</span>
+            <span className="radar-kicker">WORLD-VISION · GLOBAL RADAR · SOURCES GDELT 2.0</span>
             <h2>{copy(lang, "Découvrir les publications. Confronter les sources.",
               "Discover coverage. Compare sources.")}</h2>
             <p>{copy(lang,
@@ -247,6 +248,10 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
             "One explicit request, up to 40 links, no storage, no query added to the World-Vision URL. Provider limits can restrict results.")}</small>
         </form>
         <main className="radar-content">
+          <GlobalRadarStaticArchive />
+          <h3 className="radar-manual-heading">{copy(lang,
+            "Recherche supplémentaire GDELT à la demande (peut être limitée)",
+            "Additional on-demand GDELT search (may be rate-limited)")}</h3>
           {loading && <p className="radar-status" role="status">
             {copy(lang, "Interrogation de GDELT DOC en cours…", "Requesting GDELT DOC…")}</p>}
           {error && <div className="radar-error" role="alert">
@@ -332,8 +337,8 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
         </main>
         <footer className="radar-footer">
           <span>{copy(lang,
-            "R1 : recherche GDELT en direct si accessible · comparateur de MÉTADONNÉES · aucune preuve validée · aucun abonnement.",
-            "R1: live GDELT if reachable · METADATA comparison · no facts verified · no subscription.")}</span>
+            "R2B : archive GDELT datée si intégrée au build, recherche directe facultative · documents et faits non vérifiés.",
+            "R2B: dated GDELT batch if included in build, optional direct search · documents and facts not verified.")}</span>
           <button type="button" onClick={onClose}>{copy(lang, "Fermer", "Close")}</button>
         </footer>
       </section>
