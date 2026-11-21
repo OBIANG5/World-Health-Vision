@@ -161,12 +161,16 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
         Numbers are exact, never faked as counting intermediate measurements. */}
     {comparison&&chartPose&&<div data-wv-photo-comparison="true"
       data-wv-photo-comparison-progress={chartPose.reveal.toFixed(4)}
+      data-wv-photo-comparison-panel-progress={chartPose.panelProgress.toFixed(4)}
       style={{
-        position:"absolute",top:770,left:91,right:91,
+        // Preserve the photographic focal point above this compact data rail.
+        // The chart is a later semantic re-hook, not a frame-zero decoration.
+        position:"absolute",top:1040,left:91,right:91,
         borderRadius:20,padding:"23px 28px 21px",
         background:"rgba(2,20,34,.91)",border:"1px solid rgba(124,223,243,.58)",
         boxShadow:"0 18px 44px rgba(0,9,20,.45)",
-        pointerEvents:"none",opacity:fading,
+        pointerEvents:"none",opacity:chartPose.panelProgress*fading,
+        transform:"translateY("+Math.round((1-chartPose.panelProgress)*26)+"px)"
       }}>
       <div dir="auto" style={{
         color:"#e4fbff",fontSize:37,fontWeight:830,lineHeight:1.11,
@@ -175,7 +179,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       {/* The zero-axis label MUST follow its actual signed-domain position.
           An asymmetric -10..20 range places zero at 1/3, NOT in the middle. */}
       <div data-wv-photo-comparison-axis="true" style={{
-        position:"relative",height:34,color:"#a9dbe8",fontSize:25,marginBottom:10
+        position:"relative",height:34,color:"#a9dbe8",fontSize:27,marginBottom:10
       }}>
         {comparison.domain.min!==0&&<span style={{
           position:"absolute",left:0,top:0
@@ -217,7 +221,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       </div>)}
       <div data-wv-photo-comparison-source="true" dir="auto" style={{
         borderTop:"1px solid rgba(193,230,240,.24)",paddingTop:9,
-        fontSize:26,lineHeight:1.25,color:"#d0ebf0",overflowWrap:"break-word"
+        fontSize:29,lineHeight:1.25,color:"#d0ebf0",overflowWrap:"break-word"
       }}>{comparison.source.publisher} · {comparison.source.dataset} · {comparison.source.asOf}</div>
     </div>}
     {shot.subtitle&&<div data-wv-photo-caption="true" dir="auto"
