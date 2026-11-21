@@ -123,6 +123,10 @@ async function run(argv){
         transitionAfter:shot.transitionAfter,transitionFrames:shot.transitionFrames,
         focus:shot.focus,
         documentRegion:shot.documentRegion,
+        // Keep the opt-in mobile evidence layout and bounded original-pixel zoom
+        // through the production JSON -> Remotion inputProps boundary.
+        evidencePresentation:shot.evidencePresentation,
+        documentZoomMax:shot.documentZoomMax,
         geo:shot.geo,
         // Pass the SAME independently authored tracks to the H264 engine
         // that CreativeCompositionPreview uses in the browser. Never freeze.
