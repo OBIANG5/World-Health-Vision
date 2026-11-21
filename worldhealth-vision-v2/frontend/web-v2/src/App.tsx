@@ -33,6 +33,7 @@ const RealEstatePanel = lazy(() => import("./components/layout/RealEstatePanel")
 const AlertsPanel = lazy(() => import("./components/layout/AlertsPanel"));
 const AdvisorPanel = lazy(() => import("./components/layout/AdvisorPanel"));
 const CurrencyPanel = lazy(() => import("./components/layout/CurrencyPanel"));
+const TradingProcessPanel = lazy(() => import("./components/layout/TradingProcessPanel"));
 
 import "./styles/mobile.css";
 import "./styles/world-editorial.css";
@@ -348,6 +349,9 @@ function AppContent() {
       case "sources":
         navigate({ kind: "sources" });
         return;
+      case "trading":
+        navigate({ kind: "trading" });
+        return;
     }
   }
 
@@ -549,6 +553,11 @@ function AppContent() {
                   <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="advisor" size={19}/></span>
                   <span><strong>{lang === "fr" ? "Conseiller économique" : "Economic advisor"}</strong>
                     <small>{lang === "fr" ? "Lire les indicateurs et leurs limites" : "Understand the indicators"}</small></span>
+                </button>
+                <button type="button" className="whv-tools-item" onClick={() => { navigate({ kind: "trading" }); setShowToolsMenu(false); }}>
+                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="markets" size={19}/></span>
+                  <span><strong>{lang === "fr" ? "Processus de prise de trade" : "Trade decision process"}</strong>
+                    <small>{lang === "fr" ? "7 étapes · thèse, sources, risque et décision supervisée" : "7 stages · thesis, sources, risk and human review"}</small></span>
                 </button>
                 <p className="whv-domain-disclosure">{lang === "fr"
                   ? "Actions, obligations, indices et matières premières : futurs espaces dédiés, sans cotations fictives."
@@ -872,6 +881,10 @@ function AppContent() {
           setShowCurrencyPanel(false);
           if (route.kind === "money") navigate({ kind: "home" });
         }} />
+      )}
+
+      {route.kind === "trading" && (
+        <TradingProcessPanel onClose={() => navigate({ kind: "home" })} />
       )}
 
       <VisionHub open={showVisionHub} language={lang}
