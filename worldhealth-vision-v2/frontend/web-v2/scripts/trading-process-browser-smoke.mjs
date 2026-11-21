@@ -44,7 +44,7 @@ try {
     await page.goto(origin + "/?wv=trading", { waitUntil: "domcontentloaded" });
     const panel = page.locator("section.tvp-dialog");
     await panel.waitFor({ state: "visible", timeout: 15000 });
-    assert.equal(await page.locator("nav.tvp-stages button.tvp-stage").count(), 9, "Seven stages plus evidence and DataAnalyse-style research");
+    assert.equal(await page.locator("nav.tvp-stages button.tvp-stage").count(), 10, "Seven stages, evidence, thesis/events and 8-currency Macro Desk");
     // P1B1: with no trusted OIDC issuer/client, the cloud panel must disclose
     // the blocker and must not show active cloud operations or simulate login.
     const remotePanel = page.locator(".tvp-remote-workspace");
@@ -173,6 +173,75 @@ try {
       page.getByRole("button", { name: /Exporter JSON/ }).click(),
     ]);
     assert.equal(download.suggestedFilename(), "world-vision-trade-plan.json");
+    // P1C — real user journey: 8-currency / 28-pair macro desk, two sourced
+    // snapshots, no read before opt-in, isolated JSON storage, safe new-case
+    // transfer with undecided direction and without old local ID/remote ETag.
+    const macroKey = "world-vision:trading-macro-desk:v1";
+    assert.equal(await page.evaluate((key) => localStorage.getItem(key), macroKey), null,
+      "Opening a trading dossier must not create a Macro Desk or read it implicitly");
+    await page.locator("nav.tvp-stages").getByRole("button", { name: /Macro Desk/ }).click();
+    const macro = page.locator(".tvp-macro");
+    await macro.waitFor({ state: "visible" });
+    assert.equal(await page.evaluate((key) => localStorage.getItem(key), macroKey), null,
+      "Macro Desk mount must NOT write to storage automatically");
+    await macro.getByRole("button", { name: /Ouvrir volontairement mon Macro Desk local/ }).click();
+    assert.equal(await macro.locator(".tvp-macro-currencies button").count(), 8);
+    assert.equal(await macro.locator(".tvp-macro-pairs button").count(), 28);
+    assert.equal(await page.evaluate((key) => localStorage.getItem(key), macroKey), null,
+      "Opening a missing Macro Desk must not silently persist a new library");
+
+    async function recordMacro(currency, publisher) {
+      await macro.locator(".tvp-macro-currencies").getByRole("button", { name: new RegExp(currency) }).click();
+      await macro.locator("#tvp-macro-asof").fill("2026-11-20");
+      await macro.locator("#tvp-macro-theme").fill(currency + " synthetic policy context, no market data");
+      await macro.locator("#tvp-macro-expectations").fill(currency + " expectations were only user-declared");
+      await macro.locator("#tvp-macro-catalyst").fill(currency + " recheck next official data release");
+      await macro.locator("#tvp-macro-contradictions").fill(currency + " alternative interpretation to investigate");
+      const form = macro.locator(".tvp-macro-source-form");
+      await form.locator("input").nth(0).fill("Synthetic original report " + currency);
+      await form.locator("input").nth(1).fill(publisher);
+      await form.locator("input").nth(2).fill("https://example.org/" + currency.toLowerCase() + "-synthetic");
+      await form.locator("input").nth(3).fill("2026-11-20");
+      await form.locator("textarea").fill("Synthetic dated original observation " + currency);
+      await form.getByRole("button", { name: /Ajouter la source au brouillon/ }).click();
+      await macro.getByRole("button", { name: /Figer une nouvelle version sur cet appareil/ }).click();
+      assert((await macro.locator(".tvp-feedback").innerText()).includes("Version ajoutée"),
+        "Snapshot must be explicitly saved, never invented");
+    }
+    await recordMacro("EUR", "Synthetic publisher EUR");
+    await recordMacro("GBP", "Synthetic publisher GBP");
+    const macroRaw = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), macroKey);
+    assert.equal(macroRaw.schemaVersion, 1);
+    assert.equal(macroRaw.assessments.EUR.length, 1);
+    assert.equal(macroRaw.assessments.GBP.length, 1);
+    assert.equal(Object.keys(macroRaw.assessments).length, 2);
+    assert.equal(macroRaw.assessments.EUR[0].sources[0].url, "https://example.org/eur-synthetic");
+    assert.equal(macroRaw.assessments.GBP[0].asOf, "2026-11-20");
+    assert.equal(await macro.locator(".tvp-macro-pairs button").count(), 28);
+    await macro.locator(".tvp-macro-pairs").getByRole("button", { name: /EUR\/GBP/ }).click();
+    assert((await macro.locator(".tvp-macro-pair-detail").innerText()).includes("Deux contextes documentés"),
+      "Pair view must use actual saved snapshots, not arbitrary rankings");
+
+    const casesBefore = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).cases.length, key);
+    page.once("dialog", async (dialog) => { await dialog.accept(); });
+    await macro.getByRole("button", { name: /Créer un nouveau dossier MTA à partir de cette paire/ }).click();
+    assert.equal(await page.locator(".tvp-identity input").first().inputValue(), "EURGBP");
+    assert.equal(await page.locator(".tvp-identity select").nth(1).inputValue(), "undecided",
+      "Macro pair MUST NOT auto-generate a long/short signal");
+    assert((await page.locator(".tvp-case-state").innerText()).includes("Analyse non enregistrée"),
+      "Macro transfer must not remain attached to an old case");
+    assert.equal(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).cases.length, key), casesBefore,
+      "Macro copy must not write a local trade dossier before explicit save");
+    await page.locator("nav.tvp-stages button").nth(7).click();
+    assert.equal(await page.locator(".tvp-evidence-card").count(), 2,
+      "Original dated EUR and GBP citations must accompany the new trade plan");
+    await page.locator("#tvp-case-title").fill("EURGBP · copied source-led context");
+    await page.getByRole("button", { name: /^Enregistrer le dossier$/ }).click();
+    assert.equal(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).cases.length, key), casesBefore + 1,
+      "Macro transfer must create a NEW locally saved case without overwriting another");
+    assert.equal(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).assessments.EUR.length, macroKey), 1,
+      "Macro snapshot history must remain intact after saving a separate MTA dossier");
+
     await page.screenshot({ path: "trading-process-artifacts/" + screen.id + "-process.png", fullPage: false });
     await page.getByRole("button", { name: /^Fermer$/ }).click();
     assert.equal(new URL(page.url()).searchParams.get("wv"), null, "Close must remove trading URL");
