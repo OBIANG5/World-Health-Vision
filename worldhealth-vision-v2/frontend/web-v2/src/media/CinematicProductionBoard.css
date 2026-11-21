@@ -242,3 +242,21 @@
   position:absolute;left:8.52%;bottom:10.4%;right:13%;
   color:#bed7e4;line-height:1.35;font-size:11px;font-weight:700
 }
+
+/* Edit-first review: audition a precise story beat inside the real film. */
+.wvc-context-review{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  padding:13px 14px;border:1px solid rgba(151,208,225,.24);
+  border-radius:11px;background:linear-gradient(115deg,rgba(69,148,180,.13),rgba(18,48,66,.20));
+}
+.wvc-context-review button{
+  flex:1 1 205px;min-height:42px;padding:10px 13px;
+  color:#092638;background:#c6edfb;border:1px solid #b5e0ef;
+  font:inherit;font-size:12px;font-weight:770;border-radius:8px;cursor:pointer;
+}
+.wvc-context-review button:hover:not(:disabled){background:#edfaff}
+.wvc-context-review button:disabled{opacity:.47;cursor:not-allowed}
+.wvc-context-review small{
+  flex:1 1 230px;color:#a9c9d7;font-size:11px;line-height:1.45;
+}
+#wvc-preview{scroll-margin-block-start:18px}
