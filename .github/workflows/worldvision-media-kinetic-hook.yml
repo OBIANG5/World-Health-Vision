@@ -108,7 +108,7 @@ jobs:
           from pathlib import Path
           import re
           log=Path('output/creative/audio-level-report.txt').read_text()
-          m=re.search(r'max_volume:\\s*(-?[0-9.]+) dB',log)
+          m=re.search(r'max_volume:\s*(-?[0-9.]+) dB',log)
           if not m: raise SystemExit('No decoded audio level from actual AAC.')
           maximum=float(m.group(1))
           print('Original synthetic technical sound max_volume:',maximum,'dBFS')
