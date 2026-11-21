@@ -114,22 +114,52 @@ try {
     assert((await history.innerText()).includes("Résultat SAISI"), "User-entered result not shown");
     assert((await history.innerText()).includes("Écart arithmétique"), "Arithmetic delta not shown");
 
-    await page.getByRole("button", { name: /Enregistrer sur cet appareil/ }).click();
-    const saved = await page.evaluate(() => localStorage.getItem("world-vision:trading-mta-process:v1"));
-    assert(saved && saved.includes("SYNTHETIC-PAIR"), "Explicit local save did not persist");
+    // P0C — two independent trade research cases with explicit saves only.
+    await page.locator("#tvp-case-title").fill("AUDCAD · original research");
+    await page.getByRole("button", { name: /^Enregistrer le dossier$/ }).click();
+    const key = "world-vision:trading-mta-cases:v2";
+    const one = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "null"), key);
+    assert.equal(one.schemaVersion, 2, "Saved library schema should be version 2");
+    assert.equal(one.cases.length, 1, "First analysis not stored independently");
+    assert.equal(one.cases[0].plan.updates.length, 1, "Research revisions must survive save");
+    assert.equal(one.cases[0].plan.events.length, 1, "Event preparation must survive save");
+
+    await page.getByRole("button", { name: /^Nouvelle analyse$/ }).click();
+    assert.equal(await page.locator(".tvp-identity input").first().inputValue(), "",
+      "New dossier must not inherit previous research");
+    await page.locator(".tvp-identity input").first().fill("SYNTHETIC-CHFJPY");
+    await page.locator("#tvp-case-title").fill("CHFJPY · second independent idea");
+    await page.getByRole("button", { name: /^Enregistrer le dossier$/ }).click();
+    const two = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) ?? "null"), key);
+    assert.equal(two.cases.length, 2, "Second save replaced the first instead of adding a case");
+    assert.equal(two.cases[0].plan.instrument, "SYNTHETIC-PAIR", "First instrument lost");
+    assert.equal(two.cases[1].plan.instrument, "SYNTHETIC-CHFJPY", "Second instrument lost");
+
     await page.reload({ waitUntil: "domcontentloaded" });
     await panel.waitFor({ state: "visible" });
     assert.equal(await page.locator(".tvp-identity input").first().inputValue(), "",
-      "Local storage MUST NOT silently load personal research");
-    await page.getByRole("button", { name: /^Recharger$/ }).click();
+      "Local storage MUST NOT silently load private user research");
+    await page.getByRole("button", { name: /^Mes dossiers$/ }).click();
+    assert.equal(await page.locator(".tvp-case-row").count(), 2, "User-controlled case listing failed");
+    await page.locator(".tvp-case-row").filter({ hasText: "AUDCAD · original research" })
+      .getByRole("button", { name: /^Ouvrir$/ }).click();
     assert.equal(await page.locator(".tvp-identity input").first().inputValue(), "SYNTHETIC-PAIR",
-      "Explicit restore must reload saved draft");
+      "Opening first case must restore the correct research");
     await page.locator("nav.tvp-stages button").nth(8).click();
     assert((await page.locator(".tvp-research").innerText()).includes("Synthetic central-bank scenario"),
-      "Explicit restore must preserve frozen thesis revisions");
+      "First dossier must preserve frozen thesis revisions");
     await page.getByRole("button", { name: /Annonces avant \/ après/ }).click();
     assert((await page.locator(".tvp-research").innerText()).includes("Synthetic price-index release"),
-      "Explicit restore must preserve sourced event preparation and result");
+      "First dossier must preserve sourced event preparation and result");
+
+    await page.getByRole("button", { name: /^Mes dossiers$/ }).click();
+    await page.locator(".tvp-case-row").filter({ hasText: "AUDCAD · original research" })
+      .getByRole("button", { name: /^Dupliquer$/ }).click();
+    assert((await page.locator(".tvp-case-state").innerText()).includes("Analyse non enregistrée"),
+      "Copy must remain unsaved until explicit user consent");
+    await page.getByRole("button", { name: /^Enregistrer le dossier$/ }).click();
+    assert.equal(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).cases.length, key), 3,
+      "Duplicate must save as a new independent case");
     const [download] = await Promise.all([
       page.waitForEvent("download"),
       page.getByRole("button", { name: /Exporter JSON/ }).click(),
@@ -139,7 +169,7 @@ try {
     await page.getByRole("button", { name: /^Fermer$/ }).click();
     assert.equal(new URL(page.url()).searchParams.get("wv"), null, "Close must remove trading URL");
     assert.deepEqual(errors, [], "JS errors on " + screen.id + ": " + errors.join(" | "));
-    console.log("PASS " + screen.id + " real React trade workflow: 7 steps, math, evidence, opt-in save, restore, export and route");
+    console.log("PASS " + screen.id + " real React trade workflow: 7 stages, sourced research, 3 independent cases, restore, duplicate, export and route");
     await context.close();
   }
 } finally {
