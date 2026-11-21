@@ -28,7 +28,9 @@ import org.springframework.transaction.annotation.Isolation;
  * NO Insee or other institutional approvals are seeded.
  */
 @Service
-public final class ScopedPublishedValuesService {
+// Spring creates an AOP proxy to enforce the read-only transaction
+// and snapshot/revocation checks. This service must not be final.
+public class ScopedPublishedValuesService {
     private static final String QUERY = """
             select o.id as obs_id, o.source_run_id, o.source_code, o.dataset_code,
                    o.indicator_code, o.country_iso3, o.period_start, o.period_end,
