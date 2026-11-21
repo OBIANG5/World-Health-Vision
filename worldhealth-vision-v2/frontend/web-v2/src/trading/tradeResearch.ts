@@ -45,6 +45,7 @@ export interface EventPreparation {
     publishedAt: string;
     originalUrl: string;
     reaction: string;
+    comparabilityReviewed: boolean;
   };
 }
 export interface NewThesisUpdate {
@@ -70,6 +71,7 @@ export interface NewEventResult {
   publishedAt: string;
   originalUrl: string;
   reaction: string;
+  comparabilityReviewed: boolean;
 }
 const limited = (value: string, cap = 2000) => value.trim().length > 0 && value.length <= cap;
 const number = (value: string): number | null => {
@@ -127,6 +129,7 @@ export function wasPreparedBeforeEvent(event: EventPreparation): boolean {
 }
 export function attachEventResult(event: EventPreparation, input: NewEventResult): EventPreparation | null {
   if (event.result || !limited(input.actual, 100) || !dateValid(input.publishedAt) ||
+    typeof input.comparabilityReviewed !== "boolean" ||
     !publicUrl(input.originalUrl) || !limited(input.reaction)) return null;
   // Explicitly block results entered before the event's expected occurrence,
   // or timestamps in the future. A genuine early publication must be audited.
@@ -136,7 +139,7 @@ export function attachEventResult(event: EventPreparation, input: NewEventResult
 }
 /** Arithmetic delta ONLY, never a market signal, prediction or standardized z-score. */
 export function eventArithmeticDelta(event: EventPreparation): number | null {
-  if (!event.result || !event.unit.trim()) return null;
+  if (!event.result || !event.unit.trim() || event.result.comparabilityReviewed !== true) return null;
   const forecast = number(event.expected), actual = number(event.result.actual);
   if (forecast === null || actual === null) return null;
   return actual - forecast;
@@ -168,5 +171,6 @@ export function validEventPreparation(value: unknown): value is EventPreparation
   if (!v.result || typeof v.result !== "object") return false;
   const r = v.result as Record<string, unknown>;
   return ["actual", "publishedAt", "originalUrl", "reaction"].every(k => typeof r[k] === "string" && (r[k] as string).length < 3000)
-    && dateValid(r.publishedAt as string) && publicUrl(r.originalUrl as string);
+    && dateValid(r.publishedAt as string) && publicUrl(r.originalUrl as string)
+    && typeof r.comparabilityReviewed === "boolean";
 }
