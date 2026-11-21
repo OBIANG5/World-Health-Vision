@@ -59,3 +59,35 @@ Le projet doit rivaliser en *processus pédagogique et outils originaux* avec un
 **P1B2B/P1B3** : compte OIDC seulement avec ZITADEL/Supabase réellement configuré et identité signée conforme aud/roles (via P1B2A) + staging HTTPS et PostgreSQL least privilege; vrais tests A/B + deux appareils; sécurité/session/RGPD/restore/effacement. Ne pas ralentir les produits Atlas, comparaison des données nationales/terrain, Global Radar/GDELT, Bourse Afrique, Money et Tourisme-Transport.
 
 **Ne jamais faire de PR brouillon sur main ; toujours garder la chaîne #115 → #120 → #121 → #124 → #125 → #127 → P1C.** Si un chat se bloque, lire en premier cette page, le HEAD P1C, les CI et les commentaires PR, puis reprendre la toute première étape non faite. Écrire un nouveau handoff à chaque lot important.
+
+
+---
+
+## 6. Revue produit complémentaire : liens institutionnels vérifiés et citations consultables
+
+**Amélioration après la première CI verte** : le Macro Desk affiche désormais, pour chaque économie, deux liens institutionnels dédiés à la recherche de publications originales : banque centrale et institut statistique. Dans chaque paire, on peut ouvrir directement les URLs HTTPS des références individuelles déjà saisies avec **date, éditeur, perspective et rôle**. Cela améliore l'utilité sans injecter des chiffres non vérifiés ni s'approprier des dépêches.
+
+**Répertoire statique institutionnel (`FX_OFFICIAL_RESEARCH_STARTS`)** :
+| Devise | Source monétaire | Source statistique |
+| --- | --- | --- |
+| EUR | [Banque centrale européenne](https://www.ecb.europa.eu/) | [Eurostat](https://ec.europa.eu/eurostat) |
+| GBP | [Bank of England](https://www.bankofengland.co.uk/) | [Office for National Statistics](https://www.ons.gov.uk/) |
+| AUD | [Reserve Bank of Australia](https://www.rba.gov.au/) | [Australian Bureau of Statistics](https://www.abs.gov.au/) |
+| NZD | [Reserve Bank of New Zealand](https://www.rbnz.govt.nz/) | [Stats NZ](https://www.stats.govt.nz/) |
+| USD | [Federal Reserve](https://www.federalreserve.gov/) | [Bureau of Labor Statistics](https://www.bls.gov/) |
+| CAD | [Bank of Canada](https://www.bankofcanada.ca/) | [Statistics Canada](https://www.statcan.gc.ca/) |
+| CHF | [Swiss National Bank](https://www.snb.ch/en) | [Office fédéral de la statistique suisse](https://www.bfs.admin.ch/bfs/en/home.html) |
+| JPY | [Bank of Japan](https://www.boj.or.jp/en/) | [Statistics Bureau of Japan](https://www.stat.go.jp/english/) |
+
+Les domaines des banques centrales ont été croisés avec les [liens répertoriés par le UK Debt Management Office](https://www.dmo.gov.uk/help/useful-links/links/) et les liens des instituts avec les [répertoires Eurostat](https://ec.europa.eu/eurostat/documents/3217494/10934584/KS-EX-20-001-EN-N.pdf/8ac3b640-0c7e-65e2-9f79-d03f00169e17?t=159093668) et les [sources listées par la RBA](https://www.rba.gov.au/statistics/other-data-sources.html) au 21/11/2026. **Ce sont des pages institutionnelles générales, PAS les articles/communiqués précis : l'utilisateur doit sélectionner et enregistrer le lien d'une publication datée. Aucun prix, taux, calendrier ou consensus n'est prérempli.** Le répertoire est du code utilitaire, pas un connecteur.
+
+### Risques de perte de brouillon corrigés
+- Une citation saisie partiellement mais pas encore ajoutée est désormais reconnue comme **donnée non sauvegardée**. Relire le stockage, changer de devise et créer un nouveau dossier MTA doivent avertir/obtenir confirmation avant d'abandonner ces champs; importer une bibliothèque en présence d'un brouillon est refusé.
+- Enregistrer une version pendant qu'une citation est en cours de saisie est refusé jusqu'à l'ajout ou l'effacement de la citation pour éviter les références omises involontairement.
+- Les copies de sources de Macro Desk vers les dossiers MTA conservent leurs **URLs précises et observations d'origine**. Les versions historiques sont append-only dans l'interface, **pas cryptographiquement scellées** contre l'édition manuelle du localStorage.
+
+### Limites explicites à corriger dans P1D
+- Calendriers économiques et prévisions sont encore saisis manuellement; données officielles futures doivent passer par provenance/horodatage/licence et être testées.
+- `asOf` est une date (pas une heure) et l'horloge est celle du navigateur; on ne peut pas prouver qu'une information était connue avant la publication du résultat le même jour. **Ne pas affirmer une chronologie ex-ante vérifiée** sur ce fondement.
+- La divergence d'horizon et d'unité entre deux économies n'est pas automatiquement résolue par le simple fait qu'elles possèdent chacune une publication. Les dates distinctes sont signalées; besoin futur d'analyses de comparabilité, pas de scores.
+- La bibliothèque locale ne se synchronise pas; 8 versions maximum par devise et taille limitée. Export/backup/merge de versions entre appareils nécessitent un choix explicite. Aucune fusion automatique sur import non vide.
