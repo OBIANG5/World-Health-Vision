@@ -1,6 +1,7 @@
 import {AbsoluteFill,interpolate,useCurrentFrame} from "remotion";
 import {activeCaption} from "./caption-timeline.mjs";
 import {fitTextOnNLines} from "@remotion/layout-utils";
+import {loadFont as loadDMSans} from "@remotion/google-fonts/DMSans";
 import type {CaptionCue} from "./caption-timeline.mjs";
 
 /**
@@ -13,6 +14,9 @@ export function CaptionTrack({cues,mobileEvidenceRanges=[]}:{
   mobileEvidenceRanges?:Array<{startFrame:number;endFrame:number}>;
 }){
   const frame=useCurrentFrame();
+  // One consistent approved World-Vision caption typeface on BOTH the real
+  // Player and exported MP4; no Arial/fallback size mismatch at 390px.
+  const dmSans=loadDMSans("normal",{weights:["700"],subsets:["latin"]}).fontFamily;
   const cue=activeCaption(cues,frame);
   if(!cue)return null;
   const enter=Math.min(1,Math.max(0,(frame-cue.startFrame)/3));
@@ -24,7 +28,7 @@ export function CaptionTrack({cues,mobileEvidenceRanges=[]}:{
   const upper=mobileEvidence||cue.position==="upper";
   const captionSize=mobileEvidence?fitTextOnNLines({
     text:cue.text,maxBoxWidth:780,maxLines:3,
-    fontFamily:"Arial",fontWeight:740,maxFontSize:44,
+    fontFamily:dmSans,fontWeight:700,maxFontSize:44,
   }).fontSize:51;
   return <AbsoluteFill data-wv-caption-layer="true"
     data-wv-evidence-caption-rail={mobileEvidence?"true":"false"} style={{
@@ -34,7 +38,7 @@ export function CaptionTrack({cues,mobileEvidenceRanges=[]}:{
     <div data-wv-caption={cue.text} data-wv-caption-position={upper?"upper":"lower"} style={{
       maxWidth:mobileEvidence?844:940,padding:mobileEvidence?"13px 19px":"17px 25px",borderRadius:16,
       background:"rgba(2,10,21,.84)",boxShadow:"0 5px 25px rgba(0,0,0,.42)",
-      color:"#fff",fontFamily:"Arial,'Helvetica Neue',sans-serif",
+      color:"#fff",fontFamily:dmSans,
       fontSize:captionSize,fontWeight:740,lineHeight:1.19,letterSpacing:"-.018em",
       textAlign:"center",overflowWrap:"break-word",whiteSpace:"normal",
       opacity,transform:"translateY("+interpolate(enter,[0,1],[7,0])+"px)"
