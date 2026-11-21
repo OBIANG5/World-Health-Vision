@@ -1,0 +1,84 @@
+name: World-Vision MEDIA — Artemis II owner-requested VISUAL review (NO KOKORO)
+on:
+  push:
+    branches:
+      - feature/worldvision-media-artemis2-visual-review-without-kokoro-*
+    paths:
+      - worldhealth-vision-v2/media-voice-pilots/artemis2/export-visual-only.py
+      - .github/workflows/worldvision-media-artemis2-owner-visual-only.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: worldvision-artemis-visual-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-video-visual-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install only renderer-audio math dependencies (no TTS package)
+        run: |
+          python -m pip install --disable-pip-version-check "numpy==2.3.5" "soundfile==0.13.1"
+          command -v ffmpeg
+          command -v ffprobe
+          command -v gh
+      - name: Retrieve PINNED original NASA three-beat film without presenting unapproved voice
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/worldvision-nasa-source
+          gh run download 44948838931 \
+            --repo "${{ github.repository }}" \
+            --name worldvision-media-p06-NASA-source-evidence-safe-INTERNAL \
+            --dir /tmp/worldvision-nasa-source
+          test -s /tmp/worldvision-nasa-source/artemis2-semantic-internal.mp4
+          echo "dec6af52661fdd45c879406c11d0a438455ffa884658dd0cb739dc134572880c  /tmp/worldvision-nasa-source/artemis2-semantic-internal.mp4" | sha256sum --check --status
+          echo 'Pinned NASA source video verified. It contains an UNAPPROVED narrator and MUST NOT be re-uploaded.'
+      - name: Make actual H.264/AAC VISUAL-ONLY review — old Kokoro track unmapped
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/worldvision-nasa-owner-visual
+          python worldhealth-vision-v2/media-voice-pilots/artemis2/export-visual-only.py \
+            --source /tmp/worldvision-nasa-source/artemis2-semantic-internal.mp4 \
+            --output /tmp/worldvision-nasa-owner-visual/artemis2-no-narrator-visual.mp4 \
+            --expected-sha256 dec6af52661fdd45c879406c11d0a438455ffa884658dd0cb739dc134572880c
+          python - <<'PY'
+          import json,pathlib
+          d=pathlib.Path('/tmp/worldvision-nasa-owner-visual')
+          r=json.loads((d/'artemis2-no-narrator-visual.mp4.report.json').read_text())
+          assert r['original_audio_explicitly_discarded']
+          assert not r['contains_previous_kokoro_narration']
+          assert not r['contains_new_vivienne_c52_narration']
+          assert not r['publication_authorized']
+          assert r['frame_count']==247 and r['fps']==30
+          print('PASS: review-only video, old voice removed; C5.2 missing is NOT concealed')
+          PY
+      - name: Capture actual 390px moments for human editorial review
+        run: |
+          set -euo pipefail
+          for frame in 0 42 87 138 191 246; do
+            ffmpeg -hide_banner -loglevel error -y \
+              -i /tmp/worldvision-nasa-owner-visual/artemis2-no-narrator-visual.mp4 \
+              -vf "select=eq(n\\,$frame),scale=390:693" \
+              -vsync 0 -frames:v 1 \
+              "/tmp/worldvision-nasa-owner-visual/mobile-frame-$frame.png"
+            test -s "/tmp/worldvision-nasa-owner-visual/mobile-frame-$frame.png"
+          done
+          ffprobe -v error -show_entries format=duration:stream=codec_name,codec_type,width,height,nb_frames,sample_rate \
+            -of json /tmp/worldvision-nasa-owner-visual/artemis2-no-narrator-visual.mp4 \
+            > /tmp/worldvision-nasa-owner-visual/ffprobe.json
+      - name: Archive ONLY visual review and honest provenance, NEVER unapproved narrator
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-artemis2-owner-visual-only-NO-VOICE
+          path: /tmp/worldvision-nasa-owner-visual/*
+          retention-days: 7
+          if-no-files-found: error
