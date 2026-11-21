@@ -34,11 +34,13 @@
       "image_url": "https://ec.europa.eu/avservices/repository/photo/07/09/44/P-070944_00-163_03-MED-275144.jpg",
       "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-070944",
       "description": "General view of negotiation sessions at COP31",
-      "date_range_in_collection": "2026-11-16 to 2026-11-22",
-      "exact_shooting_date": "NOT_INDIVIDUALLY_CONFIRMED",
+      "exact_shooting_date": "DAY_METADATA_ONLY_NOT_EXPOSURE_TIME_VERIFIED",
       "rights": "EU-owned content CC BY 4.0 by default IF no exception; individual conditions/persons/logos review OPEN",
       "intended_use": "REHOOK 2 negotiation context; NEVER label as recorded on 21 Nov",
-      "priority": 1
+      "priority": 1,
+      "collection_date_displayed": "2026-11-16",
+      "photo_item_date_displayed": "2026-11-16",
+      "date_evidence": "EU Audiovisual Service P-070944 collection and 00-163 individual item display 16/11/2026; time of exposure not independently established"
     },
     {
       "id": "EU-COP31-HOEKSTRA-SIDE",
@@ -47,11 +49,13 @@
       "image_url": "https://ec.europa.eu/avservices/repository/photo/07/09/44/P-070944_00-162_03-MED-376154.jpg",
       "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-070944",
       "description": "Wopke Hoekstra and participants at COP31 talks",
-      "date_range_in_collection": "2026-11-16 to 2026-11-22",
-      "exact_shooting_date": "NOT_INDIVIDUALLY_CONFIRMED",
+      "exact_shooting_date": "DAY_METADATA_ONLY_NOT_EXPOSURE_TIME_VERIFIED",
       "rights": "EU-owned content CC BY 4.0 by default IF no exception; individual conditions/persons/logos review OPEN",
       "intended_use": "REHOOK 2 participant photo WITHOUT attributing a speech instant; actor publicity rights and exact day unresolved",
-      "priority": 2
+      "priority": 2,
+      "collection_date_displayed": "2026-11-16",
+      "photo_item_date_displayed": "2026-11-16",
+      "date_evidence": "EU Audiovisual Service P-070944 collection and 00-163 individual item display 16/11/2026; time of exposure not independently established"
     },
     {
       "id": "EU-COP31-ANTALYA-SIGN",
@@ -60,11 +64,13 @@
       "image_url": "https://ec.europa.eu/avservices/repository/photo/07/10/04/P-071004_00-16_03-MED-36834.jpg",
       "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-071004",
       "description": "Real COP31 Türkiye Antalya sign with passers-by, event identification only",
-      "date_range_in_collection": "2026-11-14 to 2026-11-15",
-      "exact_shooting_date": "NOT_INDIVIDUALLY_CONFIRMED",
+      "exact_shooting_date": "DAY_METADATA_ONLY_NOT_EXPOSURE_TIME_VERIFIED",
       "rights": "EU-owned content CC BY 4.0 by default IF no exception; third-party marks and people review OPEN",
       "intended_use": "Geographic/venue context only, not photograph of latest negotiations",
-      "priority": 3
+      "priority": 3,
+      "collection_date_displayed": "2026-11-14",
+      "photo_item_date_displayed": "DATE_TO_VERIFY_ON_INDIVIDUAL_ITEM",
+      "date_evidence": "EU Audiovisual Service P-071004 collection lists 14/11/2026; do not assume each file's exposure timestamp"
     }
   ],
   "rights_policy_url": "https://audiovisual.ec.europa.eu/en/conditions-of-use",
@@ -78,10 +84,11 @@
     "allowed_for_publication": false
   },
   "notes": [
+    "Important metadata correction 2026-11-21: P-070944 gallery is dated 16 Nov, NOT 16-22 Nov. 00-163 item is dated 16 Nov. These are illustrative COP31 negotiations, NOT photos of the overnight 21 Nov diplomatic impasse.",
     "Photo URLs above were opened as actual images, not invented download URLs. Only MED previews; DO NOT upscale and assert original source quality.",
     "Some EU photographs contain third-party logos and identifiable participants; the general CC BY4.0 terms are NOT a full rights clearance.",
-    "Never put an invented 21/11 date on a photo with only a 16–22 date range.",
     "Never confuse this story with the rejected 12 Nov UN Disaster Risk Financing COP31 video.",
-    "2 draft decisions are NOT a final treaty. Adaptation $120bn is distinct from MDB $120bn in the revised draft."
+    "2 draft decisions are NOT a final treaty. Adaptation $120bn is distinct from MDB $120bn in the revised draft.",
+    "For full-res images, open the actual individual EU audiovisual photo entry and its blue Download control per https://audiovisual.ec.europa.eu/en/faq; source page may be dynamic and no original URL is invented."
   ]
 }
