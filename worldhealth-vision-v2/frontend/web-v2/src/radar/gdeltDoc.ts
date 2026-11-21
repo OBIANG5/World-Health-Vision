@@ -114,6 +114,12 @@ export function buildRadarUrl(search: RadarSearch): string {
   request.searchParams.set("timespan", search.window);
   return request.toString();
 }
+/** HTML version of the SAME bounded query: explicit external fallback when CORS/429 prevents embedded results. */
+export function buildRadarOfficialSearchUrl(search: RadarSearch): string {
+  const direct = new URL(buildRadarUrl(search));
+  direct.searchParams.set("format", "html");
+  return direct.toString();
+}
 function printable(raw: unknown, max: number): string | null {
   if (typeof raw !== "string") return null;
   const text = [...raw].map((char) => {
