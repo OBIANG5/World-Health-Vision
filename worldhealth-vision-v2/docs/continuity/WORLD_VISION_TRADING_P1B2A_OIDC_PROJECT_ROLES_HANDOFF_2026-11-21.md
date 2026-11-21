@@ -60,3 +60,30 @@ WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS=false
 
 ## 5. Reprise exacte dans un autre chat
 **Toujours** partir de `product/v2-trading-oidc-project-roles-p1b2a-2026-11-21`, lire cette page + la PR DRAFT + workflow/CI sur HEAD exact, puis issue #122. Ne jamais remplacer la chaîne #115→#120→#121→#124→#125→P1B2A par un développement depuis `main`. Si CI verte, ne pas annoncer une synchronisation : suivre le vrai login OIDC/PKCE ou bien avancer sur le Workbench macro pendant que l'identité externalisée attend ses comptes. Chaque nouveau lot doit avoir son propre handoff avec SHAs et tests exacts.
+
+
+---
+
+## 6. Checkpoint P1B2A **vérifié par CI** — reprise exacte
+
+**Code + handoff vérifiés sur commit `f19c8b1e32a7a5e265053d23ed7beeb1dd0075e7`.**
+**GitHub Actions : [run 44903142517](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44903142517) — `completed/success`, Docker/Postgres présent, test suite Maven `success`, rapport JUnit synthétique présent `p1b2a-signed-project-roles-test-reports` (~56 964 octets.** Les autres jobs [run 44903146881](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44903146881) et [run 44903107475](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44903107475) sont également verts (le dernier sur un commit antérieur `9aabce1`).
+
+### Principale correction de sécurité révélée pendant la revue
+Il ne suffit PAS d'ajouter des rôles du projet aux scopes existants. Un JWT ZITADEL signé pourrait contenir le texte `scope=trading:read` sans le rôle d'utilisateur réellement attribué. Quand le mode `WHV_SECURITY_OIDC_PROJECT_ROLES_ENABLED=true`, les convertisseurs **retirent** d'abord `SCOPE_trading:read/write` issus du champ scope, puis les réattribuent **uniquement** à partir du claim de rôles signé et du grant d'organisation pour l'audience du projet. Tests `signedTradingScopeWithoutProjectUserRoleCannotBypassAuthorization` (Gateway) et `selfRequestedTradingScopeWithoutProjectUserRoleIsAlwaysDenied` (Workspace) : **403 à chaque frontière**. Avec le mode **OFF** (défaut), les anciens scope JWT sont préservés et tous les contrôles P1A restent inchangés.
+
+### État exact
+- **PR #127** DRAFT/open, empilée sur **#125**, elle-même sur #124 → #121 → #120 → #115. Aucune fusion/déploiement.
+- L'audience seule = jamais une permission. Le vrai `iss`, la signature JWKS, `exp`, `aud` et `sub` continuent d'être vérifiés **indépendamment** Gateway + Workspace.
+- Le test positif est un **faux fournisseur en boucle locale signant des JWT RSA**, pas un compte ni un jeton ZITADEL existant; ne pas dire « login / sync opérationnels ».
+- Aucun secret d'identité ni abonnement créé. **Le frontend P1B1 reste en état déconnecté**, et les dossiers locaux restent inchangés.
+- Un projet Vercel `world-health-vision-v2` a été observé dans le compte connecté avec un déploiement de frontend, mais cela **ne prouve ni backend Research/Gateway réellement exposé ni base PostgreSQL en staging**. Configurer le domaine HTTPS et la séparation réseau avant un accès public.
+
+### Reprise ultérieure sans perte
+1. Vérifier la HEAD SHA et la PR #127, le dernier workflow `whv-v2-trading-oidc-project-roles-p1b2a.yml` et le rapport JUnit. **Ce paragraphe est un nouveau commit documentaire POSTÉRIEUR au SHA testé ci-dessus** : vérifier la CI du nouveau SHA avant de revendiquer « HEAD vert ».
+2. Comparer BFF (cookies HttpOnly + CSRF + sessions serveur durables) vs SPA PKCE (SDK audité, tokens brefs en mémoire, revocation et attaques XSS), tenant compte de Vercel statique / Gateway Java. Favoriser la combinaison **plus sûre pour les notes privées et la moins chère sur le cycle complet**, pas simplement la solution gratuite.
+3. **Sans IdP réel provisionné par le titulaire, ne pas coder de fausse session ni simuler une synchro client**. Le pilote prioritaire est ZITADEL avec `aud=REAL_PROJECT_ID`, rôle réellement accordé, access token JWT (pas ID token), puis vraie preuve d'issuer/scopes/role claim au Gateway et Workspace en staging; Supabase OAuth Server n'a pas encore de scopes custom selon sa doc nov 2026.
+4. Si aucun vrai IdP/staging n'est configuré, c'est une dépendance externe BLOQUANTE : **ne pas passer des jours à re-documenter l'authentification**. La prochaine tranche utile doit repartir sur le Workbench de recherche DataAnalyse / Atlas / Global Radar, sans exposer les dossiers privés. Poursuivre les parcours utilisateur à forte utilité et les tests navigateur.
+5. P1B3 nécessite **deux vrais comptes et deux appareils**, consentement migration locale, serveur PostgreSQL avec rôle runtime strict, tests de déconnexion et de conflits 412, sauvegardes/restauration/export/effacement. Toujours garder les URL de PR et SHA exacts sur GitHub.
+
+**Ne pas ouvrir les privilèges pour faire passer un test d'auth. Ne pas recopier le contenu payant de DataAnalyse/MTA.**
