@@ -73,3 +73,21 @@ Premiers commits importants R1 :
 **Étape au moment d'écrire ce document** : vérifier le HEAD `product/v2-global-radar-gdelt-source-discovery-r1-2026-11-21` et les workflows GitHub `WHV V2 Global Radar R1 — real app, safe GDELT discovery`. Corriger TOUT échec de compile/browser sur le SHA code, puis enregistrer URL, SHA, job et artifacts dans la description de PR #134 et les issues #133/#76. Garder ce document présent, sans le présenter comme preuve de CI verte si le commit de documentation n'a pas été réexécuté.
 
 **Référence officielle du fournisseur** : https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/
+
+
+---
+
+## 7. CHECKPOINT CI VÉRIFIÉ et prochaine issue prioritaire (21/11/2026)
+
+**Code final R1 + interface + 3 tailles Chromium + handoff initial validés sur SHA EXACT `a0b30153992936914b331353afff5e47a78e73be`.**
+- [GitHub Actions #44942883698 — `completed/success` sur ce SHA](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44942883698).
+- Job `global-radar-r1` = `136963742913` **success** : `npm ci`, **tests Node sur le vrai modèle TypeScript**, lint de tous les nouveaux fichiers et intégrations modifiées, **build strict TS6/Vite**, parcours **vrai Chrome/React 320/390/1440** avec réponses API **synthétiques et étiquetées**, zéro requête implicite et zéro article fake, sélection/dédup/2 domaines, retours 429/HTML, URL source sûres/FR, responsive et clavier.
+- Captures de navigateur exclusivement synthétiques : artifact `global-radar-r1-synthetic-browser-evidence`, **227855 octets**.
+- Job `provider-reachability-observation` = `136963743084` "success" indique SEULEMENT que le probe s'est exécuté (non-gating), **pas que l'API GDELT a fonctionné** : les observations précédentes sur GH indiquent `HTTP 429`, et il faut consulter le LOG du job sur chaque SHA pour savoir ce que GDELT a réellement rendu. Aucun article réel n'a été validé dans R1.
+- Autre workflow #44942887948 `success` également sur ce SHA.
+
+**Ce checkpoint a été écrit à la suite du commit `a0b3015`, donc sa propre mise à jour produit un HEAD documentaire PLUS RÉCENT. Toute affirmation « exact HEAD validé » requiert le succès du workflow sur ce nouveau HEAD.** Lire les commits et leur CI, ne pas déduire de résultats futurs.
+
+**Prochain ticket prioritaire [#135 — Global Radar R2, fournisseurs fiables, ingestion, provenance et premier événement vrai](https://github.com/OBIANG5/World-Health-Vision/issues/135)**. Il mentionne explicitement le 429 réel de GDELT, la nécessité d'un fournisseur alternatif autorisé et stable, la réutilisation du Catalog/Timeseries et une véritable comparaison d'articles locaux/nationaux et internationaux avec preuve d'indépendance ou absence de preuve signalée. **Ne pas prolonger indéfiniment le frontend R1 : passer à un vrai parcours source→preuve→comparaison qui apporte une valeur à Atlas/Média/Trading.**
+
+**Pas de merge, staging, production, achat, fournisseur payant, renseignement personnel ni lancement de veille autonome dans cette tranche.**
