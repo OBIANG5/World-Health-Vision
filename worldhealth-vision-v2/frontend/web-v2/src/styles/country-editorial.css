@@ -516,6 +516,61 @@
 .whv-page .country-drawer .whv-country-news-empty p {
   margin: 0; font-size: 12px; color: #617681; line-height: 1.5;
 }
+/*
+ * Migrate legacy dark metric surfaces into the same bright Atlas document.
+ * Old country.css styles are intentionally kept for unrelated region/trading
+ * views; these selectors target ONLY the new CountryDrawer profile hierarchy.
+ */
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-item {
+  background: #f5f8fa !important;
+  border: 1px solid #e1e9ed !important;
+  border-radius: 10px;
+  padding: 12px 13px;
+  color: #15364b !important;
+}
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-label {
+  color: #5e7887 !important;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .065em;
+  margin-bottom: 5px;
+}
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-value {
+  color: #1c4055 !important;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+.whv-page .country-drawer .whv-country-profile-content :is(.kpi-card,.indicator-card,.lens-card,.decision-card,.evidence-card,.info-card) {
+  background: #fff !important;
+  color: #203d50 !important;
+  border: 1px solid #e0e9ed !important;
+  box-shadow: 0 3px 12px rgba(19,43,61,.025);
+}
+.whv-page .country-drawer .whv-country-overview .kpi-card:first-child {
+  background: #eff7fa !important;
+  border-color: #d5e8ee !important;
+}
+.whv-page .country-drawer .whv-country-profile-content :is(.kpi-card,.indicator-card):hover {
+  background: #f6fafb !important;
+  border-color: #b8d6e0 !important;
+}
+.whv-page .country-drawer .whv-country-profile-content :is(.kpi-card-value,.indicator-main-value,.stat-hero-value,.lens-card-headline,.decision-headline) {
+  color: #133b54 !important;
+}
+.whv-page .country-drawer .whv-country-profile-content :is(.kpi-card-label,.indicator-name,.stat-hero-unit,.lens-card-narrative,.decision-narrative,.section-title) {
+  color: #536f7e !important;
+}
+.whv-page .country-drawer .whv-country-overview .kpi-card:first-child .kpi-card-value {
+  font-size: clamp(29px, 4.2vw, 43px);
+}
+.whv-page .country-drawer .whv-country-data .indicator-card.expanded {
+  background: #f8fbfc !important;
+}
+.whv-page .country-drawer .whv-country-profile-content .indicator-card-headline,
+.whv-page .country-drawer .whv-country-profile-content .expanded-chart-label {
+  color: #546f7e !important;
+}
 @media(max-width:1200px) {
   .whv-page .country-drawer { width: min(740px, 87vw); }
   .whv-page .country-drawer.fullscreen { width: 100%; }
