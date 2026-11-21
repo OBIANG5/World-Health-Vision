@@ -1,3 +1,24 @@
+# PRIORITÉ DE REPRISE — WORLD-VISION MEDIA P0.4 : RÉVISER UN RE-HOOK SANS ALTÉRER LE FILM (21/11/2026)
+
+**CETTE SECTION EST LA PLUS RÉCENTE. MEDIA AUDIOVISUEL UNIQUEMENT, PAS ATLAS/LOGICIEL.** Le propriétaire choisit idée/texte/voix/images ; notre métier principal est le montage avec hook initial + deux re-hooks sémantiques, bons visuels, typographie à la parole, sound design et retouche très rapide. **Le globe et les cartes sont une petite priorité secondaire.** Réutiliser Remotion/FFmpeg, P0.1–P0.3 et skills utiles sans nouvelle infrastructure ni connexions ChatGPT/Gemini gratuites supposées. Ne jamais recycler un ancien MP3 Vivienne sur un autre reportage.
+
+## GitHub point d'arrêt vérifiable
+- Parent **PR #126 P0.3** HEAD `2b44a3e2a22e63c0ceccc678945a0da53dae4da2` : 4 workflows **SUCCESS** sur ce SHA, confirmation dans les commentaires de #126. Source de mots minutés déjà importable sans ASR nouveau ; aucun vrai reportage final approuvé.
+- **PR ACTIVE #128 P0.4 DRAFT** : https://github.com/OBIANG5/World-Health-Vision/pull/128 ; branche `feature/worldvision-media-surgical-beat-revision-2026-11-21` **basée exactement sur #126**, non fusionnée. Rapport `worldhealth-vision-v2/docs/media/MEDIA_P0_4_SURGICAL_REHOOK_REVISION_2026-11-21.md`.
+- Nouveau code : `services/media-renderer/creative/surgical-revision.mjs` et `revise-shot.mjs`, tests `surgical-revision.test.mjs`, workflow `.github/workflows/worldvision-media-surgical-revision.yml`. Retouche ciblée d'un plan selon patch approuvé + hash de source : titles/motion/visuel, emphase de mots, volume/ajout SFX. Échec si source a changé, temps d'overlap touchés, script/voix/sons/plans voisins changés ou asset local absent. Produit nouveau JSON + rapport SHA, **jamais écrasement des originaux**. Le mode existant `--review-shot` donne le vrai film avec audio et contexte, pas une sous-composition silencieuse.
+- **Nouvelle CI #128 encore à certifier au HEAD exact** ; ne pas considérer le code comme validé tant qu'un run terminé SUCCESS n'a pas prouvé Node tests + deux vrais MP4 avant/après, frame 52 du plan voisin identique et frame 101 du plan changé différente, H264/AAC et protection du script/voix. QA = oscillateurs synthétiques, pas narration vraie ni vidéo premium validée.
+- Pas de fusion, déploiement, achat ni publication, ni changement de logo G0 sans asset transparent œil-globe approuvé.
+
+## Prochaine action EXACTE
+1. Lire l'état de #128 et de son workflow ; si échec, examiner steps/logs, corriger le bug réel sur **la même branche** et mettre à jour SHA, statut et limites dans un commentaire PR. Si vert, inspecter MP4/audio et stills réellement produits ; pas de note artistique fictive.
+2. Préparer ensuite une vraie séquence de 8–12 secondes avec **hook + 2 re-hooks signifiants**, sur un script/voix de la même actualité choisie, photos/rushes et SFX licites. Employer P0.3 pour alignement de la prise réelle, P0.4 pour corriger localement. Ne pas demander de nouvelle voix par principe et ne jamais inventer texte/timing.
+3. Mesurer temps jusqu'au master *humainement accepté*, micro-retouche de 3–5s, droit des médias, vrais pixels 390px, intelligibilité/ducking et impact des idées. Benchmark d'effets Remotion officiels vs HyperFrames/claude-motion seulement si qualité, licence et temps total mesurés justifient une intégration.
+4. Ensuite comparer au moins trois styles (humain, géopolitique, finance), capitaliser seulement les presets approuvés, profils autres marques séparés. Toute suite doit prolonger le cinéma média, pas le logiciel Atlas.
+
+**Documentation de vision prioritaire :** issue #116 et ce rapport P0.4. Les anciennes sections de ce fichier sont un HISTORIQUE, non les priorités actuelles.
+
+---
+
 # REPRISE PRIORITAIRE — WORLD-VISION MEDIA P0.3 : ALIGNEMENT DE LA VRAIE VOIX AUX HOOKS (21/11/2026)
 
 **Cette section est PLUS RÉCENTE que tout l'historique conservé en dessous. UNIQUEMENT MEDIA ; l'Atlas logiciel relève d'un autre chat.**
