@@ -39,3 +39,9 @@ whv:
       jwk-set-uri: ${WHV_SECURITY_JWK_SET_URI:}
       audience: ${WHV_SECURITY_AUDIENCE:}
       allow-loopback-test-jwks: ${WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS:false}
+      # Same opt-in, same project ID and role keys as Gateway, independently checked.
+      oidc-project-roles:
+        enabled: ${WHV_SECURITY_OIDC_PROJECT_ROLES_ENABLED:false}
+        project-audience: ${WHV_SECURITY_OIDC_PROJECT_AUDIENCE:}
+        read-role: ${WHV_SECURITY_OIDC_TRADING_READ_ROLE:}
+        write-role: ${WHV_SECURITY_OIDC_TRADING_WRITE_ROLE:}
