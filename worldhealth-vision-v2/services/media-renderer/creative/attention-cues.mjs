@@ -10,7 +10,7 @@ import path from 'node:path';
 const error=(field,reason)=>({field,reason});
 const AUDIO_FILES=new Set(['.wav','.mp3','.m4a','.aac','.flac']);
 const localFile=(value)=>typeof value==='string'&&value.length>0&&
-  !value.includes('\\')&&!value.includes('\\0')&&!value.startsWith('/')&&
+  !value.includes('\\')&&!value.includes('\0')&&!value.startsWith('/')&&
   !value.startsWith('//')&&!/^[a-z]+:/i.test(value)&&
   value.split('/').every(s=>s&&s!=='.'&&s!=='..');
 
@@ -33,8 +33,8 @@ export function attentionCueIssues(project,totalFrames){
           issues.push(error(field+'.time','Word beat must be ordered, inside the original narration, nonoverlapping.'));
         }
         if(typeof word.text!=='string'||!word.text.trim()||
-          word.text.length>60||/[\\s]/u.test(word.text.trim())||
-          /[<>\\u0000-\\u001f\\u007f]/u.test(word.text)){
+          word.text.length>60||/\s/u.test(word.text.trim())||
+          /[<>\u0000-\u001f\u007f]/u.test(word.text)){
           issues.push(error(field+'.text','One supplied, unmodified spoken word with punctuation (max 60 chars), no markup.'));
         }
         if(word.emphasis!==undefined&&typeof word.emphasis!=='boolean')
