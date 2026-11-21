@@ -39,6 +39,8 @@ test("three original links cover Gabon national media, IMF primary and regional 
     ["2026-09-25", "2026-09-26", "2026-11-20"]);
   const hosts = dossier.links.map(x => new URL(x.originalUrl).hostname);
   assert.deepEqual(hosts, ["agpgabon.ga", "www.imf.org", "ecomatin.net"]);
+  assert(new URL(dossier.links[1].originalUrl).pathname.startsWith("/en/news/articles/2026/09/26/"),
+    "Only the officially discovered IMF English release is linked; no unsupported translation URL");
   for (const source of dossier.links) {
     assert.equal(source.editorialIndependenceVerified, false);
     assert.equal(source.publisherFullTextFetched, false);
