@@ -1,9 +1,10 @@
-name: WHV V2 Global Radar R2B — real GDELT source URLs to actual iPhone preview
+name: WHV V2 Global Radar R2B/R2C — real sources and attributed claims on iPhone
 
 on:
   push:
     branches:
       - product/v2-global-radar-source-archive-preview-r2b-2026-11-21
+      - product/v2-radar-gabon-imf-claims-evidence-r2c-2026-11-21
   workflow_dispatch:
   pull_request:
     paths:
@@ -13,12 +14,15 @@ on:
       - "worldhealth-vision-v2/services/ingestion-service/tests/test_export_gdelt_radar_snapshot.py"
       - "worldhealth-vision-v2/frontend/web-v2/src/radar/gdeltStaticSnapshot.ts"
       - "worldhealth-vision-v2/frontend/web-v2/src/radar/editorialSourceCase.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/radar/editorialClaimReview.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarClaimEvidence.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarEditorialPilot.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarStaticArchive.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/GlobalRadarPanel.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/styles/global-radar.css"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-static-snapshot.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-editorial-case.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-claims.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/global-radar-real-archive-browser-smoke.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/build-radar-preview.sh"
       - ".github/workflows/whv-v2-global-radar-real-browser-r2b.yml"
@@ -82,16 +86,19 @@ jobs:
         run: |
           node --test scripts/test-global-radar-static-snapshot.mjs
           node --test scripts/test-global-radar-editorial-case.mjs
+          node --test scripts/test-global-radar-claims.mjs
           node --test scripts/test-global-radar.mjs
       - name: ESLint strict on all R2B changes and existing R1 integration
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
           npx eslint src/radar/gdeltStaticSnapshot.ts src/radar/editorialSourceCase.ts \
+            src/radar/editorialClaimReview.ts src/components/layout/GlobalRadarClaimEvidence.tsx \
             src/components/layout/GlobalRadarStaticArchive.tsx \
             src/components/layout/GlobalRadarEditorialPilot.tsx \
             src/components/layout/GlobalRadarPanel.tsx \
             scripts/test-global-radar-static-snapshot.mjs \
             scripts/test-global-radar-editorial-case.mjs \
+            scripts/test-global-radar-claims.mjs \
             global-radar-real-archive-browser-smoke.mjs
       - name: Build deliberate SYNTHETIC preview fixture only in CI workspace
         working-directory: worldhealth-vision-v2/services/ingestion-service
