@@ -20,6 +20,8 @@ on:
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-static-snapshot.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-editorial-case.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/global-radar-real-archive-browser-smoke.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/build-radar-preview.sh"
+      - "worldhealth-vision-v2/frontend/web-v2/vercel.json"
       - ".github/workflows/whv-v2-global-radar-real-browser-r2b.yml"
 
 permissions:
@@ -59,6 +61,22 @@ jobs:
       - name: Fully locked frontend dependencies
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: npm ci --no-audit --no-fund
+      - name: Confirm preview build script and noindex policy are valid (no deployment)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          bash -n scripts/build-radar-preview.sh
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import assert from 'node:assert/strict';
+          const config = JSON.parse(readFileSync('vercel.json', 'utf8'));
+          assert(config.headers.some(h => h.source === '/(.*)' &&
+            h.headers.some(value => value.key.toLowerCase() === 'x-robots-tag' &&
+              /noindex/.test(value.value))), 'Protected preview should never be indexed');
+          const shell = readFileSync('scripts/build-radar-preview.sh', 'utf8');
+          assert(shell.includes('WHV_RADAR_PREVIEW_FETCH'), 'Live provider call requires explicit opt-in');
+          assert(shell.includes('rm -f -- "$SNAPSHOT"'), 'Cannot carry forward stale fetched data');
+          console.log('PASS preview configuration: opt-in source and noindex response headers');
+          NODE
       - name: Test production TypeScript snapshot boundary and 429 search fallback
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
