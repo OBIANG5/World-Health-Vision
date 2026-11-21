@@ -1,0 +1,136 @@
+{
+  "schema_version": "worldvision-cop31-reference-assets-v1",
+  "status": "PREPRODUCTION_REFERENCE_ONLY_NOT_CLEARED_FOR_PUBLICATION",
+  "facts_frozen_as_of": "2026-11-21T21:51:00Z",
+  "location": "COP31 Antalya, Türkiye",
+  "ownership": "World-Vision editorial. No source ownership/endorsement implied.",
+  "primary_documents": [
+    {
+      "id": "C16",
+      "url": "https://unfccc.int/sites/default/files/resource/dt_cop31_cover_decision.pdf",
+      "date": "2026-11-16",
+      "version_timestamp": "12:40 (as printed)",
+      "expected_pages": 18,
+      "focus_page": 8,
+      "second_page": 9,
+      "narrative": "Original 16 November DRAFT paragraphs 65, 66, 73. This is NOT an adopted decision."
+    },
+    {
+      "id": "C19",
+      "url": "https://unfccc.int/sites/default/files/resource/Upload_dt_cop31_cover_decision.pdf",
+      "date": "2026-11-19",
+      "version_timestamp": "14:10 (as printed)",
+      "expected_pages": 9,
+      "focus_page": 5,
+      "second_page": 6,
+      "narrative": "Original 19 November DRAFT, sections 40–45 and 54. The latter still mentions a DIFFERENT USD120bn MDB estimate."
+    }
+  ],
+  "eu_image_candidates": [
+    {
+      "id": "EU-COP31-MEETING-WIDE",
+      "collection": "P-070944",
+      "image_ref": "00-163",
+      "image_url": "https://ec.europa.eu/avservices/repository/photo/07/09/44/P-070944_00-163_03-MED-275144.jpg",
+      "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-070944",
+      "description": "General view of negotiation sessions at COP31",
+      "exact_shooting_date": "DAY_METADATA_ONLY_NOT_EXPOSURE_TIME_VERIFIED",
+      "rights": "EU-owned content CC BY 4.0 by default IF no exception; individual conditions/persons/logos review OPEN",
+      "intended_use": "REHOOK 2 negotiation context; NEVER label as recorded on 21 Nov",
+      "priority": 1,
+      "collection_date_displayed": "2026-11-16",
+      "photo_item_date_displayed": "2026-11-16",
+      "date_evidence": "EU Audiovisual Service P-070944 collection and 00-163 individual item display 16/11/2026; time of exposure not independently established"
+    },
+    {
+      "id": "EU-COP31-HOEKSTRA-SIDE",
+      "collection": "P-070944",
+      "image_ref": "00-162",
+      "image_url": "https://ec.europa.eu/avservices/repository/photo/07/09/44/P-070944_00-162_03-MED-376154.jpg",
+      "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-070944",
+      "description": "Wopke Hoekstra and participants at COP31 talks",
+      "exact_shooting_date": "DAY_METADATA_ONLY_NOT_EXPOSURE_TIME_VERIFIED",
+      "rights": "EU-owned content CC BY 4.0 by default IF no exception; individual conditions/persons/logos review OPEN",
+      "intended_use": "REHOOK 2 participant photo WITHOUT attributing a speech instant; actor publicity rights and exact day unresolved",
+      "priority": 2,
+      "collection_date_displayed": "2026-11-16",
+      "photo_item_date_displayed": "2026-11-16",
+      "date_evidence": "EU Audiovisual Service P-070944 collection and 00-163 individual item display 16/11/2026; time of exposure not independently established"
+    },
+    {
+      "id": "EU-COP31-ANTALYA-SIGN",
+      "collection": "P-071004",
+      "image_ref": "00-16",
+      "image_url": "https://ec.europa.eu/avservices/repository/photo/07/10/04/P-071004_00-16_03-MED-36834.jpg",
+      "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-071004",
+      "description": "Real COP31 Türkiye Antalya sign with passers-by, event identification only",
+      "exact_shooting_date": "DAY_METADATA_ONLY_NOT_EXPOSURE_TIME_VERIFIED",
+      "rights": "EU-owned content CC BY 4.0 by default IF no exception; third-party marks and people review OPEN",
+      "intended_use": "Geographic/venue context only, not photograph of latest negotiations",
+      "priority": 3,
+      "collection_date_displayed": "2026-11-14",
+      "photo_item_date_displayed": "DATE_TO_VERIFY_ON_INDIVIDUAL_ITEM",
+      "date_evidence": "EU Audiovisual Service P-071004 collection lists 14/11/2026; do not assume each file's exposure timestamp"
+    }
+  ],
+  "rights_policy_url": "https://audiovisual.ec.europa.eu/en/conditions-of-use",
+  "publish_gate": {
+    "document_version_verified": true,
+    "source_photos_individual_rights_verified": false,
+    "eu_original_high_res_acquired": false,
+    "exact_photograph_dates_verified": false,
+    "owner_script_approved": false,
+    "new_vivienne_c52_take_recorded": false,
+    "allowed_for_publication": false
+  },
+  "notes": [
+    "2026-11-21: Official EU detail pages P-070944/00-162 and /00-163 returned public HTML, but no explicit HD JPEG download anchor in STATIC HTML. Workflow #44954962495 SUCCESS as a discovery check, but DID NOT retrieve either original. Do not invent high-res URLs.",
+    "2026-11-21: Wikimedia Commons lists two REAL ORIGINAL European Commission COP31 photos at 6000x4000, photographer Necati Savas, taken 10 Nov; source/item links and original file URLs in alternatives. They are alternative CONTEXT images, NOT current 21 Nov news photographs. Wikimedia Commons still flags external license review pending.",
+    "Important metadata correction 2026-11-21: P-070944 gallery is dated 16 Nov, NOT 16-22 Nov. 00-163 item is dated 16 Nov. These are illustrative COP31 negotiations, NOT photos of the overnight 21 Nov diplomatic impasse.",
+    "Photo URLs above were opened as actual images, not invented download URLs. Only MED previews; DO NOT upscale and assert original source quality.",
+    "Some EU photographs contain third-party logos and identifiable participants; the general CC BY4.0 terms are NOT a full rights clearance.",
+    "Never confuse this story with the rejected 12 Nov UN Disaster Risk Financing COP31 video.",
+    "2 draft decisions are NOT a final treaty. Adaptation $120bn is distinct from MDB $120bn in the revised draft.",
+    "For full-res images, open the actual individual EU audiovisual photo entry and its blue Download control per https://audiovisual.ec.europa.eu/en/faq; source page may be dynamic and no original URL is invented."
+  ],
+  "public_eu_owned_full_resolution_alternatives": [
+    {
+      "id": "EU-COP31-MINISTERIAL-ROOM-10NOV",
+      "title": "General view of the COP31 Presidency’s Energy Ministerial Meeting.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:General_view_of_the_COP31_Presidency%E2%80%99s_Energy_Ministerial_Meeting.jpg",
+      "verified_original_url": "https://upload.wikimedia.org/wikipedia/commons/d/db/General_view_of_the_COP31_Presidency%E2%80%99s_Energy_Ministerial_Meeting.jpg",
+      "original_provider": "European Commission Audiovisual Service P-070938/00-02",
+      "original_provider_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-070938/00-02",
+      "author": "Necati Savas / European Union, 2026 / EC Audiovisual Service",
+      "date": "2026-11-10",
+      "exif_exposure_local": "2026-11-10 11:16",
+      "license_declared": "CC BY 4.0",
+      "licensing_review": "Wikimedia Commons listing says external source has NOT been reviewed by an admin; must cross-check EU page and third-party/personality rights before public use",
+      "expected_width": 6000,
+      "expected_height": 4000,
+      "expected_min_bytes": 3000000,
+      "intended_use": "COP31 context; energy ministerial, NOT 21 Nov night deadlock",
+      "owner_review_allowed": true,
+      "publication_allowed": false
+    },
+    {
+      "id": "EU-COP31-BOWEN-JORGENSEN-10NOV",
+      "title": "Chris Bowen, COP31 President of Negotiation & Dan Jørgensen, European Commissioner.jpg",
+      "file_page": "https://commons.wikimedia.org/wiki/File:Chris_Bowen,_COP31_President_of_Negotiation_%26_Dan_J%C3%B8rgensen,_European_Commissioner.jpg",
+      "verified_original_url": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Chris_Bowen%2C_COP31_President_of_Negotiation_%26_Dan_J%C3%B8rgensen%2C_European_Commissioner.jpg",
+      "original_provider": "European Commission Audiovisual Service P-070938/00-31",
+      "original_provider_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-070938/00-31",
+      "author": "Necati Savas / European Union, 2026 / EC Audiovisual Service",
+      "date": "2026-11-10",
+      "exif_exposure_local": "2026-11-10 16:46",
+      "license_declared": "CC BY 4.0",
+      "licensing_review": "Wikimedia Commons listing says external source has NOT been reviewed by an admin; must cross-check EU page and third-party/personality rights before public use",
+      "expected_width": 6000,
+      "expected_height": 4000,
+      "expected_min_bytes": 1600000,
+      "intended_use": "Context: COP31 negotiation President Chris Bowen pictured November 10, NOT a photo of a later quote or 21 Nov deadlock",
+      "owner_review_allowed": true,
+      "publication_allowed": false
+    }
+  ]
+}
