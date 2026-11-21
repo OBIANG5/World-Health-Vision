@@ -98,3 +98,34 @@ Développée dans `product/v2-trading-mta-datanalyse-process-v1-2026-11-21`, bas
 - Chaque réponse API et carte UI distingue `NOT_CONNECTED`, `UNAVAILABLE`, `STALE`, `OBSERVED`, `ESTIMATED`, `RESEARCH_ONLY` et `NOT_LICENSED`. Une absence de source n'est pas transformée en signal.
 - Preuve de tests à commit SHA précis, tests navigateurs mobiles, journal des issues/PR, zéro achat API/VPS/domaine, zéro déploiement public/fusion sans revue.
 - Continuité nouveaux chats : lire **ce document, la PR de cette branche, issue #117, la stratégie multi-sources, l'Academy privée**, puis les fichiers source et résultats CI avant le prochain code. Les prototypes média/voix et l'ancienne V0/V1 ne font pas partie de ce lot.
+
+
+---
+
+## 7. TRADING-P0B — Thèse versionnée et atelier d'annonces (21/11/2026)
+
+### Décision de conception
+Les dossiers DataAnalyse originaux étudiés montrent des idées suivies plusieurs jours : le formateur peut **garder le biais**, abandonner une **entrée**, attendre un **retest**, réduire une **exposition**, ou reconsidérer une **information macroéconomique contradictoire**. La suite P0B répond à cette valeur bien supérieure à un simple formulaire de trade.
+
+**Code ajouté dans la même branche DRAFT :**
+- `src/trading/tradeResearch.ts` : `ThesisUpdate` avec horodatage de prise de note navigateur, motif, fait nouveau, décision `watch/reconsider/reject` et **copie figée de la thèse, des attentes, du setup, des niveaux envisagés et des éditeurs originaux alors présents**. Les notes suivantes ne réécrivent pas les anciennes versions.
+- `src/components/layout/TradingResearchPanel.tsx` : nouveau huitième espace de navigation **« Suivi et annonces »** dans l'atelier à sept étapes + registre de preuves ; onglets « Évolution d'une thèse » et « Annonces avant/après ». Saisie originale, non copiée des notes payantes DataAnalyse.
+- `EventPreparation` : annonce, heure, anticipation, précédente valeur, unité, **éditeur d'origine**, URL HTTPS de l'attente, heure à laquelle cette attente était connue, scénarios supérieurs et inférieurs; `preparedAt` (heure de la saisie locale). La distinction entre `expectationAsOf`, `preparedAt`, `scheduledAt` et `publishedAt` évite de confondre une prévision avec une analyse après événement.
+- Toute **préparation rétrospective** est explicitement étiquetée. La date de saisie provient de l'horloge de l'appareil et **n'est pas un horodatage de preuve indépendante**. L'utilisateur peut produire des notes rétrospectives sans revendiquer une capacité prédictive ex ante.
+- Résultat saisi : valeur, URL HTTPS de publication originale, heure, réaction/commentaire humain. L'**écart numérique brut** n'est affiché que si l'utilisateur **confirme explicitement** que prévision et résultat couvrent le même indicateur, territoire, période, unité **et définition**. Sinon « Non calculable / comparabilité non confirmée »; aucun verdict macro automatique, pas de moyenne de sources non comparables.
+- Les révisions et les annonces sont incluses dans le JSON exporté et la sauvegarde locale volontaire. Un export est un brouillon de recherche personnel, **pas un journal serveur signé ni un document de marché certifié**; la réimportation involontaire est refusée et aucun fichier payant n'est inclus.
+
+### Tests ajoutés
+- Domaine : snapshot immuable de thèse, source antérieure, prévision antérieure vs rétroactivité, provenance obligatoire, indisponibilité, résultat avant publication/futur refusé, delta numérique conditionné à la comparabilité, résultat non numérique = non agrégé.
+- Chromium réel sur 320px, 390px et 1440px : ajout d'une source et d'une révision de thèse, préparation d'une annonce datée avec source, signal « rétrospectif », ajout d'un résultat, confirmation de comparabilité, résultat arithmétique, sauvegarde localStorage explicite et restauration après reload, téléchargement JSON. Aucune API de marché ni nom d'enseignant envoyé.
+
+**État de validation** : à lire dans `.github/workflows/whv-v2-trading-mta-process.yml` et les dernières actions du SHA en tête de la PR #120 ; les tests anciens GREEN ne prouvent pas la réussite des ajouts P0B. Inscrire la preuve finale du dernier SHA dans issue #119 après vérification. Aucun merge ni déploiement autorisé.
+
+### Suite raisonnable, valeur métier avant automatisation
+1. **TRADING-P1** : un vrai espace d'utilisateur pour stocker *plusieurs* thèses, historique immuable serveur, contrôle des droits/permissions et migrations; authentification, RGPD, sauvegardes, API à contrat vérifiable. Les sauvegardes locales actuelles ne constituent **pas** un Watch permanent et écrasent le brouillon précédent.
+2. **TRADING-P2** : éditeur de *briefing DataAnalyse-like original*, auto-récupération autorisée de calendriers et publications officielles, puis après événement réconciliation des nouvelles informations et changements de thèses; une séquence avant→après→réaction→gestion, **pas de fiches commerciales copiées**.
+3. **TRADING-P3** : les vrais instruments et outils du cours (8 devises / 28 paires, macro, corrélations, sentiment, acteurs, analyses techniques multi-échelles, calcul de taille avec spécifications, journal et revue de cas) sous contrats et tests réels.
+4. **TRADING-P4** : Watch transversal persistant et notifications consenties, compte de démo seulement après vérification du risque, des ordres limit/stop non remplis, du backtest sans information future et de la conformité.
+5. Poursuivre en parallèle **Atlas multi-sources, Global Radar/GDELT, Bourse Afrique, sécurité pays, Money, Transport/Tourisme**. **Price/Panier hors priorité immédiate.**
+
+**Pour reprendre sans perdre le fil** : lire ce document §0–7, la [PR #120](https://github.com/OBIANG5/World-Health-Vision/pull/120), [issue #119](https://github.com/OBIANG5/World-Health-Vision/issues/119), décision de sources [#117](https://github.com/OBIANG5/World-Health-Vision/issues/117), résultat du workflow au SHA exact (pas une CI d'un ancien commit), puis le corpus privé historique dans la Library (ne jamais publier en dépôt). Si le travail reprend dans un autre chat, ne pas refaire un simple audit : **prendre l'implémentation existante, la vérifier et engager P1/P2 à bénéfice fonctionnel mesurable**.
