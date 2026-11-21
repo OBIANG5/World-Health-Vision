@@ -230,3 +230,17 @@ test("aborted requests remain aborted and are not transformed into provider fail
     fetcher: async () => { throw new DOMException("Aborted", "AbortError"); },
   }), (error) => error.name === "AbortError");
 });
+
+test("official HTML fallback preserves user-submitted bounded query and only changes output format", () => {
+  const input = { subject: "Gabon elections", window: "3d", outletCountry: "gabon" };
+  const direct = new URL(sdk.buildRadarUrl(input));
+  const html = new URL(sdk.buildRadarOfficialSearchUrl(input));
+  assert.equal(html.origin, direct.origin);
+  assert.equal(html.pathname, direct.pathname);
+  assert.equal(html.searchParams.get("query"), direct.searchParams.get("query"));
+  assert.equal(html.searchParams.get("timespan"), "3d");
+  assert.equal(html.searchParams.get("maxrecords"), "40");
+  assert.equal(html.searchParams.get("format"), "html");
+  assert.throws(() => sdk.buildRadarOfficialSearchUrl({ ...input, subject: "invalid:theme" }),
+    /INVALID_RADAR_QUERY/);
+});
