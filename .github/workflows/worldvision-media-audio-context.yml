@@ -38,6 +38,15 @@ jobs:
         run: npm run typecheck
       - name: Test immutable source ranges, transitions and unsafe IDs
         run: node --test creative/review-range.test.mjs creative/editorial-timeline.test.mjs
+      - name: Ensure FFmpeg/FFprobe are present before audio test fixtures
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffmpeg -hide_banner -version | head -n 1
+          ffprobe -hide_banner -version | head -n 1
       - name: Create labelled synthetic audio and factual-free test scene
         shell: bash
         run: |
