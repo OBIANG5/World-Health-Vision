@@ -172,11 +172,22 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
         color:"#e4fbff",fontSize:37,fontWeight:830,lineHeight:1.11,
         letterSpacing:"-.024em",marginBottom:16
       }}>{comparison.title}</div>
-      <div style={{display:"flex",justifyContent:"space-between",
-        color:"#a9dbe8",fontSize:25,marginBottom:9}}>
-        <span>AXE : {formatComparison(comparison.domain.min)} {comparison.unit}</span>
-        <span>0</span>
-        <span>{formatComparison(comparison.domain.max)} {comparison.unit}</span>
+      {/* The zero-axis label MUST follow its actual signed-domain position.
+          An asymmetric -10..20 range places zero at 1/3, NOT in the middle. */}
+      <div data-wv-photo-comparison-axis="true" style={{
+        position:"relative",height:34,color:"#a9dbe8",fontSize:25,marginBottom:10
+      }}>
+        {comparison.domain.min!==0&&<span style={{
+          position:"absolute",left:0,top:0
+        }}>{formatComparison(comparison.domain.min)} {comparison.unit}</span>}
+        <span data-wv-photo-axis-zero="true" style={{
+          position:"absolute",left:(chartPose.origin*100)+"%",top:0,
+          transform:chartPose.origin===0?"none":
+            chartPose.origin===1?"translateX(-100%)":"translateX(-50%)"
+        }}>0</span>
+        {comparison.domain.max!==0&&<span style={{
+          position:"absolute",right:0,top:0
+        }}>{formatComparison(comparison.domain.max)} {comparison.unit}</span>}
       </div>
       {chartPose.bars.map((bar,i)=><div key={i}
         data-wv-comparison-row={i===0?"first":"second"}
