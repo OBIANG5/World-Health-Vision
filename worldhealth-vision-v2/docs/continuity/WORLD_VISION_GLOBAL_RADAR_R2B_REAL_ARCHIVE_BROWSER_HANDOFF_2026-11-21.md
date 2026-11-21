@@ -95,3 +95,19 @@ Consultation **LECTURE SEULE** du plugin Vercel le 21/11/2026 :
 
 ### Vérification HEAD documentaire
 Ce checkpoint est ajouté **APRÈS** le SHA code réussi `6b452188...`, ce qui va créer une nouvelle empreinte HEAD documentaire. Vérifier la CI sur le HEAD de cette mise à jour avant de présenter le résultat comme « exact latest HEAD green »; ensuite mettre le SHA/les runs définitifs dans la description de PR #139 et commenter les issues #133/#135/#96/#76. Ne pas committer une infinité de micro-checkpoints après cela.
+
+
+---
+
+## 8. CORRECTION DU RAPPORT QUALITÉ/PRIX EN CI : PROBE GDELT DÉSORMAIS À LA DEMANDE
+
+La première version du workflow R2B lançait un téléchargement réel d'archive GDELT **à chaque push**, y compris après des changements de simples commentaires/documentation. C'était un défaut concret de rendement en minutes CI et requêtes inutiles, signalé dans le travail de clôture le 21/11/2026. **Ce défaut de conception est désormais corrigé sur la même PR #139.**
+
+`.github/workflows/whv-v2-global-radar-real-browser-r2b.yml` :
+- `concurrency.group: whv-radar-r2b-${{ github.ref }}`, `cancel-in-progress: true` : les vieux runs sur la même ref sont annulés lorsqu'un commit plus récent les rend obsolètes.
+- `source-archive-contract` reste exécuté à chaque push/PR pertinents : tests safety Python/TypeScript, compilation de production, **Chromium réel avec seulement des fixtures SYNTHETIC**, faible coût et reproductibilité.
+- `real-source-to-browser-preview` est **OPT-IN** : déclenché uniquement par un `workflow_dispatch` manuel après intégration du workflow sur branche par défaut, ou un **commit de checkpoint révisé et explicite** dont le message contient `[radar-live-probe]`. Un simple commit de docs/UX n'interroge plus GDELT ni ne reconstruit 3 captures avec réseau externe.
+- Après une vraie archive publique déjà validée, aucun motif de télécharger un nouveau batch à chaque changement de ligne de code; choisir une fréquence de rafraîchissement en fonction d'une future valeur utilisateur, d'un quota fournisseur et d'une règle de fraîcheur raisonnable, **pas arbitrairement toutes les 15 minutes**.
+- Le présent commit **de clôture documentaire** contient volontairement `[radar-live-probe]` pour effectuer **UN contrôle complet sur le dernier HEAD** et attester que toutes les données (dont le dossier Gabon/FMI) restent correctement branchées. Vérifier dans GitHub Actions le succès du job réel et des 3 navigateurs, puis ne plus modifier du code ou de la documentation sans besoin.
+
+**Roadmap REORDONNÉE après validation** : (1) rendre la version testée accessible sur une URL de PREVIEW stable, protégée et noindex après validation de l'utilisateur, plutôt que lancer un énième service backend; (2) aller au-delà des liens d'articles en vérifiant le CONTENU original et en mettant les désaccords/sources locales et internationales à disposition; (3) mutualiser SourceDocument/Watch/Trading/BRVM si ces parcours ont démontré leur valeur. Les autres travaux Atlas et sources officielles restent utiles mais doivent être *intégrés*, pas accumulés en PR DRAFT invisibles.
