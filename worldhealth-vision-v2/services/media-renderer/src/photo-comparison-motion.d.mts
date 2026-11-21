@@ -3,6 +3,7 @@ export type PhotoComparison=NonNullable<PhotoMotion["comparison"]>;
 export type ComparisonIssue={field:string;reason:string};
 export type ComparisonPose={
   reveal:number;
+  panelProgress:number;
   origin:number;
   axisMin:number;
   axisMax:number;
