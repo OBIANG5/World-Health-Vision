@@ -57,7 +57,11 @@ jobs:
               print(item['eu_photo_ref'],item['status'])
               assert item['full_resolution_production_master_cleared'] is False
           PY
+      # Wikimedia Commons explicitly rate-limited our GitHub runner with HTTP 429.
+      # Never retry automatically or evade a provider rate-limit. Public HD files
+      # can be acquired with a human-controlled export when access is permitted.
       - name: Download only TWO declared real EU-origin Commons originals, verify 6000x4000 / EXIF and build true-resolution photo contact sheet
+        if: ${{ github.event_name == 'workflow_dispatch' && vars.WHV_ALLOW_COMMONS_ORIGINAL_FETCH == 'true' }}
         run: |
           set -euo pipefail
           python worldhealth-vision-v2/media-pilots/cop31-negotiations/acquire-eu-commons-originals.py /tmp/cop31-originals
