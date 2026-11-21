@@ -166,20 +166,20 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
         // Preserve the photographic focal point above this compact data rail.
         // The chart is a later semantic re-hook, not a frame-zero decoration.
         position:"absolute",top:1040,left:91,right:91,
-        borderRadius:20,padding:"23px 28px 21px",
+        borderRadius:20,padding:"14px 24px 12px",
         background:"rgba(2,20,34,.91)",border:"1px solid rgba(124,223,243,.58)",
         boxShadow:"0 18px 44px rgba(0,9,20,.45)",
         pointerEvents:"none",opacity:chartPose.panelProgress*fading,
         transform:"translateY("+Math.round((1-chartPose.panelProgress)*26)+"px)"
       }}>
       <div dir="auto" style={{
-        color:"#e4fbff",fontSize:37,fontWeight:830,lineHeight:1.11,
-        letterSpacing:"-.024em",marginBottom:16
+        color:"#e4fbff",fontSize:34,fontWeight:830,lineHeight:1.11,
+        letterSpacing:"-.024em",marginBottom:10
       }}>{comparison.title}</div>
       {/* The zero-axis label MUST follow its actual signed-domain position.
           An asymmetric -10..20 range places zero at 1/3, NOT in the middle. */}
       <div data-wv-photo-comparison-axis="true" style={{
-        position:"relative",height:34,color:"#a9dbe8",fontSize:27,marginBottom:10
+        position:"relative",height:26,color:"#a9dbe8",fontSize:25,marginBottom:6
       }}>
         {comparison.domain.min!==0&&<span style={{
           position:"absolute",left:0,top:0
@@ -196,32 +196,32 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       {chartPose.bars.map((bar,i)=><div key={i}
         data-wv-comparison-row={i===0?"first":"second"}
         data-wv-comparison-direction={bar.direction}
-        style={{marginBottom:14}}>
+        style={{marginBottom:8}}>
         <div style={{display:"flex",justifyContent:"space-between",
-          alignItems:"baseline",gap:15,marginBottom:8}}>
-          <span dir="auto" style={{fontSize:31,fontWeight:710,
+          alignItems:"baseline",gap:15,marginBottom:3}}>
+          <span dir="auto" style={{fontSize:28,fontWeight:710,
             overflowWrap:"break-word",maxWidth:500}}>{bar.label}</span>
-          <strong style={{fontSize:40,fontWeight:870,letterSpacing:"-.03em",
+          <strong style={{fontSize:35,fontWeight:870,letterSpacing:"-.03em",
             fontVariantNumeric:"tabular-nums"}}>{formatComparison(bar.value)} {comparison.unit}</strong>
         </div>
-        <div style={{position:"relative",width:"100%",height:18,
-          borderRadius:9,background:"rgba(163,211,222,.13)",
+        <div style={{position:"relative",width:"100%",height:14,
+          borderRadius:7,background:"rgba(163,211,222,.13)",
           boxShadow:"inset 0 0 0 1px rgba(208,245,255,.12)"}}>
           <div data-wv-photo-comparison-zero="true" style={{
-            position:"absolute",height:26,top:-4,left:(bar.zero*100)+"%",
+            position:"absolute",height:20,top:-3,left:(bar.zero*100)+"%",
             width:2,background:"#e3f7ff",zIndex:2
           }}/>
           <div data-wv-photo-comparison-bar={i===0?"first":"second"} style={{
-            position:"absolute",height:18,top:0,left:(bar.start*100)+"%",
-            width:(bar.width*100)+"%",borderRadius:9,
+            position:"absolute",height:14,top:0,left:(bar.start*100)+"%",
+            width:(bar.width*100)+"%",borderRadius:7,
             background:bar.direction==="negative"?"#f2a489":accent,
             boxShadow:"0 0 13px rgba(10,211,239,.23)"
           }}/>
         </div>
       </div>)}
       <div data-wv-photo-comparison-source="true" dir="auto" style={{
-        borderTop:"1px solid rgba(193,230,240,.24)",paddingTop:9,
-        fontSize:29,lineHeight:1.25,color:"#d0ebf0",overflowWrap:"break-word"
+        borderTop:"1px solid rgba(193,230,240,.24)",paddingTop:6,
+        fontSize:25,lineHeight:1.15,color:"#d0ebf0",overflowWrap:"break-word"
       }}>{comparison.source.publisher} · {comparison.source.dataset} · {comparison.source.asOf}</div>
     </div>}
     {shot.subtitle&&<div data-wv-photo-caption="true" dir="auto"
