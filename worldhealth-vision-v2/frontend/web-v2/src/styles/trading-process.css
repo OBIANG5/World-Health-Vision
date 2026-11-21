@@ -85,3 +85,6 @@
 .tvp-evidence-card-head span{color:#a9c3d7;font-size:.8rem}
 .tvp-result-entry a,.tvp-research a{color:#8de9e2;overflow-wrap:anywhere}
 @media(max-width:480px){.tvp-result-entry{grid-template-columns:1fr}.tvp-result-entry label:has(textarea),.tvp-result-entry .tvp-primary{grid-column:auto}}
+
+.tvp-result-entry label.tvp-comparability{grid-column:1/-1;display:flex;flex-direction:row;align-items:flex-start;gap:10px;line-height:1.5;font-weight:500;color:#d3e8ec}
+.tvp-comparability input[type="checkbox"]{flex:0 0 auto;width:20px;min-width:20px;height:20px;margin:1px 0 0;accent-color:#0c9e92}
