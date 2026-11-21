@@ -1,0 +1,34 @@
+name: WHV V2 Trading MTA process
+on:
+  push:
+    branches:
+      - product/v2-trading-mta-datanalyse-process-v1-2026-11-21
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/frontend/web-v2/**'
+      - '.github/workflows/whv-v2-trading-mta-process.yml'
+permissions:
+  contents: read
+jobs:
+  process-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci
+      - name: Seven-stage trading process domain tests
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run test:trading
+      - name: Lint
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run lint
+      - name: Typescript and Vite build
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build
