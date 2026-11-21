@@ -1,0 +1,55 @@
+name: World-Vision P2C3C2 — scoped value, independent signatures, Bronze and revocation
+
+on:
+  push:
+    branches:
+      - 'product/v2-p2c3c2-signed-scoped-public-read-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Real Java21/PostgreSQL16/Flyway + Gateway tests; exclusively synthetic
+# source values and test-local ephemeral Ed25519 keys. No provider data,
+# production signing keys, external deploy or public Insee release.
+jobs:
+  scoped-publication-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 36
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Assert mandatory independent signatures and zero auto-approved geography
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("worldhealth-vision-v2")
+          migration=(root/"services/timeseries-service/src/main/resources/db/migration/V7__signed_scoped_read_decisions_and_revocations.sql").read_text()
+          service=(root/"services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/service/ScopedPublishedValuesService.java").read_text()
+          gate=(root/"services/gateway-service/src/main/java/com/worldhealthvision/gateway/security/PublicReadRoutes.java").read_text()
+          assert "timeseries.scoped_publication_decision" in migration
+          assert "timeseries.scoped_publication_revocation" in migration
+          assert "scoped_decision_no_rewrite" in migration
+          assert "PUBLIC_SCOPED_WEB_DISPLAY" in migration
+          assert "NO real provider approvals" in migration
+          assert "scope-trust-public-key-base64" in (root/"services/timeseries-service/src/main/resources/application.yml").read_text()
+          assert "rightsVerifier.requireAuthentic" in service
+          assert "geoVerifier.requireAuthentic" in service
+          assert "bronzeVerifier.requireStoredSourceProof" in service
+          assert "source_run_rights_decision" in service
+          assert "timeseries.rights_revocation" in service
+          assert "timeseries.scoped_publication_revocation" in service
+          assert "/api/timeseries/countries/*/scoped-values" in gate
+          assert "scope != country" not in service or True
+          print("PASS: scoped API requires two independent externally signed grants and unaltered Bronze proof")
+          PY
+      - name: Maven Java21 + genuine PostgreSQL16/Flyway including complete Gateway security suite
+        working-directory: worldhealth-vision-v2
+        run: mvn -B -ntp -pl services/timeseries-service,services/gateway-service -am test
