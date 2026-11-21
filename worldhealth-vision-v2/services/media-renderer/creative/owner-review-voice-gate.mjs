@@ -87,6 +87,9 @@ export function verifyOwnerReviewVoice({project,assetsRoot,manifestPath}){
   let file;
   try{file=resolveLocalFile(path.resolve(assetsRoot),project.voice.file);}
   catch(e){die('unsafe/missing original voice file: '+e.message);}
+  const audioStat=fs.statSync(file);
+  if(!audioStat.isFile()||audioStat.size===0||audioStat.size>256*1024*1024)
+    die('narration take must be a non-empty local audio file <=256 MiB');
   const audioBytes=fs.readFileSync(file);
   const gitBlobHash=createHash('sha1')
     .update(Buffer.from('blob '+audioBytes.length+'\0')).update(audioBytes).digest('hex');
