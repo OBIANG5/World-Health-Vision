@@ -394,6 +394,17 @@
   font-weight: 750;
   letter-spacing: .10em;
 }
+.whv-page .country-drawer .whv-country-catalog-status {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #d7e3d8;
+  border-left: 3px solid #779d89;
+  border-radius: 10px;
+  background: #f2f7f2;
+  color: #385648;
+  font-size: 12px;
+  line-height: 1.6;
+}
 .whv-page .country-drawer .country-select {
   background: #fff;
   color: #244438;
