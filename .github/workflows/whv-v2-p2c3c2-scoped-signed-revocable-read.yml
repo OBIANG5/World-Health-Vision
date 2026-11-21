@@ -40,6 +40,8 @@ jobs:
           assert "PUBLIC_SCOPED_WEB_DISPLAY" in migration
           assert "ZERO real provider approvals" in migration
           assert "scope-trust-public-key-base64" in (root/"services/timeseries-service/src/main/resources/application.yml").read_text()
+          assert "public final class ScopedPublishedValuesController" not in (root/"services/timeseries-service/src/main/java/com/worldhealthvision/timeseries/api/ScopedPublishedValuesController.java").read_text()
+          assert "public final class ScopedPublishedValuesService" not in service
           assert "rightsVerifier.requireAuthentic" in service
           assert "geoVerifier.requireAuthentic" in service
           assert "bronzeVerifier.requireStoredSourceProof" in service

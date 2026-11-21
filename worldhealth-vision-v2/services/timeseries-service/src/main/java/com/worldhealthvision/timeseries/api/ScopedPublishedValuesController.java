@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Validated
 @RequestMapping("/api/timeseries")
-public final class ScopedPublishedValuesController {
+public class ScopedPublishedValuesController {
     private final ScopedPublishedValuesService service;
 
     public ScopedPublishedValuesController(ScopedPublishedValuesService service) {
