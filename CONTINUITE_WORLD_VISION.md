@@ -1,3 +1,31 @@
+# WORLD-VISION MEDIA — NOUVELLE PRIORITÉ 21/11/2026 : HOOKS, RE-HOOKS, SON ET CARTES OPPORTUNISTES (P0.2)
+
+**Plus récent que les sections historiques ci-dessous. Périmètre UNIQUEMENT MÉDIA, pas Atlas.**
+
+## Ce qu'a vraiment demandé le propriétaire
+La priorité n°1 est de transformer **rapidement et au plus haut niveau** ses idées/scripts/photos/rushes en vidéos qui captent l'attention tout du long par **hooks ET re-hooks sémantiques, mots/thèmes animés, images qui représentent l'idée dite, sound design dynamique, polices percutantes et charte World-Vision**. L'agent fournit du **montage**, le propriétaire choisit les **idées éditoriales**. La cartographie du monde, les pays, l'économie/trading, les photos et les preuves sont des capacités spécialisées à réutiliser **quand le contenu l'exige** ; GEO demeure une **petite priorité secondaire**, pas la vedette de toutes les vidéos. La bibliothèque future doit aussi permettre d'autres marques.
+
+**REUSE-FIRST !** Remotion + `@remotion/captions` + `@remotion/google-fonts` + GEO/PHOTO/DATA existants ; considérer HyperFrames/claude-motion seulement après benchmark vidéo et licence. **NE PAS relier les comptes ChatGPT/Gemini sans gain démontré au montage**, ne pas refaire un éditeur ni détourner les abonnements grand public en API. Ne pas modifier voix approuvée Vivienne C5.2 ni recycler d'ancien audio d'une autre actualité.
+
+## État P0.2 : branche expérimentale non fusionnée
+- Branche `feature/worldvision-media-kinetic-hook-cues-2026-11-21` issue de **PR #118 P0.1** certifiée et verte aux deux workflows.
+- Rapport détaillé : `worldhealth-vision-v2/docs/media/MEDIA_P0_2_KINETIC_HOOK_SFX_GEO_2026-11-21.md`.
+- Code nouveau : `creative/attention-cues.mjs` (mots approuvés, cues SFX avec chemins sûrs / timeline), `src/AttentionTypography.tsx` (pages/tokens officiels Remotion + bande cyan typographie Barlow Condensed/DM Sans), extension opt-in `CreativeEdit.tsx` + `creative/render-project.mjs`, et `brandMark:worldvision` utilisant **G0 original historique**. `creative/hook-rehook-map.synthetic.example.json` (3 scènes 362 frames, dont globe Natural Earth Gabon EXISTANT, 12 mots, 3 SFX de test). Workflow dédié `.github/workflows/worldvision-media-kinetic-hook.yml`.
+- **Première version P0.2 techniquement réussie** Actions #44899135304, SHA `a92ba913264c2dfa2c6fcb81880737e960eafa4b`, véritable MP4 H264/AAC 1080×1920/30fps 362 frames, script SHA inchangé, 12 word cues + 3 SFX, 8 photogrammes QA inspectés.
+- **MAIS DEFAUT AUDIO MAJEUR IDENTIFIÉ** : fichier AAC présent mais −49.4 LUFS / −31.1 dBFS true peak => trop faible ; augmenter le son de *démonstration seulement* et ajouter QA `volumedetect` au workflow. **Ne pas annoncer le dernier HEAD audio certifié avant nouvel Actions SUCCESS**. Le pilote n'a PAS de voix humaine/actualités et n'est PAS publiable.
+- **AUTRE ÉCART** : le G0 historique du dépôt (œil bleu sur rectangle clair, blob `bc80fa70...`, APPROVED 13/11) apparaît comme un cartouche blanc isolé, tandis que les visuels carrousel plus récents fournis montrent une signature œil-globe **blanche avec mot WORLD-VISION**, a priori une charte plus récente. **Ne pas fabriquer ni altérer ce logo** : identifier/obtenir l'asset validé transparent, vérifier sa provenance et soumettre le remplacement à revue. Le style de texte cyan a un bon potentiel mais l'ouverture manque encore de médias illustratifs et de re-hooks narratifs profonds.
+- Pas de merge, déploiement, achat, nouvelle connexion ou publication.
+
+## Point de reprise intelligent
+1. Vérifier **la dernière CI de la branche P0.2** et l'artefact réel, tester loudness de l'AAC décodé et voir les vrais stills à 390px ; réparer une cause à la fois, arrêter les rerenders pour la pure cosmétique.
+2. Ouvrir la PR P0.2 **DRAFT** contre PR #118 ; documenter le HEAD exact et certification, ne pas fusionner prématurément les PR empilées.
+3. **P0.3** : appliquer les hooks/mots/SFX au **vrai script et aux médias approuvés** avec nouvelle prise de voix correspondante. Aligner les mots sur le vrai signal avec outils ASR/forced alignment existants, pas inventer le timing ni régénérer l'ancienne voix. Concevoir 1 séquence 8–12 s ayant 2 **re-hooks par idées**, pas seulement par couleurs.
+4. **P0.4** : rendre la correction d'un passage (mot/visuel/SFX) réellement rapide et non destructive, afficher dans Studio/Player si utile, puis benchmark temps vers un master accepté, niveau audio, frames mobiles, risques de droits.
+5. **P0.5** : tester sur trois narrations réelles (actualité humaine, géopolitique carte, économie/bourse) et capitaliser uniquement les effets artistiquement approuvés. Règle : l'IA exploite un catalogue d'outils éprouvés, **elle n'invente pas nécessairement les meilleures idées**.
+- Source de vision et QAs : [GitHub issue #116](https://github.com/OBIANG5/World-Health-Vision/issues/116). Commentaire premier rendu : https://github.com/OBIANG5/World-Health-Vision/issues/116#issuecomment-7061997845 .
+
+---
+
 # WORLD-VISION MEDIA — PRIORITÉ ACTUELLE 21 NOVEMBRE 2026 : HOOKS, RE-HOOKS ET MONTAGE SONORE RAPIDE
 
 **Cette section est plus récente que les états historiques ci-dessous.** Elle concerne **uniquement le média**, pas le logiciel produit/Atlas traité dans un autre chat.
