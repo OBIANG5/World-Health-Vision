@@ -133,3 +133,61 @@
 .tvp-remote-workspace .tvp-feedback{overflow-wrap:anywhere}
 @media(max-width:480px){.tvp-remote-workspace{padding:11px}
   .tvp-remote-workspace .tvp-case-row button{flex:1 1 auto}}
+
+/* P1C — original, source-led 8-currency/28-cross macro workbench.
+   Inline with the 7-step MTA editor; never a signal or a market-data feed. */
+.tvp-macro{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.tvp-macro h4{color:#d9f7ed;font-size:1.06rem;margin:20px 0 11px}
+.tvp-macro h5{color:#c6ede4;font-size:.93rem;margin:13px 0 10px}
+.tvp-macro-intro{margin:18px 0;padding:16px;background:#152b40;border:1px solid #365267;border-radius:12px}
+.tvp-macro-intro p{line-height:1.5;font-size:.88rem;color:#cbdbe8}
+.tvp-macro-toolbar,.tvp-macro-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:14px 0}
+.tvp-macro-toolbar strong{margin-right:auto;color:#bff2e5;font-size:.87rem}
+.tvp-macro-toolbar button,.tvp-macro-source button{background:#1b3145;color:#edfaff;border:1px solid #4b6478;border-radius:8px;padding:9px 11px;cursor:pointer;font:inherit;font-size:.81rem}
+.tvp-macro .tvp-primary{border-radius:9px;padding:10px 12px;min-height:39px}
+.tvp-macro .tvp-primary:disabled{opacity:.56;cursor:not-allowed}
+.tvp-macro-currencies{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.tvp-macro-currencies button,.tvp-macro-pairs button{min-width:0;text-align:center;background:#152b40;color:#e8f5fc;border:1px solid #416276;border-radius:9px;padding:10px 6px;cursor:pointer;font:inherit}
+.tvp-macro-currencies button.active,.tvp-macro-pairs button.active{background:#1d555a;border-color:#86e1cf;color:#fff}
+.tvp-macro-currencies strong,.tvp-macro-pairs strong{display:block;white-space:nowrap;font-size:.87rem}
+.tvp-macro-currencies small,.tvp-macro-pairs small{display:block;color:#b0cbd3;margin-top:3px;font-size:.73rem}
+.tvp-macro-editor{margin-top:17px;padding:15px;background:#162a3d;border:1px solid #375267;border-radius:12px}
+.tvp-macro-editor-heading{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;color:#b7f3e0}
+.tvp-macro-editor-heading span{color:#b2c5d2;font-size:.78rem}
+.tvp-macro-form,.tvp-macro-source-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+.tvp-macro-form label,.tvp-macro-source-form label{display:flex;flex-direction:column;gap:6px;font-size:.81rem;color:#e1ebee;font-weight:600;min-width:0}
+.tvp-macro-form label:has(textarea),.tvp-macro-wide{grid-column:1/-1}
+.tvp-macro-source-form{border:1px solid #3b566c;border-radius:10px;background:#10253a;padding:13px}
+.tvp-macro-source-form button{justify-self:start;grid-column:1/-1}
+.tvp-macro-source{margin:8px 0;padding:10px;border-left:3px solid #63b9b0;background:#122b40;border-radius:7px}
+.tvp-macro-source strong,.tvp-macro-source span{display:block;font-size:.79rem}
+.tvp-macro-source span{color:#c8dae5;margin:5px 0}
+.tvp-macro-source p{color:#c9dfe4;line-height:1.5;font-size:.82rem}
+.tvp-macro-actions small{color:#a8c0c9;font-size:.79rem}
+.tvp-macro-history{margin-top:12px;border:1px solid #3c5468;border-radius:9px;padding:12px;color:#c7e4e2}
+.tvp-macro-history summary{cursor:pointer;font-size:.85rem}
+.tvp-macro-history article{padding:10px 0;border-top:1px solid #314b60}
+.tvp-macro-history article p{font-size:.83rem;color:#cadae5}
+.tvp-macro-pair-section>p,.tvp-macro-pair-detail>p{font-size:.85rem;line-height:1.55;color:#becfdd}
+.tvp-macro-pairs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:14px 0 20px}
+.tvp-macro-pair-detail{background:#142b3e;border:1px solid #456272;border-radius:11px;padding:14px}
+.tvp-macro-dual{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.tvp-macro-dual article{min-width:0;border:1px solid #3b5969;border-radius:10px;background:#101f30;padding:11px}
+.tvp-macro-dual article h5{margin:0 0 8px;color:#a3f0df}
+.tvp-macro-dual article p{font-size:.8rem;line-height:1.5;color:#cadce5}
+.tvp-macro-dual article small,.tvp-macro-pair-detail>small{display:block;color:#a8c5ce;font-size:.77rem;line-height:1.4;margin:9px 0}
+.tvp-macro-footnote{display:block;margin:17px 0 0;color:#a9bacb;font-size:.76rem;line-height:1.5}
+@media(max-width:740px){
+  .tvp-macro-currencies{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .tvp-macro-form,.tvp-macro-source-form{grid-template-columns:1fr}
+  .tvp-macro-form label:has(textarea),.tvp-macro-wide{grid-column:auto}
+  .tvp-macro-source-form button{grid-column:auto}
+  .tvp-macro-editor{padding:10px}
+  .tvp-macro-pairs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tvp-macro-dual{grid-template-columns:1fr}
+}
+@media(max-width:360px){
+  .tvp-macro-currencies{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tvp-macro-pairs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tvp-macro-pair-detail{padding:9px}
+}
