@@ -5,6 +5,7 @@ on:
     branches:
       - product/v2-global-radar-source-archive-preview-r2b-2026-11-21
       - product/v2-radar-gabon-imf-claims-evidence-r2c-2026-11-21
+      - qa/v2-radar-ux-crossflow-rc0-2026-11-21
   workflow_dispatch:
   pull_request:
     paths:
@@ -24,6 +25,7 @@ on:
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-editorial-case.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-claims.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/global-radar-real-archive-browser-smoke.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/ux1b-sources-smoke.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/build-radar-preview.sh"
       - ".github/workflows/whv-v2-global-radar-real-browser-r2b.yml"
 
@@ -99,7 +101,8 @@ jobs:
             scripts/test-global-radar-static-snapshot.mjs \
             scripts/test-global-radar-editorial-case.mjs \
             scripts/test-global-radar-claims.mjs \
-            global-radar-real-archive-browser-smoke.mjs
+            global-radar-real-archive-browser-smoke.mjs \
+            ux1b-sources-smoke.mjs
       - name: Build deliberate SYNTHETIC preview fixture only in CI workspace
         working-directory: worldhealth-vision-v2/services/ingestion-service
         env:
@@ -150,6 +153,10 @@ jobs:
       - name: Built real V2 browser — explicitly SYNTHETIC archive, source choice and responsive UI
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: node global-radar-real-archive-browser-smoke.mjs
+      - name: Integrated UX1B country-source choices and Radar on SAME built V2 commit (320/390/820/1440)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: node ux1b-sources-smoke.mjs
       - name: Preview-only robots and no-network build acceptance (production default remains indexable)
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
@@ -167,7 +174,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: whv-radar-r2b-synthetic-archive-browser
-          path: worldhealth-vision-v2/frontend/web-v2/global-radar-r2b-artifacts/
+          path: |
+            worldhealth-vision-v2/frontend/web-v2/global-radar-r2b-artifacts/
+            worldhealth-vision-v2/frontend/web-v2/ux1b-artifacts/
           if-no-files-found: ignore
 
   real-source-to-browser-preview:
