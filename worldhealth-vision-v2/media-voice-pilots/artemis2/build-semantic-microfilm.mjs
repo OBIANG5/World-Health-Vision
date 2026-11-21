@@ -72,7 +72,7 @@ try{
   createdSfx=true;
   const overlap=6;
   const shots=[
-    {id:'reported-flashes',durationFrames:rehook1+overlap,template:'documentary',
+    {id:'reported-flashes',durationFrames:rehook1+overlap,template:'kinetic',titleTreatment:'cyan-slab',
       title:'5 ÉCLAIRS\nSIGNALÉS',titleFrameZero:true,eyebrow:'OBSERVATIONS DE L’ÉQUIPAGE',
       subtitle:'Sur la face cachée de la Lune',footnote:'NASA · équipage Artemis II · avril 2026',
       media:{kind:'image',file:'lunar-orientale.jpg',credit:'NASA original art002e009627 — not an impact photo'},
