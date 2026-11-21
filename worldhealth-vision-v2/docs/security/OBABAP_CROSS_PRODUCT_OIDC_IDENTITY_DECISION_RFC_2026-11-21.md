@@ -39,3 +39,24 @@ World-Vision a des données publiques (Atlas/sources) et des données **privées
 - **Pas** de compte ou session OIDC, de SSO inter-applications, ni de transfert de fichiers en production.
 
 À la prochaine reprise, lire `docs/continuity/WORLD_VISION_TRADING_P1B1_PRIVATE_CLIENT_HANDOFF_2026-11-21.md` puis cette RFC et issue #122. Avancer sur l'identité choisie et le parcours testé, ne pas refaire P1A.
+
+
+---
+
+## Étude de solutions managées — sources officielles consultées 21/11/2026
+**Ce n'est PAS un achat ni une sélection d'IdP.** Les prix, fonctionnalités, exclusions et territoires doivent être vérifiés à la signature. Ne pas confondre OAuth/OIDC « se connecter avec X » avec « être fournisseur OIDC pour nos propres API ».
+
+| Candidat | Ce qui est vérifié | Limite / question bloquante | Priorité P1B2 |
+|---|---|---|---|
+| **ZITADEL Cloud** | [Tarifs officiels](https://zitadel.com/pricing) : formule gratuite avec quota annoncé de 25 000 DAU (consulter la définition de comptage DAU et surconsommation). [Guide du flux PKCE](https://zitadel.com/docs/guides/integrate/login/oidc/oauth-recommended-flows), [API audience/claims](https://zitadel.com/docs/guides/solution-scenarios/frontend-calling-backend-API). OpenID Connect natif, web/mobile. | L'audience JWT peut nécessiter le scope propre au projet `urn:zitadel:iam:org:project:id:<PROJECT_ID>:aud`, **pas** l'audience arbitraire `worldvision-api` choisie dans le Gateway actuel. Tester vraies valeurs `aud`, scopes, claims et les deux validateurs Java **AVANT** l'intégration. Hébergement, région, durée et capacité de l'offre à confirmer. | **Pilote privilégié sans coût**, si les exigences Spring JWT sont satisfaites. |
+| **Supabase Auth** | [Tarifs officiels](https://supabase.com/pricing) : 50 000 MAU de base sur Free. **Documentation actualisée le 18 novembre 2026** : [Supabase OAuth 2.1 Server](https://supabase.com/docs/guides/auth/oauth-server) peut agir comme **fournisseur OpenID Connect** (pas seulement comme receveur de login); [flux PKCE + discovery endpoint](https://supabase.com/docs/guides/auth/oauth-server/oauth-flows). | Fonction IdP très récemment documentée. Tester si les jetons d'API satisfont notre `aud`, `scope=trading:read/write`, `iss`, jwks et rotation, ainsi que les conditions de multi-apps/production; quota/hibernation/free tier et prix Pro mensuel (ne pas acheter). | **Second pilote sans coût** et comparaison réelle avec ZITADEL. |
+| **Auth0** | [Grille officielle](https://auth0.com/pricing) : Free pour démarrer (jusqu'à 25 000 MAU selon documentation 2026). | La rubrique **Cross APP SSO** du tableau tarifaire n'est pas incluse dans les premières formules. Si elle exige Professional ou autre supplément, c'est un mauvais premier choix pour identité mutualisée. | Réserve, seulement si coût réel et accès inter-apps compétitifs. |
+| **Clerk** | [Offre officielle](https://clerk.com/pricing) : 50 000 Monthly Retained Users gratuits, mais MRU ≠ MAU. | Certaines fonctions de production/SSO et plans sont payants, seuils et coûts par projet/organisation à confirmer. Éviter lock-in frontend tant que le besoin principal est JWT signé réutilisable Java/Spring. | Réserve, pas de décision sans comparaison. |
+| **Keycloak** | [Documentation officielle](https://www.keycloak.org/securing-apps/overview) : fournisseur OIDC/SAML extensible et installable soi-même. | Licence de logiciel sans coût ≠ service gratuit : VPS allumé, mises à jour et patchs de sécurité, sauvegardes, disponibilité internationale, compte admin 24/7 et rotation certificats. | Option à reconsidérer si un VPS mutualisé déjà administré rend le coût total avantageux. |
+
+### Recommandation P1B2 provisoire, orientée valeur/coût
+**Pas d'abonnement mensuel maintenant**. Réaliser d'abord un **POC gratuit ZITADEL Cloud vs Supabase Auth** sur les vrais points d'échec potentiels de P1A : (1) enregistrement client SPA/BFF + PKCE/nonce/state, (2) édition d'un JWT signé pour audience dédiée au Gateway et réutilisable entre deux API Java avec scopes différents, (3) révocation/expiry, (4) séparation `iss+sub` A/B et SSO, (5) contrôles RGPD, pays Afrique/Europe, (6) plafond et surprises de facturation.
+
+La **décision finale** doit être fondée sur ces tests : le backend P1A actuel ne doit **pas** changer ses conditions JWT pour s'adapter à une promesse marketing d'IdP. Si le fournisseur a un schéma d'audience différent, ajuster explicitement l'**audience configurée** des deux validateurs après test et gérer plusieurs APIs avec identifiants distincts; ne jamais ignorer la vérification `aud`.
+
+**Donnée à jour de sûreté** : la solution doit préserver les enregistrements Trading existants lors d'une migration d'issuer (clé d'appartenance composite), sans transfert automatique ni correspondance sur simple email. L'IdP pour ABAA reste une cible d'architecture; son application actuelle n'est pas modifiée dans cette PR.
