@@ -46,6 +46,7 @@ type Shot = {
   mediaName:string;mediaCredit:string;mediaTrimBefore:number;
   foregroundName:string;foregroundCredit:string;focusX:number;focusY:number;
   documentX:number;documentY:number;documentW:number;documentH:number;
+  documentMobileSafe:boolean;documentZoomMax:number;
   geoLon:number;geoLat:number;geoSpin:number;geoLook:"photo"|"vector";
   geoShowCamera:boolean;geoToLon:number;geoToLat:number;
   geoCameraStart:number;geoCameraEnd:number;geoCameraZoom:number;
@@ -79,6 +80,7 @@ const initialShot=():Shot=>({
   template:"kinetic",motion:"locked",transitionAfter:"cut",transitionFrames:0,mediaName:"",mediaCredit:"",mediaTrimBefore:0,
   foregroundName:"",foregroundCredit:"",focusX:0.5,focusY:0.5,
   documentX:.25,documentY:.32,documentW:.5,documentH:.22,
+  documentMobileSafe:false,documentZoomMax:1.85,
   geoLon:0,geoLat:10,geoSpin:16,geoLook:"photo",
   geoShowCamera:false,geoToLon:0,geoToLat:0,
   geoCameraStart:15,geoCameraEnd:102,geoCameraZoom:1.1,
@@ -296,7 +298,11 @@ export default function CinematicProductionBoard() {
         transitionAfter:"cut",
         transitionFrames:0,
         focus:{x:active.focusX,y:active.focusY},
-        ...(active.template==="document_focus"?{documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH}}:{}),
+        ...(active.template==="document_focus"?{
+          documentRegion:{x:active.documentX,y:active.documentY,width:active.documentW,height:active.documentH},
+          ...(active.documentMobileSafe?{evidencePresentation:"mobile-safe" as const,
+            documentZoomMax:active.documentZoomMax}:{})
+        }:{}),
         ...(active.template==="photo_story"?{photo:buildPhoto(active)}:{}),
         ...(active.template==="data_story"?{data:buildData(active)}:{}),
         ...((active.template==="geo_story"||active.template==="country_focus")?{geo:buildGeo(active)}:{})
@@ -317,7 +323,9 @@ export default function CinematicProductionBoard() {
       files.some(f=>f.name===shot.mediaName&&f.kind==="image")&&
       shot.documentX>=0&&shot.documentY>=0&&shot.documentW>=.12&&shot.documentW<=.85&&
       shot.documentH>=.08&&shot.documentH<=.8&&
-      shot.documentX+shot.documentW<=1.0000001&&shot.documentY+shot.documentH<=1.0000001
+      shot.documentX+shot.documentW<=1.0000001&&shot.documentY+shot.documentH<=1.0000001&&
+      (!shot.documentMobileSafe||(Number.isFinite(shot.documentZoomMax)&&
+        shot.documentZoomMax>=1&&shot.documentZoomMax<=2.25))
     );
     const validForeground=!shot.foregroundName||Boolean(shot.mediaName&&files.some(f=>f.name===shot.foregroundName&&f.kind==="image"));
     return hasMedia&&validFocus&&validDocument&&validForeground&&validGeo(shot)&&validPhoto(shot)&&validData(shot)&&
@@ -363,7 +371,11 @@ export default function CinematicProductionBoard() {
         transitionAfter:i===shots.length-1?"cut":shot.transitionAfter,
         transitionFrames:i===shots.length-1||shot.transitionAfter==="cut"?0:shot.transitionFrames,
         focus:{x:shot.focusX,y:shot.focusY},
-        ...(shot.template==="document_focus"?{documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH}}:{}),
+        ...(shot.template==="document_focus"?{
+          documentRegion:{x:shot.documentX,y:shot.documentY,width:shot.documentW,height:shot.documentH},
+          ...(shot.documentMobileSafe?{evidencePresentation:"mobile-safe" as const,
+            documentZoomMax:shot.documentZoomMax}:{})
+        }:{}),
         ...(shot.template==="photo_story"?{photo:buildPhoto(shot)}:{}),
         ...(shot.template==="data_story"?{data:buildData(shot)}:{}),
         ...((shot.template==="geo_story"||shot.template==="country_focus")?{geo:buildGeo(shot)}:{})
@@ -456,7 +468,11 @@ export default function CinematicProductionBoard() {
         title:s.title,subtitle:s.subtitle,eyebrow:s.eyebrow,
         ...(s.titleFrameZero?{titleFrameZero:true}:{}),
         focus:{x:s.focusX,y:s.focusY},
-        ...(s.template==="document_focus"?{documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH}}:{}),
+        ...(s.template==="document_focus"?{
+          documentRegion:{x:s.documentX,y:s.documentY,width:s.documentW,height:s.documentH},
+          ...(s.documentMobileSafe?{evidencePresentation:"mobile-safe",
+            documentZoomMax:s.documentZoomMax}:{})
+        }:{}),
         ...(s.template==="photo_story"?{photo:buildPhoto(s)}:{}),
         ...(s.template==="data_story"?{data:buildData(s)}:{}),
         ...((s.template==="geo_story"||s.template==="country_focus")?{geo:buildGeo(s)}:{}),
@@ -899,6 +915,18 @@ export default function CinematicProductionBoard() {
                 value={Math.round(active.documentH*100)}
                 onChange={e=>{const height=Number(e.target.value)/100;updateShot({documentH:height,documentY:Math.min(active.documentY,1-height)});}}/>
             </label>
+            <label>
+              <input type="checkbox" checked={active.documentMobileSafe}
+                onChange={e=>updateShot({documentMobileSafe:e.target.checked})}/>
+              PREUVE LISIBLE SUR MOBILE · sous-titres au-dessus du document
+            </label>
+            <label>ZOOM OPTIQUE SUR PIXELS ORIGINAUX · {active.documentZoomMax.toFixed(2)}×
+              <input type="range" min="1" max="2.25" step="0.05"
+                disabled={!active.documentMobileSafe}
+                value={active.documentZoomMax}
+                onChange={e=>updateShot({documentZoomMax:Number(e.target.value)})}/>
+            </label>
+            <small>La zone choisie et le zoom ne modifient pas l'image source. Évalue la lisibilité du document et les contrôles TikTok sur le vrai MP4 avant toute diffusion.</small>
           </div>}
           <div className="wvc-focus-control" aria-label="Cadrage précis de l’image source">
             <div className="wvc-focus-heading"><strong>CADRAGE ET POINT D’INTÉRÊT</strong><span>Sauvegardé dans le projet Remotion</span></div>
