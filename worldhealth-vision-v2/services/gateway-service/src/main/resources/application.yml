@@ -276,3 +276,9 @@ whv:
     audience: ${WHV_SECURITY_AUDIENCE:}
     # Local cryptographic integration tests only. Never enable on a real host.
     allow-insecure-loopback-jwks-for-tests: ${WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS:false}
+    # Disabled until a real issuer, project audience and verified user grants exist.
+    oidc-project-roles:
+      enabled: ${WHV_SECURITY_OIDC_PROJECT_ROLES_ENABLED:false}
+      project-audience: ${WHV_SECURITY_OIDC_PROJECT_AUDIENCE:}
+      read-role: ${WHV_SECURITY_OIDC_TRADING_READ_ROLE:}
+      write-role: ${WHV_SECURITY_OIDC_TRADING_WRITE_ROLE:}

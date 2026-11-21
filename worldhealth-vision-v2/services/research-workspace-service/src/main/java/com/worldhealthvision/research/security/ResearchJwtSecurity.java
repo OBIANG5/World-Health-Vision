@@ -2,6 +2,7 @@ package com.worldhealthvision.research.security;
 
 import java.net.URI;
 import java.util.List;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 /**
@@ -28,7 +30,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 public class ResearchJwtSecurity {
 
     @Bean
-    SecurityFilterChain researchSecurityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain researchSecurityFilterChain(HttpSecurity http,
+            ObjectProvider<JwtAuthenticationConverter> projectRoles) throws Exception {
         return http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -41,7 +44,8 @@ public class ResearchJwtSecurity {
                 .requestMatchers(HttpMethod.PUT, "/api/trading/cases/*").hasAuthority("SCOPE_trading:write")
                 .requestMatchers(HttpMethod.DELETE, "/api/trading/cases/*").hasAuthority("SCOPE_trading:write")
                 .anyRequest().denyAll())
-            .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
+            .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
+                projectRoles.ifAvailable(jwt::jwtAuthenticationConverter)))
             .build();
     }
 
