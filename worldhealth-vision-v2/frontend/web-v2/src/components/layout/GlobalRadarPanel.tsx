@@ -110,7 +110,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    searchRef.current?.focus();
+    searchRef.current?.focus({ preventScroll: true });
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
       if (event.key !== "Tab") return;
@@ -210,6 +210,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
           <button type="button" className="radar-close" onClick={onClose}
             aria-label={copy(lang, "Fermer Global Radar", "Close Global Radar")}>×</button>
         </header>
+        <div className="radar-scroll">
         <div className="radar-disclosure">
           <strong>{copy(lang, "Premier parcours pilote, sans collecte en arrière-plan", "First pilot, no background collection")}</strong>
           <p>{copy(lang,
@@ -338,6 +339,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
           </div>}
           {feedback && <p className="radar-status" role="status">{feedback}</p>}
         </main>
+        </div>
         <footer className="radar-footer">
           <span>{copy(lang,
             "R2B : archive GDELT datée si intégrée au build, recherche directe facultative · documents et faits non vérifiés.",
