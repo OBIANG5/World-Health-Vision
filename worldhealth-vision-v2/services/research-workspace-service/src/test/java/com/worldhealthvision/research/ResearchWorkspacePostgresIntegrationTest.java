@@ -55,10 +55,15 @@ class ResearchWorkspacePostgresIntegrationTest {
     @Autowired ObjectMapper mapper;
 
     private JwtRequestPostProcessor user(String subject, String... scopes) {
+        return userWithIssuer("https://identity.tests.invalid/issuer", subject, scopes);
+    }
+
+    private JwtRequestPostProcessor userWithIssuer(
+            String issuer, String subject, String... scopes) {
         var authorities = java.util.Arrays.stream(scopes)
             .map(scope -> new SimpleGrantedAuthority("SCOPE_" + scope))
             .toArray(org.springframework.security.core.GrantedAuthority[]::new);
-        return jwt().jwt(token -> token.issuer("https://identity.tests.invalid/issuer")
+        return jwt().jwt(token -> token.issuer(issuer)
                 .subject(subject).audience(java.util.List.of("worldvision-api-ci")))
             .authorities(authorities);
     }
@@ -199,6 +204,63 @@ class ResearchWorkspacePostgresIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(result -> assertThat(mapper.readTree(result.getResponse()
                 .getContentAsString()).size()).isZero());
+    }
+
+    @Test
+    void sameSubjectUnderDifferentIssuerIsStillASeparatePrivateOwner() throws Exception {
+        String subject = "multi-issuer-" + UUID.randomUUID();
+        String id = mapper.readTree(create(subject, "CHFJPY")
+            .getResponse().getContentAsString()).path("id").asText();
+
+        // mockJwt intentionally skips cryptographic validation here; this proves
+        // the database key is (issuer, sub), not sub alone. Real signature and
+        // issuer rejection are covered by ResearchIndependentJwtSignatureTest.
+        mvc.perform(get("/api/trading/cases/" + id)
+            .with(userWithIssuer("https://another-issuer.invalid/issuer",
+                subject, "trading:read"))).andExpect(status().isNotFound());
+        mvc.perform(get("/api/trading/cases")
+            .with(userWithIssuer("https://another-issuer.invalid/issuer",
+                subject, "trading:read"))).andExpect(status().isOk())
+                .andExpect(result -> assertThat(mapper.readTree(result.getResponse()
+                    .getContentAsString()).size()).isZero());
+        mvc.perform(get("/api/trading/cases/" + id)
+            .with(user(subject, "trading:read"))).andExpect(status().isOk());
+    }
+
+    @Test
+    void nestedResearchEvidenceRequiresSafeHttpsAndValidChronology() throws Exception {
+        String subject = "nested-" + UUID.randomUUID();
+        String invalid = sample("AUDCAD").replace("\"events\":[]", """
+            "events":[{"id":"ev1","title":"Demo release","scheduledAt":"2026-11-20T13:00:00Z",
+                "preparedAt":"2026-11-20T11:00:00Z","expectationAsOf":"2026-11-20T10:00:00Z",
+                "expected":"2.0","previous":"1.5","unit":"%",
+                "expectationPublisher":"Original publisher",
+                "expectationSourceUrl":"javascript:alert(1)",
+                "higherScenario":"Above expectations","lowerScenario":"Below expectations"}]
+            """.trim());
+        mvc.perform(post("/api/trading/cases").with(user(subject, "trading:write"))
+            .contentType(MediaType.APPLICATION_JSON).content(invalid))
+            .andExpect(status().isBadRequest());
+
+        String valid = invalid.replace("javascript:alert(1)", "https://example.org/expectation");
+        MvcResult created = mvc.perform(post("/api/trading/cases")
+                .with(user(subject, "trading:write"))
+                .contentType(MediaType.APPLICATION_JSON).content(valid))
+            .andExpect(status().isCreated()).andReturn();
+        assertThat(mapper.readTree(created.getResponse().getContentAsString())
+            .path("plan").path("events").size()).isEqualTo(1);
+
+        String invalidResult = valid.replace(
+            "\"lowerScenario\":\"Below expectations\"",
+            """
+                "lowerScenario":"Below expectations",
+                "result":{"actual":"2.3","publishedAt":"2026-11-20T13:10:00Z",
+                  "originalUrl":"data:text/html,unsafe","reaction":"User research",
+                  "comparabilityReviewed":false}
+                """.trim());
+        mvc.perform(post("/api/trading/cases").with(user(subject, "trading:write"))
+            .contentType(MediaType.APPLICATION_JSON).content(invalidResult))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
