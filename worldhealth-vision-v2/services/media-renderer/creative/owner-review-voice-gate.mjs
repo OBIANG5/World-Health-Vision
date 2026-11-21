@@ -25,6 +25,12 @@ export const OWNER_VOICE_PROFILE=Object.freeze({
   reference_duration_seconds:14.088
 });
 export const OWNER_VOICE_MANIFEST_VERSION='worldvision-owner-review-voice-v1';
+// Verified Git blob SHA-1s from the historical public audition branch.
+// This is an exact-byte *sample reuse* prohibition, NOT a speaker biometric.
+const REFERENCE_SAMPLE_GIT_BLOBS=new Set([
+  'cd2254c1557b815fd63a4861af9086d26d960da6', // 14.088s C5.2 review
+  'b36aca061d634e68be464e805284d3aa1735a5f6'  // C5.2 raw service
+]);
 const HASH=/^[a-f0-9]{64}$/;
 const isObj=o=>o!==null&&typeof o==='object'&&!Array.isArray(o);
 const die=s=>{throw new Error('World-Vision owner-review voice blocked: '+s);};
@@ -81,7 +87,12 @@ export function verifyOwnerReviewVoice({project,assetsRoot,manifestPath}){
   let file;
   try{file=resolveLocalFile(path.resolve(assetsRoot),project.voice.file);}
   catch(e){die('unsafe/missing original voice file: '+e.message);}
-  const fileHash=hash(fs.readFileSync(file));
+  const audioBytes=fs.readFileSync(file);
+  const gitBlobHash=createHash('sha1')
+    .update(Buffer.from('blob '+audioBytes.length+'\0')).update(audioBytes).digest('hex');
+  if(REFERENCE_SAMPLE_GIT_BLOBS.has(gitBlobHash))
+    die('the historical C5.2 sample is for REFERENCE only, not another story');
+  const fileHash=hash(audioBytes);
   if(fileHash!==m.voice_sha256)
     die('source audio bytes differ from the exact SHA256 locked narration take');
   return Object.freeze({
