@@ -116,3 +116,20 @@
 .tvp-case-alert{color:#ffd2a0;line-height:1.5;background:#352719;border:1px solid #745a3b;border-radius:8px;padding:11px;margin:11px 0}
 .tvp-case-alert button{margin-right:8px;margin-bottom:8px}
 @media(max-width:480px){.tvp-case-context{display:block}.tvp-case-state{display:block;padding:9px 0}.tvp-library-list{padding:10px}.tvp-case-row>div:last-child{width:100%}.tvp-case-row>div:last-child button{flex:1 1 auto}}
+
+/* P1B1 — private case gateway is OPTIONAL and never an implicit local upload.
+   The panel is inert until a verified OIDC adapter supplies a session. */
+.tvp-remote-workspace{min-width:0;max-width:100%;margin-top:18px;padding:15px;
+  border:1px solid #3c6570;border-radius:12px;background:#132c40}
+.tvp-remote-workspace h4{margin:0 0 9px;color:#b5f1e4;font-size:.98rem}
+.tvp-remote-workspace>p{font-size:.85rem;line-height:1.52;color:#c3dbe4}
+.tvp-remote-workspace .tvp-case-context{margin-top:12px}
+.tvp-remote-workspace .tvp-case-context small{color:#b4ccd5;flex:1 1 200px}
+.tvp-remote-workspace .tvp-footer-actions{margin-top:12px}
+.tvp-remote-workspace .tvp-footer-actions button:disabled,
+.tvp-remote-workspace .tvp-case-row button:disabled{cursor:not-allowed;opacity:.55}
+.tvp-remote-workspace .tvp-footer-actions .tvp-case-delete{color:#ffd5d5;
+  border-color:#94565c;background:#432c37}
+.tvp-remote-workspace .tvp-feedback{overflow-wrap:anywhere}
+@media(max-width:480px){.tvp-remote-workspace{padding:11px}
+  .tvp-remote-workspace .tvp-case-row button{flex:1 1 auto}}

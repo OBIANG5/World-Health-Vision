@@ -45,6 +45,14 @@ try {
     const panel = page.locator("section.tvp-dialog");
     await panel.waitFor({ state: "visible", timeout: 15000 });
     assert.equal(await page.locator("nav.tvp-stages button.tvp-stage").count(), 9, "Seven stages plus evidence and DataAnalyse-style research");
+    // P1B1: with no trusted OIDC issuer/client, the cloud panel must disclose
+    // the blocker and must not show active cloud operations or simulate login.
+    const remotePanel = page.locator(".tvp-remote-workspace");
+    await remotePanel.waitFor({ state: "visible" });
+    assert((await remotePanel.innerText()).includes("OIDC/PKCE"),
+      "Remote workspace must explain absence of real OIDC authentication");
+    assert.equal(await remotePanel.locator("button").count(), 0,
+      "Unconfigured identity must not expose misleading cloud CRUD buttons");
     assert((await page.locator(".tvp-disclaimer").innerText()).includes("aucun flux de marché"),
       "No fake live feed or broker claims");
     const all = await panel.evaluate((el) => ({ visibleWidth: el.clientWidth, totalWidth: el.scrollWidth }));
