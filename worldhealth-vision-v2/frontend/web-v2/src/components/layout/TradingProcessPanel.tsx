@@ -301,7 +301,7 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
             setRemoteReset((previous) => previous + 1);
           }} />
           <TradingPrivateWorkspace
-            key={"remote-" + remoteReset + "-" + (researchIdentityNotConfigured?.sessionInstanceId ?? "disconnected")}
+            key={"remote-" + remoteReset + "-disconnected"}
             identity={researchIdentityNotConfigured}
             plan={plan}
             onOpen={(value) => {
