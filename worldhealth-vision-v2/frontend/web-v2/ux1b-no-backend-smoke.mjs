@@ -40,6 +40,12 @@ try {
     page.on("pageerror", err => errors.push(err.message));
     await page.goto(origin + "/?wv=country&iso3=GAB", { waitUntil: "domcontentloaded" });
     await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 18000 });
+    const editorial = page.locator(".whv-country-story");
+    await editorial.waitFor({ state: "visible" });
+    assert(await page.locator(".whv-country-now-feature").isVisible(),
+      "Dated Gabon dossier must remain visible even when private backends fail");
+    assert.equal(await page.locator(".whv-country-now-feature .whv-country-now-sources a").count(), 3,
+      "Historically researched links are not faked by a disconnected backend");
     const country = page.locator(".whv-national-evidence");
     await country.waitFor({ state: "attached", timeout: 15000 });
     await country.locator('p[role="status"]').filter({
@@ -62,6 +68,25 @@ try {
     });
     console.log("PASS RC0 " + device.name +
       "px: no backends, local catalog UNKNOWN, published coverage UNKNOWN; no fake zeros");
+    if (device.width === 390) {
+      // A third country cannot inherit Gabon's historic news or photograph.
+      await page.goto(origin + "/?wv=country&iso3=FRA",
+        { waitUntil: "domcontentloaded" });
+      await page.locator(".country-drawer.open").waitFor({ state: "visible" });
+      const absentFeed = page.locator(".whv-country-now-unavailable");
+      await absentFeed.waitFor({ state: "visible" });
+      assert.equal(await page.locator(".whv-country-now-feature").count(), 0,
+        "Never display the Gabon/FMI story on France or another country");
+      const frenchPhoto = page.locator(".whv-country-story-photo");
+      if (await frenchPhoto.count()) {
+        assert((await frenchPhoto.getAttribute("src")).includes("Paris_skyline"),
+          "France must use its own reviewed country photo");
+      }
+      await page.screenshot({
+        path: "ux1b-artifacts/390-country-france-honest-unavailable.png",
+        fullPage: false,
+      });
+    }
     await page.close();
   }
 } finally {
