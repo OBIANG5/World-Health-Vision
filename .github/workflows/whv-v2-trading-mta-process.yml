@@ -30,7 +30,7 @@ jobs:
       # outside this feature. New code is never exempted from its lint gate.
       - name: Lint touched TypeScript and JavaScript
         working-directory: worldhealth-vision-v2/frontend/web-v2
-        run: npx eslint src/trading/tradePlan.ts src/components/layout/TradingProcessPanel.tsx src/product/visionProducts.ts src/navigation/worldRoute.ts src/App.tsx scripts/test-trade-plan.mjs
+        run: npx eslint src/trading/tradePlan.ts src/trading/tradeResearch.ts src/components/layout/TradingProcessPanel.tsx src/components/layout/TradingResearchPanel.tsx src/product/visionProducts.ts src/navigation/worldRoute.ts src/App.tsx scripts/test-trade-plan.mjs scripts/trading-process-browser-smoke.mjs
       - name: Typescript and Vite build
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: npm run build
