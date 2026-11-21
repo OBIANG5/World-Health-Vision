@@ -1,0 +1,61 @@
+name: WHV V2 Global Radar R2A — official static Events and source provenance
+
+on:
+  push:
+    branches:
+      - product/v2-global-radar-gdelt-static-events-r2a-2026-11-21
+  pull_request:
+    paths:
+      - "worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/connectors/gdelt_events_feed.py"
+      - "worldhealth-vision-v2/services/ingestion-service/tests/test_gdelt_events_feed.py"
+      - "worldhealth-vision-v2/services/ingestion-service/probe_gdelt_events.py"
+      - ".github/workflows/whv-v2-global-radar-static-events-r2a.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  gdelt-events-safety-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install only needed test dependencies
+        run: python -m pip install "httpx>=0.27,<0.28" "pytest>=8.3,<9"
+      - name: Compile candidate parser, manifest and operator CLI
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        run: python -m compileall -q src/ingestion_service/connectors/gdelt_events_feed.py probe_gdelt_events.py tests/test_gdelt_events_feed.py
+      - name: Real ingestion package imports + synthetic manifest/ZIP adversarial tests
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        env:
+          PYTHONPATH: src
+        run: python -m pytest -q tests/test_gdelt_events_feed.py
+
+  gdelt-official-events-one-shot:
+    # The genuine provider may delay file publication or respond with 429/503.
+    # Never turn this probe into a false article/fact verification or gate
+    # all source-engine development on a third-party network status.
+    needs: gdelt-events-safety-contract
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install httpx only — no scraping tools or cloud account
+        run: python -m pip install "httpx>=0.27,<0.28"
+      - name: One official 15-minute Events archive, provider MD5 and safe URL extraction
+        working-directory: worldhealth-vision-v2/services/ingestion-service
+        env:
+          PYTHONPATH: src
+        run: python probe_gdelt_events.py --max-candidates 5
