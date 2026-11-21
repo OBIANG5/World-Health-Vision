@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:trading": "node --test scripts/test-trade-plan.mjs",
-    "test:cases": "node --test scripts/test-trade-library.mjs"
+    "test:cases": "node --test scripts/test-trade-library.mjs",
+    "test:private-cases": "node --test scripts/test-private-case-api.mjs"
   },
   "dependencies": {
     "axios": "^1.15.0",
