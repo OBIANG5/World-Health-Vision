@@ -153,28 +153,28 @@
       "file": "audio/first-whoosh.wav",
       "startFrame": 0,
       "durationFrames": 24,
-      "volume": 0.24,
+      "volume": 0.45,
       "label": "Synthèse originale — ouverture"
     },
     {
       "file": "audio/geo-pulse.wav",
       "startFrame": 138,
       "durationFrames": 22,
-      "volume": 0.22,
+      "volume": 0.45,
       "label": "Synthèse originale — carte"
     },
     {
       "file": "audio/reveal.wav",
       "startFrame": 283,
       "durationFrames": 26,
-      "volume": 0.25,
+      "volume": 0.45,
       "label": "Synthèse originale — révélation"
     }
   ],
   "voice": null,
   "music": {
     "file": "audio/ambience.wav",
-    "volume": 0.1,
+    "volume": 0.15,
     "label": "Bande sonore synthétique de contrôle — non finale"
   },
   "outro": null
