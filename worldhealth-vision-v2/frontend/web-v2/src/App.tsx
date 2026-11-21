@@ -895,8 +895,9 @@ function AppContent() {
         />
       )}
 
-      {(route.kind === "invalid" || routedCountryMissing ||
-        (route.kind === "country" && isOffline)) && (
+      {/* Offline Catalog must not make a syntactically valid country URL look invalid.
+          CountryDrawer shows a readable service-unavailable state itself. */}
+      {(route.kind === "invalid" || routedCountryMissing) && (
         <div className="whv-route-notice" role="status">
           <WorldIcon name="info" size={18}/>
           <span>{lang === "fr"
