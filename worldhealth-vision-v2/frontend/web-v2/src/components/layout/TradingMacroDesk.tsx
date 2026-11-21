@@ -46,6 +46,9 @@ export default function TradingMacroDesk({ onStartPair }: {
   const [source, setSource] = useState<FxMacroSource>(blankSource);
   const [message, setMessage] = useState("");
   const checkpoint = useRef<string | null>(null);
+  // A partially typed citation is also a draft, even before "Add source".
+  const sourceDirty = Boolean(source.name.trim() || source.originalPublisher.trim() ||
+    source.url.trim() || source.publishedAt.trim() || source.observation.trim());
 
   useEffect(() => {
     function changed(event: StorageEvent) {
@@ -56,9 +59,9 @@ export default function TradingMacroDesk({ onStartPair }: {
   }, []);
 
   function readSaved() {
-    if (draftDirty && !window.confirm(tr(lang,
-      "Relire le stockage effacera les notes non enregistrées de cette édition. Continuer ?",
-      "Reloading storage will discard unsaved draft notes. Continue?"))) return;
+    if ((draftDirty || sourceDirty) && !window.confirm(tr(lang,
+      "Relire le stockage effacera les notes OU une source incomplète non enregistrées. Continuer ?",
+      "Reloading storage will discard unsaved notes OR a partially entered source. Continue?"))) return;
     try {
       const raw = localStorage.getItem(FX_MACRO_KEY);
       const parsed = parseMacroDesk(raw);
@@ -87,9 +90,9 @@ export default function TradingMacroDesk({ onStartPair }: {
     }
   }
   function changeCurrency(next: FxCurrency) {
-    if (draftDirty && !window.confirm(tr(lang,
-      "Changer de devise ? Les notes non sauvegardées de cette édition seront perdues.",
-      "Change currency? Unsaved edits in this draft will be discarded."))) return;
+    if ((draftDirty || sourceDirty) && !window.confirm(tr(lang,
+      "Changer de devise ? Notes ou source incomplète non sauvegardées seront perdues.",
+      "Change currency? Unsaved notes or partially entered source will be discarded."))) return;
     setCurrency(next);
     setDraft(fromSnapshot(desk ? latestMacroSnapshot(desk, next) : null));
     setDraftDirty(false);
@@ -119,6 +122,11 @@ export default function TradingMacroDesk({ onStartPair }: {
   }
   function save() {
     if (!desk) return;
+    if (sourceDirty) {
+      setMessage(tr(lang, "Une source est en cours de saisie. Ajoutez-la ou videz ses champs avant d'archiver la version.",
+        "A source is partly entered. Add it or clear its fields before archiving this revision."));
+      return;
+    }
     if (!draftDirty) {
       setMessage(tr(lang, "Aucun changement nouveau à enregistrer.", "No new changes to save."));
       return;
@@ -208,8 +216,8 @@ export default function TradingMacroDesk({ onStartPair }: {
       setMessage(tr(lang, "Import trop volumineux; aucune donnée remplacée.", "Import too large; nothing replaced."));
       return;
     }
-    if (draftDirty) {
-      setMessage(tr(lang, "Enregistrez ou abandonnez votre brouillon avant l'import.", "Save or discard your draft before importing."));
+    if (draftDirty || sourceDirty) {
+      setMessage(tr(lang, "Enregistrez ou abandonnez vos notes et source non terminée avant l'import.", "Save or discard unfinished notes and source before importing."));
       return;
     }
     try {
@@ -427,6 +435,9 @@ export default function TradingMacroDesk({ onStartPair }: {
             })}
           </div>
           <button type="button" className="tvp-primary" onClick={() => {
+            if ((draftDirty || sourceDirty) && !window.confirm(tr(lang,
+              "Des notes ou une source MACRO non enregistrées seront perdues en quittant cet éditeur. Continuer ?",
+              "Unsaved MACRO notes or a partial source will be lost when leaving this editor. Continue?"))) return;
             if (!window.confirm(tr(lang,
               "Créer une NOUVELLE analyse MTA pour " + pair.symbol +
               " ? L'analyse actuellement ouverte sera remplacée sans sauvegarde automatique. Les sources existantes du Macro Desk sont COPIÉES, pas synchronisées; direction indécise.",
