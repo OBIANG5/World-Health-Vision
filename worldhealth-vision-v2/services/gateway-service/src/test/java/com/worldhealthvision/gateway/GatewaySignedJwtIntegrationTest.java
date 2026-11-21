@@ -213,12 +213,14 @@ class GatewaySignedJwtIntegrationTest {
     @Test
     void privateResearchRejectsAnonymousAndMissingScopesEvenWhenPublicReadIsEnabled() throws Exception {
         int before = researchForwarded.get();
+        String advisorOnly = token(issuer, AUDIENCE, "advisor:invoke", 0, 3600, trustedKey);
+        String researchReadOnly = token(issuer, AUDIENCE, "trading:read", 0, 3600, trustedKey);
         client.get().uri("/api/trading/cases").exchange().expectStatus().isUnauthorized();
         client.get().uri("/api/trading/cases")
-            .headers(h -> h.setBearerAuth(token(issuer, AUDIENCE, "advisor:invoke", 0, 3600, trustedKey)))
+            .headers(h -> h.setBearerAuth(advisorOnly))
             .exchange().expectStatus().isForbidden();
         client.post().uri("/api/trading/cases")
-            .headers(h -> h.setBearerAuth(token(issuer, AUDIENCE, "trading:read", 0, 3600, trustedKey)))
+            .headers(h -> h.setBearerAuth(researchReadOnly))
             .header("Content-Type", "application/json").bodyValue("{}")
             .exchange().expectStatus().isForbidden();
         assertThat(researchForwarded.get()).isEqualTo(before);
@@ -227,11 +229,13 @@ class GatewaySignedJwtIntegrationTest {
     @Test
     void privateResearchRequiresCryptographicallyValidJwtAndForwardsBearerToUpstream() throws Exception {
         int before = researchForwarded.get();
+        String wrongAudience = token(issuer, "wrong-audience", "trading:read", 0, 3600, trustedKey);
+        String forged = token(issuer, AUDIENCE, "trading:read", 0, 3600, attackerKey);
         client.get().uri("/api/trading/cases")
-            .headers(h -> h.setBearerAuth(token(issuer, "wrong-audience", "trading:read", 0, 3600, trustedKey)))
+            .headers(h -> h.setBearerAuth(wrongAudience))
             .exchange().expectStatus().isUnauthorized();
         client.get().uri("/api/trading/cases")
-            .headers(h -> h.setBearerAuth(token(issuer, AUDIENCE, "trading:read", 0, 3600, attackerKey)))
+            .headers(h -> h.setBearerAuth(forged))
             .exchange().expectStatus().isUnauthorized();
 
         String signedRead = token(issuer, AUDIENCE, "trading:read", 0, 3600, trustedKey);
