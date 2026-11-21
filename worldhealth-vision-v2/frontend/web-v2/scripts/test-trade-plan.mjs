@@ -83,6 +83,9 @@ test("source ledger requires HTTPS, original publisher and dated claim", () => {
   assert.equal(model.validEvidence(evidence({ url: "javascript:alert(1)" })), false);
   assert.equal(model.validEvidence(evidence({ originalPublisher: "" })), false);
   assert.equal(model.validEvidence(evidence({ publishedAt: "not-a-date" })), false);
+  assert.equal(model.validEvidence(evidence({ publishedAt: "2026-02-31" })), false);
+  assert.equal(model.validEvidence(evidence({ publishedAt: "2026-12-01" })), false);
+  assert.equal(model.validEvidence(evidence({ url: "https://user:secret@example.org" })), false);
 });
 test("stored shape checks reject malformed inputs and over-large blobs", () => {
   const p = planWithGeometry();
