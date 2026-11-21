@@ -18,7 +18,7 @@ public record SignedScopedPublicationDecision(
         LocalDate periodStart, LocalDate periodEnd,
         OffsetDateTime validFromUtc, OffsetDateTime validUntilUtc, OffsetDateTime issuedAtUtc,
         String reviewerId, String countersignerId, String scopeMetadataLabel,
-        String scopeNativeCode, String scopeNativeVersion, String scopeCountryIso3,
+        String scopeMetadataUrl, String scopeNativeCode, String scopeNativeVersion, String scopeCountryIso3,
         String scopeCoverageKind, String signingPublicKeySha256, String signatureBase64
 ) {
     public byte[] signingPayload() {
@@ -34,7 +34,7 @@ public record SignedScopedPublicationDecision(
                     validFromUtc.toInstant().toString(), validUntilUtc.toInstant().toString(),
                     issuedAtUtc.toInstant().toString(),
                     reviewerId, countersignerId, scopeMetadataLabel,
-                    scopeNativeCode, scopeNativeVersion, scopeCountryIso3,
+                    scopeMetadataUrl, scopeNativeCode, scopeNativeVersion, scopeCountryIso3,
                     scopeCoverageKind, signingPublicKeySha256
             }) {
                 byte[] encoded = field.getBytes(StandardCharsets.UTF_8);

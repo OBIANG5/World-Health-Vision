@@ -64,6 +64,8 @@ public final class ScopedPublicationSignatureVerifier {
                      || "SUBNATIONAL".equals(decision.scopeCoverageKind()))
                 || decision.scopeMetadataLabel().isBlank()
                 || decision.scopeMetadataLabel().length() > 256
+                || !decision.scopeMetadataUrl().startsWith("https://")
+                || decision.scopeMetadataUrl().length() > 1024
                 || decision.periodStart().isAfter(decision.periodEnd())
                 || !decision.validFromUtc().isBefore(decision.validUntilUtc())
                 || decision.issuedAtUtc().isAfter(decision.validFromUtc())

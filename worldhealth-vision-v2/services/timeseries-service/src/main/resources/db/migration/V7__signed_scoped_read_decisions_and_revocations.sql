@@ -33,6 +33,8 @@ create table timeseries.scoped_publication_decision (
     reviewer_id varchar(128) not null,
     countersigner_id varchar(128) not null,
     scope_metadata_label varchar(256) not null,
+    scope_metadata_url varchar(1024) not null
+        check (scope_metadata_url like 'https://%'),
     scope_native_code varchar(96) not null,
     scope_native_version varchar(64) not null,
     scope_country_iso3 char(3) not null,
@@ -120,6 +122,7 @@ begin
        or source_scope.native_geo_version <> new.scope_native_version
        or source_scope.source_metadata_sha256 <> new.source_metadata_sha256
        or source_scope.display_label <> new.scope_metadata_label
+       or source_scope.source_metadata_url <> new.scope_metadata_url
        or source_scope.coverage_kind <> new.scope_coverage_kind
        or source_scope.review_status <> 'RESEARCH_ONLY'
     then
