@@ -44,7 +44,7 @@ try {
     await page.goto(origin + "/?wv=trading", { waitUntil: "domcontentloaded" });
     const panel = page.locator("section.tvp-dialog");
     await panel.waitFor({ state: "visible", timeout: 15000 });
-    assert.equal(await page.locator("nav.tvp-stages button.tvp-stage").count(), 8, "Seven stages plus evidence registry");
+    assert.equal(await page.locator("nav.tvp-stages button.tvp-stage").count(), 9, "Seven stages plus evidence and DataAnalyse-style research");
     assert((await page.locator(".tvp-disclaimer").innerText()).includes("aucun flux de marché"),
       "No fake live feed or broker claims");
     const all = await panel.evaluate((el) => ({ visibleWidth: el.clientWidth, totalWidth: el.scrollWidth }));
@@ -64,7 +64,7 @@ try {
     await page.locator("#trading-field-accountCurrency").fill("EUR");
     assert((await page.locator(".tvp-risk").innerText()).includes("125"), "Expected 125 account-currency R max fraction");
 
-    await page.locator("nav.tvp-stages button").last().click();
+    await page.locator("nav.tvp-stages button").nth(7).click();
     const fields = page.locator(".tvp-evidence-entry");
     await fields.locator("input").nth(0).fill("Test primary document");
     await fields.locator("input").nth(1).fill("ORIGINAL-PUBLISHER-TEST");
@@ -76,6 +76,43 @@ try {
     await fields.getByRole("button", { name: /Ajouter au dossier/ }).click();
     assert.equal(await page.locator(".tvp-evidence-card").count(), 1, "Evidence must be visibly recorded");
 
+    // DataAnalyse-style longitudinal research: thesis evolves instead of forcing
+    // a fresh signal on each new event. All inputs are fictional synthetic tests.
+    await page.locator("nav.tvp-stages button").nth(8).click();
+    await page.locator(".tvp-research").waitFor({ state: "visible" });
+    await page.locator(".tvp-research .tvp-evidence-entry input").first().fill("Synthetic central-bank scenario");
+    await page.locator(".tvp-research .tvp-evidence-entry select").first().selectOption("reconsider");
+    await page.locator(".tvp-research .tvp-evidence-entry textarea").nth(0).fill("New synthetic information; no live feed");
+    await page.locator(".tvp-research .tvp-evidence-entry textarea").nth(1).fill("Recheck hypothesis; do not trade");
+    await page.getByRole("button", { name: /Figer cette version du dossier/ }).click();
+    assert((await page.locator(".tvp-research").innerText()).includes("Synthetic central-bank scenario"), "Thesis history must be visible");
+
+    await page.getByRole("button", { name: /Annonces avant \/ après/ }).click();
+    const prep = page.locator(".tvp-research .tvp-evidence-entry");
+    await prep.locator("input").nth(0).fill("Synthetic price-index release");
+    await prep.locator("input").nth(1).fill("2026-11-20T13:00");
+    await prep.locator("input").nth(2).fill("2.0");
+    await prep.locator("input").nth(3).fill("1.5");
+    await prep.locator("input").nth(4).fill("%");
+    await prep.locator("input").nth(5).fill("Original expectation publisher");
+    await prep.locator("input").nth(6).fill("https://example.org/synthetic-expectation");
+    await prep.locator("input").nth(7).fill("2026-11-20T10:00");
+    await prep.locator("textarea").nth(0).fill("Higher-than-expected synthetic release");
+    await prep.locator("textarea").nth(1).fill("Lower-than-expected synthetic release");
+    await prep.getByRole("button", { name: /Figer la préparation/ }).click();
+    assert((await page.locator(".tvp-research").innerText()).includes("RECONSTRUCTION RÉTROSPECTIVE"),
+      "Historical release prepared today must not be mislabeled ex-ante");
+    const history = page.locator(".tvp-research .tvp-evidence-card").first();
+    await history.getByRole("button", { name: /Documenter le résultat/ }).click();
+    const resultFields = history.locator(".tvp-result-entry");
+    await resultFields.locator("input").nth(0).fill("2.4");
+    await resultFields.locator("input").nth(1).fill("2026-11-20T13:20");
+    await resultFields.locator("input").nth(2).fill("https://example.org/synthetic-result");
+    await resultFields.locator("textarea").fill("Only a synthetic post-result example");
+    await resultFields.getByRole("button", { name: /Ajouter le résultat sourcé/ }).click();
+    assert((await history.innerText()).includes("Résultat SAISI"), "User-entered result not shown");
+    assert((await history.innerText()).includes("Écart arithmétique"), "Arithmetic delta not shown");
+
     await page.getByRole("button", { name: /Enregistrer sur cet appareil/ }).click();
     const saved = await page.evaluate(() => localStorage.getItem("world-vision:trading-mta-process:v1"));
     assert(saved && saved.includes("SYNTHETIC-PAIR"), "Explicit local save did not persist");
@@ -86,6 +123,12 @@ try {
     await page.getByRole("button", { name: /^Recharger$/ }).click();
     assert.equal(await page.locator(".tvp-identity input").first().inputValue(), "SYNTHETIC-PAIR",
       "Explicit restore must reload saved draft");
+    await page.locator("nav.tvp-stages button").nth(8).click();
+    assert((await page.locator(".tvp-research").innerText()).includes("Synthetic central-bank scenario"),
+      "Explicit restore must preserve frozen thesis revisions");
+    await page.getByRole("button", { name: /Annonces avant \/ après/ }).click();
+    assert((await page.locator(".tvp-research").innerText()).includes("Synthetic price-index release"),
+      "Explicit restore must preserve sourced event preparation and result");
     const [download] = await Promise.all([
       page.waitForEvent("download"),
       page.getByRole("button", { name: /Exporter JSON/ }).click(),
