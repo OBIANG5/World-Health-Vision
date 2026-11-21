@@ -116,6 +116,16 @@ try{
     JSON.stringify(exported.soundCues)!==JSON.stringify(saved.soundCues))
     throw Error("Export after import silently modified a source, cue or timeline: "+JSON.stringify(exported));
 
+ // One real click must open the ORIGINAL Remotion composition on the beat,
+ // not an isolated mute shot or a separate mockup viewer.
+ const reviewEnabled=await page.evaluate(()=>Array.from(document.querySelectorAll("button"))
+   .some(x=>x.textContent?.includes("Écouter en contexte")&&!x.disabled));
+ if(!reviewEnabled)throw Error("Contextual beat review disabled despite valid reimport.");
+ await page.evaluate(()=>Array.from(document.querySelectorAll("button"))
+   .find(x=>x.textContent?.includes("Écouter en contexte"))?.click());
+ await page.waitForFunction(()=>Boolean(document.querySelector(
+   '[aria-label^="Révision ciblée du plan plan-01"]'
+ )),{timeout:20000});
  // Negative file must never erase the currently restored production.
  const bad=path.join(tmp,"bad-project.json");
  fs.writeFileSync(bad,JSON.stringify({...saved,schema_version:"worldvision-other-project",title:"MALICIOUS OVERWRITE"}));
@@ -129,7 +139,9 @@ try{
  const report={status:"PASS",source:"CI synthetic local project and photo",
   viewport:{width:390,height:844},missingBeforeRebind:missing,
   afterRebind:valid,roundtripExportVerified:true,
-  mixedCaptionPositionsPreserved:true,invalidImportPreservedTitle:title,screenshot};
+  mixedCaptionPositionsPreserved:true, directorBeatsPreserved:true,
+  licensedSourceSoundCuesPreserved:true, contextualBeatPlayerOpened:true,
+  invalidImportPreservedTitle:title,screenshot};
  fs.writeFileSync(path.join(output,"studio-reimport-browser.report.json"),JSON.stringify(report,null,2)+"\n");
  console.log(JSON.stringify(report));
 }finally{
