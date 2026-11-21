@@ -38,7 +38,7 @@ jobs:
           assert "timeseries.scoped_publication_revocation" in migration
           assert "scoped_decision_no_rewrite" in migration
           assert "PUBLIC_SCOPED_WEB_DISPLAY" in migration
-          assert "NO real provider approvals" in migration
+          assert "ZERO real provider approvals" in migration
           assert "scope-trust-public-key-base64" in (root/"services/timeseries-service/src/main/resources/application.yml").read_text()
           assert "rightsVerifier.requireAuthentic" in service
           assert "geoVerifier.requireAuthentic" in service
@@ -47,7 +47,6 @@ jobs:
           assert "timeseries.rights_revocation" in service
           assert "timeseries.scoped_publication_revocation" in service
           assert "/api/timeseries/countries/*/scoped-values" in gate
-          assert "scope != country" not in service or True
           print("PASS: scoped API requires two independent externally signed grants and unaltered Bronze proof")
           PY
       - name: Maven Java21 + genuine PostgreSQL16/Flyway including complete Gateway security suite
