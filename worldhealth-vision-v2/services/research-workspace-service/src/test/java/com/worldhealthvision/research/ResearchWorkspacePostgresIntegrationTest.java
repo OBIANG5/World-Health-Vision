@@ -181,6 +181,9 @@ class ResearchWorkspacePostgresIntegrationTest {
             .andExpect(status().isNoContent());
         mvc.perform(get("/api/trading/cases/" + id).with(user(subject, "trading:read")))
             .andExpect(status().isNotFound());
+        mvc.perform(get("/api/trading/cases/" + id + "/history")
+            .with(user(subject, "trading:read")))
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -261,6 +264,26 @@ class ResearchWorkspacePostgresIntegrationTest {
         mvc.perform(post("/api/trading/cases").with(user(subject, "trading:write"))
             .contentType(MediaType.APPLICATION_JSON).content(invalidResult))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void thirtyCaseQuotaIsEnforcedWithoutEvictingEarlierResearch() throws Exception {
+        String subject = "quota-" + UUID.randomUUID();
+        String firstId = null;
+        for (int i = 0; i < 30; i++) {
+            MvcResult result = create(subject, "SYNTHETIC_PAIR_" + i);
+            if (i == 0) firstId = mapper.readTree(result.getResponse()
+                .getContentAsString()).path("id").asText();
+        }
+        mvc.perform(post("/api/trading/cases").with(user(subject, "trading:write"))
+                .contentType(MediaType.APPLICATION_JSON).content(sample("SYNTHETIC_OVER_QUOTA")))
+            .andExpect(status().isConflict());
+        mvc.perform(get("/api/trading/cases").with(user(subject, "trading:read")))
+            .andExpect(status().isOk())
+            .andExpect(result -> assertThat(mapper.readTree(result.getResponse()
+                .getContentAsString()).size()).isEqualTo(30));
+        mvc.perform(get("/api/trading/cases/" + firstId)
+            .with(user(subject, "trading:read"))).andExpect(status().isOk());
     }
 
     @Test
