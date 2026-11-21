@@ -74,6 +74,25 @@ public final class EvidenceAttestationVerifier {
     public SignedEvidenceAttestation requireSourceProof(
             IngestionObservationBatchRequest request
     ) {
+        return requireVerifiedProof(request, true);
+    }
+
+    /**
+     * Read-time verification of an ALREADY ACCEPTED historical Bronze witness.
+     * The ingest window may legitimately have expired, but its original Ed25519
+     * signature, all source identities, and the SHA of ALL CURRENT typed
+     * observation rows must still match. Never accept a changed value.
+     * An out-of-band revocation of the external trust key still denies reads.
+     */
+    public SignedEvidenceAttestation requireStoredSourceProof(
+            IngestionObservationBatchRequest request
+    ) {
+        return requireVerifiedProof(request, false);
+    }
+
+    private SignedEvidenceAttestation requireVerifiedProof(
+            IngestionObservationBatchRequest request, boolean freshIngest
+    ) {
         if (trustKey == null || trustKeySha256 == null
                 || request.notes() == null
                 || !(request.notes().get("evidenceAttestation") instanceof Map<?, ?> raw)
@@ -103,8 +122,8 @@ public final class EvidenceAttestationVerifier {
                     || !token.itemsSha256().matches("[a-f0-9]{64}")
                     || !token.itemsSha256().equals(projection.calculate(request))
                     || token.issuedAtEpochSec() > now + 5
-                    || token.issuedAtEpochSec() < now - 600
-                    || token.expiresAtEpochSec() <= now
+                    || (freshIngest && token.issuedAtEpochSec() < now - 600)
+                    || (freshIngest && token.expiresAtEpochSec() <= now)
                     || token.expiresAtEpochSec() - token.issuedAtEpochSec() > 600
                     || token.expiresAtEpochSec() <= token.issuedAtEpochSec()) {
                 throw new EvidenceAttestationException();
