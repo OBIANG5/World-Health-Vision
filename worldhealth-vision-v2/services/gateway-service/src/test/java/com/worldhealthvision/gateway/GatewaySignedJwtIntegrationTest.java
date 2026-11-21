@@ -53,6 +53,9 @@ class GatewaySignedJwtIntegrationTest {
     private static HttpServer jwks;
     private static HttpServer analytics;
     private static HttpServer catalog;
+    private static HttpServer research;
+    private static final AtomicInteger researchForwarded = new AtomicInteger();
+    private static volatile String lastResearchAuth;
     private static KeyPair trustedKey;
     private static KeyPair attackerKey;
     private static String issuer;
@@ -87,6 +90,14 @@ class GatewaySignedJwtIntegrationTest {
             catalog = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
             catalog.createContext("/api/catalog/", exchange -> json(exchange, "{\"items\":[]}"));
             catalog.start();
+
+            research = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+            research.createContext("/api/trading/cases", exchange -> {
+                researchForwarded.incrementAndGet();
+                lastResearchAuth = exchange.getRequestHeaders().getFirst("Authorization");
+                json(exchange, "{\\"privateResearch\\":true}");
+            });
+            research.start();
         }
         registry.add("whv.security.issuer-uri", () -> issuer);
         registry.add("whv.security.jwk-set-uri",
@@ -96,6 +107,8 @@ class GatewaySignedJwtIntegrationTest {
                 () -> "http://127.0.0.1:" + catalog.getAddress().getPort());
         registry.add("WHV_ANALYTICS_BASE_URL",
                 () -> "http://127.0.0.1:" + analytics.getAddress().getPort());
+        registry.add("WHV_RESEARCH_BASE_URL",
+                () -> "http://127.0.0.1:" + research.getAddress().getPort());
     }
 
     @AfterAll
@@ -108,6 +121,9 @@ class GatewaySignedJwtIntegrationTest {
         }
         if (catalog != null) {
             catalog.stop(0);
+        }
+        if (research != null) {
+            research.stop(0);
         }
     }
 
@@ -192,6 +208,58 @@ class GatewaySignedJwtIntegrationTest {
         client.post().uri("/api/analytics/advisor/chat")
                 .header("Content-Type", "application/json")
                 .bodyValue("{}").exchange().expectStatus().isUnauthorized();
+    }
+
+    @Test
+    void privateResearchRejectsAnonymousAndMissingScopesEvenWhenPublicReadIsEnabled() throws Exception {
+        int before = researchForwarded.get();
+        client.get().uri("/api/trading/cases").exchange().expectStatus().isUnauthorized();
+        client.get().uri("/api/trading/cases")
+            .headers(h -> h.setBearerAuth(token(issuer, AUDIENCE, "advisor:invoke", 0, 3600, trustedKey)))
+            .exchange().expectStatus().isForbidden();
+        client.post().uri("/api/trading/cases")
+            .headers(h -> h.setBearerAuth(token(issuer, AUDIENCE, "trading:read", 0, 3600, trustedKey)))
+            .header("Content-Type", "application/json").bodyValue("{}")
+            .exchange().expectStatus().isForbidden();
+        assertThat(researchForwarded.get()).isEqualTo(before);
+    }
+
+    @Test
+    void privateResearchRequiresCryptographicallyValidJwtAndForwardsBearerToUpstream() throws Exception {
+        int before = researchForwarded.get();
+        client.get().uri("/api/trading/cases")
+            .headers(h -> h.setBearerAuth(token(issuer, "wrong-audience", "trading:read", 0, 3600, trustedKey)))
+            .exchange().expectStatus().isUnauthorized();
+        client.get().uri("/api/trading/cases")
+            .headers(h -> h.setBearerAuth(token(issuer, AUDIENCE, "trading:read", 0, 3600, attackerKey)))
+            .exchange().expectStatus().isUnauthorized();
+
+        String signedRead = token(issuer, AUDIENCE, "trading:read", 0, 3600, trustedKey);
+        client.get().uri("/api/trading/cases")
+            .headers(h -> h.setBearerAuth(signedRead))
+            .exchange().expectStatus().isOk();
+        assertThat(lastResearchAuth).isEqualTo("Bearer " + signedRead);
+
+        String signedWrite = token(issuer, AUDIENCE, "trading:write", 0, 3600, trustedKey);
+        client.post().uri("/api/trading/cases")
+            .headers(h -> h.setBearerAuth(signedWrite))
+            .header("Content-Type", "application/json").bodyValue("{}")
+            .exchange().expectStatus().isOk();
+        assertThat(researchForwarded.get()).isEqualTo(before + 2);
+        assertThat(lastResearchAuth).isEqualTo("Bearer " + signedWrite);
+    }
+
+    @Test
+    void privateResearchRejectsUnknownPathsAndHttpMethods() throws Exception {
+        int before = researchForwarded.get();
+        String token = token(issuer, AUDIENCE, "trading:read trading:write", 0, 3600, trustedKey);
+        client.get().uri("/api/trading/cases/uuid/admin")
+            .headers(h -> h.setBearerAuth(token))
+            .exchange().expectStatus().isForbidden();
+        client.patch().uri("/api/trading/cases/something")
+            .headers(h -> h.setBearerAuth(token))
+            .exchange().expectStatus().isForbidden();
+        assertThat(researchForwarded.get()).isEqualTo(before);
     }
 
     private void reject(String jwt) {
