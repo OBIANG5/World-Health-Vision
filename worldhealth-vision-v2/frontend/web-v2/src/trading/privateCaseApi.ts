@@ -109,7 +109,8 @@ function mapHttpError(status: number): PrivateCaseApiError {
  */
 export class PrivateCaseApi {
   private readonly transport: PrivateCaseHttp;
-  constructor(private readonly identity: ResearchIdentity, transport?: PrivateCaseHttp) {
+  constructor(private readonly identity: ResearchIdentity, transport?: PrivateCaseHttp,
+    private readonly signal?: AbortSignal) {
     this.transport = transport ?? { fetch: (url, init) => fetch(url, init) };
   }
 
@@ -130,7 +131,7 @@ export class PrivateCaseApi {
     try {
       response = await this.transport.fetch(CASE_PATH + suffix, {
         method, headers, body, credentials: "omit", redirect: "error",
-        cache: "no-store", referrerPolicy: "no-referrer",
+        cache: "no-store", referrerPolicy: "no-referrer", signal: this.signal,
       });
     } catch {
       throw new PrivateCaseApiError("offline");
