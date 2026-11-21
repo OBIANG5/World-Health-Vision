@@ -48,6 +48,10 @@ export type CreativeShot = {
   focus?:{x:number;y:number};
   /** Region is in 0..1 COORDINATES OF THE VISIBLE DOCUMENT VIEWPORT. */
   documentRegion?:{x:number;y:number;width:number;height:number};
+  /** Opt-in P0.6: reserve separate mobile-safe zones for evidence vs captions. */
+  evidencePresentation?:"mobile-safe";
+  /** Opt-in maximum optical magnification, no generative or retyped pixels. */
+  documentZoomMax?:number;
   /** Editor-approved geographic inputs, not inferred data. */
   geo?:GeoDirection;
   /** Independently scheduled photo/cutout/mask/focus/metric tracks on one supplied still. */
@@ -264,8 +268,12 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
     shot.transitionAfter==="cut"?0:(shot.transitionFrames??0));
   const r=shot.documentRegion??{x:.25,y:.35,width:.5,height:.2};
   const centerX=(r.x+r.width/2)*100,centerY=(r.y+r.height/2)*100;
-  // Deliberately restrained (< 1.55x), to avoid pixelated "fake evidence".
-  const scale=1+inspection*Math.min(.48,.31/Math.max(r.width,r.height));
+  // Optical zoom of ORIGINAL pixels ONLY. The editor chooses the source ROI.
+  // Mobile mode allows a stronger inspected detail, capped to avoid fake sharpness.
+  const mobileSafe=shot.evidencePresentation==="mobile-safe";
+  const maxZoom=mobileSafe?(shot.documentZoomMax??1.85):
+    (1+Math.min(.48,.31/Math.max(r.width,r.height)));
+  const scale=1+inspection*(maxZoom-1);
   const documentEntrance=spring({
     frame:frame-enterOverlapFrames,fps,
     config:{mass:1,damping:27,stiffness:105}
@@ -301,8 +309,10 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
         lineHeight:1.25,color:"#c4e5f2",overflowWrap:"anywhere"
       }}>{shot.eyebrow}</div>}
     </div>
-    <div data-wv-document-card={shot.id} style={{
-      position:"absolute",top:315,left:92,width:896,height:830,
+    <div data-wv-document-card={shot.id} data-wv-mobile-evidence={mobileSafe?"true":"false"} style={{
+      position:"absolute",
+      // With a voiced report, captions occupy the upper rail above the proof.
+      top:mobileSafe?612:315,left:92,width:896,height:mobileSafe?608:830,
       border:"1px solid rgba(155,194,208,.28)",
       borderRadius:26,
       overflow:"hidden",
@@ -341,7 +351,7 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
       </div>
     </div>
     <div data-wv-document-caption={shot.id} style={{
-      position:"absolute",left:89,right:162,bottom:470,
+      position:"absolute",left:89,right:162,bottom:mobileSafe?352:470,
       padding:"30px 0 18px",
       borderTop:"2px solid rgba(140,207,229,.6)",
       background:"linear-gradient(180deg,rgba(4,16,27,.97),rgba(4,16,27,.96))",
@@ -478,8 +488,18 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
   };
   const timelineFrames=creativeDuration({...props,brandOutro:null});
   const children:React.ReactNode[]=[];
+  const mobileEvidenceRanges:Array<{startFrame:number;endFrame:number}>=[];
+  let sourceCursor=0;
   props.shots.forEach((shot,index)=>{
     const enterOverlapFrames=index>0?(transitionOf(props.shots[index-1])?.frames??0):0;
+    if(shot.template==="document_focus"&&shot.evidencePresentation==="mobile-safe"){
+      mobileEvidenceRanges.push({
+        startFrame:sourceCursor+enterOverlapFrames,
+        endFrame:sourceCursor+shot.durationFrames
+      });
+    }
+    sourceCursor+=shot.durationFrames-
+      (index<props.shots.length-1?(transitionOf(shot)?.frames??0):0);
     children.push(<TransitionSeries.Sequence key={"shot-"+shot.id} name={shot.id} durationInFrames={shot.durationFrames}>
       <CinematicShot shot={shot} globalStyle={base} enterOverlapFrames={enterOverlapFrames}/>
     </TransitionSeries.Sequence>);
@@ -494,8 +514,9 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
       position:"absolute",right:72,top:84,width:240,zIndex:70,pointerEvents:"none"
     }}><Img src={staticFile("brand/world-vision-official.png")} style={{width:"100%",height:"auto",objectFit:"contain"}}/></div>}
     {props.wordCaptions&&props.wordCaptions.length>0
-      ? <AttentionTypography words={props.wordCaptions} accent={base.accent}/>
-      : props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions}/>}
+      ? <AttentionTypography words={props.wordCaptions} accent={base.accent}
+          mobileEvidenceRanges={mobileEvidenceRanges}/>
+      : props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions} mobileEvidenceRanges={mobileEvidenceRanges}/>}
     {props.narration&&<Sequence durationInFrames={timelineFrames} name="Voix choisie / fournie">
       <Audio src={resolveCreativeSource(props.narration.src)} volume={props.narration.volume??1}/>
     </Sequence>}
