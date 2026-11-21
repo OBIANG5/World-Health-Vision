@@ -55,6 +55,18 @@ export const REVIEWED_COUNTRY_PHOTOS: Readonly<Partial<Record<string, CountryPho
   },
 };
 
+// These names and flags are immutable geographical labels, NOT a substitute
+// for country Catalog values. They keep the three reviewed editorial pilots
+// intelligible when the backend is intentionally offline in Preview.
+const OFFLINE_PILOT_LABELS: Readonly<Record<string, {
+  name: { fr: string; en: string };
+  flag: string;
+}>> = {
+  GAB: { name: { fr: "Gabon", en: "Gabon" }, flag: "🇬🇦" },
+  FRA: { name: { fr: "France", en: "France" }, flag: "🇫🇷" },
+  CIV: { name: { fr: "Côte d’Ivoire", en: "Côte d’Ivoire" }, flag: "🇨🇮" },
+};
+
 function bilingual(locale: Locale, fr: string, en: string) {
   return locale === "fr" ? fr : en;
 }
@@ -71,6 +83,9 @@ export default function CountryEditorialStory({
   locale: Locale;
   open: boolean;
 }) {
+  const fallback = OFFLINE_PILOT_LABELS[iso3];
+  const headingName = name === iso3 ? fallback?.name[locale] ?? name : name;
+  const headingFlag = flag === "—" ? fallback?.flag ?? "🌍" : flag;
   const photo = REVIEWED_COUNTRY_PHOTOS[iso3];
   const [imageFailed, setImageFailed] = useState(false);
   const hasPhoto = !!photo && !imageFailed;
@@ -92,8 +107,8 @@ export default function CountryEditorialStory({
               <span className="whv-country-story-iso">{iso3}</span>
             </span>
             <div className="whv-country-story-titleline">
-              <span className="whv-country-story-flag" aria-hidden="true">{flag}</span>
-              <h2 id="whv-country-story-heading">{name}</h2>
+              <span className="whv-country-story-flag" aria-hidden="true">{headingFlag}</span>
+              <h2 id="whv-country-story-heading">{headingName}</h2>
             </div>
             {subtitle && <p className="whv-country-story-region">{subtitle}</p>}
             {(capital || currencyCode) && <div className="whv-country-story-facts">
