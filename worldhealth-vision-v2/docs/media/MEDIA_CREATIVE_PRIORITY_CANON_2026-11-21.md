@@ -102,3 +102,15 @@ Une grille de durée est un point de départ, PAS une norme imposée : accroche 
 5. Pas de merge, déploiement, publication, achat, API payante ni connexion de comptes sans justification et consentement. Pas de changement du logiciel Atlas, BAOCOM ni ABAA.
 
 **Règle de direction en une phrase :** « Montrer ce que la phrase veut dire, au moment où elle est prononcée, avec plusieurs mouvements coordonnés mais une seule idée lisible, du premier au dernier instant — puis pouvoir tout corriger vite. »
+
+
+---
+
+## 8. Le vrai audit PHOTO×DATA a corrigé deux échecs artistiques successifs
+
+La PR #138 ne s'est pas arrêtée aux 51 tests initiaux. Trois vrais MP4 Remotion internes et cinq vrais PNG à 390px par version ont été téléchargés et inspectés.
+- **V1 :** Actions #44947605830, artifact 14724357212. Panneau chiffré visible dès frame0, masque le focus. CI de base verte mais hook affaibli.
+- **V2 :** Actions #44948038026, artifact 14724511538. Hook PHOTO restauré et panneau synchronisé au frame38 ; nouveau défaut : la provenance longue masque le sous-titre de scène vers frame124.
+- **V3 :** Actions #44948365338, artifact 14725020484, SHA256 MP4 7a088ced41a7ab35727bfdc6210d6c63bdb786dcaabc388977eca57cf6cb86d2. 52/52 tests, TypeScript, Studio, vrai H264 1080×1920 165 images/30fps sans voix. Panneau plus compact : aucun chevauchement source/texte/caption sur les cinq captures inspectées. Police DM Sans restaurée. **Les crédits restent petits et ce sont des matériaux fictifs**, aucun reportage ni master approuvé. Dossier complet : MEDIA_P0_8_REAL_PIXEL_REVIEW_2026-11-21.md.
+
+**Conséquence sur la priorité :** ce succès de faisabilité clôt cette petite capacité. Le travail suivant à valeur dominante est une vidéo entière avec un script approuvé, vrais rushes/licences et la prise Vivienne C5.2 du même texte, puis hooks/re-hooks sémantiques multicouches et revue artistique complète, sans créer un nouveau laboratoire.
