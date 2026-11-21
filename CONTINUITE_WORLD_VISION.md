@@ -1,3 +1,26 @@
+# REPRISE PRIORITAIRE — WORLD-VISION MEDIA P0.5 : ESSAI AUDIOVISUEL NASA À 3 RELANCES (21/11/2026)
+
+**PLUS RÉCENT QUE TOUTES LES SECTIONS HISTORIQUES CI-DESSOUS. MEDIA UNIQUEMENT, PAS ATLAS/LOGICIEL.** Priorité : à partir d'idées/scripts/médias/voix choisis ou approuvés par le propriétaire, produire des vidéos très captivantes : hook immédiat, re-hooks sémantiques, vrais visuels, mots synchronisés, sound design et correction rapide. GEO/cartes = spécialité secondaire et facultative, pas un globe imposé. Réutiliser Remotion/FFmpeg, P0.1–P0.4 sans nouvelle API/abonnement. Aucune connexion ChatGPT/Gemini par réflexe.
+
+## État exact du travail
+- **PR mère #128 P0.4** branche feature/worldvision-media-surgical-beat-revision-2026-11-21, HEAD `2411d2a53ae7a57ae9b0759db4dc9d91f4bbc22e`, **quatre workflows SUCCESS** (P0.4 #44903408631, P0.1 #44903408566, P0.2 #44903408571, renderer+Studio #44903408573). Outil de correction locale testé sur deux vrais MP4 mais oscillateurs synthétiques, pas une production journaliste approuvée.
+- **PR EN COURS #130 MEDIA P0.5 DRAFT** : https://github.com/OBIANG5/World-Health-Vision/pull/130 ; branche `feature/worldvision-media-artemis2-semantic-microfilm-2026-11-21`, enfant de #128. Rapport complet `worldhealth-vision-v2/docs/media/MEDIA_P0_5_NASA_SEMANTIC_MICROFILM_2026-11-21.md`.
+- **Audit réel réalisé** : ancien MP4 NASA FILM-2B2 (#110, artefact #14650480879) téléchargé/inspecté, 33,045 secondes H264/AAC 991 frames, niveau AAC ~−16,31 LUFS. Huit vrais photogrammes ont révélé ouverture photographique statique, re-hooks peu marqués, gros sous-titres en haut, preuves documentaires trop petites. Nous passons de la pure technique à une *preuve de réalisation*.
+- **Code P0.5** : `media-voice-pilots/artemis2/build-semantic-microfilm.mjs` construit un projet Remotion 8–12 s à partir des **DEUX PREMIÈRES phrases exactes** et de la **MÊME audition Kokoro NASA** (#110, jamais publiée/approuvée), avec bornes PCM mesurées, trois photos officielles NASA SHA figés et trois visuels hook → face cachée → annotations NASA. Deux SFX de transition originaux NON DIÉGÉTIQUES. Photo annotations = capture d'une visualisation annotée, PAS preuve filmée des éclairs. Pas de logo G0 historique non conforme.
+- **CI P0.5** : `.github/workflows/worldvision-media-semantic-microfilm.yml`. Le workflow génère voix/source NASA exactes, rend un vrai MP4 H264/AAC 1080×1920 avec SRT à la phrase, crée quatre frames des beats + contact sheet 390px, analyse audio. **À LIRE ET CERTIFIER SUR LE HEAD EXACT #130.** Aucun résultat de cette nouvelle CI ne doit être présumé vert.
+- La synthèse voix, les images et les bruitages sont **UNIQUEMENT pour un essai interne** ; le propriétaire n'a pas validé le sujet NASA comme prochain reportage à publier ni la voix Kokoro. Ne pas affirmer une voix Vivienne ni une rétention vidéo mesurée, ne pas publier.
+
+## ACTION IMMÉDIATE À LA REPRISE
+1. Ouvrir PR #130 et workflows du SHA final ; corriger sur **la même branche** toute erreur concrète, sans multiplier les mini-sprints. Consigner état, SHA, lien Actions, artefact et défauts dans un commentaire de PR.
+2. Récupérer le MP4 réel et la planche 390px, faire **inspection artistique des pixels et écoute** : pertinence et rythme des 3 relances, caption/safe zones TikTok, qualité source NASA, sound design/licence, pas de visuel ou son d'impact inventé. Contrôler autant les défauts que les réussites.
+3. Si nécessaire, appliquer P0.4 à une modification ciblée de 3–5s sans changer script/voix/autres plans et comparer réel avant/après. **Pas de certification artistique sans revue humaine.**
+4. Ensuite : vrai sujet ET script CHOISIS par le propriétaire, nouvelle voix correspondante (Vivienne C5.2 comme référence historique, pas réemploi d'un ancien MP3), vraies images et droits, P0.3 pour alignement word-level réel. Mesurer temps vers master vraiment accepté, puis presets éprouvés humain/géopolitique/finance. GEO secondaire.
+5. Ne toucher ni au logiciel World-Vision V2, ni à BAOCOM, ni à GDELT. **Pas de merge, déploiement, publication, achat ni connecteur sans consentement et justification concrète.**
+
+**Sources d'autorité :** issue #116 ; PR #130 puis #128/#126/#123/#118. Cette section remplace les anciennes mentions de priorité P0.4, qui restent conservées comme historique.
+
+---
+
 # PRIORITÉ DE REPRISE — WORLD-VISION MEDIA P0.4 : RÉVISER UN RE-HOOK SANS ALTÉRER LE FILM (21/11/2026)
 
 **CETTE SECTION EST LA PLUS RÉCENTE. MEDIA AUDIOVISUEL UNIQUEMENT, PAS ATLAS/LOGICIEL.** Le propriétaire choisit idée/texte/voix/images ; notre métier principal est le montage avec hook initial + deux re-hooks sémantiques, bons visuels, typographie à la parole, sound design et retouche très rapide. **Le globe et les cartes sont une petite priorité secondaire.** Réutiliser Remotion/FFmpeg, P0.1–P0.3 et skills utiles sans nouvelle infrastructure ni connexions ChatGPT/Gemini gratuites supposées. Ne jamais recycler un ancien MP3 Vivienne sur un autre reportage.

@@ -81,18 +81,28 @@ async function run(argv){
   const cache=new Map();
   let tempBundle=null;
   async function stageFile(relative){
-    if(cache.has(relative))return cache.get(relative);
-    const source=resolveLocalFile(assetRoot,relative);
-    const stat=fs.statSync(source);
-    if(stat.size>2*1024*1024*1024)throw new Error("File exceeds 2 GiB: "+relative);
-    const sha=await hashFile(source);
-    const name=sha+path.extname(source).toLowerCase();
-    const target=path.join(staging,name);
-    if(!fs.existsSync(target))fs.copyFileSync(source,target);
-    const src="creative-import/"+buildFolder+"/"+name;
-    cache.set(relative,src);
-    ledger.push({relative_path:relative,sha256:sha,size_bytes:stat.size,staged_as:src});
-    return src;
+    // Cache the in-flight Promise, not merely the finished src string.
+    // Promise.all() stages simultaneous SFX; the SAME licensed media file
+    // must produce exactly one copy and one SHA provenance ledger entry.
+    if(cache.has(relative))return await cache.get(relative);
+    const pending=(async()=>{
+      const source=resolveLocalFile(assetRoot,relative);
+      const stat=fs.statSync(source);
+      if(stat.size>2*1024*1024*1024)throw new Error("File exceeds 2 GiB: "+relative);
+      const sha=await hashFile(source);
+      const name=sha+path.extname(source).toLowerCase();
+      const target=path.join(staging,name);
+      if(!fs.existsSync(target))fs.copyFileSync(source,target);
+      const src="creative-import/"+buildFolder+"/"+name;
+      ledger.push({relative_path:relative,sha256:sha,size_bytes:stat.size,staged_as:src});
+      return src;
+    })();
+    cache.set(relative,pending);
+    try{return await pending;}
+    catch(error){
+      if(cache.get(relative)===pending)cache.delete(relative);
+      throw error;
+    }
   }
   try{
     const shots=[];

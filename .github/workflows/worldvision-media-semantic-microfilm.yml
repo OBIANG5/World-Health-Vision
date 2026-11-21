@@ -1,0 +1,136 @@
+name: World-Vision MEDIA P0.5 — authentic NASA short-film internal QA
+on:
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/media-voice-pilots/artemis2/build-semantic-microfilm.mjs'
+      - '.github/workflows/worldvision-media-semantic-microfilm.yml'
+  workflow_dispatch:
+concurrency:
+  group: worldvision-media-p05-artemis2-single-active-run
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  authentic-media-and-voice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 38
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate new script syntax
+        run: node --check ../../media-voice-pilots/artemis2/build-semantic-microfilm.mjs
+      - name: Prepare FFmpeg and phonemizer
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null ||
+             ! command -v espeak-ng >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg espeak-ng
+          fi
+      - name: Reuse pinned original Kokoro French audition generator
+        run: |
+          python -m pip install -q --disable-pip-version-check --no-cache-dir \
+            torch==2.5.1+cpu torchaudio==2.5.1+cpu \
+            --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -q --disable-pip-version-check --no-cache-dir \
+            'kokoro==0.9.4' 'soundfile==0.13.1' 'transformers==4.50.3'
+          python ../../media-voice-pilots/artemis2/synthesize-kokoro.py /tmp/worldvision-p05-voice
+      - name: Install existing pinned Remotion dependencies BEFORE NASA validators
+        run: npm install --no-audit --no-fund
+      - name: Reuse exact three NASA originals with SHA256 verification
+        run: |
+          node ../../media-pilots/artemis2/validate-pilot.mjs
+          node ../../media-pilots/artemis2/prepare-assets.mjs /tmp/worldvision-p05-assets
+      - name: Build 3-beat film from exact two phrases and real-source NASA images
+        run: |
+          mkdir -p output/microfilms
+          node ../../media-voice-pilots/artemis2/build-semantic-microfilm.mjs \
+            /tmp/worldvision-p05-voice/worldvision-narration-timings.json \
+            /tmp/worldvision-p05-assets \
+            /tmp/worldvision-p05-microfilm.json
+      - name: Render actual Remotion short film with H264 AAC and captions
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-p05-microfilm.json \
+            --assets /tmp/worldvision-p05-assets \
+            --output output/microfilms/artemis2-semantic-internal.mp4
+      - name: Verify actual original media and script, 3 beats, video and voice
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {getVideoMetadata} from '@remotion/renderer';
+          import {inspectProject} from './creative/validate-project.mjs';
+          const p=JSON.parse(fs.readFileSync('/tmp/worldvision-p05-microfilm.json','utf8'));
+          const q=JSON.parse(fs.readFileSync('/tmp/worldvision-p05-microfilm.json.microfilm-qa.json','utf8'));
+          const r=JSON.parse(fs.readFileSync('output/microfilms/artemis2-semantic-internal.mp4.report.json','utf8'));
+          const take=JSON.parse(fs.readFileSync('../../media-voice-pilots/artemis2/narration.json','utf8'));
+          const expected=take.segments.slice(0,2).map(x=>x.text).join(' ');
+          const sha=x=>createHash('sha256').update(x).digest('hex');
+          const m=await getVideoMetadata('output/microfilms/artemis2-semantic-internal.mp4');
+          if(p.script!==expected||r.source_script_sha256!==sha(expected)||
+             q.spoken_text_preserved_exactly!==true||q.voice_approved!==false||
+             p.shots.length!==3||p.captions.length!==2||p.soundCues.length!==2||
+             p.brandMark!==undefined||p.shots[2].media.file!=='impact-annotations.jpg'||
+             !p.shots[2].subtitle.includes('pas une vidéo')||!inspectProject(p).ok||
+             m.width!==1080||m.height!==1920||m.codec!=='h264'||
+             r.track_voice!==p.voice.label||r.caption_cues!==2||r.sound_cues!==2||
+             r.media.length!==5||r.duration_frames!==q.total_frames||
+             Math.abs(m.durationInSeconds-q.total_frames/30)>.15||
+             q.total_frames<240||q.total_frames>360)
+            throw Error('NASA source, PCM phrase, source renderer or real MP4 contract failed');
+          for(const a of q.source_photos){
+            if(!r.media.some(x=>x.relative_path===a.file&&x.sha256===a.sha256))
+              throw Error('Original NASA photo changed or missing: '+a.file);
+          }
+          console.log('PASS: exact 2 sentences, 3 authentic NASA visual beats and real H264',q.total_frames);
+          JS
+          test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=nw=1:nk=1 output/microfilms/artemis2-semantic-internal.mp4 | head -n1)" = "aac"
+      - name: Extract four actual beat pixels and prove visible differences
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {execFileSync} from 'node:child_process';
+          import {createHash} from 'node:crypto';
+          const q=JSON.parse(fs.readFileSync('/tmp/worldvision-p05-microfilm.json.microfilm-qa.json','utf8'));
+          const f=q.visual_beats;
+          const movie='output/microfilms/artemis2-semantic-internal.mp4';
+          const frames=[0,f.rehook_one+15,f.rehook_two+55,f.end-1];
+          const values=[];
+          for(let i=0;i<frames.length;i++){
+            const name='output/microfilms/beat-'+i+'.png';
+            execFileSync('ffmpeg',['-hide_banner','-nostdin','-loglevel','error','-y',
+              '-ss',(frames[i]/30).toFixed(6),'-i',movie,'-frames:v','1',name],{timeout:30000});
+            values.push(createHash('sha256').update(fs.readFileSync(name)).digest('hex'));
+          }
+          if(new Set(values).size<3)throw Error('Three distinct visual events not visible in actual rendered pixels');
+          fs.writeFileSync('output/microfilms/beat-pixel-sha.json',
+            JSON.stringify({frames,sha256:values,quality_approval:'NOT CLAIMED'},null,2)+'\n');
+          JS
+          ffmpeg -hide_banner -nostdin -loglevel error -y \
+            -i output/microfilms/artemis2-semantic-internal.mp4 \
+            -vf "fps=1,scale=390:693,tile=4x3:padding=8:margin=6:color=black" \
+            -frames:v 1 output/microfilms/12-real-moments.jpg
+          test -s output/microfilms/12-real-moments.jpg
+      - name: Inspect real AAC loudness and true peak
+        run: |
+          ffmpeg -hide_banner -nostdin -y \
+            -i output/microfilms/artemis2-semantic-internal.mp4 \
+            -vn -af loudnorm=I=-16:TP=-1.5:LRA=10:print_format=json \
+            -f null - 2>output/microfilms/audio-loudness-analysis.txt
+          test -s output/microfilms/audio-loudness-analysis.txt
+      - name: Save internal audiovisual evidence for human review (7 days)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-media-p05-NASA-microfilm-INTERNAL
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/microfilms/
+          retention-days: 7
+          if-no-files-found: warn
