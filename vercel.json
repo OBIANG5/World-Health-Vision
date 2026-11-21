@@ -1,0 +1,27 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "framework": "vite",
+  "installCommand": "cd worldhealth-vision-v2/frontend/web-v2 && npm ci --no-audit --no-fund",
+  "buildCommand": "cd worldhealth-vision-v2/frontend/web-v2 && WHV_RADAR_PREVIEW_FETCH=1 bash scripts/build-radar-preview.sh",
+  "outputDirectory": "worldhealth-vision-v2/frontend/web-v2/dist",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+}
