@@ -9,6 +9,8 @@ import {
 } from "../../trading/tradePlan";
 import TradingResearchPanel from "./TradingResearchPanel";
 import TradingCaseLibrary from "./TradingCaseLibrary";
+import TradingPrivateWorkspace from "./TradingPrivateWorkspace";
+import { researchIdentityNotConfigured } from "../../auth/researchIdentity";
 import "../../styles/trading-process.css";
 
 const copy = (lang: "fr" | "en", fr: string, en: string) => lang === "fr" ? fr : en;
@@ -64,6 +66,10 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
   const [showResearch, setShowResearch] = useState(false);
   const [evidenceDraft, setEvidenceDraft] = useState<Evidence>(emptyEvidence);
   const [feedback, setFeedback] = useState("");
+  // Opening a remote dossier detaches any local file association and vice versa.
+  // React keys also guarantee private UI state does not persist across accounts.
+  const [localReset, setLocalReset] = useState(0);
+  const [remoteReset, setRemoteReset] = useState(0);
   const dialog = useRef<HTMLElement>(null);
   const firstFocus = useRef<HTMLButtonElement>(null);
   const stage = STAGES[stepIndex];
@@ -285,14 +291,29 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
           </main>
         </div>
         <footer className="tvp-footer">
-          <TradingCaseLibrary plan={plan} onLoad={(value) => {
+          <TradingCaseLibrary key={"local-" + localReset} plan={plan} onLoad={(value) => {
             setPlan(value);
             setStepIndex(0);
             setShowEvidence(false);
             setShowResearch(false);
             setEvidenceDraft(emptyEvidence());
             setFeedback("");
+            setRemoteReset((previous) => previous + 1);
           }} />
+          <TradingPrivateWorkspace
+            key={"remote-" + remoteReset + "-" + (researchIdentityNotConfigured?.sessionInstanceId ?? "disconnected")}
+            identity={researchIdentityNotConfigured}
+            plan={plan}
+            onOpen={(value) => {
+              setPlan(value);
+              setStepIndex(0);
+              setShowEvidence(false);
+              setShowResearch(false);
+              setEvidenceDraft(emptyEvidence());
+              setFeedback("");
+              setLocalReset((previous) => previous + 1);
+            }}
+          />
           {blankAllowed(feedback) && <p className="tvp-feedback" role="status">{feedback}</p>}
         </footer>
       </section>
