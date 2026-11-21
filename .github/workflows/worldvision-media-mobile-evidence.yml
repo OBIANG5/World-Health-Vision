@@ -68,7 +68,7 @@ jobs:
       - name: Verify type safety and P0.6 evidence / P0.4 no-regression contracts
         run: |
           npm run typecheck
-          node --test creative/mobile-evidence.test.mjs creative/surgical-revision.test.mjs creative/validate-project.test.mjs
+          node --test creative/mobile-evidence.test.mjs creative/surgical-revision.test.mjs creative/validate-project.test.mjs creative/studio-project-io.test.mjs
       - name: Build 3-beat film from exact two phrases and real-source NASA images
         run: |
           mkdir -p output/microfilms
@@ -105,6 +105,10 @@ jobs:
              !p.shots[2].subtitle.includes('pas une vidéo')||!inspectProject(p).ok||
              m.width!==1080||m.height!==1920||m.codec!=='h264'||
              r.track_voice!==p.voice.label||r.caption_cues!==2||r.sound_cues!==2||
+             r.mobile_evidence_inputprops?.length!==1||
+             r.mobile_evidence_inputprops[0].shot_id!=='nasa-report-rehook'||
+             r.mobile_evidence_inputprops[0].documentZoomMax!==p.shots[2].documentZoomMax||
+             JSON.stringify(r.mobile_evidence_inputprops[0].documentRegion)!==JSON.stringify(p.shots[2].documentRegion)||
              r.media.length!==5||r.duration_frames!==q.total_frames||
              Math.abs(m.durationInSeconds-q.total_frames/30)>.15||
              q.total_frames<240||q.total_frames>360)
