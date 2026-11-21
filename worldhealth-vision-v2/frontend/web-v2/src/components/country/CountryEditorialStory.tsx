@@ -7,10 +7,7 @@
  * GlobalRadarEditorialPilot. It is NOT the country's daily news feed.
  */
 import { useState } from "react";
-import {
-  EDITORIAL_GABON_IMF_CASE,
-  validateEditorialSourceCase,
-} from "../../radar/editorialSourceCase";
+
 
 type Locale = "fr" | "en";
 type CountryPhoto = {
@@ -108,8 +105,7 @@ export default function CountryEditorialStory({
   const photo = REVIEWED_COUNTRY_PHOTOS[iso3];
   const [imageFailed, setImageFailed] = useState(false);
   const hasPhoto = !!photo && !imageFailed;
-  const caseFile = iso3 === "GAB" && validateEditorialSourceCase(EDITORIAL_GABON_IMF_CASE)
-    ? EDITORIAL_GABON_IMF_CASE : null;
+
   return (
     <>
       <section className="whv-country-story" aria-labelledby="whv-country-story-heading">
@@ -151,67 +147,6 @@ export default function CountryEditorialStory({
           <span aria-hidden="true"> · </span>{photo.place[locale]}
           <span className="whv-country-story-crop"> · {bilingual(locale, "recadrage d'affichage", "display crop")}</span>
         </p>}
-      </section>
-      <section className="whv-country-now" aria-labelledby="whv-country-now-title">
-        <div className="whv-country-now-heading">
-          <div>
-            <span className="whv-country-now-kicker">
-              {bilingual(locale, "COMPRENDRE CE PAYS", "UNDERSTAND THIS COUNTRY")}
-            </span>
-            <h3 id="whv-country-now-title">
-              {bilingual(locale, "Ce qui se passe", "What's happening")}
-            </h3>
-          </div>
-          <span className="whv-country-now-state">
-            {caseFile
-              ? bilingual(locale, "Dossier daté", "Dated dossier")
-              : bilingual(locale, "Flux non connecté", "Feed not connected")}
-          </span>
-        </div>
-        {caseFile ? (
-          <article className="whv-country-now-feature">
-            <div className="whv-country-now-byline">
-              <span>{bilingual(locale, "ENQUÊTE DE SOURCES", "SOURCE RESEARCH")}</span>
-              <time dateTime={caseFile.asOfDay}>{caseFile.asOfDay}</time>
-            </div>
-            <h4>{caseFile.question[locale]}</h4>
-            <p className="whv-country-now-intro">{caseFile.context[locale]}</p>
-            <p className="whv-country-now-conclusion">{caseFile.editorialConclusion[locale]}</p>
-            <div className="whv-country-now-sources" aria-label={bilingual(
-              locale, "Consulter les publications originales", "Read original publications"
-            )}>
-              {caseFile.links.map(link => <a key={link.id} href={link.originalUrl}
-                target="_blank" rel="noopener noreferrer" title={link.outlet}>
-                <span>{link.outlet.split(" — ")[0]}</span>
-                <small>{link.publishedDay}</small>
-                <span aria-hidden="true">↗</span>
-              </a>)}
-            </div>
-            <a className="whv-country-now-deep-link" href="?wv=radar">
-              {bilingual(locale, "Explorer les questions et comparer les sources",
-                "Explore the questions and compare sources")}
-              <span aria-hidden="true">→</span>
-            </a>
-            <p className="whv-country-now-caution">
-              {bilingual(locale,
-                "Ce dossier historique ne constitue pas un fil d'actualité en direct. Les originaux complets, les corrections et l'indépendance éditoriale restent à examiner.",
-                "This historical dossier is not a live news feed. Full original texts, corrections and editorial independence still require review.")}
-            </p>
-          </article>
-        ) : (
-          <div className="whv-country-now-unavailable" role="status">
-            <strong>{bilingual(locale,
-              "Les actualités de ce pays ne sont pas encore disponibles ici.",
-              "This country's news is not available here yet.")}</strong>
-            <p>{bilingual(locale,
-              "Nous préparons un fil daté par pays, avec les sources locales et internationales. Une absence de couverture ne veut pas dire qu'il ne s'est rien passé.",
-              "We are preparing a dated, country-specific feed with local and international sources. Missing coverage does not mean nothing happened.")}</p>
-            <a href="?wv=radar">
-              {bilingual(locale, "Accéder à la recherche mondiale (expérimentale)",
-                "Explore global search (experimental)")} →
-            </a>
-          </div>
-        )}
       </section>
     </>
   );
