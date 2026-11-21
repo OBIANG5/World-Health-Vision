@@ -1,0 +1,47 @@
+/* PRODUCT-P2C3C2 — deliberately separate from NATIONAL published indicator UI.
+   Dense but readable on iPhone 320px, 390px, tablet and desktop. */
+.whv-scoped-explorer {
+  margin: 12px 0; border: 1px solid rgba(118,211,241,.38);
+  background: rgba(8,31,49,.72); border-radius: 13px;
+  color: #e5f4ff; min-width: 0; overflow-wrap: anywhere;
+}
+.whv-scoped-explorer * { box-sizing: border-box; }
+.whv-scoped-explorer > summary {
+  list-style-position: inside; cursor: pointer; display: grid; gap: 5px;
+  padding: 12px 14px; line-height: 1.45; font-size: 13px;
+}
+.whv-scoped-explorer > summary strong { color: #abebff; font-size: 14px; }
+.whv-scoped-explorer > summary span { font-size: 12px; color: #c8dce9; }
+.whv-scoped-explorer :is(summary,button,a):focus-visible {
+  outline: 3px solid #a8eeff; outline-offset: 2px;
+}
+.whv-scoped-body { display: grid; gap: 11px; padding: 4px 14px 14px; min-width: 0; }
+.whv-scoped-body p { margin: 0; font-size: 12px; line-height: 1.6; }
+.whv-scoped-caution { border-left: 3px solid #75b8d1; padding: 7px 10px;
+  background: rgba(39,112,141,.19); color: #e5f3fc; }
+.whv-scoped-refresh { justify-self: start; border: 1px solid rgba(122,223,246,.55);
+  border-radius: 8px; background: #123c54; color: #effaff; padding: 9px 12px; cursor: pointer; font: inherit; }
+.whv-scoped-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,19rem),1fr));
+  gap: 12px; min-width: 0; }
+.whv-scoped-card { min-width: 0; padding: 13px; display: grid; align-content: start; gap: 12px;
+  background: rgba(5,26,44,.83); border: 1px solid rgba(118,211,241,.26); border-radius: 11px; }
+.whv-scoped-label { display: grid; gap: 4px; }
+.whv-scoped-label small { color: #b7d7e8; }
+.whv-scoped-label h5 { margin: 0; font-size: 15px; line-height: 1.38; color: #f2fbff; }
+.whv-scoped-label span { color: #ffe5aa; font-size: 12px; }
+.whv-scoped-value { display: flex; gap: 6px; flex-wrap: wrap; align-items: baseline; }
+.whv-scoped-value > span { color: #a4f3ff; font-size: clamp(1.2rem,3vw,1.7rem);
+  font-weight: 790; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.whv-scoped-value small { color: #d0e2ee; font-size: 12px; font-weight: 500; }
+.whv-scoped-card dl { display: grid; gap: 7px; margin: 0; }
+.whv-scoped-card dl > div { min-width: 0; }
+.whv-scoped-card dt { font-size: 11px; color: #accbdc; }
+.whv-scoped-card dd { margin: 2px 0 0; font-size: 12px; color: #e4f3ff; overflow-wrap: anywhere; }
+.whv-scoped-attribution,.whv-scoped-provenance { color: #cbe7f3; }
+.whv-scoped-card a { color: #a8eafa; font-size: 12px; text-underline-offset: 3px; }
+@media (max-width: 390px) {
+ .whv-scoped-explorer > summary { padding: 11px; }
+ .whv-scoped-body { padding: 4px 10px 11px; }
+ .whv-scoped-card { padding: 11px; }
+ .whv-scoped-refresh { width: 100%; text-align: center; justify-self: stretch; }
+}
