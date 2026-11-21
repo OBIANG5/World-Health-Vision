@@ -1,3 +1,13 @@
+# RÉSULTAT FINAL DE RECONSTRUCTION ARTEMIS II — 21 NOVEMBRE 2026
+
+**DERNIÈRE ACTUALISATION (prime sur les sections précédentes ci-dessous)** : l'utilisateur a autorisé le film NASA qu'il voulait VOIR. **Vidéo réellement livrée en MP4 dans ce chat** `/mnt/data/WorldVision-ArtemisII-revue-visuelle-finale.mp4`, 8,235 s, 247 frames, 1080×1920, H264+AAC, SHA256 **dbb3cdd2e01cec74afc8827900b0e7e515ebe9a96a548638cf2eb600086595f4**. 6 vraies captures 390px ont été inspectées, 3 beats HOOK « 5 ÉCLAIRS SIGNALÉS » → RE-HOOK « DERRIÈRE LA LUNE » → RE-HOOK « LE RAPPORT DE LA NASA ». **Aucune voix Kokoro : supprimée par mapping FFmpeg ; pas encore de nouvelle Vivienne C5.2 +8 % pour ce texte exact.** Uniquement nouvelle ambiance / SFX non diégétique créés par programme, mesurés **−21,0 LUFS** après correction de la première piste trop faible. C'est une **REVUE VISUELLE INTERNE, NON un master narré ou publiable.**
+
+**Preuve et reconstruisibilité GH** : PR **#141 DRAFT** https://github.com/OBIANG5/World-Health-Vision/pull/141, enfant de PR #138. Workflow [#44950928858](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44950928858) **SUCCESS** sur commit de code `0abb1729782ef2f5e18caa6390ebe0637a34f38c`. Artifact **#14725466993** `worldvision-artemis2-owner-visual-only-NO-VOICE`, expire **28 novembre 2026 21:19:56 UTC**. Source P0.6 run #44948838931 / artifact #14724572702 SHA256 **dec6af52661fdd45c879406c11d0a438455ffa884658dd0cb739dc134572880c**. Script reproductible `worldhealth-vision-v2/media-voice-pilots/artemis2/export-visual-only.py`. Le fichier livré dans le chat n'est pas un lien permanent inter-chat. La nouvelle voix C5.2 autorisée reste le principal verrou pour transformer cette démonstration en véritable film narré. Les petites annotations NASA restent trop difficiles à lire sur mobile : défaut non masqué.
+
+**NE PAS PERDRE LE FIL :** la permission de produire cette démo n'est PAS une validation que NASA prime sur toute la stratégie média. La priorité durable reste **hook/re-hooks liés au sens, vraie réalisation multicouche simultanée, son/voix, montage efficace et corrections rapides sur film réel**, pas dix microtests NASA. Cette vidéo est maintenant visible; recueillir l'avis du propriétaire avant de modifier l'histoire/plan ou prétendre publier. Voir dossier `worldhealth-vision-v2/docs/media/MEDIA_OWNER_REQUESTED_ARTEMIS2_VISUAL_REVIEW_2026-11-21.md`; PR #141, issue #116. Aucun merge, publication, déploiement, achat ni connexion compte.
+
+---
+
 # POINT DE REPRISE LE PLUS RÉCENT — 21/11/2026 : VIDÉO ARTEMIS II AUTORISÉE ET VISIBLE, MAIS VOIX C5.2 ABSENTE
 
 **CETTE SECTION PRIME SUR TOUTES LES ANCIENNES DIRECTIVES PLUS BAS.**
