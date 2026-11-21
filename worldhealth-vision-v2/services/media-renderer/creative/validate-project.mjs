@@ -353,6 +353,8 @@ export function inspectProject(project) {
     if(!boundedInteger(project.outro.durationFrames,1,600))
       bad(errors,"outro.durationFrames","Outro duration should be 1-600 frames.");
   }
+  if(project.brandMark!==undefined&&project.brandMark!=="worldvision")
+    bad(errors,"brandMark","Use only the existing official World-Vision brand preset or omit it.");
   if(project.style!=null){
     for(const k of ["accent","background","ink"])
       if(project.style[k]!=null&&!COLOR.test(project.style[k]))bad(errors,"style."+k,"Use six-digit hex color.");
