@@ -1,0 +1,87 @@
+{
+  "schema_version": "worldvision-cop31-reference-assets-v1",
+  "status": "PREPRODUCTION_REFERENCE_ONLY_NOT_CLEARED_FOR_PUBLICATION",
+  "facts_frozen_as_of": "2026-11-21T21:51:00Z",
+  "location": "COP31 Antalya, Türkiye",
+  "ownership": "World-Vision editorial. No source ownership/endorsement implied.",
+  "primary_documents": [
+    {
+      "id": "C16",
+      "url": "https://unfccc.int/sites/default/files/resource/dt_cop31_cover_decision.pdf",
+      "date": "2026-11-16",
+      "version_timestamp": "12:40 (as printed)",
+      "expected_pages": 18,
+      "focus_page": 8,
+      "second_page": 9,
+      "narrative": "Original 16 November DRAFT paragraphs 65, 66, 73. This is NOT an adopted decision."
+    },
+    {
+      "id": "C19",
+      "url": "https://unfccc.int/sites/default/files/resource/Upload_dt_cop31_cover_decision.pdf",
+      "date": "2026-11-19",
+      "version_timestamp": "14:10 (as printed)",
+      "expected_pages": 9,
+      "focus_page": 5,
+      "second_page": 6,
+      "narrative": "Original 19 November DRAFT, sections 40–45 and 54. The latter still mentions a DIFFERENT USD120bn MDB estimate."
+    }
+  ],
+  "eu_image_candidates": [
+    {
+      "id": "EU-COP31-MEETING-WIDE",
+      "collection": "P-070944",
+      "image_ref": "00-163",
+      "image_url": "https://ec.europa.eu/avservices/repository/photo/07/09/44/P-070944_00-163_03-MED-275144.jpg",
+      "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-070944",
+      "description": "General view of negotiation sessions at COP31",
+      "date_range_in_collection": "2026-11-16 to 2026-11-22",
+      "exact_shooting_date": "NOT_INDIVIDUALLY_CONFIRMED",
+      "rights": "EU-owned content CC BY 4.0 by default IF no exception; individual conditions/persons/logos review OPEN",
+      "intended_use": "REHOOK 2 negotiation context; NEVER label as recorded on 21 Nov",
+      "priority": 1
+    },
+    {
+      "id": "EU-COP31-HOEKSTRA-SIDE",
+      "collection": "P-070944",
+      "image_ref": "00-162",
+      "image_url": "https://ec.europa.eu/avservices/repository/photo/07/09/44/P-070944_00-162_03-MED-376154.jpg",
+      "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-070944",
+      "description": "Wopke Hoekstra and participants at COP31 talks",
+      "date_range_in_collection": "2026-11-16 to 2026-11-22",
+      "exact_shooting_date": "NOT_INDIVIDUALLY_CONFIRMED",
+      "rights": "EU-owned content CC BY 4.0 by default IF no exception; individual conditions/persons/logos review OPEN",
+      "intended_use": "REHOOK 2 participant photo WITHOUT attributing a speech instant; actor publicity rights and exact day unresolved",
+      "priority": 2
+    },
+    {
+      "id": "EU-COP31-ANTALYA-SIGN",
+      "collection": "P-071004",
+      "image_ref": "00-16",
+      "image_url": "https://ec.europa.eu/avservices/repository/photo/07/10/04/P-071004_00-16_03-MED-36834.jpg",
+      "source_page": "https://audiovisual.ec.europa.eu/en/media/photo/P-071004",
+      "description": "Real COP31 Türkiye Antalya sign with passers-by, event identification only",
+      "date_range_in_collection": "2026-11-14 to 2026-11-15",
+      "exact_shooting_date": "NOT_INDIVIDUALLY_CONFIRMED",
+      "rights": "EU-owned content CC BY 4.0 by default IF no exception; third-party marks and people review OPEN",
+      "intended_use": "Geographic/venue context only, not photograph of latest negotiations",
+      "priority": 3
+    }
+  ],
+  "rights_policy_url": "https://audiovisual.ec.europa.eu/en/conditions-of-use",
+  "publish_gate": {
+    "document_version_verified": true,
+    "source_photos_individual_rights_verified": false,
+    "eu_original_high_res_acquired": false,
+    "exact_photograph_dates_verified": false,
+    "owner_script_approved": false,
+    "new_vivienne_c52_take_recorded": false,
+    "allowed_for_publication": false
+  },
+  "notes": [
+    "Photo URLs above were opened as actual images, not invented download URLs. Only MED previews; DO NOT upscale and assert original source quality.",
+    "Some EU photographs contain third-party logos and identifiable participants; the general CC BY4.0 terms are NOT a full rights clearance.",
+    "Never put an invented 21/11 date on a photo with only a 16–22 date range.",
+    "Never confuse this story with the rejected 12 Nov UN Disaster Risk Financing COP31 video.",
+    "2 draft decisions are NOT a final treaty. Adaptation $120bn is distinct from MDB $120bn in the revised draft."
+  ]
+}
