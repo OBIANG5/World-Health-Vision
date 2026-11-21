@@ -62,13 +62,25 @@ try{
    captions:document.querySelector("#wvc-captions")?.value||"",
    selected:document.querySelector(".wvc-shot.selected")?.textContent||""
  }));
- if(!missing.alert.includes("synthetic-landscape.png")||!missing.exportDisabled||
+ if(!missing.alert.includes("synthetic-landscape.png")||!missing.alert.includes("click-synthetic.wav")||!missing.exportDisabled||
     !missing.captions.includes("SRT importé et préservé")||!missing.selected.includes("UNE IMAGE FOURNIE"))
     throw Error("Studio silently replaced missing media or lost caption/shot: "+JSON.stringify(missing));
  // This media is synthetic and was created by the existing CI fixture builder.
  const photo=path.resolve("../../frontend/web-v2/public/smoke/synthetic-landscape.png");
  if(!fs.existsSync(photo))throw Error("Smoke photo fixture missing");
- await (await page.$("#wvc-import")).uploadFile(photo);
+ // Generate an actual local WAV (1 s PCM), not an external protected sound.
+ const wavPath=path.join(tmp,"click-synthetic.wav");
+ const samples=48000,dataBytes=samples*2;
+ const wav=Buffer.alloc(44+dataBytes);
+ wav.write("RIFF",0);wav.writeUInt32LE(36+dataBytes,4);wav.write("WAVE",8);
+ wav.write("fmt ",12);wav.writeUInt32LE(16,16);wav.writeUInt16LE(1,20);
+ wav.writeUInt16LE(1,22);wav.writeUInt32LE(48000,24);wav.writeUInt32LE(96000,28);
+ wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);wav.write("data",36);
+ wav.writeUInt32LE(dataBytes,40);
+ for(let i=0;i<samples;i++)
+   wav.writeInt16LE(Math.round(2500*Math.sin(2*Math.PI*440*i/48000)),44+i*2);
+ fs.writeFileSync(wavPath,wav);
+ await (await page.$("#wvc-import")).uploadFile(photo,wavPath);
  await page.waitForFunction(()=>Array.from(document.querySelectorAll("button"))
    .some(b=>b.textContent?.includes("Exporter le projet")&&!b.disabled),{timeout:15000});
  const valid=await page.evaluate(()=>({
@@ -78,7 +90,7 @@ try{
    exportEnabled:Array.from(document.querySelectorAll("button"))
       .some(x=>x.textContent?.includes("Exporter le projet")&&!x.disabled)
  }));
- if(valid.missing.some(x=>x.includes("synthetic-landscape.png"))||!valid.exportEnabled)
+ if(valid.missing.some(x=>x.includes("synthetic-landscape.png")||x.includes("click-synthetic.wav"))||!valid.exportEnabled)
    throw Error("Asset reconnection did not restore editability: "+JSON.stringify(valid));
  // Capture the JSON Blob the real button generates, without relying on filesystem downloads.
  await page.evaluate(()=>{
@@ -99,7 +111,9 @@ try{
     exported.shots[0]?.media?.file!==saved.shots[0].media.file||
     exported.shots[0]?.media?.credit!=="SIMULATION CI"||
     exported.captions?.length!==2||exported.captions[1].position!=="lower"||
-    exported.shots[0]?.durationFrames!==105)
+    exported.shots[0]?.durationFrames!==105||
+    JSON.stringify(exported.directorBeats)!==JSON.stringify(saved.directorBeats)||
+    JSON.stringify(exported.soundCues)!==JSON.stringify(saved.soundCues))
     throw Error("Export after import silently modified a source, cue or timeline: "+JSON.stringify(exported));
 
  // Negative file must never erase the currently restored production.
