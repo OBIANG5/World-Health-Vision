@@ -1,0 +1,64 @@
+name: World-Vision MEDIA P0.8 — PHOTO + DATA same-frame motion contract (NO NEW VIDEO)
+on:
+  push:
+    branches:
+      - 'feature/worldvision-media-semantic-multilayer-photo-data-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-comparison-motion.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-comparison-motion.d.mts'
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.d.mts'
+      - 'worldhealth-vision-v2/services/media-renderer/src/PhotoMultilayer.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/validate-project.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/studio-project-io.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/photo-data-composition.test.mjs'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard.tsx'
+      - '.github/workflows/worldvision-media-photo-data-multilayer.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-comparison-motion.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-comparison-motion.d.mts'
+      - 'worldhealth-vision-v2/services/media-renderer/src/photo-motion-tracks.d.mts'
+      - 'worldhealth-vision-v2/services/media-renderer/src/PhotoMultilayer.tsx'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/validate-project.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/studio-project-io.mjs'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/photo-data-composition.test.mjs'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/CinematicProductionBoard.tsx'
+      - '.github/workflows/worldvision-media-photo-data-multilayer.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: worldvision-media-p08-same-shot-one-test-run
+  cancel-in-progress: true
+jobs:
+  sourced-multi-layer-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing renderer dependencies
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: npm install --no-audit --no-fund
+      - name: Verify PHOTO × DATA zero baseline, real source, timing and Studio roundtrip
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: |
+          node --check src/photo-comparison-motion.mjs
+          node --test creative/photo-data-composition.test.mjs creative/studio-project-io.test.mjs creative/validate-project.test.mjs
+      - name: Typecheck real Remotion renderer and new composition
+        working-directory: worldhealth-vision-v2/services/media-renderer
+        run: npm run typecheck
+      - name: Verify frontend Studio build including source controls
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Confirm no new user-facing video or voice was generated
+        run: |
+          find worldhealth-vision-v2/services/media-renderer \
+            -type f \( -iname '*.mp4' -o -iname '*.wav' -o -iname '*.mp3' \) \
+            -not -path '*/node_modules/*' -not -path '*/public/*' -print -quit |
+            grep . && { echo 'Unexpected AV fixture created' >&2; exit 1; } || true
+          echo 'PASS: multilayer source-data code contract; no audiovisual demonstration'
