@@ -26,9 +26,17 @@ jobs:
       - name: Install only renderer-audio math dependencies (no TTS package)
         run: |
           python -m pip install --disable-pip-version-check "numpy==2.3.5" "soundfile==0.13.1"
-          command -v ffmpeg
-          command -v ffprobe
-          command -v gh
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          if ! command -v gh >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq gh
+          fi
+          ffmpeg -hide_banner -version | head -1
+          ffprobe -hide_banner -version | head -1
+          gh --version | head -1
       - name: Retrieve PINNED original NASA three-beat film without presenting unapproved voice
         env:
           GH_TOKEN: ${{ github.token }}
