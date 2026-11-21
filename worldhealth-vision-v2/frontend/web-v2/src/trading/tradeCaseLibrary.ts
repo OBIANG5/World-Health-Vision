@@ -4,7 +4,7 @@
  *
  * Fail closed on malformed/corrupted records. No automatic migration or overwrite.
  */
-import { isTradePlan, type TradePlan } from "./tradePlan";
+import { isTradePlan, validEvidence, type TradePlan } from "./tradePlan";
 import { validEventPreparation, validThesisUpdate } from "./tradeResearch";
 
 export const CASE_LIBRARY_KEY = "world-vision:trading-mta-cases:v2";
@@ -35,22 +35,12 @@ export function emptyCaseLibrary(): CaseLibrary {
 export function isCompleteTradePlan(value: unknown): value is TradePlan {
   if (!isTradePlan(value)) return false;
   const plan = value as TradePlan;
-  return plan.evidence.every((e) =>
+  return plan.evidence.every((e) => validEvidence(e) &&
     typeof e.id === "string" && e.id.length <= 128 &&
-    typeof e.url === "string" && e.url.length <= 1800 &&
-    typeof e.name === "string" && e.name.length <= 240 &&
-    typeof e.originalPublisher === "string" && e.originalPublisher.length <= 240 &&
-    // Source metadata may be user-authored, but it must have valid shape.
-    // Unverified claims or incomplete historical drafts are still retained.
-    sourceUrlSafe(e.url))
+    e.url.length <= 1800 && e.name.length <= 240 &&
+    e.originalPublisher.length <= 240)
     && (plan.updates === undefined || plan.updates.every(validThesisUpdate))
     && (plan.events === undefined || plan.events.every(validEventPreparation));
-}
-function sourceUrlSafe(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && Boolean(url.hostname) && !url.username && !url.password;
-  } catch { return false; }
 }
 function isoTimestamp(value: unknown): value is string {
   if (typeof value !== "string" || value.length > 40 || value.length < 20) return false;
