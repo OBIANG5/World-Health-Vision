@@ -9,7 +9,8 @@ import {reviewFrameRange} from './review-range.mjs';
 export const REVISION_FORMAT = 'worldvision-shot-revision-v1';
 const SET_FIELDS = new Set([
   'title', 'subtitle', 'eyebrow', 'footnote', 'motion', 'accent',
-  'titleTreatment', 'titleFrameZero', 'focus', 'media', 'foreground'
+  'titleTreatment', 'titleFrameZero', 'focus', 'media', 'foreground',
+  'documentRegion', 'evidencePresentation', 'documentZoomMax'
 ]);
 const TOP_FIELDS = new Set([
   'schema_version', 'source_project_sha256', 'shot_id', 'reason',
