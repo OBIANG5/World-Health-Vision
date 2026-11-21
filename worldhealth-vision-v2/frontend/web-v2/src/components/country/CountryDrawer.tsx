@@ -17,6 +17,7 @@ import { useLang } from "../../context/LanguageContext";
 import { useFxHistory } from "../../hooks/useFxHistory";
 import { useCountrySheet } from "../../hooks/useCountrySheet";
 import CountryLocalEvidencePanel from "./CountryLocalEvidencePanel";
+import CountryEditorialStory from "./CountryEditorialStory";
 import { useFxRates } from "../../hooks/useFxRates";
 import { useIndicatorHistory } from "../../hooks/useIndicatorHistory";
 import { useIndicatorOverview } from "../../hooks/useIndicatorOverview";
@@ -28,6 +29,7 @@ import {WorldIcon,type WorldIconName} from "../ui/WorldIcon";
 import ForecastChart from "../charts/ForecastChart";
 import "../../styles/charts.css";
 import "../../styles/country.css";
+import "../../styles/country-editorial.css";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1372,43 +1374,50 @@ export default function CountryDrawer({
   return (
     <aside className={`country-drawer ${open ? "open" : ""} ${fullscreen ? "fullscreen" : ""}`}>
 
-      {/* ── En-tête ── */}
-      <div className="country-drawer-header">
-        <div className="country-hero">
-          <span className="country-hero-flag" aria-hidden="true">{flag}</span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h2 className="country-drawer-title">{displayName}</h2>
-            {subtitle && <p className="country-drawer-subtitle">{subtitle}</p>}
-            {(selectedCountry?.capitalCity || selectedCountry?.currencyCode) && (
-              <p className="country-drawer-meta-line">
-                {selectedCountry.capitalCity && <span><WorldIcon name="building" size={14}/> {selectedCountry.capitalCity}</span>}
-                {selectedCountry.capitalCity && selectedCountry.currencyCode && <span className="country-meta-sep">·</span>}
-                {selectedCountry.currencyCode && (
-                  <span>{selectedCountry.currencyCode}{selectedCountry.currencySymbol ? ` ${selectedCountry.currencySymbol}` : ""}{selectedCountry.currencyName ? ` — ${selectedCountry.currencyName}` : ""}</span>
-                )}
-              </p>
-            )}
-          </div>
+      {/* Lightweight utilities. Country identity lives in the editorial hero. */}
+      <div className="country-drawer-header whv-country-drawer-toolbar">
+        <div className="whv-country-toolbar-brand">
+          <strong>World-Vision</strong>
+          <span>Atlas <span aria-hidden="true">/</span> {selectedCountryIso3}</span>
         </div>
         <div className="country-drawer-actions">
           {onToggleWatch && (
             <button type="button" className={`drawer-btn${watched ? " active" : ""}`}
-              title={watched ? "Retirer des favoris" : "Ajouter aux favoris"}
-              onClick={onToggleWatch} style={{ fontSize: 16, padding: "5px 10px" }}>
-              {watched ? "★" : "☆"}
-            </button>
+              title={watched ? (fr ? "Retirer des favoris" : "Remove favorite") :
+                (fr ? "Ajouter aux favoris" : "Add favorite")}
+              aria-label={watched ? (fr ? "Retirer des favoris" : "Remove favorite") :
+                (fr ? "Ajouter aux favoris" : "Add favorite")}
+              aria-pressed={watched}
+              onClick={onToggleWatch}>{watched ? "★" : "☆"}</button>
           )}
-          <button type="button" className="drawer-btn" title="CSV" disabled={!economicSnapshot} onClick={downloadCsv}>{t(lang, "csv")}</button>
-          <button type="button" className="drawer-btn" title="PDF" disabled={!countryDetail} onClick={() => { void downloadPdf(); }}>{t(lang, "pdf")}</button>
-          <button type="button" className="drawer-btn" onClick={() => setFullscreen(!fullscreen)}>
-            {fullscreen ? t(lang, "maxNrm") : "Max"}
+          <button type="button" className="drawer-btn" title="CSV"
+            aria-label={fr ? "Exporter les données CSV" : "Export CSV data"}
+            disabled={!economicSnapshot} onClick={downloadCsv}>CSV</button>
+          <button type="button" className="drawer-btn" title="PDF"
+            aria-label={fr ? "Exporter la fiche PDF" : "Export PDF sheet"}
+            disabled={!countryDetail} onClick={() => { void downloadPdf(); }}>PDF</button>
+          <button type="button" className="drawer-btn" onClick={() => setFullscreen(!fullscreen)}
+            title={fullscreen ? (fr ? "Réduire la fiche" : "Collapse view") :
+              (fr ? "Agrandir la fiche" : "Expand view")}
+            aria-label={fullscreen ? (fr ? "Réduire la fiche" : "Collapse view") :
+              (fr ? "Agrandir la fiche" : "Expand view")}>
+            {fullscreen ? "↙" : "⤢"}
           </button>
-          <button type="button" className="drawer-btn close" onClick={onClose}>{t(lang, "fermer")}</button>
+          <button type="button" className="drawer-btn close" onClick={onClose}
+            title={t(lang, "fermer")} aria-label={t(lang, "fermer")}>×</button>
         </div>
       </div>
 
       {/* ── Corps scrollable ── */}
       <div className="country-drawer-body">
+        <CountryEditorialStory key={selectedCountryIso3}
+          iso3={selectedCountryIso3}
+          name={displayName} flag={flag} subtitle={subtitle}
+          capital={countryDetail?.capitalCity ?? selectedCountry?.capitalCity}
+          currencyCode={countryDetail?.currencyCode ?? selectedCountry?.currencyCode}
+          locale={lang} open={open}
+        />
+
 
         {/* Sélecteur de pays */}
         <div>
