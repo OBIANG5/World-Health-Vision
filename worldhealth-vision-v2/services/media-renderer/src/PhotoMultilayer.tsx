@@ -3,6 +3,7 @@ import {fitTextOnNLines} from "@remotion/layout-utils";
 import type {CreativeEditProps,CreativeShot} from "./CreativeEdit";
 import {resolveCreativeSource} from "./CreativeEdit";
 import {photoTrackPose} from "./photo-motion-tracks.mjs";
+import {photoComparisonPose} from "./photo-comparison-motion.mjs";
 import {headlineHandoffOpacity} from "./editorial-text-handoff.mjs";
 
 type VisualStyle=Required<NonNullable<CreativeEditProps["visualStyle"]>>;
@@ -46,6 +47,12 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
     ?"inset("+((1-maskFraction)*100)+"% 0 0 0)"
     :"inset(0 "+((1-maskFraction)*100)+"% 0 0)";
   const number=photo.metric;
+  const comparison=photo.comparison;
+  const chartPose=comparison?photoComparisonPose(comparison,local):null;
+  const formatComparison=(value:number)=>new Intl.NumberFormat(comparison!.locale,{
+    minimumFractionDigits:comparison!.precision,
+    maximumFractionDigits:comparison!.precision
+  }).format(value);
   const shown=number?new Intl.NumberFormat("fr-FR",{
     minimumFractionDigits:number.precision,
     maximumFractionDigits:number.precision
@@ -148,6 +155,59 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       <div data-wv-photo-metric-source="true" style={{
         fontSize:32,lineHeight:1.2,marginTop:12,color:"#c1e2eb"
       }}>{number.sourceLabel}</div>
+    </div>}
+    {/* A real PHOTO + a signed, sourced comparative visual can run at the
+        SAME TIME as camera, matte, source-subject and word captions.
+        Numbers are exact, never faked as counting intermediate measurements. */}
+    {comparison&&chartPose&&<div data-wv-photo-comparison="true"
+      data-wv-photo-comparison-progress={chartPose.reveal.toFixed(4)}
+      style={{
+        position:"absolute",top:770,left:91,right:91,
+        borderRadius:20,padding:"23px 28px 21px",
+        background:"rgba(2,20,34,.91)",border:"1px solid rgba(124,223,243,.58)",
+        boxShadow:"0 18px 44px rgba(0,9,20,.45)",
+        pointerEvents:"none",opacity:fading,
+      }}>
+      <div dir="auto" style={{
+        color:"#e4fbff",fontSize:37,fontWeight:830,lineHeight:1.11,
+        letterSpacing:"-.024em",marginBottom:16
+      }}>{comparison.title}</div>
+      <div style={{display:"flex",justifyContent:"space-between",
+        color:"#a9dbe8",fontSize:25,marginBottom:9}}>
+        <span>AXE : {formatComparison(comparison.domain.min)} {comparison.unit}</span>
+        <span>0</span>
+        <span>{formatComparison(comparison.domain.max)} {comparison.unit}</span>
+      </div>
+      {chartPose.bars.map((bar,i)=><div key={i}
+        data-wv-comparison-row={i===0?"first":"second"}
+        data-wv-comparison-direction={bar.direction}
+        style={{marginBottom:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",
+          alignItems:"baseline",gap:15,marginBottom:8}}>
+          <span dir="auto" style={{fontSize:31,fontWeight:710,
+            overflowWrap:"break-word",maxWidth:500}}>{bar.label}</span>
+          <strong style={{fontSize:40,fontWeight:870,letterSpacing:"-.03em",
+            fontVariantNumeric:"tabular-nums"}}>{formatComparison(bar.value)} {comparison.unit}</strong>
+        </div>
+        <div style={{position:"relative",width:"100%",height:18,
+          borderRadius:9,background:"rgba(163,211,222,.13)",
+          boxShadow:"inset 0 0 0 1px rgba(208,245,255,.12)"}}>
+          <div data-wv-photo-comparison-zero="true" style={{
+            position:"absolute",height:26,top:-4,left:(bar.zero*100)+"%",
+            width:2,background:"#e3f7ff",zIndex:2
+          }}/>
+          <div data-wv-photo-comparison-bar={i===0?"first":"second"} style={{
+            position:"absolute",height:18,top:0,left:(bar.start*100)+"%",
+            width:(bar.width*100)+"%",borderRadius:9,
+            background:bar.direction==="negative"?"#f2a489":accent,
+            boxShadow:"0 0 13px rgba(10,211,239,.23)"
+          }}/>
+        </div>
+      </div>)}
+      <div data-wv-photo-comparison-source="true" dir="auto" style={{
+        borderTop:"1px solid rgba(193,230,240,.24)",paddingTop:9,
+        fontSize:26,lineHeight:1.25,color:"#d0ebf0",overflowWrap:"break-word"
+      }}>{comparison.source.publisher} · {comparison.source.dataset} · {comparison.source.asOf}</div>
     </div>}
     {shot.subtitle&&<div data-wv-photo-caption="true" dir="auto"
       style={{
