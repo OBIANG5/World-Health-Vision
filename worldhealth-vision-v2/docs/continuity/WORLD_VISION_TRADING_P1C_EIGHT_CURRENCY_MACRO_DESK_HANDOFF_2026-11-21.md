@@ -1,6 +1,6 @@
 # World-Vision V2 — Trading-Vision P1C : poste de travail FX macro, 8 économies, 28 paires
 **21 novembre 2026 — DOCUMENT DE REPRISE OBLIGATOIRE. PR DRAFT, non fusionnée, non déployée.**
-**État CI : à compléter avec SHA final + logs réels, ne pas revendiquer tests verts avant la preuve.**
+**État CI : P1C code + source directory + documentation vérifiés sur SHA `02f95c1b72936ffd572d2aa08c17b703d971a6bb`, run #44904719506 `completed/success`. Le checkpoint ajouté ici constitue un commit documentaire ultérieur : vérifier son run sur le nouveau HEAD avant de conclure.**
 
 ## 0. Chaîne GitHub canonique — ne pas perdre l'historique
 Dépôt `OBIANG5/World-Health-Vision`, sous-répertoire logiciel `worldhealth-vision-v2/`. **NE PAS toucher aux projets média**.
@@ -91,3 +91,32 @@ Les domaines des banques centrales ont été croisés avec les [liens répertori
 - `asOf` est une date (pas une heure) et l'horloge est celle du navigateur; on ne peut pas prouver qu'une information était connue avant la publication du résultat le même jour. **Ne pas affirmer une chronologie ex-ante vérifiée** sur ce fondement.
 - La divergence d'horizon et d'unité entre deux économies n'est pas automatiquement résolue par le simple fait qu'elles possèdent chacune une publication. Les dates distinctes sont signalées; besoin futur d'analyses de comparabilité, pas de scores.
 - La bibliothèque locale ne se synchronise pas; 8 versions maximum par devise et taille limitée. Export/backup/merge de versions entre appareils nécessitent un choix explicite. Aucune fusion automatique sur import non vide.
+
+
+---
+
+## 7. CHECKPOINT CI P1C — PREUVE VÉRIFIÉE et point d'arrêt réel
+
+**Fonctionnalités + 16 liens institutionnels + tests + corps initial de ce handoff vérifiés sur commit exact `02f95c1b72936ffd572d2aa08c17b703d971a6bb`.**
+
+**[GitHub Actions #44904719506](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44904719506) : `completed / success`** sur ce même SHA. Job `136847723367` :
+- Reproductibilité `npm ci` : **success** ;
+- `npm run test:trading`, `test:cases`, `test:private-cases`, `test:macro` : **success** ;
+- lint de tous les fichiers TS/TSX/JS touchés : **success**, sans prétendre corriger la dette de lint non pertinente du repo entier ;
+- `npm run build` TypeScript strict + Vite production : **success** ;
+- vrai Chromium/React **320px, 390px, 1440px** : **success**. Scénarios de six semaines? NON : le test contient des données **strictement fictives**. Il vérifie 8 devises, 28 paires, absence de lecture/écriture avant accord, deux fiches datées EUR/GBP, lien publication originale, source inachevée sauvegardée lors du refus de changer de devise, archive locale v1, transfert de deux sources au dossier MTA v1, `direction=undecided`, aucun ordre, aucun écrasement de l'ancienne bibliothèque de dossiers et création du quatrième uniquement sur clic.
+- Artefact Chrome `trading-macro-p1c-synthetic-browser-evidence` sauvegardé : **270 612 octets** (captures fictives seulement).
+- [Workflow non-régression Trading #44904724137](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44904724137) **success** sur le même SHA.
+
+La première version de la PR a eu des erreurs ESLint mineures (deux constantes dérivées non utilisées), **corrigées** sans désactiver la règle ni supprimer les tests. Les runs verts ci-dessus prouvent la version corrigée avec répertoire officiel et tests des sources.
+
+**Ce paragraphe est un nouveau commit strictement documentaire après `02f95c1`. Vérifier son HEAD via GitHub et la CI avant d'affirmer « SHA final validé » ; inscrire la preuve dans le corps de la PR #129 et l'issue #122** pour que les chats futurs ne dépendent pas de la mémoire du modèle.
+
+### Prochaine tranche la plus utile P1D (ne pas repartir dans l'auth OIDC sans vrai fournisseur)
+1. **Relier le Macro Desk à des publications officielles réelles** avec provenance et droits de réutilisation : communiqués des 8 banques centrales, calendrier de décisions et données de statistiques nationales. Chaque observation doit avoir `originalPublisher`, URL spécifique, `asOf`, unité, période/économie et indicateur, et statut réussi/indisponible ; privilégier réutilisation du moteur d'ingestion et de comparaison World-Vision, ne pas coder 8 fetchs sans source registry.
+2. **Analyses ex-ante / ex-post** : sur chaque événement, geler le consensus AVANT la publication (si provenance et horodatage le permettent), puis montrer la différence avec le chiffre publié et la réaction observée (PAS signal), différences d'unités et saisonnalité et révisions. Le journal `tradeResearch.ts` existe déjà, le relier méthodiquement et ne pas doubler les données.
+3. **Harmoniser Atlas, source nationale et GDELT** pour couvrir pays majeurs et économies africaines : la force internationale du produit vient de la pluralité et de la comparabilité, pas des 8 devises à elles seules. Bourse Afrique/BRVM, Money et Tourisme restent dans la feuille de route.
+4. **Confidentialité/compte** : ne brancher le Macro Desk sur Postgres et OIDC que lorsqu'un vrai IdP avec JWT issuer/aud/role, staging HTTPS, comptes de test A/B, RGPD, backup restore, et runtime least privilege existent. La PR #127 ne prouve que la sécurité d'un **token de test signé**, pas un accès utilisateur en production.
+5. **Capacité** : pour durablement dépasser huit versions par devise, concevoir un journal append-only serveur réel, source timestamps, pagination et stockage privé, **sans éviction silencieuse**. Le plafond actuel protège le quota local et l'utilisateur peut exporter JSON.
+
+**STATUS PRODUCTION : NON déployé, NON fusionné ; les PR #115/#120/#121/#124/#125/#127 et #129 restent une chaîne de brouillons. Aucun frais, abonnement, données payantes importées, courtier ou faux flux de marché.**
