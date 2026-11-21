@@ -7,6 +7,8 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - "worldhealth-vision-v2/services/ingestion-service/src/ingestion_service/connectors/gdelt_events_feed.py"
+      - "worldhealth-vision-v2/services/ingestion-service/tests/test_gdelt_events_feed.py"
       - "worldhealth-vision-v2/services/ingestion-service/export_gdelt_radar_snapshot.py"
       - "worldhealth-vision-v2/services/ingestion-service/tests/test_export_gdelt_radar_snapshot.py"
       - "worldhealth-vision-v2/frontend/web-v2/src/radar/gdeltStaticSnapshot.ts"
