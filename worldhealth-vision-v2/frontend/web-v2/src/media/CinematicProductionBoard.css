@@ -302,3 +302,27 @@
  .wvc-director-row>div{width:100%}
  .wvc-director-row button{flex:1}
 }
+
+/* Original-clock licensed audio cues. This is a REAL Remotion track. */
+.wvc-sfx-sheet{
+  display:flex;flex-direction:column;gap:11px;padding:15px;border-radius:12px;
+  border:1px solid rgba(150,198,214,.26);background:rgba(8,36,51,.45)
+}
+.wvc-sfx-sheet>strong{font-size:11px;letter-spacing:.07em;color:#d5f2fe}
+.wvc-sfx-sheet>.wvc-hint{margin:0}
+.wvc-sfx-add{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.wvc-sfx-add label,.wvc-sfx-cue label{
+  display:flex;flex-direction:column;gap:7px;flex:1 1 190px;
+  font-size:11px;font-weight:730;color:#abc9d8
+}
+.wvc-sfx-add button,.wvc-sfx-cue button{
+  min-height:41px;padding:8px 11px;background:#17425b;color:#dbf1fb;
+  border:1px solid #547f95;border-radius:8px;font:inherit;
+  font-size:11px;font-weight:760;cursor:pointer
+}
+.wvc-sfx-add button:disabled{opacity:.45;cursor:not-allowed}
+.wvc-sfx-cue{
+  display:flex;flex-direction:column;gap:11px;padding:12px 13px;border-radius:10px;
+  background:#0c2332;border:1px solid rgba(142,183,205,.20)
+}
+@media(max-width:560px){.wvc-sfx-add button{width:100%}}
