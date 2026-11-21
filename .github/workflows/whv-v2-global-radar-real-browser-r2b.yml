@@ -26,6 +26,7 @@ on:
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-claims.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/global-radar-real-archive-browser-smoke.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/ux1b-sources-smoke.mjs"
+      - "worldhealth-vision-v2/frontend/web-v2/ux1b-no-backend-smoke.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/build-radar-preview.sh"
       - ".github/workflows/whv-v2-global-radar-real-browser-r2b.yml"
 
@@ -102,7 +103,8 @@ jobs:
             scripts/test-global-radar-editorial-case.mjs \
             scripts/test-global-radar-claims.mjs \
             global-radar-real-archive-browser-smoke.mjs \
-            ux1b-sources-smoke.mjs
+            ux1b-sources-smoke.mjs \
+            ux1b-no-backend-smoke.mjs
       - name: Build deliberate SYNTHETIC preview fixture only in CI workspace
         working-directory: worldhealth-vision-v2/services/ingestion-service
         env:
@@ -153,7 +155,48 @@ jobs:
       - name: Built real V2 browser — explicitly SYNTHETIC archive, source choice and responsive UI
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: node global-radar-real-archive-browser-smoke.mjs
-      - name: Integrated UX1B country-source choices and Radar on SAME built V2 commit (320/390/820/1440)
+      - name: Atlas NO-BACKEND truthful unavailable state — actual mobile Chromium 320/390
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 5
+        run: node ux1b-no-backend-smoke.mjs
+
+      - name: Retrieve existing archived UX1B country/catalogue fixtures (read only)
+        uses: actions/checkout@v4
+        with:
+          ref: whv-v2-browser-preview
+          path: archived-ux-fixtures
+          persist-credentials: false
+
+      - name: Verify exact Git blobs and inject labeled fixtures into CI dist (not source/prod)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from hashlib import sha1
+          from shutil import copy2
+          source = Path("archived-ux-fixtures")
+          dest = Path("worldhealth-vision-v2/frontend/web-v2/dist")
+          assert dest.joinpath("index.html").is_file(), "Actual Vite build missing"
+          expected = {
+              "preview-countries.js": "609e94c49c7ea6ae72a9f6c365b2fd244effcd7c",
+              "preview-sources.js": "2523123fb83b84bdae9f00f6f8c948979f760fdb",
+              "preview-local-catalog.js": "05a277ea1d19008d3f05962bd35e26eee0ff11ec",
+              "preview-bootstrap.js": "51870b4ba981831bbd6bc711173f453445131303",
+          }
+          for name, target_blob in expected.items():
+              raw = source.joinpath(name).read_bytes()
+              actual = sha1(("blob " + str(len(raw)) + "\\0").encode() + raw).hexdigest()
+              assert actual == target_blob, "Archived UX fixture changed: " + name
+              copy2(source.joinpath(name), dest.joinpath(name))
+          path = dest / "index.html"
+          html = path.read_text(encoding="utf-8")
+          assert html.count("<head>") == 1
+          assert not any("preview-bootstrap.js" in line for line in html.splitlines())
+          scripts = "".join('<script src="./' + name + '"></script>\\n' for name in expected)
+          path.write_text(html.replace("<head>", "<head>\\n" + scripts, 1), encoding="utf-8")
+          print("CI-ONLY archived catalogue fixture integrity PASS. Not published, not a live backend.")
+          PY
+
+      - name: Integrated UX1B country-source choices and Radar on SAME compiled V2 code (320/390/820/1440)
         working-directory: worldhealth-vision-v2/frontend/web-v2
         timeout-minutes: 7
         run: node ux1b-sources-smoke.mjs
