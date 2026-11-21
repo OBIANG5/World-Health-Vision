@@ -30,7 +30,7 @@ type CountryPhoto = {
  */
 const REVIEWED_COUNTRY_PHOTOS: Readonly<Partial<Record<string, CountryPhoto>>> = {
   GAB: {
-    imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Libreville_bord_de_mer.jpg?width=1280",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Libreville_bord_de_mer.jpg/1280px-Libreville_bord_de_mer.jpg",
     attributionUrl: "https://commons.wikimedia.org/wiki/File:Libreville_bord_de_mer.jpg",
     author: "Shirmy25",
     license: "CC BY-SA 4.0",
@@ -38,7 +38,7 @@ const REVIEWED_COUNTRY_PHOTOS: Readonly<Partial<Record<string, CountryPhoto>>> =
     alt: { fr: "Vue aérienne du front de mer de Libreville au Gabon", en: "Aerial view of Libreville's seafront in Gabon" },
   },
   FRA: {
-    imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Paris_skyline.jpg?width=1280",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Paris_skyline.jpg/1280px-Paris_skyline.jpg",
     attributionUrl: "https://commons.wikimedia.org/wiki/File:Paris_skyline.jpg",
     author: "Jose Huwaidi",
     license: "CC BY-SA 4.0",
@@ -46,7 +46,7 @@ const REVIEWED_COUNTRY_PHOTOS: Readonly<Partial<Record<string, CountryPhoto>>> =
     alt: { fr: "Panorama des toits de Paris et de la tour Eiffel en France", en: "Paris rooftops with the Eiffel Tower in France" },
   },
   CIV: {
-    imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Abidjan_vue_sur_la_ville.JPG?width=1280",
+    imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Abidjan_vue_sur_la_ville.JPG/1280px-Abidjan_vue_sur_la_ville.JPG",
     attributionUrl: "https://commons.wikimedia.org/wiki/File:Abidjan_vue_sur_la_ville.JPG",
     author: "Axe",
     license: "CC BY-SA 4.0",
@@ -97,7 +97,7 @@ export default function CountryEditorialStory({
         <figure className={hasPhoto ? "whv-country-story-visual has-photo" : "whv-country-story-visual"}>
           {hasPhoto && open && <img
             className="whv-country-story-photo" src={photo.imageUrl}
-            alt={photo.alt[locale]} decoding="async" loading="lazy"
+            alt={photo.alt[locale]} decoding="async" loading="eager" fetchPriority="high"
             referrerPolicy="no-referrer"
             onError={() => setImageFailed(true)}
           />}
