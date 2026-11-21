@@ -116,7 +116,10 @@ export function buildRadarUrl(search: RadarSearch): string {
 }
 function printable(raw: unknown, max: number): string | null {
   if (typeof raw !== "string") return null;
-  const text = raw.replace(/[\u0000-\u001f\u007f-\u009f]/g, " ").trim();
+  const text = [...raw].map((char) => {
+    const code = char.codePointAt(0) ?? 0;
+    return code < 32 || (code >= 127 && code <= 159) ? " " : char;
+  }).join("").trim();
   return text.length > 0 && text.length <= max ? text : null;
 }
 function privateOrUnsafeHostname(hostname: string): boolean {
