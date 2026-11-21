@@ -57,6 +57,20 @@ jobs:
               print(item['eu_photo_ref'],item['status'])
               assert item['full_resolution_production_master_cleared'] is False
           PY
+      - name: Download only TWO declared real EU-origin Commons originals, verify 6000x4000 / EXIF and build true-resolution photo contact sheet
+        run: |
+          set -euo pipefail
+          python worldhealth-vision-v2/media-pilots/cop31-negotiations/acquire-eu-commons-originals.py /tmp/cop31-originals
+          python - <<'PY'
+          import json,pathlib
+          d=json.loads(pathlib.Path('/tmp/cop31-originals/eu-originals-audit.json').read_text())
+          assert len(d['photos']) == 2
+          assert all(p['width']==6000 and p['height']==4000 for p in d['photos'])
+          assert all(p['photo_date']=='2026-11-10' and not p['capture_of_21_nov_deadlock'] for p in d['photos'])
+          assert not d['publication_approved'] and not d['producer_narration_present']
+          assert len(d['mobile_frames']) == 2
+          print('PASS: 2 AUTHENTIC 6000x4000 EU-origin COP31 context photos, dated November 10, NOT publication rights-cleared')
+          PY
       - name: Archive verified previews and honest rights gate for human quality review
         uses: actions/upload-artifact@v4
         with:
@@ -64,6 +78,12 @@ jobs:
           path: |
             /tmp/cop31-reference/audit.json
             /tmp/cop31-reference/eu-photo-originals-discovery.json
+            /tmp/cop31-originals/eu-originals-audit.json
+            /tmp/cop31-originals/eu-originals-mobile-390px.png
+            /tmp/cop31-originals/eu-original-context-1-1080x1920.png
+            /tmp/cop31-originals/eu-original-context-2-1080x1920.png
+            /tmp/cop31-originals/EU-COP31-MINISTERIAL-ROOM-10NOV.jpg
+            /tmp/cop31-originals/EU-COP31-BOWEN-JORGENSEN-10NOV.jpg
             /tmp/cop31-reference/direction-a-hook-1080x1920.png
             /tmp/cop31-reference/direction-b-negotiation-1080x1920.png
             /tmp/cop31-reference/contact-sheet-390px.png
