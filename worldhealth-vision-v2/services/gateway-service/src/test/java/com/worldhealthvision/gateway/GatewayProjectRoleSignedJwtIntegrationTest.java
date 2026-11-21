@@ -122,7 +122,7 @@ class GatewayProjectRoleSignedJwtIntegrationTest {
     @Test
     void issuerAndAudienceWithoutActualRoleNeverGrantAccess() throws Exception {
         int before = forwarded.get();
-        for (Map<String, Object> claims : List.of(
+        for (Map<String, Object> claims : List.<Map<String, Object>>of(
                 Map.<String, Object>of(),
                 Map.of(OidcProjectRolePermissions.ROLE_CLAIM, Map.of()),
                 Map.of(OidcProjectRolePermissions.ROLE_CLAIM,
