@@ -1,0 +1,41 @@
+server:
+  port: ${WHV_RESEARCH_PORT:8091}
+  shutdown: graceful
+  error:
+    include-message: never
+spring:
+  application:
+    name: research-workspace-service
+  datasource:
+    url: ${WHV_RESEARCH_DB_URL:}
+    username: ${WHV_RESEARCH_DB_USERNAME:}
+    password: ${WHV_RESEARCH_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 3000
+  flyway:
+    # CI/dev migrations run with a migration-capable role. In staging,
+    # run vetted Flyway migrations with a dedicated deploy role, then set
+    # WHV_RESEARCH_MIGRATIONS_ENABLED=false on the least-privilege runtime.
+    enabled: ${WHV_RESEARCH_MIGRATIONS_ENABLED:true}
+    schemas: trading_private
+    default-schema: trading_private
+    locations: classpath:db/migration
+    table: research_flyway_history
+    baseline-on-migrate: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+whv:
+  research:
+    security:
+      issuer: ${WHV_SECURITY_ISSUER_URI:}
+      jwk-set-uri: ${WHV_SECURITY_JWK_SET_URI:}
+      audience: ${WHV_SECURITY_AUDIENCE:}
+      allow-loopback-test-jwks: ${WHV_SECURITY_ALLOW_INSECURE_LOOPBACK_JWKS_FOR_TESTS:false}

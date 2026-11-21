@@ -52,6 +52,21 @@ public class GatewaySecurityConfiguration {
                         exchanges.pathMatchers(GET, PublicReadRoutes.PATHS).authenticated();
                     }
 
+                    // Personal Trading research is NEVER in PublicReadRoutes.
+                    // JWT signature, issuer, audience and scope are verified here;
+                    // the upstream private service independently verifies again.
+                    exchanges.pathMatchers(GET, "/api/trading/cases",
+                            "/api/trading/cases/*", "/api/trading/cases/*/history")
+                        .hasAuthority("SCOPE_trading:read");
+                    exchanges.pathMatchers(POST, "/api/trading/cases")
+                        .hasAuthority("SCOPE_trading:write");
+                    exchanges.pathMatchers(org.springframework.http.HttpMethod.PUT,
+                            "/api/trading/cases/*")
+                        .hasAuthority("SCOPE_trading:write");
+                    exchanges.pathMatchers(org.springframework.http.HttpMethod.DELETE,
+                            "/api/trading/cases/*")
+                        .hasAuthority("SCOPE_trading:write");
+
                     // Advisor requests are not public anonymous operations. Add a
                     // real per-user quota and rate limiting before Internet launch.
                     exchanges.pathMatchers(POST, "/api/analytics/advisor/chat").hasAuthority("SCOPE_advisor:invoke");

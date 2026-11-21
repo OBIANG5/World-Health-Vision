@@ -25,6 +25,7 @@
         <module>services/gateway-service</module>
         <module>services/catalog-service</module>
         <module>services/timeseries-service</module>
+        <module>services/research-workspace-service</module>
     </modules>
 
     <properties>

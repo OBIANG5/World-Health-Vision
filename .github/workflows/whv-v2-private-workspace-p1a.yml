@@ -1,0 +1,43 @@
+name: WHV V2 Private Research Workspace P1A
+on:
+  push:
+    branches:
+      - product/v2-trading-private-workspace-p1a-2026-11-21
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/research-workspace-service/**'
+      - 'worldhealth-vision-v2/services/gateway-service/**'
+      - 'worldhealth-vision-v2/pom.xml'
+      - '.github/workflows/whv-v2-private-workspace-p1a.yml'
+permissions:
+  contents: read
+jobs:
+  private-workspace-auth-and-db:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: worldhealth-vision-v2/pom.xml
+      - name: Verify Docker / PostgreSQL Testcontainers availability
+        run: |
+          docker info > /dev/null
+          java -version
+      - name: REAL PostgreSQL tenant isolation plus signed Gateway JWT tests
+        run: |
+          mvn -B -ntp -f worldhealth-vision-v2/pom.xml \
+            -pl services/gateway-service,services/research-workspace-service \
+            -am test
+      - name: Upload JUnit reports (synthetic identities only)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1a-private-workspace-junit-reports
+          path: |
+            worldhealth-vision-v2/services/gateway-service/target/surefire-reports/
+            worldhealth-vision-v2/services/research-workspace-service/target/surefire-reports/
+          if-no-files-found: warn

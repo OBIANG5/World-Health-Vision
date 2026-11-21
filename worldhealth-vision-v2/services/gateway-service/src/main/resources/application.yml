@@ -74,6 +74,14 @@ spring:
             - Path=/api/catalog/**
             - Method=GET
 
+        # Personal user-authored research. Secured separately in Gateway AND
+        # upstream; this is never an anonymous public-read facade.
+        - id: trading-private-research-route
+          uri: ${WHV_RESEARCH_BASE_URL:http://localhost:8091}
+          predicates:
+            - Path=/api/trading/cases,/api/trading/cases/**
+            - Method=GET,POST,PUT,DELETE
+
         - id: timeseries-service-read-route
           uri: ${WHV_TIMESERIES_BASE_URL:http://localhost:8083}
           predicates:
