@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - product/v2-global-radar-source-archive-preview-r2b-2026-11-21
+  workflow_dispatch:
   pull_request:
     paths:
       - "worldhealth-vision-v2/services/ingestion-service/export_gdelt_radar_snapshot.py"
@@ -21,6 +22,12 @@ on:
 
 permissions:
   contents: read
+
+# Stop burning Github Actions minutes when a later commit supersedes a
+# previous CI run. The REAL provider probe also requires explicit opt-in.
+concurrency:
+  group: whv-radar-r2b-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   source-archive-contract:
@@ -128,7 +135,11 @@ jobs:
     needs: source-archive-contract
     # An external source can be temporarily unavailable; do NOT silently
     # substitute synthetic news, and do not gate all V2 on one batch.
-    if: github.event_name == 'push'
+    # No paid/continuous source sampling on every docs/code push.
+    # Trigger on workflow_dispatch after integration, or by committing a
+    # reviewed exact-HEAD checkpoint with [radar-live-probe] in its message.
+    # Ordinary pushes run only reproducible offline safety/browser tests.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[radar-live-probe]'))
     runs-on: ubuntu-latest
     timeout-minutes: 24
     continue-on-error: true
