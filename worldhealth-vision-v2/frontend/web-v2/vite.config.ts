@@ -13,6 +13,8 @@ export default defineConfig({
     // is necessary for Vite/Rolldown to find the installed Natural Earth atlas
     // from a shared renderer source file. Atlas stays a build-time dependency.
     alias: {
+      '@remotion/captions': resolve(process.cwd(),'node_modules/@remotion/captions'),
+      '@remotion/google-fonts': resolve(process.cwd(),'node_modules/@remotion/google-fonts'),
       'world-atlas/countries-110m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-110m.json'),
       'world-atlas/countries-50m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-50m.json'),
       'world-atlas/countries-10m.json': resolve(process.cwd(),'node_modules/world-atlas/countries-10m.json'),
