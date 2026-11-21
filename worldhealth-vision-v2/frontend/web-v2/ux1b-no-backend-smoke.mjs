@@ -42,18 +42,33 @@ try {
     await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 18000 });
     assert.equal(await page.locator(".whv-route-notice").count(), 0,
       "Catalog outage must never mislabel a valid GAB country URL as invalid");
-    const catalogStatus = page.locator(".whv-country-catalog-status");
+    const catalogStatus = page.locator(".whv-country-profile-source-status");
     await catalogStatus.waitFor({ state: "visible", timeout: 15000 });
-    assert((await catalogStatus.innerText()).includes("La liste des pays ne peut pas être actualisée"),
+    assert((await catalogStatus.innerText()).includes("Le catalogue des pays est momentanément inaccessible"),
       "Show a human-readable catalog outage, never raw HTTP/404 traces");
     assert.equal(await page.locator("#country-select").count(), 0,
       "Do not show an empty/invalid country selector without a catalog");
     const editorial = page.locator(".whv-country-story");
     await editorial.waitFor({ state: "visible" });
-    assert(await page.locator(".whv-country-now-feature").isVisible(),
-      "Dated Gabon dossier must remain visible even when private backends fail");
-    assert.equal(await page.locator(".whv-country-now-feature .whv-country-now-sources a").count(), 3,
-      "Historically researched links are not faked by a disconnected backend");
+    const nav = page.locator(".whv-country-section-nav");
+    await nav.waitFor({ state: "visible" });
+    assert(await page.locator(".whv-country-overview").isVisible(),
+      "Country identity and reference MUST lead, even without the backend");
+    assert.equal(await page.locator(".whv-country-news").count(), 0,
+      "News must never be imposed above the country profile");
+    await page.screenshot({
+      path: "ux1b-artifacts/" + device.name + "-country-overview-first.png",
+      fullPage: false,
+    });
+    await nav.getByRole("button", { name: "Actualités" }).click();
+    const dossier = page.locator(".whv-country-news-article");
+    await dossier.waitFor({ state: "visible" });
+    assert.equal(await dossier.locator(".whv-country-news-source-list a").count(), 0,
+      "Deep research must require explicit opening");
+    await dossier.locator(".whv-country-news-expand").click();
+    assert.equal(await dossier.locator(".whv-country-news-source-list a").count(), 3,
+      "Historical sources are visible only after entering News and expanding");
+    await nav.getByRole("button", { name: "Sources" }).click();
     const country = page.locator(".whv-national-evidence");
     await country.waitFor({ state: "attached", timeout: 15000 });
     await country.locator('p[role="status"]').filter({
@@ -83,9 +98,10 @@ try {
       await page.locator(".country-drawer.open").waitFor({ state: "visible" });
       assert.equal(await page.locator(".whv-route-notice").count(), 0,
         "Valid FRA country link cannot be flagged invalid because the backend is down");
-      const absentFeed = page.locator(".whv-country-now-unavailable");
+      await page.locator(".whv-country-section-nav").getByRole("button", { name: "Actualités" }).click();
+      const absentFeed = page.locator(".whv-country-news-empty");
       await absentFeed.waitFor({ state: "visible" });
-      assert.equal(await page.locator(".whv-country-now-feature").count(), 0,
+      assert.equal(await page.locator(".whv-country-news-article").count(), 0,
         "Never display the Gabon/FMI story on France or another country");
       const frenchPhoto = page.locator(".whv-country-story-photo");
       if (await frenchPhoto.count()) {
