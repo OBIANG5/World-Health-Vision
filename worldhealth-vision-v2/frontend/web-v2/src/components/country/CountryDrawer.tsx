@@ -1377,7 +1377,7 @@ export default function CountryDrawer({
       {/* Lightweight utilities. Country identity lives in the editorial hero. */}
       <div className="country-drawer-header whv-country-drawer-toolbar">
         <div className="whv-country-toolbar-brand">
-          <strong>World-Vision</strong>
+          <strong>{fr ? "Explorer un pays" : "Explore a country"}</strong>
           <span>Atlas <span aria-hidden="true">/</span> {selectedCountryIso3}</span>
         </div>
         <div className="country-drawer-actions">
@@ -1422,14 +1422,18 @@ export default function CountryDrawer({
         {/* Sélecteur de pays */}
         <div>
           <label className="country-select-label" htmlFor="country-select">
-            {countriesLoading ? t(lang, "chargementCatalogue") : `${countries.length} ${t(lang, "paysDisponibles")}`}
+            {countriesLoading ? t(lang, "chargementCatalogue") : countriesError ? (fr ? "Catalogue momentanément indisponible" : "Country catalog temporarily unavailable") : `${countries.length} ${t(lang, "paysDisponibles")}`}
           </label>
-          <select id="country-select" className="country-select" value={selectedCountryIso3}
+          {countries.length > 0 && <select id="country-select" className="country-select" value={selectedCountryIso3}
             onChange={(e) => onCountryChange(e.target.value)}
-            disabled={countriesLoading || countries.length === 0}>
+            disabled={countriesLoading}>
             {countries.map((c) => <option key={c.iso3} value={c.iso3}>{c.displayName} ({c.iso3})</option>)}
-          </select>
-          {countriesError && <p className="drawer-error">{countriesError}</p>}
+          </select>}
+          {countriesError && <p className="whv-country-catalog-status" role="status">
+            {fr
+              ? "La liste des pays ne peut pas être actualisée pour le moment. Cette fiche reste consultable avec les éléments déjà documentés ; les chiffres et sources connectés seront disponibles après rétablissement des services."
+              : "The country list cannot be refreshed right now. You can still read previously documented information; connected numbers and sources will be available when services return."}
+          </p>}
         </div>
 
         {/* Méta pays */}
