@@ -199,6 +199,38 @@ photoProject.shots=[{
 photoProject.voice=null;photoProject.music=null;photoProject.outro=null;
 const photoPath=path.join(path.dirname(outputJson),"worldvision-photo-multilayer-project.json");
 fs.writeFileSync(photoPath,JSON.stringify(photoProject,null,2)+String.fromCharCode(10));
+
+// P0.8 — technical visual audit of TRUE simultaneous PHOTO + signed DATA.
+// Not a current-event story. All images and numeric values are synthetic CI.
+// The point is to inspect real combined Remotion pixels at 390px, including
+// the subtitles; never show this as a news report or as owner's approved voice.
+const photoDataProject=structuredClone(photoProject);
+photoDataProject.id="wv-photo-signed-comparison-mobile-qa";
+photoDataProject.title="SIMULATION CI — PHOTO ET DATA ENSEMBLE";
+photoDataProject.script="Comparaison fictive de deux catégories. Tout est une simulation technique non journalistique.";
+photoDataProject.shots[0].id="photo-with-real-compositing";
+photoDataProject.shots[0].title="SIMULATION · DEUX ÉVOLUTIONS";
+photoDataProject.shots[0].eyebrow="TEST TECHNIQUE · AUCUNE ACTUALITÉ";
+photoDataProject.shots[0].subtitle="Une source, deux valeurs test — ne pas publier.";
+delete photoDataProject.shots[0].photo.metric;
+photoDataProject.shots[0].photo.comparison={
+  title:"COMPARAISON SYNTHÉTIQUE",
+  first:{label:"Essai A",value:-6.5},
+  second:{label:"Essai B",value:13.4},
+  domain:{min:-10,max:20},
+  unit:"points",precision:1,locale:"fr-FR",
+  source:{publisher:"SIMULATION CI",dataset:"Valeurs inventées, non journalistiques",asOf:"2026-11-21"},
+  startFrame:38,endFrame:124
+};
+// The caption is intentionally lower, as it will be in real films, to catch
+// overlap of the visual comparison and mobile-safe caption zones.
+photoDataProject.captions=[
+  {startFrame:24,endFrame:74,text:"Comparaison technique fictive.",position:"lower"},
+  {startFrame:79,endFrame:141,text:"Des valeurs test, aucune actualité.",position:"lower"}
+];
+const photoDataPath=path.join(path.dirname(outputJson),"worldvision-photo-data-same-shot.json");
+fs.writeFileSync(photoDataPath,JSON.stringify(photoDataProject,null,2)+"\\n");
+
 // DATA-1 three original abstract chart modes. All numbers are explicitly
 // fabricated, labelled DEMO, and must NEVER be shown as stock-market facts.
 const dataProject=structuredClone(p);
