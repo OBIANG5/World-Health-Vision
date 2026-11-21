@@ -54,3 +54,60 @@ P0C travaille sur branche séparée et **PR empilée sur #120**, pour préserver
 - Issue métier : https://github.com/OBIANG5/World-Health-Vision/issues/119
 - Handoff complet : `worldhealth-vision-v2/docs/product/TRADING_VISION_MTA_DATANALYSE_PROCESS_PRODUCT_HANDOFF_2026-11-21.md`
 - Workflow : `.github/workflows/whv-v2-trading-mta-process.yml`
+
+
+---
+
+## 6. Validation complète du lot P0C — première preuve sur SHA exact
+
+**Commit vérifié (avant le présent ajout documentaire)** : `bb981ee8fbdca598cc98aef0f3a408fcc84bdfd8`.
+**CI** : https://github.com/OBIANG5/World-Health-Vision/actions/runs/44899312628 — **SUCCESS**, GitHub Actions entièrement terminé. 
+Même commit sur le workflow push #44899285669 : vérifier la conclusion indépendamment, ne pas la supposer à partir de l'autre run.
+**PR empilée** : [#121](https://github.com/OBIANG5/World-Health-Vision/pull/121), DRAFT basée sur [#120](https://github.com/OBIANG5/World-Health-Vision/pull/120) (elle-même DRAFT, base #115). **ZÉRO fusion, ZÉRO déploiement public**.
+
+Sur ce SHA :
+- `npm run test:trading` — PASS ;
+- `npm run test:cases` — PASS ;
+- ESLint ciblé sur les sources TS/JS du lot — PASS (lint **global** toujours en dette) ;
+- `npm run build` TypeScript strict/Vite — PASS ;
+- vrai Chromium sur **320/390/1440 px** — PASS : parcours initial MTA/risque/sources/annonces, sauvegarde de deux dossiers indépendants, reload **sans autochargement**, ouverture d'un dossier conservant ses révisions/annonces, duplication indépendante d'un troisième dossier, export JSON et fermeture de la route.
+- Captures synthétiques sans données fournisseur ni contenus payants dans l'artifact Actions `trading-mta-synthetic-browser-evidence` (**238 396 octets** au run 44899312628).
+
+**Attention au SHA** : toute nouvelle modification, y compris ce paragraphe, génère un NOUVEAU commit et doit être évaluée à part. Ne jamais écrire « CI verte sur le HEAD final » avant d'avoir consulté le dernier workflow correspondant.
+
+## 7. P1 — contrat de produit : recherche privée synchronisée par compte
+
+### 7.1 Audit de l'architecture existante vérifié sur cette branche
+- `services/gateway-service/.../security/GatewaySecurityConfiguration.java` : en mode sécurisé, les routes anonymes sont expressément filtrées et **toutes les routes non listées sont `denyAll()`**. Seule la requête privée `POST /api/analytics/advisor/chat` dispose d'une règle `SCOPE_advisor:invoke`. Donc **un nouveau endpoint privé Trading ne fonctionne pas automatiquement, même avec un JWT signé**.
+- `services/gateway-service/.../security/PublicReadRoutes.java` : uniquement une liste explicite de GET publics Atlas, stats/analytics/produit. **Ne jamais y ajouter `/api/trading/**`**, même une liste de dossiers : les métadonnées sont privées.
+- `services/analytics-service/src/analytics_service/runtime.py` : l'Analytics Python connu est construit autour des clients Catalog/Timeseries ; **ne prétendre ni qu'il possède un stockage de dossiers, ni qu'il a déjà une isolation multi-tenant**.
+- L'interface `UserProfileContext` actuelle ne constitue **pas** une authentification unifiée : le navigateur P0C ne se connecte à aucun backend pour ses dossiers.
+
+**Décision P1** : avant tout nouveau backend, auditer quelles capacités existantes permettent la lecture/écriture privée et l'identité bout-en-bout. Comparer l'extension d'un service approprié (avec schéma **strictement privé**) à un service « Research Workspace » dédié ; **ne pas décider d'un 7e service par inertie**, ni mettre les dossiers dans les tables d'observations publiques de Timeseries. Le bon critère est la sécurité prouvée et le coût opérationnel mesuré, pas le nombre de services.
+
+### 7.2 API contractuelle à construire puis revoir
+Propositions de routes réservées au Gateway sécurisé, non encore implémentées :
+- `GET /api/trading/cases?cursor=...&limit=...` : dossiers **du principal authentifié**, pagination et filtres autorisés.
+- `POST /api/trading/cases` : création, idempotence, quotas et validation métier, jamais d'owner ID dicté par le client.
+- `GET /api/trading/cases/{caseId}` : document privé; une autre identité reçoit 404 (pas de leak).
+- `PUT /api/trading/cases/{caseId}` : `If-Match`/version obligatoire, sinon 428; version obsolète 412/409 sans écrasement.
+- `GET /api/trading/cases/{caseId}/history` : révisions append-only et snapshots; distinguer temps de saisie (client) et timestamp serveur.
+- `DELETE /api/trading/cases/{caseId}` : export préalable proposé, effacement effectif selon politique, contrôle d'accès.
+- `POST /api/trading/cases/import` : migration **sur demande uniquement** depuis JSON P0C, détection conflits et duplications, aucune ingestion des cours payants.
+
+JWT : identité dérivée des **claims authentifiés** (`iss`/`sub`/`aud` et permissions serveur), pas d'un header client arbitraire ni d'un champ `owner` posté ; Gateway doit vérifier signature et audience. Décider explicitement d'une portée `SCOPE_trading:read` / `SCOPE_trading:write`, tests négatifs systématiques. Ne jamais faire confiance au frontend pour empêcher l'accès aux ressources d'un autre utilisateur.
+
+Stockage : schéma isolé du catalogue/Timeseries public ; tables `trade_case`, `thesis_revision`, `event_preparation`, `event_outcome`, `evidence_reference` et `user_data_export` selon découpage vérifié. Index par principal et dossier, séquences transactionnelles, cap des annexes/sources, migrations et rollback, sauvegarde chiffrée/restauration vérifiée. Refuser les vues/liaisons accidentelles permettant de publier `trade_case` comme une statistique publique.
+
+### 7.3 Critères de sortie bloquants P1
+- Deux **principaux distincts** avec JWT valides et deux appareils : A crée, A récupère après reconnexion; B ne voit ni dossier ni existence ni historique de A.
+- 401 sans token, 403 sans scope, 404 cross-tenant, requête sans version rejetée, conflit de révision rejeté; `PublicReadRoutes` ne change pas, aucune ouverture anonyme via configuration.
+- Portabilité : import du JSON local v1/v2 et export réversible avec données/horodatages et étiquettes de provenance; migration explicite/consentie, contrôle des collisions; ancien stockage local intact jusqu'au choix de l'utilisateur.
+- Limitation : quota par utilisateur, pagination, entrées volumineuses, absence de copies/licences DataAnalyse, pas de secrets en logs. Audit de sécurité RGPD, droit d'effacement/retention et sécurité de transport HTTPS.
+- Validation sur vrai PostgreSQL avec migrations + tests Gateway JWT + tests navigateurs, puis **staging privé HTTPS**. Une suite entièrement verte sur fixture synthétique ne prouve pas la sécurité d'un déploiement réel.
+- Watch/alertes ne commencent qu'après durabilité compte + source et consentement. Paiement/abonnements et exécution de trading ne font PAS partie de P1.
+
+### 7.4 Produit et impact mesurables
+Mesurer activation « premier dossier complété et sauvegardé », retour « reprise de la même thèse et modification motivée », fiabilité « aucun dossier perdu/écrasé », adoption « plusieurs analyses par utilisateur »; ne jamais afficher des « profits » ou taux de réussite inventés. En lien avec la monétisation internationale, un service premium n'est justifié que par ce gain de travail réel, pas par une interface avec de faux cours.
+
+**Reprise après interruption :** valider l'état du nouveau commit documentaire, créer/relier une issue dédiée P1, puis faire un audit de code sécurité et la première tranche backend de persistance sans fusionner #115/#120/#121 aveuglément. Ne pas recommencer les réglages du formulaire ou la littérature générale sur le trading.
