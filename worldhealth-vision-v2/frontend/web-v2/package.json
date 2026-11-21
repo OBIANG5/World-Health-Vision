@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test:trading": "node --test scripts/test-trade-plan.mjs",
     "test:cases": "node --test scripts/test-trade-library.mjs",
-    "test:private-cases": "node --test scripts/test-private-case-api.mjs"
+    "test:private-cases": "node --test scripts/test-private-case-api.mjs",
+    "test:macro": "node --test scripts/test-fx-macro-desk.mjs"
   },
   "dependencies": {
     "axios": "^1.15.0",
