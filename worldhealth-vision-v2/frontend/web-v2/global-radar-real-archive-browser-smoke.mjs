@@ -81,6 +81,18 @@ try {
       "Global Radar needs styled responsive card framing");
     assert.equal(computed.backdropPosition, "fixed",
       "Global Radar must stay in its modal overlay instead of flowing as raw HTML");
+    const geometry = await page.locator(".radar-dialog").evaluate((node) => {
+      const r = node.getBoundingClientRect();
+      const closeButton = node.querySelector(".radar-close")?.getBoundingClientRect();
+      return {
+        top: r.top, bottom: r.bottom, viewportHeight: window.innerHeight,
+        closeTop: closeButton?.top ?? -999,
+      };
+    });
+    assert(geometry.top >= -1 && geometry.closeTop >= -1 &&
+      geometry.bottom <= geometry.viewportHeight + 1,
+    "At 320px (or desktop), modal header/close must be fully inside real viewport " +
+      JSON.stringify({ device, geometry }));
     const editorial = page.locator(".radar-case");
     assert((await editorial.innerText()).includes("Gabon et FMI"),
       "Actual dated AGP/IMF/EcoMatin research dossier must be reachable");
