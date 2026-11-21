@@ -204,6 +204,8 @@ class ResearchWorkspacePostgresIntegrationTest {
     @Test
     void healthMayBeAnonymousButMetricsAndPrivateHistoryMayNot() throws Exception {
         mvc.perform(get("/actuator/health")).andExpect(status().isOk());
-        mvc.perform(get("/actuator/prometheus")).andExpect(status().isForbidden());
+        mvc.perform(get("/actuator/prometheus")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/actuator/prometheus").with(user("authenticated", "trading:read")))
+            .andExpect(status().isForbidden());
     }
 }
