@@ -111,4 +111,46 @@ jobs:
             result.errorName = error?.name ?? "Unknown";
           }
           console.log("GDELT LIVE REACHABILITY (not news verification): " + JSON.stringify(result));
+
+          // Independently evaluate the OFFICIAL 15-minute batch manifest as a
+          // legitimate alternative transport to the throttled DOC query API.
+          // Fetch only the tiny text manifest; NEVER download ZIP archives in CI.
+          const manifestUrl = "https://data.gdeltproject.org/gdeltv2/lastupdate.txt";
+          const manifest = {
+            provider: "GDELT 2.0 public raw-batch manifest",
+            checkedAt: new Date().toISOString(),
+            provenance: "real network from GitHub runner",
+            status: "unavailable",
+            zipDownloads: 0,
+          };
+          try {
+            const response = await fetch(manifestUrl, {
+              signal: AbortSignal.timeout(12500),
+              method: "GET", credentials: "omit", cache: "no-store",
+            });
+            manifest.httpStatus = response.status;
+            const body = await response.text();
+            manifest.responseBytes = Buffer.byteLength(body);
+            if (response.status === 429) manifest.status = "throttled";
+            else if (!response.ok) manifest.status = "upstream_error";
+            else if (manifest.responseBytes > 15000) manifest.status = "unexpected_manifest_size";
+            else {
+              const lines = body.trim().split(/\r?\n/).filter(Boolean);
+              const entries = lines.map(line =>
+                line.match(/^\s*(\d+)\s+([a-f0-9]{32})\s+https?:\/\/data\.gdeltproject\.org\/gdeltv2\/(\d{14}\.(?:export|mentions|gkg)\.csv\.zip)\s*$/i)
+              );
+              manifest.lines = lines.length;
+              manifest.validManifestLines = entries.filter(Boolean).length;
+              manifest.status = lines.length === 3 && entries.every(Boolean)
+                ? "valid_official_manifest" : "unexpected_manifest_schema";
+              if (manifest.status === "valid_official_manifest") {
+                manifest.sampleTimestamp = entries[0][3].slice(0, 14);
+                manifest.kinds = entries.map(e => e[3].split(".")[1]);
+              }
+            }
+          } catch (error) {
+            manifest.status = "network_error";
+            manifest.errorName = error?.name ?? "Unknown";
+          }
+          console.log("GDELT STATIC-MANIFEST REACHABILITY (NOT INGESTED): " + JSON.stringify(manifest));
           NODE
