@@ -201,8 +201,8 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
           <nav className="tvp-stages" aria-label={copy(lang, "Étapes du processus", "Process stages")}>
             {STAGES.map((item, index) => {
               const isComplete = stageMissing(plan, item).length === 0;
-              return <button type="button" key={item.id} className={"tvp-stage" + (stepIndex === index ? " active" : "")}
-                aria-current={stepIndex === index ? "step" : undefined} onClick={() => { setStepIndex(index); setShowEvidence(false); }}>
+              return <button type="button" key={item.id} className={"tvp-stage" + (stepIndex === index && !showEvidence ? " active" : "")}
+                aria-current={stepIndex === index && !showEvidence ? "step" : undefined} onClick={() => { setStepIndex(index); setShowEvidence(false); }}>
                 <span aria-hidden="true">{isComplete ? "✓" : String(index + 1).padStart(2, "0")}</span>
                 <strong>{item.title[lang].split(" · ")[1]}</strong>
               </button>;
