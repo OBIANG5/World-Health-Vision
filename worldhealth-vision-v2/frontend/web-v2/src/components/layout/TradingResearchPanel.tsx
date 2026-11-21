@@ -14,7 +14,7 @@ const zeroEvent = (): NewEventPreparation => ({
   expectationPublisher: "", expectationSourceUrl: "", expectationAsOf: "",
   higherScenario: "", lowerScenario: "",
 });
-const zeroResult = (): NewEventResult => ({ actual: "", publishedAt: "", originalUrl: "", reaction: "" });
+const zeroResult = (): NewEventResult => ({ actual: "", publishedAt: "", originalUrl: "", reaction: "", comparabilityReviewed: false });
 function timestamp(value: string, lang: "fr" | "en") {
   const d = new Date(value);
   return Number.isFinite(d.getTime()) ? d.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB") : "—";
@@ -197,7 +197,7 @@ export default function TradingResearchPanel({ plan, onChange }: {
               {item.result ? (
                 <>
                   <p>{txt("Résultat SAISI et non vérifié automatiquement", "USER-ENTERED result, not automatically verified", lang)} : {item.result.actual} {item.unit}</p>
-                  <p>{txt("Écart arithmétique vs attente", "Arithmetic difference vs expectation", lang)} : {delta !== null ? delta.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB") + " " + item.unit : txt("Non calculable", "Not calculable", lang)}</p>
+                  <p>{txt("Écart arithmétique vs attente", "Arithmetic difference vs expectation", lang)} : {delta !== null ? delta.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB") + " " + item.unit : txt("Non calculable — périmètre non confirmé ou données non numériques", "Not calculable — scope unverified or nonnumeric inputs", lang)}</p>
                   <p>{item.result.reaction} · <a href={item.result.originalUrl} rel="noopener noreferrer" target="_blank">{txt("Source du résultat", "Result source", lang)}</a></p>
                 </>
               ) : (
@@ -215,6 +215,11 @@ export default function TradingResearchPanel({ plan, onChange }: {
                       <input type="url" value={result.originalUrl} onChange={(e) => setResult((p) => ({ ...p, originalUrl: e.target.value }))}/></label>
                     <label>{txt("Réaction observée / absence de réaction et limites", "Observed reaction / no reaction and caveats", lang)}
                       <textarea rows={3} value={result.reaction} onChange={(e) => setResult((p) => ({ ...p, reaction: e.target.value }))}/></label>
+                    <label className="tvp-comparability">
+                      <input type="checkbox" checked={result.comparabilityReviewed}
+                        onChange={(e) => setResult((p) => ({ ...p, comparabilityReviewed: e.target.checked }))} />
+                      <span>{txt("J'ai vérifié que prévision et résultat couvrent le même indicateur, territoire, période, unité et définition. Autoriser seulement alors l'écart arithmétique.", "I verified that forecast and outcome refer to the same indicator, territory, period, unit and definition. Only then calculate their numeric difference.", lang)}</span>
+                    </label>
                     <button type="button" className="tvp-primary" onClick={() => addResult(item.id)}>{txt("Ajouter le résultat sourcé", "Attach sourced result", lang)}</button>
                   </div>}
                 </>
