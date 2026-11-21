@@ -120,6 +120,18 @@ jobs:
             -vf "select='eq(n,0)+eq(n,26)+eq(n,64)+eq(n,116)+eq(n,172)+eq(n,275)+eq(n,314)+eq(n,361)'" \
             -vsync vfr output/creative/qa-beat-%02d.png
           test "$(find output/creative -maxdepth 1 -name 'qa-beat-*.png' | wc -l)" -eq 8
+      - name: Reuse FFmpeg for two-pass audio audition while preserving exact video stream
+        shell: bash
+        run: |
+          node creative/master-audio-preview.mjs \
+            output/creative/hook-rehook-worldvision-technical.mp4 \
+            output/creative/hook-rehook-worldvision-technical-audio-preview.mp4
+          test -s output/creative/hook-rehook-worldvision-technical-audio-preview.mp4.loudness.json
+          # Verify the compressed H.264 VIDEO packets are unchanged by audio mastering.
+          original_video_md5="$(ffmpeg -hide_banner -loglevel error -i output/creative/hook-rehook-worldvision-technical.mp4 -map 0:v:0 -c:v copy -f md5 -)"
+          audition_video_md5="$(ffmpeg -hide_banner -loglevel error -i output/creative/hook-rehook-worldvision-technical-audio-preview.mp4 -map 0:v:0 -c:v copy -f md5 -)"
+          echo "Original video stream $original_video_md5; audition video stream $audition_video_md5"
+          test "$original_video_md5" = "$audition_video_md5"
       - name: Upload only synthetic test art, not user material, for human visual/audio review
         uses: actions/upload-artifact@v4
         with:
@@ -127,6 +139,8 @@ jobs:
           path: |
             worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical.mp4
             worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical-audio-preview.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical-audio-preview.mp4.loudness.json
             worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical.mp4.stills/
             worldhealth-vision-v2/services/media-renderer/output/creative/qa-beat-*.png
           retention-days: 7
