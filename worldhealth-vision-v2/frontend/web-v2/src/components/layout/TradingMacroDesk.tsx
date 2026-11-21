@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useLang } from "../../context/LanguageContext";
 import {
-  FX_CURRENCIES, FX_MACRO_KEY, FX_PAIRS, MAX_MACRO_DESK_BYTES,
+  FX_CURRENCIES, FX_OFFICIAL_RESEARCH_STARTS, FX_MACRO_KEY, FX_PAIRS, MAX_MACRO_DESK_BYTES,
   MAX_MACRO_IMPORT_BYTES, MAX_MACRO_SOURCES, MAX_MACRO_VERSIONS,
   appendMacroSnapshot, emptyMacroDesk, latestMacroSnapshot, pairBySymbol,
   pairCoverage, parseMacroDesk, validFxSnapshot, validFxSource,
@@ -301,6 +301,20 @@ export default function TradingMacroDesk({ onStartPair }: {
           <strong>{ccy}</strong><small>{desk.assessments[ccy]?.length ?? 0} {tr(lang, "versions", "versions")}</small>
         </button>)}
       </div>
+      <div className="tvp-macro-official">
+        <strong>{tr(lang, "Points de départ institutionnels — chercher une publication précise", "Institutional starting points — find a specific publication")}</strong>
+        <div className="tvp-macro-official-links">
+          <a href={FX_OFFICIAL_RESEARCH_STARTS[currency].monetary.url} target="_blank" rel="noopener noreferrer">
+            {tr(lang, "Banque centrale", "Central bank")} · {FX_OFFICIAL_RESEARCH_STARTS[currency].monetary.name}
+          </a>
+          <a href={FX_OFFICIAL_RESEARCH_STARTS[currency].statistics.url} target="_blank" rel="noopener noreferrer">
+            {tr(lang, "Statistiques officielles", "Official statistics")} · {FX_OFFICIAL_RESEARCH_STARTS[currency].statistics.name}
+          </a>
+        </div>
+        <small>{tr(lang,
+          "Ces sites ne sont ni un consensus ni une preuve intégrée. Ouvrez une publication datée et saisissez son URL exacte dans votre fiche.",
+          "These sites are neither a consensus nor integrated evidence. Open a dated publication and enter its exact URL in your record.")}</small>
+      </div>
       <div className="tvp-macro-editor">
         <div className="tvp-macro-editor-heading">
           <strong>{currency} · {tr(lang, "nouvelle version de recherche", "new research revision")}</strong>
@@ -430,6 +444,12 @@ export default function TradingMacroDesk({ onStartPair }: {
                   <small>{item.sources.length} {tr(lang, "sources déclarées", "declared sources")} ·
                     {new Set(item.sources.map((s) => s.originalPublisher.toLowerCase())).size}
                     {" "}{tr(lang, "éditeurs originaux déclarés", "declared original publishers")}</small>
+                  <ul className="tvp-macro-pair-sources">
+                    {item.sources.map((s) => <li key={s.url}>
+                      <a href={s.url} target="_blank" rel="noopener noreferrer">{s.originalPublisher}</a>
+                      <span>{s.publishedAt} · {s.perspective} · {s.stance}</span>
+                    </li>)}
+                  </ul>
                 </> : <p>{tr(lang, "Aucune recherche enregistrée.", "No research saved.")}</p>}
               </article>;
             })}
