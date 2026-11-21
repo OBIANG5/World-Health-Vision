@@ -49,7 +49,7 @@ test('rejects invalid intent, fake provenance, missing director idea or motion',
 });
 test('forbids overlaps and times outside the selected shot, including transitions',()=>{
   const p=source();
-  p.directorBeats[1].startFrame=145;
+  p.directorBeats[1].startFrame=139;
   assert.deepEqual(issues(p),['directorBeats[1].time']);
   p.directorBeats[1].startFrame=74;
   assert.ok(issues(p).includes('directorBeats[1].startFrame'));
