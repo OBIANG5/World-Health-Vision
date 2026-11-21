@@ -172,11 +172,15 @@ class ResearchProjectRoleSignedJwtIntegrationTest {
     }
 
     @Test
-    void legacyExplicitScopeStillWorksWhenProjectRoleOptionIsEnabled() throws Exception {
-        String jwt = signed(trusted, issuer, AUDIENCE, "legacy-" + UUID.randomUUID(),
-            Map.of(), "trading:read");
+    void selfRequestedTradingScopeWithoutProjectUserRoleIsAlwaysDenied() throws Exception {
+        String jwt = signed(trusted, issuer, AUDIENCE, "scope-only-" + UUID.randomUUID(),
+            Map.of(), "trading:read trading:write");
         mvc.perform(get("/api/trading/cases").header("Authorization", "Bearer " + jwt))
-            .andExpect(status().isOk());
+            .andExpect(status().isForbidden());
+        mvc.perform(post("/api/trading/cases")
+                .header("Authorization", "Bearer " + jwt)
+                .contentType(MediaType.APPLICATION_JSON).content(sample()))
+            .andExpect(status().isForbidden());
     }
 
     private static String sample() {
