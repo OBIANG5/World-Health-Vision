@@ -150,13 +150,16 @@ test("macro outcome cannot be known before event, from future, or without source
   }, "2026-11-20T12:00:00Z", "e1");
   assert(prepared);
   const result = { actual: "3.1", publishedAt: "2026-11-20T13:20:00Z",
-    originalUrl: "https://example.org/actual", reaction: "Synthetic response to inspect" };
+    originalUrl: "https://example.org/actual", reaction: "Synthetic response to inspect", comparabilityReviewed: true };
   assert.equal(research.attachEventResult(prepared, { ...result, publishedAt: "2026-11-19T13:20:00Z" }), null);
   assert.equal(research.attachEventResult(prepared, { ...result, publishedAt: "2035-11-20T13:20:00Z" }), null);
   assert.equal(research.attachEventResult(prepared, { ...result, originalUrl: "http://example.org/actual" }), null);
   const joined = research.attachEventResult(prepared, result);
   assert(joined);
   assert(Math.abs(research.eventArithmeticDelta(joined) - 0.3) < 1e-9);
+  const unreviewed = research.attachEventResult(prepared, { ...result, comparabilityReviewed: false });
+  assert(unreviewed);
+  assert.equal(research.eventArithmeticDelta(unreviewed), null);
   assert.equal(research.attachEventResult(joined, result), null);
   assert.equal(research.validEventPreparation(joined), true);
 });
@@ -171,7 +174,7 @@ test("non-numeric expected and outcome remain non-aggregated with no invented su
   assert(ev);
   const joined = research.attachEventResult(ev, {
     actual: "Unchanged", publishedAt: "2026-11-20T14:00:00Z",
-    originalUrl: "https://example.org/release", reaction: "Neutral response",
+    originalUrl: "https://example.org/release", reaction: "Neutral response", comparabilityReviewed: false,
   });
   assert(joined);
   assert.equal(research.eventArithmeticDelta(joined), null);
