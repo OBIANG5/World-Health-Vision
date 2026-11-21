@@ -185,6 +185,13 @@ try {
       "Provider errors must remain visible and honest: " + kind);
     assert.equal(await page.locator(".radar-candidate").count(), 0,
       "Never retain stale or fabricated results after failed search");
+    const fallback = page.locator(".radar-external-fallback");
+    assert.equal(await fallback.count(), 1, "Unreachable GDELT must offer honest official-site continuation");
+    const fallbackUrl = new URL(await fallback.getAttribute("href"));
+    assert.equal(fallbackUrl.origin, "https://api.gdeltproject.org");
+    assert.equal(fallbackUrl.searchParams.get("query"), "central banks");
+    assert.equal(fallbackUrl.searchParams.get("format"), "html");
+    assert.equal(await fallback.getAttribute("rel"), "noopener noreferrer");
     await page.close();
   }
   console.log("PASS R1: country-source filter, truthful empty result, 429 throttle and 200 HTML failure");
