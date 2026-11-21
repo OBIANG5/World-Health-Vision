@@ -248,8 +248,6 @@ export default function TradingMacroDesk({ onStartPair }: {
   }
   const pair = pairBySymbol(pairSymbol) ?? FX_PAIRS[0];
   const coverage = desk ? pairCoverage(desk, pair) : null;
-  const base = desk ? latestMacroSnapshot(desk, pair.base) : null;
-  const quote = desk ? latestMacroSnapshot(desk, pair.quote) : null;
   const saved = desk ? desk.assessments[currency] ?? [] : [];
   const documented = desk ? FX_CURRENCIES.filter((ccy) => latestMacroSnapshot(desk, ccy)).length : 0;
 
