@@ -210,10 +210,12 @@ export function normalizeGdeltDoc(
     duplicatesDropped, malformedDropped, candidates,
   };
 }
+export type RadarErrorCode = "invalid" | "throttled" | "unavailable" | "bad_response" | "network";
 export class RadarRequestError extends Error {
-  constructor(public readonly code:
-    "invalid" | "throttled" | "unavailable" | "bad_response" | "network") {
+  readonly code: RadarErrorCode;
+  constructor(code: RadarErrorCode) {
     super(code);
+    this.code = code;
   }
 }
 export async function searchGdeltDocuments(
