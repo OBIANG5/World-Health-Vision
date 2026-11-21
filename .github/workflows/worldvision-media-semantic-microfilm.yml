@@ -44,12 +44,12 @@ jobs:
           python -m pip install -q --disable-pip-version-check --no-cache-dir \
             'kokoro==0.9.4' 'soundfile==0.13.1' 'transformers==4.50.3'
           python ../../media-voice-pilots/artemis2/synthesize-kokoro.py /tmp/worldvision-p05-voice
+      - name: Install existing pinned Remotion dependencies BEFORE NASA validators
+        run: npm install --no-audit --no-fund
       - name: Reuse exact three NASA originals with SHA256 verification
         run: |
           node ../../media-pilots/artemis2/validate-pilot.mjs
           node ../../media-pilots/artemis2/prepare-assets.mjs /tmp/worldvision-p05-assets
-      - name: Install existing pinned Remotion without new render engine
-        run: npm install --no-audit --no-fund
       - name: Build 3-beat film from exact two phrases and real-source NASA images
         run: |
           mkdir -p output/microfilms
