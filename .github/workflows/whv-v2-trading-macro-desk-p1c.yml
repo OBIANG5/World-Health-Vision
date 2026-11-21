@@ -1,0 +1,64 @@
+name: WHV V2 Trading Macro Desk P1C
+on:
+  push:
+    branches:
+      - product/v2-trading-macro-desk-8ccy-28pairs-p1c-2026-11-21
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/frontend/web-v2/src/trading/fxMacroDesk.ts'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/components/layout/TradingMacroDesk.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/components/layout/TradingProcessPanel.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/scripts/test-fx-macro-desk.mjs'
+      - 'worldhealth-vision-v2/frontend/web-v2/scripts/trading-process-browser-smoke.mjs'
+      - '.github/workflows/whv-v2-trading-macro-desk-p1c.yml'
+permissions:
+  contents: read
+jobs:
+  fx-macro-workbench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Reproducible npm dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci
+      - name: Domain, local case, private HTTP and 28-pair Macro Desk tests
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm run test:trading
+          npm run test:cases
+          npm run test:private-cases
+          npm run test:macro
+      - name: Lint every touched TypeScript + browser test
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx eslint src/trading/fxMacroDesk.ts src/trading/tradePlan.ts src/trading/tradeResearch.ts src/trading/tradeCaseLibrary.ts src/components/layout/TradingMacroDesk.tsx src/components/layout/TradingProcessPanel.tsx scripts/test-fx-macro-desk.mjs scripts/trading-process-browser-smoke.mjs
+      - name: Production TypeScript/Vite build (not only transpile)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build
+      - name: Browser dependency (system Chrome preferred)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo 'WHV_BROWSER_CHANNEL=chrome' >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Real Chromium macro + MTA workbench on 320px,390px,1440px
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node scripts/trading-process-browser-smoke.mjs
+      - name: Save synthetic browser screenshots only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trading-macro-p1c-synthetic-browser-evidence
+          path: worldhealth-vision-v2/frontend/web-v2/trading-process-artifacts/
+          if-no-files-found: warn
