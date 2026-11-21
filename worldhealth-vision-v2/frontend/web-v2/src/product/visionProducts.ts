@@ -11,7 +11,7 @@ export type VisionId =
 
 export type VisionFamily = "understand" | "monitor" | "compare" | "editorial";
 export type VisionStage = "explorable" | "partial" | "planned";
-export type VisionAction = "country" | "favorites" | "currency" | "travel" | "sources";
+export type VisionAction = "country" | "favorites" | "currency" | "travel" | "sources" | "trading";
 
 export interface LocalizedCopy {
   fr: string;
@@ -149,20 +149,21 @@ export const VISION_PRODUCTS: readonly VisionProduct[] = [
     },
   },
   {
-    id: "trading", family: "monitor", stage: "planned", name: "Trading Vision",
-    tagline: { fr: "Macro, marchés et risque", en: "Macro, markets and risk" },
+    id: "trading", family: "monitor", stage: "partial", name: "Trading Vision",
+    tagline: { fr: "Processus de trade · 7 étapes", en: "7-step trade decision process" },
     description: {
-      fr: "Calendrier des banques centrales, indices devises, corrélations, journal et gestion du risque.",
-      en: "Central-bank calendar, currency indices, correlations, journal and risk management.",
+      fr: "Atelier de recherche structuré autour du processus de prise de trade : thèse, fondamentaux, price action, risque, participants, gestion, invalidation, décision supervisée.",
+      en: "Trade research workspace following the seven-stage process: thesis, price action, risk, participants, management, invalidation and supervised decision.",
     },
     objective: {
-      fr: "Un cockpit financier sourcé, persistant et vérifiable, sans promesse de rendement.",
-      en: "A persistent source-backed financial cockpit without return promises.",
+      fr: "Reconstruire les services utiles des analyses DataAnalyse et les outils du cursus MTA : analyses sourcées, préparation d'événements, suivi de thèses, études de cas et journal.",
+      en: "Rebuild useful tools inspired by DataAnalyse research and the MTA learning process: sourced analysis, event preparation, thesis tracking, case studies and journals.",
     },
     caveat: {
-      fr: "Cotations temps réel et exécution exigent droits de marché et conformité : pas de flux fictif.",
-      en: "Live quotes and trading require licenses and compliance; no fabricated feed.",
+      fr: "Première tranche : dossier manuel et calcul du ratio, stockage local volontaire. Aucun flux temps réel, conseil, ordre, analyse DataAnalyse reproduite ou synchronisation serveur.",
+      en: "First slice: manual dossier and ratio calculator, opt-in local storage. No live feed, advice, order, copied DataAnalyse analysis or server sync.",
     },
+    action: "trading", actionLabel: { fr: "Ouvrir le processus de trade", en: "Open trade process" },
   },
   {
     id: "brvm", family: "monitor", stage: "planned", name: "Bourse Afrique Vision",
