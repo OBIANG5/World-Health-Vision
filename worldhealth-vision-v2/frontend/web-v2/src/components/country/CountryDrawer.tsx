@@ -18,6 +18,7 @@ import { useFxHistory } from "../../hooks/useFxHistory";
 import { useCountrySheet } from "../../hooks/useCountrySheet";
 import CountryLocalEvidencePanel from "./CountryLocalEvidencePanel";
 import CountryEditorialStory from "./CountryEditorialStory";
+import CountryNewsPanel from "./CountryNewsPanel";
 import { useFxRates } from "../../hooks/useFxRates";
 import { useIndicatorHistory } from "../../hooks/useIndicatorHistory";
 import { useIndicatorOverview } from "../../hooks/useIndicatorOverview";
@@ -36,6 +37,7 @@ import "../../styles/country-editorial.css";
 // ---------------------------------------------------------------------------
 
 type DrawerTab = "overview" | "economy" | "health" | "governance" | "markets" | "forecasts" | "safety" | "compare" | "fx";
+type CountrySection = "overview" | "data" | "compare" | "sources" | "news" | "services";
 
 type Props = {
   open: boolean;
@@ -1255,6 +1257,7 @@ export default function CountryDrawer({
   const fr = lang === "fr";
   const [fullscreen, setFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState<DrawerTab>("overview");
+  const [activeSection, setActiveSection] = useState<CountrySection>("overview");
 
   const { countryDetail, economicSnapshot, relativeCostSnapshot, loading, error } =
     useCountrySheet(selectedCountryIso3, open);
@@ -1264,7 +1267,10 @@ export default function CountryDrawer({
     [countries, selectedCountryIso3],
   );
 
-  useEffect(() => { setActiveTab("overview"); }, [selectedCountryIso3]);
+  useEffect(() => {
+    setActiveSection("overview");
+    setActiveTab("overview");
+  }, [selectedCountryIso3]);
 
   const flag = countryFlag(countryDetail?.iso2 ?? selectedCountry?.iso2);
   const displayName = countryDetail?.displayName ?? selectedCountry?.displayName ?? selectedCountryIso3;
@@ -1408,7 +1414,8 @@ export default function CountryDrawer({
         </div>
       </div>
 
-      {/* ── Corps scrollable ── */}
+      {/* The COUNTRY is primary. All domains are peer sections below its
+          identity; news never precedes the actual country profile. */}
       <div className="country-drawer-body">
         <CountryEditorialStory key={selectedCountryIso3}
           iso3={selectedCountryIso3}
@@ -1418,206 +1425,245 @@ export default function CountryDrawer({
           locale={lang} open={open}
         />
 
+        <nav className="whv-country-section-nav"
+          aria-label={fr ? "Rubriques de la fiche pays" : "Country profile sections"}>
+          {([
+            ["overview", fr ? "Vue d’ensemble" : "Overview"],
+            ["data", fr ? "Données" : "Data"],
+            ["compare", fr ? "Comparer" : "Compare"],
+            ["sources", fr ? "Sources" : "Sources"],
+            ["news", fr ? "Actualités" : "News"],
+            ["services", fr ? "Services" : "Services"],
+          ] as const).map(([section, label]) => (
+            <button key={section} type="button"
+              className={`whv-country-section-tab${activeSection === section ? " is-selected" : ""}`}
+              aria-current={activeSection === section ? "page" : undefined}
+              onClick={() => {
+                setActiveSection(section);
+                if (section === "data" && !["economy", "health", "governance", "markets", "forecasts"].includes(activeTab)) {
+                  setActiveTab("economy");
+                }
+                if (section === "services" && activeTab !== "safety" && activeTab !== "fx") {
+                  setActiveTab("safety");
+                }
+              }}>
+              {label}
+            </button>
+          ))}
+        </nav>
 
-        {/* Sélecteur de pays */}
-        <div>
-          <label className="country-select-label" htmlFor="country-select">
-            {countriesLoading ? t(lang, "chargementCatalogue") : countriesError ? (fr ? "Catalogue momentanément indisponible" : "Country catalog temporarily unavailable") : `${countries.length} ${t(lang, "paysDisponibles")}`}
-          </label>
-          {countries.length > 0 && <select id="country-select" className="country-select" value={selectedCountryIso3}
-            onChange={(e) => onCountryChange(e.target.value)}
-            disabled={countriesLoading}>
-            {countries.map((c) => <option key={c.iso3} value={c.iso3}>{c.displayName} ({c.iso3})</option>)}
-          </select>}
-          {countriesError && <p className="whv-country-catalog-status" role="status">
+        <div className="whv-country-profile-content">
+          <div className="whv-country-profile-switch">
+            <label htmlFor="country-select">
+              {fr ? "Explorer un autre pays" : "Explore another country"}
+            </label>
+            {countries.length > 0 && <select id="country-select" className="country-select"
+              value={countries.some(country => country.iso3 === selectedCountryIso3) ? selectedCountryIso3 : ""}
+              onChange={event => onCountryChange(event.target.value)}
+              disabled={countriesLoading}>
+              {!countries.some(country => country.iso3 === selectedCountryIso3) &&
+                <option value="" disabled>{displayName}</option>}
+              {countries.map(country => <option key={country.iso3} value={country.iso3}>
+                {country.displayName} ({country.iso3})
+              </option>)}
+            </select>}
+            {countriesError && <p className="whv-country-profile-source-status" role="status">
+              {fr
+                ? "Le catalogue des pays est momentanément inaccessible. Les informations connectées ne peuvent pas toutes être actualisées."
+                : "The country catalog is temporarily unavailable. Connected information cannot all be refreshed."}
+            </p>}
+          </div>
+
+          {selectedCountryIso3 === "-99" && <p className="whv-country-profile-source-status" role="status">
             {fr
-              ? "La liste des pays ne peut pas être actualisée pour le moment. Cette fiche reste consultable avec les éléments déjà documentés ; les chiffres et sources connectés seront disponibles après rétablissement des services."
-              : "The country list cannot be refreshed right now. You can still read previously documented information; connected numbers and sources will be available when services return."}
+              ? "Le statut international de ce territoire est contesté. La couverture et les définitions des données peuvent différer selon les sources."
+              : "The international status of this territory is disputed. Coverage and data definitions may differ across sources."}
           </p>}
+
+          {activeSection === "overview" && <section className="whv-country-overview" aria-labelledby="whv-country-overview-heading">
+            <div className="whv-country-section-heading">
+              <span className="whv-country-section-kicker">
+                {fr ? "REPÈRES ET PROFIL" : "COUNTRY REFERENCE"}
+              </span>
+              <h3 id="whv-country-overview-heading">{fr ? "Vue d’ensemble" : "Country overview"}</h3>
+              <p>{fr
+                ? "L’identité du pays, ses informations essentielles et les indicateurs documentés. Explorez ensuite chaque rubrique selon votre besoin."
+                : "The country's identity, essential reference details and documented indicators. Explore the other sections as needed."}</p>
+            </div>
+            {countryDetail && <div className="country-meta-grid whv-country-profile-facts">
+              <MetaItem label={t(lang, "capitale")} value={countryDetail.capitalCity ?? "—"} />
+              <MetaItem label={t(lang, "devise")} value={countryDetail.currencyCode
+                ? [countryDetail.currencyCode, countryDetail.currencyName].filter(Boolean).join(" — ") : "—"} />
+              <MetaItem label={t(lang, "region")} value={countryDetail.regionName ?? "—"} />
+              <MetaItem label={t(lang, "sousRegion")} value={countryDetail.subregionName ?? "—"} />
+              <MetaItem label={t(lang, "classeRevenu")} value={countryDetail.worldBankIncomeGroup ?? "—"} />
+              <MetaItem label={t(lang, "qualiteDonnees")} value={
+                fr ? "Couverture variable selon l’indicateur" : "Coverage varies by indicator"
+              } />
+            </div>}
+            {!countryDetail && <div className="whv-country-profile-reference-empty" role="status">
+              <strong>{fr ? "Repères institutionnels non vérifiables actuellement" : "Institutional reference details unavailable"}</strong>
+              <p>{fr
+                ? "Nous n’affichons pas de capitale, devise ou catégorie statistique inventée lorsque le service pays est inaccessible."
+                : "We do not invent a capital, currency or statistical classification when the country service is unavailable."}</p>
+            </div>}
+            {economicSnapshot || relativeCostSnapshot ? <OverviewTab
+              allLenses={allLenses} highlights={combinedHighlights}
+              decisionSignals={decisionSignals} lang={lang}
+              onTabChange={tab => {
+                setActiveTab(tab);
+                setActiveSection(tab === "fx" || tab === "safety" ? "services"
+                  : tab === "compare" ? "compare" : "data");
+              }}
+              iso3={selectedCountryIso3}
+            /> : <div className="whv-country-profile-reference-empty" role="status">
+              <strong>{loading
+                ? t(lang, "chargementFiche")
+                : fr ? "Indicateurs non vérifiables pour le moment" : "Indicators cannot currently be verified"}</strong>
+              <p>{fr
+                ? "Les chiffres, périodes et sources apparaîtront quand les services de données seront accessibles. Une indisponibilité technique ne signifie pas zéro donnée dans ce pays."
+                : "Figures, periods and sources will appear when data services are accessible. A temporary outage does not mean the country has no data."}</p>
+            </div>}
+            <div className="whv-country-overview-pathways" aria-label={fr ? "Explorer la fiche" : "Explore the profile"}>
+              {([
+                ["data", fr ? "Explorer les chiffres" : "Explore indicators",
+                  fr ? "Économie, santé, finances et projections" : "Economy, health, finance and projections"],
+                ["sources", fr ? "Examiner les sources" : "Examine sources",
+                  fr ? "Institutions et méthodologies" : "Institutions and methods"],
+                ["news", fr ? "Consulter l’actualité" : "Explore news",
+                  fr ? "Une rubrique distincte, avec dates et origines" : "A separate rubric with dates and attribution"],
+                ["services", fr ? "Outils du pays" : "Country tools",
+                  fr ? "Devises et sécurité selon les données disponibles" : "Currencies and safety when data are available"],
+              ] as const).map(([section, heading, description]) => <button
+                key={section} type="button" className="whv-country-overview-path"
+                onClick={() => {
+                  setActiveSection(section);
+                  if (section === "data") setActiveTab("economy");
+                  if (section === "services") setActiveTab("safety");
+                }}>
+                <strong>{heading}</strong>
+                <span>{description}</span>
+                <span className="whv-country-overview-arrow" aria-hidden="true">↗</span>
+              </button>)}
+            </div>
+          </section>}
+
+          {activeSection === "sources" && <section aria-label={fr ? "Sources du pays" : "Country sources"}>
+            <div className="whv-country-section-heading">
+              <span className="whv-country-section-kicker">{fr ? "PROVENANCE ET MÉTHODES" : "PROVENANCE AND METHODS"}</span>
+              <h3>{fr ? "Sources du pays" : "Country sources"}</h3>
+              <p>{fr
+                ? "Sources locales, nationales, régionales et internationales. Les institutions répertoriées ne signifient pas automatiquement que des données ont été collectées."
+                : "Local, national, regional and international sources. A listed institution does not imply that its data has been collected."}</p>
+            </div>
+            <CountryLocalEvidencePanel key={selectedCountryIso3}
+              iso3={selectedCountryIso3}
+              enabled={open && activeSection === "sources" && selectedCountryIso3 !== "-99"}
+              lang={lang}
+            />
+          </section>}
+
+          {activeSection === "news" && <CountryNewsPanel key={selectedCountryIso3}
+            iso3={selectedCountryIso3} locale={lang} />}
+
+          {activeSection === "data" && <section className="whv-country-data" aria-label={fr ? "Données du pays" : "Country data"}>
+            <div className="whv-country-section-heading">
+              <span className="whv-country-section-kicker">{fr ? "INDICATEURS ET TENDANCES" : "INDICATORS AND TRENDS"}</span>
+              <h3>{fr ? "Données du pays" : "Country data"}</h3>
+              <p>{fr
+                ? "Les chiffres sont classés par domaine. Leur période, leur source et leur statut doivent rester visibles."
+                : "Figures are grouped by subject, with their period, source and status visible."}</p>
+            </div>
+            <div className="whv-country-data-subnav" aria-label={fr ? "Domaines de données" : "Data categories"}>
+              {(["economy", "health", "governance", "markets", "forecasts"] as const)
+                .map(tab => <button key={tab} type="button"
+                  className={`whv-country-data-subtab${activeTab === tab ? " is-selected" : ""}`}
+                  aria-pressed={activeTab === tab} onClick={() => setActiveTab(tab)}>
+                  {fr ? TAB_LABELS[tab] : ({
+                    economy: "Economy", health: "Health", governance: "Public finance",
+                    markets: "Markets", forecasts: "Forecasts",
+                  } as const)[tab]}
+                </button>)}
+            </div>
+            {!loading && (economicSnapshot || relativeCostSnapshot) ? <div className="drawer-tab-content">
+              {activeTab === "economy" && <IndicatorTabView
+                lenses={economyLenses} iso3={selectedCountryIso3} lang={lang}
+                title={fr ? "Indicateurs macroéconomiques" : "Macroeconomic indicators"}
+                emptyMsg={fr ? "Aucun indicateur publiable dans cette catégorie." : "No publishable indicators in this category."} />}
+              {activeTab === "health" && <IndicatorTabView
+                lenses={healthLenses} iso3={selectedCountryIso3} lang={lang}
+                title={fr ? "Santé et développement humain" : "Health and human development"}
+                emptyMsg={fr ? "Aucun indicateur publiable dans cette catégorie." : "No publishable indicators in this category."} />}
+              {activeTab === "governance" && <IndicatorTabView
+                lenses={governanceLenses} iso3={selectedCountryIso3} lang={lang}
+                title={fr ? "Finances publiques et gouvernance" : "Public finance and governance"}
+                emptyMsg={fr ? "Aucun indicateur publiable dans cette catégorie." : "No publishable indicators in this category."} />}
+              {activeTab === "markets" && <IndicatorTabView
+                lenses={marketsLenses} iso3={selectedCountryIso3} lang={lang}
+                title={fr ? "Marchés et investissement" : "Markets and investment"}
+                emptyMsg={fr ? "Aucun indicateur publiable dans cette catégorie." : "No publishable indicators in this category."} />}
+              {activeTab === "forecasts" && <ForecastsTab
+                allEconomicLenses={allEconomicLenses} iso3={selectedCountryIso3} lang={lang} />}
+            </div> : <div className="whv-country-profile-reference-empty" role="status">
+              <strong>{loading ? t(lang, "chargementFiche") :
+                fr ? "État des données non vérifiable actuellement" : "Data cannot currently be verified"}</strong>
+              <p>{fr
+                ? "Les catégories restent accessibles mais leurs valeurs attendent une réponse réelle des services. Aucun chiffre de démonstration ne remplace les données du pays."
+                : "Categories remain accessible but their figures require real services. Demo values never replace a country's actual data."}</p>
+            </div>}
+          </section>}
+
+          {activeSection === "compare" && <section className="whv-country-compare">
+            <div className="whv-country-section-heading">
+              <span className="whv-country-section-kicker">{fr ? "COMPARAISON DOCUMENTÉE" : "DOCUMENTED COMPARISON"}</span>
+              <h3>{fr ? "Comparer des pays" : "Compare countries"}</h3>
+              <p>{fr
+                ? "Comparer des valeurs exige des indicateurs et des périodes compatibles. Une absence de données ne signifie pas que les pays sont incomparables."
+                : "Comparisons require compatible indicators and time periods. Missing data does not imply the countries cannot be compared."}</p>
+            </div>
+            {!loading && economicSnapshot ? <ComparatorSection
+              iso3={selectedCountryIso3} economicLenses={allEconomicLenses}
+              countries={countries} /> : <div className="whv-country-profile-reference-empty" role="status">
+              <strong>{fr ? "Comparaison non disponible actuellement" : "Comparison currently unavailable"}</strong>
+              <p>{fr ? "Les séries nécessaires ne sont pas vérifiables depuis cette session." :
+                "The required series cannot be verified in this session."}</p>
+            </div>}
+          </section>}
+
+          {activeSection === "services" && <section className="whv-country-services">
+            <div className="whv-country-section-heading">
+              <span className="whv-country-section-kicker">{fr ? "OUTILS ET SERVICES" : "TOOLS AND SERVICES"}</span>
+              <h3>{fr ? "Services liés au pays" : "Country-related services"}</h3>
+              <p>{fr
+                ? "Retrouvez les outils déjà intégrés. Les autres univers World-Vision restent accessibles depuis la navigation principale, sans prétendre qu'un fournisseur ou un service est connecté."
+                : "Use the existing tools. Other World-Vision services remain in the main navigation, without pretending a provider is connected."}</p>
+            </div>
+            <div className="whv-country-data-subnav" aria-label={fr ? "Outils disponibles" : "Available tools"}>
+              <button type="button" aria-pressed={activeTab === "safety"}
+                className={`whv-country-data-subtab${activeTab !== "fx" ? " is-selected" : ""}`}
+                onClick={() => setActiveTab("safety")}>{fr ? "Sécurité" : "Safety"}</button>
+              <button type="button" aria-pressed={activeTab === "fx"}
+                className={`whv-country-data-subtab${activeTab === "fx" ? " is-selected" : ""}`}
+                onClick={() => setActiveTab("fx")}>{fr ? "Devises" : "Currency"}</button>
+            </div>
+            {activeTab === "fx" && (countryDetail?.currencyCode ?? selectedCountry?.currencyCode)
+              ? <FxConverterSection key={`fx-${selectedCountryIso3}`}
+                  baseCurrency={(countryDetail?.currencyCode ?? selectedCountry?.currencyCode)!} />
+              : activeTab === "fx" && <div className="whv-country-profile-reference-empty" role="status">
+                <strong>{fr ? "Devise non vérifiable actuellement" : "Currency information currently unavailable"}</strong>
+                <p>{fr ? "Le convertisseur nécessite le code monétaire du pays et un taux de référence daté." :
+                  "The converter needs a verified currency code and a dated reference rate."}</p>
+              </div>}
+            {activeTab !== "fx" && (economicSnapshot || relativeCostSnapshot)
+              ? <SafetyTab allLenses={allLenses} iso3={selectedCountryIso3} lang={lang} />
+              : activeTab !== "fx" && <div className="whv-country-profile-reference-empty" role="status">
+                <strong>{fr ? "Données de sécurité non vérifiables" : "Safety data currently unavailable"}</strong>
+                <p>{fr
+                  ? "Un indicateur partiel ne constitue pas un avis officiel de sécurité ou de voyage. Les données et périmètres doivent être confirmés."
+                  : "An isolated indicator is not an official travel advisory. Data and geographic scope must be verified."}</p>
+              </div>}
+          </section>}
         </div>
-
-        {/* Méta pays */}
-        {countryDetail && (
-          <div className="country-meta-grid">
-            <MetaItem label={t(lang, "capitale")} value={countryDetail.capitalCity ?? "—"} />
-            <MetaItem label={t(lang, "devise")} value={(() => {
-              const code = countryDetail.currencyCode;
-              const name = countryDetail.currencyName;
-              const sym  = countryDetail.currencySymbol;
-              if (!code) return "—";
-              // "ETB — Birr éthiopien (Br)"  or  "EUR — Euro (€)"
-              const parts: string[] = [code];
-              if (name) parts.push(`— ${name}`);
-              if (sym && sym !== code) parts.push(`(${sym})`);
-              return parts.join(" ");
-            })()} />
-            <MetaItem label={t(lang, "region")} value={countryDetail.regionName ?? "—"} />
-            <MetaItem label={t(lang, "sousRegion")} value={countryDetail.subregionName ?? "—"} />
-            <MetaItem label={t(lang, "classeRevenu")} value={countryDetail.worldBankIncomeGroup ?? "—"} />
-            <MetaItem label={t(lang, "qualiteDonnees")} value={(() => {
-              const tier = countryDetail.dataQualityTier;
-              const labels: Record<number, string> = {
-                1: "Tier 1 — données riches, multiple sources",
-                2: "Tier 2 — couverture partielle",
-                3: "Tier 3 — données limitées",
-              };
-              return labels[tier] ?? `Tier ${tier}`;
-            })()} />
-          </div>
-        )}
-
-        {/* Independent national/local evidence even when no economic observations exist. */}
-        <CountryLocalEvidencePanel
-          key={selectedCountryIso3}
-          iso3={selectedCountryIso3}
-          enabled={open && selectedCountryIso3 !== "-99"}
-          lang={lang}
-        />
-
-        {/* Chargement / erreur */}
-        {loading && (
-          <div className="info-card">
-            <p style={{ color: "rgba(183,220,245,0.72)" }}>{t(lang, "chargementFiche")}</p>
-          </div>
-        )}
-        {selectedCountryIso3 === "-99" && !loading && (
-          <div className="info-card">
-            <p className="drawer-error" style={{ color: "rgba(251,191,36,0.9)" }}>Territoire non reconnu internationalement</p>
-            <p className="drawer-hint">
-              Le Somaliland est un territoire dont le statut international est contesté. Il n'est pas
-              reconnu comme État souverain par l'ONU ni par la majorité des pays, et ne dispose
-              pas de données économiques standardisées dans les bases de données mondiales (Banque
-              mondiale, FMI, ONU). Aucune fiche n'est disponible.
-            </p>
-          </div>
-        )}
-        {error && selectedCountryIso3 !== "-99" && (
-          <div className="info-card">
-            <p className="drawer-error">{error}</p>
-            <p className="drawer-hint">
-              {error.includes("404") || error.includes("Not Found")
-                ? "Ce pays n'est pas encore couvert par notre base de données. Les données seront ajoutées progressivement."
-                : "Vérifiez que les services catalog (8082), analytics (8000) et gateway (8080) sont démarrés."}
-            </p>
-          </div>
-        )}
-
-        {/* Onglets */}
-        {!loading && !error && (economicSnapshot || relativeCostSnapshot) && (
-          <>
-            {/* Barre d'onglets */}
-            <div className="drawer-tab-bar">
-              {(Object.keys(TAB_LABELS) as DrawerTab[]).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  className={`drawer-tab-btn${tab === "forecasts" ? " drawer-tab-btn--forecast" : ""}${activeTab === tab ? " active" : ""}`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  <WorldIcon name={TAB_ICONS[tab]} size={15}/> {TAB_LABELS[tab]}
-                </button>
-              ))}
-            </div>
-
-            {/* Contenu onglet */}
-            <div className="drawer-tab-content">
-
-              {activeTab === "overview" && (
-                <OverviewTab
-                  allLenses={allLenses}
-                  highlights={combinedHighlights}
-                  decisionSignals={decisionSignals}
-                  lang={lang}
-                  onTabChange={setActiveTab}
-                  iso3={selectedCountryIso3}
-                />
-              )}
-
-              {activeTab === "economy" && (
-                <IndicatorTabView
-                  lenses={economyLenses}
-                  iso3={selectedCountryIso3}
-                  lang={lang}
-                  title={fr ? "Indicateurs macroéconomiques" : "Macroeconomic indicators"}
-                  emptyMsg={fr ? "Pas de données économiques disponibles." : "No economic data available."}
-                />
-              )}
-
-              {activeTab === "health" && (
-                <IndicatorTabView
-                  lenses={healthLenses}
-                  iso3={selectedCountryIso3}
-                  lang={lang}
-                  title={fr ? "Santé & développement humain" : "Health & human development"}
-                  emptyMsg={fr ? "Pas de données santé disponibles." : "No health data available."}
-                />
-              )}
-
-              {activeTab === "governance" && (
-                <IndicatorTabView
-                  lenses={governanceLenses}
-                  iso3={selectedCountryIso3}
-                  lang={lang}
-                  title={fr ? "Finances publiques & gouvernance" : "Public finances & governance"}
-                  emptyMsg={fr ? "Pas de données de gouvernance disponibles." : "No governance data available."}
-                />
-              )}
-
-              {activeTab === "markets" && (
-                <IndicatorTabView
-                  lenses={marketsLenses}
-                  iso3={selectedCountryIso3}
-                  lang={lang}
-                  title={fr ? "Marchés & investissement" : "Markets & investment"}
-                  emptyMsg={fr ? "Pas de données disponibles." : "No data available."}
-                />
-              )}
-
-              {activeTab === "forecasts" && (
-                <ForecastsTab
-                  allEconomicLenses={allEconomicLenses}
-                  iso3={selectedCountryIso3}
-                  lang={lang}
-                />
-              )}
-
-              {activeTab === "safety" && (
-                <SafetyTab allLenses={allLenses} iso3={selectedCountryIso3} lang={lang} />
-              )}
-
-              {activeTab === "compare" && economicSnapshot && (
-                <ComparatorSection
-                  iso3={selectedCountryIso3}
-                  economicLenses={allEconomicLenses}
-                  countries={countries}
-                />
-              )}
-
-              {activeTab === "fx" && countryDetail?.currencyCode && (
-                <FxConverterSection
-                  key={`fx-${selectedCountryIso3}-${countryDetail.currencyCode}`}
-                  baseCurrency={countryDetail.currencyCode}
-                />
-              )}
-              {activeTab === "fx" && !countryDetail?.currencyCode && (
-                <div className="info-card">
-                  <p style={{ color: "rgba(40,72,105,0.85)", fontSize: 13, margin: 0 }}>
-                    {fr ? "Devise du pays non disponible." : "Country currency not available."}
-                  </p>
-                </div>
-              )}
-
-            </div>
-          </>
-        )}
-
-        {/* Aucune donnée */}
-        {!loading && !error && !economicSnapshot && !countriesLoading && (
-          <div className="info-card">
-            <p>{t(lang, "aucuneDonnee")}</p>
-          </div>
-        )}
-
       </div>
     </aside>
   );
