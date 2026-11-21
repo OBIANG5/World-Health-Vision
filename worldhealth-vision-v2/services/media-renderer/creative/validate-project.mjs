@@ -9,6 +9,7 @@ import {createRequire} from "node:module";
 import {feature} from "topojson-client";
 import {geoContains} from "d3-geo";
 import {captionCueIssues} from "../src/caption-timeline.mjs";
+import {attentionCueIssues} from "./attention-cues.mjs";
 
 // Keep spotlight IDs bound to the exact Natural Earth atlas used by Remotion.
 const requireAtlas=createRequire(import.meta.url);
@@ -71,6 +72,9 @@ export function inspectProject(project) {
     if(!TEMPLATES.has(scene.template))bad(errors,p+".template","Unknown template.");
     if(!boundedInteger(scene.durationFrames,1,3600))bad(errors,p+".durationFrames","1-3600 frames required.");
     if(scene.motion!==undefined&&!MOTIONS.has(scene.motion))bad(errors,p+".motion","Unknown motion profile.");
+    if(scene.titleTreatment!==undefined&&
+      (scene.titleTreatment!=="cyan-slab"||!["kinetic","number"].includes(scene.template)||!scene.title?.trim()))
+      bad(errors,p+".titleTreatment","Cyan headline is an opt-in on authored kinetic/number titles.");
     if(scene.titleFrameZero!==undefined&&(typeof scene.titleFrameZero!=="boolean"||
       (scene.titleFrameZero&&(i!==0||!scene.title?.trim()))))
       bad(errors,p+".titleFrameZero","Only the first authored shot may show an immediate frame-zero headline.");
@@ -349,12 +353,21 @@ export function inspectProject(project) {
     if(!boundedInteger(project.outro.durationFrames,1,600))
       bad(errors,"outro.durationFrames","Outro duration should be 1-600 frames.");
   }
+  if(project.brandMark!==undefined&&project.brandMark!=="worldvision")
+    bad(errors,"brandMark","Use only the existing official World-Vision brand preset or omit it.");
   if(project.style!=null){
     for(const k of ["accent","background","ink"])
       if(project.style[k]!=null&&!COLOR.test(project.style[k]))bad(errors,"style."+k,"Use six-digit hex color.");
   }
   // Captions are timed to the narration film, never the (often silent) G0 outro.
-  errors.push(...captionCueIssues(project.captions,durationFrames(project)-(project.outro?.durationFrames??0)));
+  const narratedFrames=durationFrames(project)-(project.outro?.durationFrames??0);
+  errors.push(...captionCueIssues(project.captions,narratedFrames));
+  errors.push(...attentionCueIssues(project,narratedFrames));
+  // The kinetic track replaces the standard captions visually, not the script.
+  // Avoid silently dropping author-approved ordinary SRT cues.
+  if(Array.isArray(project.wordCaptions)&&project.wordCaptions.length>0&&
+     Array.isArray(project.captions)&&project.captions.length>0)
+    bad(errors,"wordCaptions","Choose either authored frame subtitles or word-highlight captions to avoid overlapping captions.");
   if(durationFrames(project)>18000)bad(errors,"duration","This profile is limited to 10 minutes; use a long-form workflow for longer films.");
   return {ok:errors.length===0,errors,frames:durationFrames(project)};
 }

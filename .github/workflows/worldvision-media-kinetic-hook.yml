@@ -1,0 +1,146 @@
+name: World-Vision MEDIA — real hook/re-hook typography, sound and GEO
+
+on:
+  push:
+    branches:
+      - 'feature/worldvision-media-kinetic-hook-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/**'
+      - '.github/workflows/worldvision-media-kinetic-hook.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/**'
+      - '.github/workflows/worldvision-media-kinetic-hook.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: wv-kinetic-p0-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+
+jobs:
+  verify-kinetic-hooks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install ONLY existing official Remotion dependencies, pinned same version
+        run: npm install --no-audit --no-fund
+      - name: TS/React composition check with Remotion captions and fonts
+        run: npm run typecheck
+      - name: Verify legacy project, approved-word timing, sound source safety and GEO
+        run: |
+          node --test creative/attention-cues.test.mjs creative/validate-project.test.mjs creative/review-range.test.mjs creative/editorial-timeline.test.mjs
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {inspectProject,durationFrames} from './creative/validate-project.mjs';
+          const p=JSON.parse(fs.readFileSync('creative/hook-rehook-map.synthetic.example.json','utf8'));
+          const c=inspectProject(p);
+          if(!c.ok||durationFrames(p)!==362||p.brandMark!=='worldvision')
+            throw new Error('Demo manifest invalid: '+JSON.stringify(c.errors));
+          if(p.shots[1].template!=='geo_story'||p.shots[1].geo.spotlight.countryId!=='266')
+            throw new Error('Map must reuse the verified real Natural Earth source.');
+          console.log('PASS: 12 seconds and 3 correctly sourced editor-authored attention beats');
+          JS
+      - name: Install FFmpeg/FFprobe only when missing on runner
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffmpeg -hide_banner -version | head -n 1
+      - name: Synthesize clearly labeled ORIGINAL technical cues; no voice imitation, no media rights risk
+        shell: bash
+        run: |
+          mkdir -p /tmp/wv-hook-assets/audio output/creative
+          ffmpeg -hide_banner -nostdin -loglevel error -y \
+            -f lavfi -i 'aevalsrc=0.18*sin(2*PI*110*t)+0.08*sin(2*PI*220*t)+0.04*sin(2*PI*330*t):s=48000:d=12.1' \
+            -af 'afade=t=in:st=0:d=0.35,afade=t=out:st=11.65:d=0.4' \
+            -ac 2 /tmp/wv-hook-assets/audio/ambience.wav
+          ffmpeg -hide_banner -nostdin -loglevel error -y \
+            -f lavfi -i 'anoisesrc=color=pink:sample_rate=48000:duration=0.8' \
+            -af 'highpass=f=440,lowpass=f=4400,afade=t=in:st=0:d=0.06,afade=t=out:st=0.40:d=0.36,volume=0.8' \
+            -ac 2 /tmp/wv-hook-assets/audio/first-whoosh.wav
+          ffmpeg -hide_banner -nostdin -loglevel error -y \
+            -f lavfi -i 'sine=frequency=210:sample_rate=48000:duration=0.8' \
+            -af 'afade=t=in:st=0:d=0.02,afade=t=out:st=0.38:d=0.40,volume=1.0' \
+            -ac 2 /tmp/wv-hook-assets/audio/geo-pulse.wav
+          ffmpeg -hide_banner -nostdin -loglevel error -y \
+            -f lavfi -i 'sine=frequency=580:sample_rate=48000:duration=0.9' \
+            -af 'afade=t=in:st=0:d=0.02,afade=t=out:st=0.32:d=0.58,volume=0.8' \
+            -ac 2 /tmp/wv-hook-assets/audio/reveal.wav
+      - name: Render real 1080×1920 Remotion film with NEW word emphasis, 3 original sonic cues and existing GEO
+        run: |
+          node creative/render-project.mjs \
+            --project creative/hook-rehook-map.synthetic.example.json \
+            --assets /tmp/wv-hook-assets \
+            --output output/creative/hook-rehook-worldvision-technical.mp4
+      - name: Verify actual H264/AAC, 362 frames, official preserved logo and original script
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {getVideoMetadata} from '@remotion/renderer';
+          const source=JSON.parse(fs.readFileSync('creative/hook-rehook-map.synthetic.example.json','utf8'));
+          const report=JSON.parse(fs.readFileSync('output/creative/hook-rehook-worldvision-technical.mp4.report.json','utf8'));
+          const v=await getVideoMetadata('output/creative/hook-rehook-worldvision-technical.mp4');
+          const scriptHash=createHash('sha256').update(source.script,'utf8').digest('hex');
+          if(v.codec!=='h264'||v.width!==1080||v.height!==1920||
+             report.duration_frames!==362||report.word_caption_cues!==12||
+             report.sound_cues!==3||report.media.length!==4||
+             report.source_script_sha256!==scriptHash||report.exact_script_unchanged!==true||
+             report.actual_rendered_stills.length!==3||Math.abs(v.durationInSeconds-362/30)>.16)
+            throw new Error('Actual kinetic film failed safety/render contract: '+JSON.stringify({report,v}));
+          console.log('H264 master:',JSON.stringify({sha:report.output_sha256,duration:v.durationInSeconds,
+            word_rehooks:report.word_caption_cues,sound_cues:report.sound_cues,media:report.media.length}));
+          JS
+          test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=nw=1:nk=1 output/creative/hook-rehook-worldvision-technical.mp4 | head -n1)" = "aac"
+          ffmpeg -hide_banner -nostdin -loglevel info -i output/creative/hook-rehook-worldvision-technical.mp4 \
+            -vn -af volumedetect -f null - 2> output/creative/audio-level-report.txt
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+          log=Path('output/creative/audio-level-report.txt').read_text()
+          m=re.search(r'max_volume:\s*(-?[0-9.]+) dB',log)
+          if not m: raise SystemExit('No decoded audio level from actual AAC.')
+          maximum=float(m.group(1))
+          print('Original synthetic technical sound max_volume:',maximum,'dBFS')
+          if not (-28 < maximum < -3):
+              raise SystemExit(f'Audio too quiet or clipping risk: {maximum}dBFS')
+          PY
+          ffmpeg -hide_banner -nostdin -loglevel error \
+            -i output/creative/hook-rehook-worldvision-technical.mp4 \
+            -vf "select='eq(n,0)+eq(n,26)+eq(n,64)+eq(n,116)+eq(n,172)+eq(n,275)+eq(n,314)+eq(n,361)'" \
+            -vsync vfr output/creative/qa-beat-%02d.png
+          test "$(find output/creative -maxdepth 1 -name 'qa-beat-*.png' | wc -l)" -eq 8
+      - name: Reuse FFmpeg for two-pass audio audition while preserving exact video stream
+        shell: bash
+        run: |
+          node creative/master-audio-preview.mjs \
+            output/creative/hook-rehook-worldvision-technical.mp4 \
+            output/creative/hook-rehook-worldvision-technical-audio-preview.mp4
+          test -s output/creative/hook-rehook-worldvision-technical-audio-preview.mp4.loudness.json
+          # Verify the compressed H.264 VIDEO packets are unchanged by audio mastering.
+          original_video_md5="$(ffmpeg -hide_banner -loglevel error -i output/creative/hook-rehook-worldvision-technical.mp4 -map 0:v:0 -c:v copy -f md5 -)"
+          audition_video_md5="$(ffmpeg -hide_banner -loglevel error -i output/creative/hook-rehook-worldvision-technical-audio-preview.mp4 -map 0:v:0 -c:v copy -f md5 -)"
+          echo "Original video stream $original_video_md5; audition video stream $audition_video_md5"
+          test "$original_video_md5" = "$audition_video_md5"
+      - name: Upload only synthetic test art, not user material, for human visual/audio review
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-kinetic-hook-sound-geo-internal
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical-audio-preview.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical-audio-preview.mp4.loudness.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/hook-rehook-worldvision-technical.mp4.stills/
+            worldhealth-vision-v2/services/media-renderer/output/creative/qa-beat-*.png
+          retention-days: 7

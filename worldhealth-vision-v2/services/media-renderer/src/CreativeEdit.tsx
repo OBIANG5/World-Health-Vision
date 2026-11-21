@@ -13,6 +13,8 @@ import type {PhotoMotion} from "./photo-motion-tracks.mjs";
 import type {GeoDirection} from "./GeoStory";
 import {CaptionTrack} from "./CaptionTrack";
 import type {CaptionCue} from "./caption-timeline.mjs";
+import {AttentionTypography,ImpactSlabTitle} from "./AttentionTypography";
+import type {TimedWord} from "./AttentionTypography";
 
 /**
  * A real Remotion composition for supplied scripts, images, clips, voices and
@@ -34,6 +36,8 @@ export type CreativeShot = {
   eyebrow?:string;
   /** Editorial priority: show the opening headline on frame zero, with no intro fade. */
   titleFrameZero?:boolean;
+  /** Opt-in title treatment inspired by approved cyan block hierarchy. */
+  titleTreatment?:"cyan-slab";
   footnote?:string;
   media?:CreativeMedia|null;
   foreground?:{src:string;credit?:string}|null;
@@ -56,8 +60,14 @@ export type CreativeEditProps = {
   title:string;
   script:string; // authored outside the renderer, passed through untouched
   shots:CreativeShot[];
+  /** The OFFICIAL existing eye/globe logo, never a generated substitute. */
+  showOfficialBrand?:boolean;
   /** Global frame-exact transcription supplied by the editor. */
   captions?:CaptionCue[];
+  /** Editor-approved word-level timings in the ORIGINAL whole-film clock. */
+  wordCaptions?:TimedWord[];
+  /** Source-audited short sonic punctuation, synced on the ORIGINAL clock. */
+  soundCues?:Array<{src:string;startFrame:number;durationFrames:number;volume?:number;label?:string}>;
   narration?:{src:string;volume?:number;label?:string}|null;
   soundtrack?:{src:string;volume?:number;label?:string}|null;
   brandOutro?:{src:string;durationFrames:number}|null;
@@ -411,17 +421,20 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
             letterSpacing:"0.17em",lineHeight:1.25,marginBottom:25,
             opacity:immediateHeadline?1:reveal(frame,enterOverlapFrames+5,15)
           }}>{shot.eyebrow}</div>}
-          {shot.title&&<div style={{overflow:"hidden"}}>
-            <div data-wv-title={shot.id} style={{
-              fontSize:textSize,
-              lineHeight:numeric?.94:kinetic?1.04:1.09,
-              fontWeight:numeric?850:790,
-              letterSpacing:numeric?"-0.065em":"-0.04em",
-              whiteSpace:"pre-line",overflowWrap:"break-word",
-              opacity,transform:"translateY("+startTextY+"px)",
-              textShadow:glow,
-            }}>{shot.title}</div>
-          </div>}
+          {shot.title&&(shot.titleTreatment==="cyan-slab"
+            ? <ImpactSlabTitle text={shot.title} accent={accent}
+                opacity={opacity} offsetY={startTextY}/>
+            : <div style={{overflow:"hidden"}}>
+                <div data-wv-title={shot.id} style={{
+                  fontSize:textSize,
+                  lineHeight:numeric?.94:kinetic?1.04:1.09,
+                  fontWeight:numeric?850:790,
+                  letterSpacing:numeric?"-0.065em":"-0.04em",
+                  whiteSpace:"pre-line",overflowWrap:"break-word",
+                  opacity,transform:"translateY("+startTextY+"px)",
+                  textShadow:glow,
+                }}>{shot.title}</div>
+              </div>)}
           {shot.subtitle&&<div style={{
             fontSize:bodySize,fontWeight:460,lineHeight:1.34,
             color:"#f3f6f8",marginTop:kinetic?38:27,
@@ -474,7 +487,12 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
   });
   return <AbsoluteFill style={{background:base.background}}>
     <TransitionSeries>{children}</TransitionSeries>
-    {props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions}/>}
+    {props.showOfficialBrand&&<div data-wv-official-brand="true" style={{
+      position:"absolute",right:72,top:84,width:240,zIndex:70,pointerEvents:"none"
+    }}><Img src={staticFile("brand/world-vision-official.png")} style={{width:"100%",height:"auto",objectFit:"contain"}}/></div>}
+    {props.wordCaptions&&props.wordCaptions.length>0
+      ? <AttentionTypography words={props.wordCaptions} accent={base.accent}/>
+      : props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions}/>}
     {props.narration&&<Sequence durationInFrames={timelineFrames} name="Voix choisie / fournie">
       <Audio src={resolveCreativeSource(props.narration.src)} volume={props.narration.volume??1}/>
     </Sequence>}
@@ -488,6 +506,17 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
         }}
       />
     </Sequence>}
+    {props.soundCues?.map((cue,index)=><Sequence key={"sfx-"+index}
+      from={cue.startFrame} durationInFrames={cue.durationFrames}
+      name={"Ponctuation sonore source — "+(cue.label??index)}>
+      <Audio src={resolveCreativeSource(cue.src)}
+        volume={(localFrame)=>{
+          const gain=cue.volume??0.25;
+          const fadeIn=Math.min(1,localFrame/2);
+          const fadeOut=Math.min(1,(cue.durationFrames-localFrame)/4);
+          return gain*Math.max(0,Math.min(fadeIn,fadeOut));
+        }}/>
+    </Sequence>)}
     {props.brandOutro&&<Sequence from={timelineFrames} durationInFrames={props.brandOutro.durationFrames} name="G0 original ou signature fournie">
       <AbsoluteFill><OffthreadVideo src={resolveCreativeSource(props.brandOutro.src)} muted style={{width:"100%",height:"100%",objectFit:"cover"}}/></AbsoluteFill>
     </Sequence>}
