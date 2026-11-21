@@ -3,7 +3,10 @@ name: World-Vision — FILM-2B2 audible French NASA reportage audition
 on:
   pull_request:
     paths:
-      - 'worldhealth-vision-v2/media-voice-pilots/artemis2/**'
+      - 'worldhealth-vision-v2/media-voice-pilots/artemis2/narration.json'
+      - 'worldhealth-vision-v2/media-voice-pilots/artemis2/synthesize-kokoro.py'
+      - 'worldhealth-vision-v2/media-voice-pilots/artemis2/build-narrated-project.mjs'
+      - 'worldhealth-vision-v2/media-voice-pilots/artemis2/audit-audible.mjs'
       - '.github/workflows/worldvision-film2b-french-narration.yml'
   workflow_dispatch:
 
