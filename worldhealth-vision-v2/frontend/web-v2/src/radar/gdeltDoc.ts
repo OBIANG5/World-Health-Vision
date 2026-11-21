@@ -91,7 +91,7 @@ export interface RadarResult {
 }
 
 const ALLOWED_WINDOWS: readonly RadarTimeWindow[] = ["1d", "3d", "7d"];
-const RESERVED = /[\\:{}()[\]"*+<>]|\b(?:OR|AND|NEAR|REPEAT)\b|\b(?:sourcecountry|sourcelang|domain|theme|imagetag|tone):/i;
+const RESERVED = /[\\:{}()[\]"*+<>]|\b(?:OR|AND|NEAR|REPEAT)\b|\b(?:sourcecountry|sourcelang|domain|theme|imagetag|tone):/;
 export function validRadarSearch(search: unknown): search is RadarSearch {
   if (!search || typeof search !== "object") return false;
   const s = search as Partial<RadarSearch>;
