@@ -3,6 +3,8 @@
  * documented learning notes. Not the professor's licensed course content,
  * and not financial advice, execution, live prices or a trading signal.
  */
+import type { EventPreparation, ThesisUpdate } from "./tradeResearch";
+
 export type Locale = "fr" | "en";
 export type Copy = { fr: string; en: string };
 export type Direction = "undecided" | "long" | "short";
@@ -43,6 +45,8 @@ export interface TradePlan {
   mode: RouteMode;
   fields: Record<string, string>;
   evidence: Evidence[];
+  updates?: ThesisUpdate[];
+  events?: EventPreparation[];
 }
 const pair = (fr: string, en: string): Copy => ({ fr, en });
 const field = (key: string, fr: string, en: string, required = false, kind: FieldKind = "textarea", hint?: Copy): StageField =>
@@ -117,7 +121,7 @@ export const STAGES: readonly Stage[] = [
 export const STAGE_IDS: readonly StageId[] = STAGES.map((stage) => stage.id);
 
 export function newTradePlan(): TradePlan {
-  return { schemaVersion: 1, instrument: "", instrumentKind: "", direction: "undecided", mode: "fundamental", fields: {}, evidence: [] };
+  return { schemaVersion: 1, instrument: "", instrumentKind: "", direction: "undecided", mode: "fundamental", fields: {}, evidence: [], updates: [], events: [] };
 }
 
 function positiveInput(raw: string | undefined): number | null {
@@ -206,5 +210,24 @@ export function isTradePlan(value: unknown): value is TradePlan {
         .every((key) => typeof row[key] === "string" && (row[key] as string).length < 3000)) return false;
       return ["national", "regional", "international", "field", "media", "market", "other"].includes(row.perspective as string)
         && ["supports", "challenges", "context"].includes(row.stance as string);
-    });
+    })
+    && (obj.updates === undefined || (Array.isArray(obj.updates) && obj.updates.length <= 30 &&
+      obj.updates.every((item) => !!item && typeof item === "object" &&
+        typeof item.id === "string" && typeof item.recordedAt === "string" &&
+        typeof item.event === "string" && typeof item.conclusion === "string" &&
+        typeof item.newInformation === "string" &&
+        ["watch", "reconsider", "reject"].includes(item.disposition) &&
+        !!item.snapshot && typeof item.snapshot === "object" &&
+        ["instrument", "direction", "theme", "pricedIn", "catalyst", "setup",
+          "initialEntry", "initialStop", "initialTarget"].every((key) =>
+            typeof (item.snapshot as unknown as Record<string, unknown>)[key] === "string") &&
+        Array.isArray(item.snapshot.originalPublishers))))
+    && (obj.events === undefined || (Array.isArray(obj.events) && obj.events.length <= 30 &&
+      obj.events.every((item) => !!item && typeof item === "object" &&
+        ["id", "title", "scheduledAt", "preparedAt", "expected", "previous", "unit",
+          "higherScenario", "lowerScenario"].every((key) =>
+            typeof (item as unknown as Record<string, unknown>)[key] === "string") &&
+        (item.result === undefined || (!!item.result && typeof item.result === "object" &&
+          ["actual", "publishedAt", "originalUrl", "reaction"].every((key) =>
+            typeof (item.result as unknown as Record<string, unknown>)[key] === "string"))))));
 }
