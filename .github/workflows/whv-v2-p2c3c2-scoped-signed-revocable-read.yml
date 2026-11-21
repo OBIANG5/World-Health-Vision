@@ -54,3 +54,43 @@ jobs:
       - name: Maven Java21 + genuine PostgreSQL16/Flyway including complete Gateway security suite
         working-directory: worldhealth-vision-v2
         run: mvn -B -ntp -pl services/timeseries-service,services/gateway-service -am test
+
+  atlas-scoped-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install fully locked React/Vite dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Check scoped UI, national panel and API strict TypeScript/ESLint
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx eslint src/components/country/ScopedValueExplorer.tsx \
+            src/components/country/CountryLocalEvidencePanel.tsx src/api/whvApi.ts
+          npm run build
+      - name: Assert UX never treats source-native scoped data as country total
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('worldhealth-vision-v2/frontend/web-v2/src')
+          panel=(root/'components/country/CountryLocalEvidencePanel.tsx').read_text()
+          scope=(root/'components/country/ScopedValueExplorer.tsx').read_text()
+          api=(root/'api/whvApi.ts').read_text()
+          style=(root/'styles/scoped-explorer.css').read_text()
+          assert 'ScopedValueExplorer' in panel and 'PublishedIndicatorExplorer' in panel
+          assert 'fetchCountryScopedPublishedValues' in api and 'no-cache' in api
+          assert 'SOURCE_SCOPED_NOT_COUNTRY_EQUIVALENT' in api
+          assert 'PARTIAL_COUNTRY' in scope and 'SUBNATIONAL' in scope
+          assert 'territorialExclusions' in scope and 'sourceMetadataUrl' in scope
+          assert 'visibilitychange' in scope and 'focus' in scope
+          assert '@media (max-width: 390px)' in style
+          print('PASS: scoped-country UX readable, uncached, and distinct from national values')
+          PY
