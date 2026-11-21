@@ -109,6 +109,7 @@ try {
     await resultFields.locator("input").nth(1).fill("2026-11-20T13:20");
     await resultFields.locator("input").nth(2).fill("https://example.org/synthetic-result");
     await resultFields.locator("textarea").fill("Only a synthetic post-result example");
+    await resultFields.locator('input[type="checkbox"]').check();
     await resultFields.getByRole("button", { name: /Ajouter le résultat sourcé/ }).click();
     assert((await history.innerText()).includes("Résultat SAISI"), "User-entered result not shown");
     assert((await history.innerText()).includes("Écart arithmétique"), "Arithmetic delta not shown");
