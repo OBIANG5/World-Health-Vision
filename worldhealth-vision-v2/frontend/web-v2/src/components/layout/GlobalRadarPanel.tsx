@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useLang } from "../../context/LanguageContext";
 import GlobalRadarStaticArchive from "./GlobalRadarStaticArchive";
+import GlobalRadarEditorialPilot from "./GlobalRadarEditorialPilot";
 import {
   GDELT_PROVIDER_PAGE, RADAR_CLIENT_MIN_INTERVAL_MS,
   RADAR_FETCH_TIMEOUT_MS, SOURCE_COUNTRIES,
@@ -248,6 +249,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
             "One explicit request, up to 40 links, no storage, no query added to the World-Vision URL. Provider limits can restrict results.")}</small>
         </form>
         <main className="radar-content">
+          <GlobalRadarEditorialPilot />
           <GlobalRadarStaticArchive />
           <h3 className="radar-manual-heading">{copy(lang,
             "Recherche supplémentaire GDELT à la demande (peut être limitée)",
