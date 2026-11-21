@@ -60,6 +60,8 @@ export type CreativeEditProps = {
   title:string;
   script:string; // authored outside the renderer, passed through untouched
   shots:CreativeShot[];
+  /** The OFFICIAL existing eye/globe logo, never a generated substitute. */
+  showOfficialBrand?:boolean;
   /** Global frame-exact transcription supplied by the editor. */
   captions?:CaptionCue[];
   /** Editor-approved word-level timings in the ORIGINAL whole-film clock. */
@@ -485,6 +487,9 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
   });
   return <AbsoluteFill style={{background:base.background}}>
     <TransitionSeries>{children}</TransitionSeries>
+    {props.showOfficialBrand&&<div data-wv-official-brand="true" style={{
+      position:"absolute",right:72,top:84,width:240,zIndex:70,pointerEvents:"none"
+    }}><Img src={staticFile("brand/world-vision-official.png")} style={{width:"100%",height:"auto",objectFit:"contain"}}/></div>}
     {props.wordCaptions&&props.wordCaptions.length>0
       ? <AttentionTypography words={props.wordCaptions} accent={base.accent}/>
       : props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions}/>}
