@@ -15,7 +15,10 @@ spring:
       minimum-idle: 1
       connection-timeout: 3000
   flyway:
-    enabled: true
+    # CI/dev migrations run with a migration-capable role. In staging,
+    # run vetted Flyway migrations with a dedicated deploy role, then set
+    # WHV_RESEARCH_MIGRATIONS_ENABLED=false on the least-privilege runtime.
+    enabled: ${WHV_RESEARCH_MIGRATIONS_ENABLED:true}
     schemas: trading_private
     default-schema: trading_private
     locations: classpath:db/migration
