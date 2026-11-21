@@ -111,3 +111,24 @@ La première version du workflow R2B lançait un téléchargement réel d'archiv
 - Le présent commit **de clôture documentaire** contient volontairement `[radar-live-probe]` pour effectuer **UN contrôle complet sur le dernier HEAD** et attester que toutes les données (dont le dossier Gabon/FMI) restent correctement branchées. Vérifier dans GitHub Actions le succès du job réel et des 3 navigateurs, puis ne plus modifier du code ou de la documentation sans besoin.
 
 **Roadmap REORDONNÉE après validation** : (1) rendre la version testée accessible sur une URL de PREVIEW stable, protégée et noindex après validation de l'utilisateur, plutôt que lancer un énième service backend; (2) aller au-delà des liens d'articles en vérifiant le CONTENU original et en mettant les désaccords/sources locales et internationales à disposition; (3) mutualiser SourceDocument/Watch/Trading/BRVM si ces parcours ont démontré leur valeur. Les autres travaux Atlas et sources officielles restent utiles mais doivent être *intégrés*, pas accumulés en PR DRAFT invisibles.
+
+
+---
+
+## 9. INCIDENT SOURCE RÉELLE ET CORRECTION D'EXPLOITATION (21/11/2026)
+
+**Attention, éviter une interprétation trompeuse des runs :** la [CI sur SHA `f59acff` — #44946949626](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44946949626) affiche un état GLOBAL `success` car l'essai externe est `continue-on-error:true`, mais le job `real-source-to-browser-preview` n'a **PAS** réussi. Le job `source-archive-contract` (tests Python/TS/Eslint/build/Chrome synthétique) était vert, alors que la tentative de vraie acquisition au job `136976561832` a affiché `snapshotStatus=UNAVAILABLE, reason=provider_http_404` ; l'étape Chrome sur données réelles a été `skipped`. Il faut contrôler les **JOBS et les steps**, pas seulement le badge du workflow !
+
+**Diagnostic concret :** manifeste GDELT reçu en HTTP 200, mais l'archive ZIP annoncée répondait ponctuellement 404. Une expérience précédente sur SHA `6b452188` avait réussi une vraie chaîne `GDELT → V2 → Chromium 320/390/1440`, donc **fournisseur non fiable à la seconde**, pas « l'ensemble du code est cassé ».
+
+**Correction codée :**
+- `services/ingestion-service/src/ingestion_service/connectors/gdelt_events_feed.py` : exclusivement pour le ZIP officiel épinglé `data.gdeltproject.org` annoncé dans le manifeste SHA/MD5 validé, **deux courtes rétentatives pour HTTP 404 seulement**, espacées de **5 s puis 10 s**. **Au maximum trois GET identiques** du ZIP pour UN manifest GET, jamais d'autre hôte, jamais de reprise de 429/403/500/503 et jamais de retour vers un ZIP arbitraire historique sans MD5. Si les trois essais sont encore 404, le résultat reste `UNAVAILABLE` et aucun JSON ne sera créé ou publié.
+- `tests/test_gdelt_events_feed.py` : nouveaux cas avec `httpx.MockTransport` et injection de sleep sans attendre : deux 404 suivis de 200, trois 404, 403/429/500/503 non réessayés, MD5/longueur toujours vérifiés. Tests précédents sécurité/ZIP/CAMEO/URLs/rights inchangés.
+- `.github/workflows/whv-v2-global-radar-real-browser-r2b.yml` : inclut désormais explicitement client R2A et tests associés dans les chemins de PR pour ne pas rater la CI après modifications de cette partie.
+- L'essai GDELT reste opt-in sur commits marqués `[radar-live-probe]` (ou `workflow_dispatch`) pour limiter requêtes, temps de calcul et coûts, avec annulation des runs obsolètes. Un **seul** checkpoint de code + docs est déclenché ci-dessous. Ni cron 15 minutes, ni stockage, ni VPS.
+
+**Reprise intelligente après vérification** :
+1. **Lire CI sur le HEAD exact de ce document et inspecter 2 jobs distincts :** le job de contrat doit passer, et le job source réel doit aboutir pour prétendre démontrer *la disponibilité de ce batch précis*. Si vrai fournisseur 404 trois fois, noter « code et fallback validés, fournisseur indisponible à ce moment », sans boucle de relancement infinie.
+2. Quand un vrai batch aboutit, retrouver dans le LOG 3 phrases `PASS R2B 320px REAL_PROVIDER`, `390px REAL_PROVIDER`, `1440px REAL_PROVIDER`, et contrôler la présence du site compilé dans l'artefact de preview. Les captures de fixtures SYNTHETIC ne remplacent PAS cette preuve.
+3. Mettre à jour la **description de PR #139** (pas de nouveaux commits si seule la documentation d'une CI change) avec SHA exact, jobs et état réel du fournisseur.
+4. **Le meilleur retour qualité/effort ensuite :** URL de PREVIEW autonome protégée/noindex à l'aide de l'artefact compilé et revue d'un dossier de sources locales/primaires/internationales réellement lisibles. Le Vercel actuel existe mais sa connexion Git auto n'est pas attestée; pas d'écrasement prod ni de coût récurrent sans décision. Éviter nouveau produit Trading isolé ou nouveau scheduler GDELT sans utilisateurs.
