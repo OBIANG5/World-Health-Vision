@@ -1,3 +1,17 @@
+# CORRECTION URGENTE DE CONTINUITÉ — 21 NOVEMBRE 2026 : COP31, PAS ARTEMIS II
+
+**CETTE SECTION PRÉVAUT SUR TOUTES LES AUTRES (21/11/2026).** Le propriétaire a constaté et explicitement dénoncé une **erreur grave de continuité**. Il avait accepté que l'assistant finisse **la vidéo qu'il avait envisagée juste avant son reproche sur les priorités**, et rappelle ici les **négociations difficiles de la COP31 à Antalya (TURQUIE, non Thaïlande)**. L'assistant a **injustement et sans preuve** décidé qu'il s'agissait du vieux pilote NASA Artemis II, puis a passé une longue séquence à reconstruire 8s Artemis et à planifier encore Vivienne sur Artemis. **STOP : ne plus poursuivre Artemis II.** La PR #141 est une erreur de priorité archivée/supplantée, pas une prochaine étape. Corriger l'issue #116 et fermer cette PR sans merge.
+
+**Ne pas confondre deux COP31** : (A) 12 novembre 2026, plateforme ONU pour anticiper les catastrophes, vidéo déjà **REFUSÉE 1/10** et à ne pas recycler ; (B) **19–21 novembre**, nouveau projet d'accord retirant les références aux fossiles et une proposition d'au moins **120 Md USD/an d'ici 2035** pour l'adaptation, négociations prolongées au samedi 21, aucun résultat final fiable constaté au dernier point de vérification. **Le sujet rappelé par l'utilisateur est (B), COP31 NÉGOCIATIONS.**
+
+**SOURCE OPÉRATIONNELLE unique à relire immédiatement :** `worldhealth-vision-v2/docs/media/COP31_NEGOTIATIONS_CORRECTION_2026-11-21.md` — chronologie vérifiée Reuters/AP/RTÉ/FT/UNFCCC, angles journalistiques, trame de film 25–32s, hook + 2 re-hooks de sens, sources photos officielles et droits, voix C5.2 toujours manquante. **Ne pas dire que le brouillon de script est déjà approuvé, qu'un accord final a été signé ou qu'une vidéo COP31 est déjà produite.**
+
+**PRIORITÉ APRÈS RECTIFICATION :** faire avancer le vrai **film COP31 négociations** plutôt que rouvrir Artemis/NASA, produire **nouvelle Vivienne C5.2 Impact média +8% DU SCRIPT EXACT** une fois le texte validé et le service/licence réellement accessibles, puis motions simultanées photo/texte/document/chiffres/SFX, écoute et rendu authentique à 390px; ensuite poursuivre la stratégie MEDIA qualité internationale **hooks, re-hooks sémantiques, montage complet et corrections rapides**. Éviter d'ajouter des moteurs secondaires ou PR inutiles. Pas de merge, publication, déploiement, dépense, connexion ou travail Atlas/ABAA sans ordre.
+
+**Ne pas perdre une nouvelle fois le fil :** dans le prochain chat, la première action est de lire ce paragraphe + le dossier COP31, pas de suivre une ancienne « prochaine étape NASA » située plus bas dans le fichier. Les anciennes sections sont conservées comme ARCHIVES D'ERREURS et non comme priorités actives.
+
+---
+
 # POINT DE REPRISE ACTUEL — MÉDIA P0.8 : TROIS AUDITS PIXELS ET RETOUR À LA RÉALISATION (21/11/2026)
 
 **CETTE SECTION PRIME TOUTES LES ANCIENNES « PRIORITÉS ACTUELLES » CI-DESSOUS.** Média AUDIOVISUEL uniquement. La directive originale est **hooks + vrais re-hooks sémantiques tout le long du film, motion design multicouche simultané synchronisé avec la VOIX, vrais médias/sources, rythme et corrections rapides**. Benchmark « Bourse Express »/géopolitique, Géographie/Gabon apprécié mais élément secondaire. NE PAS retomber dans la simulation NASA ni rendre GEO→PAYS→PHOTO→DATA→DOCUMENT obligatoire. Lire la source canonique **worldhealth-vision-v2/docs/media/MEDIA_CREATIVE_PRIORITY_CANON_2026-11-21.md**.
