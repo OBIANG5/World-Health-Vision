@@ -4,7 +4,7 @@ import { useLang } from "../../context/LanguageContext";
 import {
   GDELT_PROVIDER_PAGE, RADAR_CLIENT_MIN_INTERVAL_MS,
   RADAR_FETCH_TIMEOUT_MS, SOURCE_COUNTRIES,
-  compareDiscoveryCandidates, searchGdeltDocuments, validRadarSearch,
+  buildRadarOfficialSearchUrl, compareDiscoveryCandidates, searchGdeltDocuments, validRadarSearch,
   RadarRequestError,
   type RadarCandidate, type RadarResult, type RadarSearch,
   type RadarSourceCountry, type RadarTimeWindow,
@@ -96,6 +96,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
   const lastAttempt = useRef(0);
   const requestGeneration = useRef(0);
   const [query, setQuery] = useState<RadarSearch>(initialQuery);
+  const [lastSubmittedQuery, setLastSubmittedQuery] = useState<RadarSearch | null>(null);
   const [result, setResult] = useState<RadarResult | null>(null);
   const [chosen, setChosen] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -137,6 +138,7 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
       setError(statusText(lang, "invalid"));
       return;
     }
+    setLastSubmittedQuery({ ...query });
     const now = Date.now();
     if (lastAttempt.current !== 0 && now - lastAttempt.current < RADAR_CLIENT_MIN_INTERVAL_MS) {
       setError(statusText(lang, "short_gap"));
@@ -249,6 +251,13 @@ export default function GlobalRadarPanel({ onClose }: { onClose: () => void }) {
             {copy(lang, "Interrogation de GDELT DOC en cours…", "Requesting GDELT DOC…")}</p>}
           {error && <div className="radar-error" role="alert">
             {error}
+            {lastSubmittedQuery && <a className="radar-external-fallback"
+              href={buildRadarOfficialSearchUrl(lastSubmittedQuery)}
+              target="_blank" rel="noopener noreferrer">
+              {copy(lang,
+                "Essayer la même recherche sur le site officiel GDELT (ouverture externe, accès non garanti)",
+                "Try this search directly on GDELT (external site, availability not guaranteed)")}
+            </a>}
             <a href={GDELT_PROVIDER_PAGE} target="_blank" rel="noopener noreferrer">
               {copy(lang, "Documentation officielle", "Official documentation")}</a>
           </div>}
