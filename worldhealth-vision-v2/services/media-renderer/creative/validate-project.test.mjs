@@ -519,3 +519,21 @@ test("frame-zero news hook is opt-in, authored and reserved for the first film s
   p.shots[1].titleFrameZero=true;
   assert.ok(reasons(p).includes("shots[1].titleFrameZero"));
 });
+
+test("renderer accepts truthful director beats but never edits voice/script or invents footage",()=>{
+  const p=clone(sample);
+  p.directorBeats=[{id:"beat-proof",shotId:p.shots[0].id,startFrame:0,endFrame:60,
+    intent:"hook",idea:"Expose une information vérifiable",
+    spokenExcerpt:"Ce texte n'est qu'un exemple de montage.",
+    proofNote:"Illustration d'essai uniquement",visualDirection:"Cadrage sur la preuve originale",
+    audioDirection:"Voix choisie par le réalisateur"}];
+  const untouched=JSON.stringify(p);
+  const validation=inspectProject(p);
+  assert.equal(validation.ok,true,JSON.stringify(validation.errors));
+  assert.equal(JSON.stringify(p),untouched);
+  p.directorBeats[0].spokenExcerpt="Une citation inventée";
+  assert.ok(reasons(p).includes("directorBeats[0].spokenExcerpt"));
+  p.directorBeats[0].spokenExcerpt="";
+  p.directorBeats[0].shotId="deleted-shot";
+  assert.ok(reasons(p).includes("directorBeats[0].shotId"));
+});
