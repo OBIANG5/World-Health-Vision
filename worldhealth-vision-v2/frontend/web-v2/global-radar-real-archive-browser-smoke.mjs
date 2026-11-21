@@ -64,6 +64,23 @@ try {
     });
     await page.goto(origin + "/?wv=radar", { waitUntil: "domcontentloaded" });
     await page.locator(".radar-dialog").waitFor({ state: "visible" });
+    // An earlier green browser run allowed almost completely UNSTYLED markup:
+    // check computed design values, not just DOM presence and overflow.
+    const computed = await page.locator(".radar-dialog").evaluate((node) => {
+      const dialogStyle = getComputedStyle(node);
+      const backdrop = document.querySelector(".radar-backdrop");
+      return {
+        dialogBg: dialogStyle.backgroundColor,
+        dialogRadius: dialogStyle.borderTopLeftRadius,
+        backdropPosition: backdrop ? getComputedStyle(backdrop).position : "missing",
+      };
+    });
+    assert.equal(computed.dialogBg, "rgb(247, 251, 255)",
+      "Global Radar CSS did not load: raw HTML is NOT a professional media experience");
+    assert(computed.dialogRadius !== "0px",
+      "Global Radar needs styled responsive card framing");
+    assert.equal(computed.backdropPosition, "fixed",
+      "Global Radar must stay in its modal overlay instead of flowing as raw HTML");
     const editorial = page.locator(".radar-case");
     assert((await editorial.innerText()).includes("Gabon et FMI"),
       "Actual dated AGP/IMF/EcoMatin research dossier must be reachable");
@@ -96,7 +113,15 @@ try {
     });
     assert.equal(upstreamCalls, 0, "Opening static archive must NOT issue costly DOC API query");
     assert.equal(staticCalls, 1, "One explicit same-origin asset load per panel mount");
+    await page.locator(".radar-content").evaluate((node) => { node.scrollTop = 0; });
+    await page.screenshot({
+      path: "global-radar-r2b-artifacts/" + device.name +
+        (real ? "-real-gdelt-" : "-synthetic-") + "styled-editorial-overview.png",
+    });
     const archive = page.locator(".radar-archive");
+    assert.equal(await archive.evaluate((node) => getComputedStyle(node).backgroundColor),
+      "rgb(248, 252, 255)",
+      "Global Radar R2B stylesheet must style real provider archive, not display unstyled blocks");
     assert((await archive.innerText()).includes("Pas du direct"),
       "Real batch must never imply a live publisher news service");
     assert((await archive.innerText()).includes("Les « événements » sont des codes automatiques"),
