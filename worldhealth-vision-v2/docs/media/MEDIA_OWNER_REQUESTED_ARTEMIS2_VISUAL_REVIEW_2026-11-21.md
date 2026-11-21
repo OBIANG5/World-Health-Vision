@@ -1,3 +1,18 @@
+# Ajout vérifié — film de revue interne ARTEMIS II finalement livré depuis GitHub Actions (21/11/2026)
+
+**PR effective : #141 DRAFT** https://github.com/OBIANG5/World-Health-Vision/pull/141 (ne pas se tromper avec #139). **Le film a bien été reconstitué et inspecté, pas seulement promis.**
+
+- CI originale #44950437870 **FAIL** à l'étape outils système (un runner n'avait pas ffmpeg/ffprobe en PATH), cause analysée puis installation explicite.
+- CI corrigée #44950644176 **SUCCESS** ; vrai MP4, 247 frames, H264/AAC, zéro ancienne voix audio, six images 390px.
+- **CI finale**, meilleure courbe sonore : [#44950928858](https://github.com/OBIANG5/World-Health-Vision/actions/runs/44950928858) **SUCCESS** sur commit de CODE `0abb1729782ef2f5e18caa6390ebe0637a34f38c`. Fichier de vidéo livré dans le chat : `/mnt/data/WorldVision-ArtemisII-revue-visuelle-finale.mp4`, SHA256 **dbb3cdd2e01cec74afc8827900b0e7e515ebe9a96a548638cf2eb600086595f4** ; fichier GH artifact `artemis2-no-narrator-visual.mp4`, EXACTEMENT même SHA. Artifact **14725466993**, nom `worldvision-artemis2-owner-visual-only-NO-VOICE`, expiration **28/11/2026 21:19:56 UTC**. Rapport dans l'artifact valide `original_audio_explicitly_discarded=true`, `contains_previous_kokoro_narration=false`, `contains_new_vivienne_c52_narration=false`, `publication_authorized=false`. Entrée NASA P0.6 SHA256 **dec6af52661fdd45c879406c11d0a438455ffa884658dd0cb739dc134572880c**.
+- Qualité audio interne : la première bande mathématique faisait environ **−31 LUFS** et était presque inaudible sur téléphone; le script applique maintenant `loudnorm=I=-20:TP=-2:LRA=11` UNIQUEMENT sur l'audio nouvellement généré. **Loudness mesurée sur la vraie sortie AAC finale : −21,0 LUFS**. Ne pas décrire ces synthèses non diégétiques comme des sons enregistrés de la Lune.
+- Audits visuels : six images du VRAI fichier de l'artifact observées à **390×693 px**, frames **0,42,87,138,191,246**. Hook initial et deux re-hooks visibles; labels/source de l'annotation lunaire restent petits et pas assez lisibles pour une vidéo finie. C'est un **contrôle visuel, pas un audit de rétention ni une validation artistique internationale**.
+- Compétence reconstruite : pipeline Python/FFmpeg avec entrée vidéo H264 source sans recompression, nouvelle piste sonore AAC originale, manifeste SHA et 6 PNG. Pas de TTS exécuté dans ce workflow. Aucun octet de source contenant Kokoro n'est contenu dans l'artifact de sortie.
+- Enregistrement de voix choisi **Vivienne C5.2 — Impact média +8% pour ce même script** manque toujours. Compte/licence Azure non disponible, ne pas contourner un service Edge non contractuel ni recycler le vieil MP3 Mississippi ; tout rendu avec C5.2 sera une nouvelle prise, retiming et approbation.
+- **Statut produit** : utilisateur autorisé à regarder, pas autorisé à publier. Prochaine étape à forte valeur : obtenir son retour sur le clip, puis à partir du script réellement retenu créer la version C5.2 réellement narrée. Retour à la priorité long terme : hooks/re-hooks narratifs, multicouches, montage international plutôt que laboratoires NASA. Aucun merge/deploy/achat/publication.
+
+---
+
 # World-Vision MEDIA — DÉMONSTRATION ARTEMIS II EXPLICITEMENT AUTORISÉE (21 novembre 2026)
 
 **État : FICHIER MP4 DE REVUE VISUELLE EFFECTIVEMENT PRODUIT. Pas de vraie narration C5.2, pas de master publiable, pas de décision de publication.** Cette page prime sur tous les anciens résumés laissant croire que l'utilisateur demandait d'ABANDONNER la vidéo test NASA. À l'inverse, elle ne transforme pas NASA en priorité produit dominante.
