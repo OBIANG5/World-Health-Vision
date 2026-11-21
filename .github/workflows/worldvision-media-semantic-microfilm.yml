@@ -1,16 +1,13 @@
 name: World-Vision MEDIA P0.5 — authentic NASA short-film internal QA
 on:
-  push:
-    branches:
-      - 'feature/worldvision-media-artemis2-semantic-microfilm-*'
-    paths:
-      - 'worldhealth-vision-v2/media-voice-pilots/artemis2/build-semantic-microfilm.mjs'
-      - '.github/workflows/worldvision-media-semantic-microfilm.yml'
   pull_request:
     paths:
       - 'worldhealth-vision-v2/media-voice-pilots/artemis2/build-semantic-microfilm.mjs'
       - '.github/workflows/worldvision-media-semantic-microfilm.yml'
   workflow_dispatch:
+concurrency:
+  group: worldvision-media-p05-artemis2-single-active-run
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
