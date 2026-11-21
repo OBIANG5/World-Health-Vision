@@ -12,6 +12,8 @@ export interface ResearchIdentity {
   accessToken(): Promise<string | null>;
   /** Human-readable provider display name, not a security principal. */
   providerLabel: string;
+  /** A different value for every new authenticated session, even same user. */
+  sessionInstanceId: string;
 }
 
 /** No fallback credentials, fake connected user or anonymous cloud request. */
