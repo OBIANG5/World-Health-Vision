@@ -125,6 +125,9 @@ def main():
             "-i", str(src), "-i", str(sfx),
             "-map", "0:v:0", "-map", "1:a:0",
             "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+            # Original ambience was -31 LUFS and nearly inaudible on mobile.
+            # Loudness-shape ONLY the brand-new math/SFX track, never a voice.
+            "-af", "loudnorm=I=-20:TP=-2:LRA=11",
             "-ar", "48000", "-ac", "2", "-movflags", "+faststart",
             "-shortest",
             "-metadata", "title=World-Vision / Artemis II / revue visuelle interne",
