@@ -35,6 +35,9 @@ export interface EventPreparation {
   expected: string;
   previous: string;
   unit: string;
+  expectationPublisher: string;
+  expectationSourceUrl: string;
+  expectationAsOf: string;
   higherScenario: string;
   lowerScenario: string;
   result?: {
@@ -56,6 +59,9 @@ export interface NewEventPreparation {
   expected: string;
   previous: string;
   unit: string;
+  expectationPublisher: string;
+  expectationSourceUrl: string;
+  expectationAsOf: string;
   higherScenario: string;
   lowerScenario: string;
 }
@@ -107,14 +113,17 @@ export function recordThesisUpdate(plan: TradePlan, input: NewThesisUpdate, now:
 export function prepareMacroEvent(input: NewEventPreparation, now: string, id: string): EventPreparation | null {
   if (!limited(input.title, 240) || !dateValid(input.scheduledAt) || !dateValid(now) ||
     !limited(input.expected, 100) || !limited(input.unit, 60) ||
+    !limited(input.expectationPublisher, 240) || !publicUrl(input.expectationSourceUrl) ||
+    !dateValid(input.expectationAsOf) ||
     !limited(input.higherScenario) || !limited(input.lowerScenario)) return null;
   // Historical replay is allowed, but is clearly flagged as retrospective
   // when this browser timestamp is later than scheduled release.
   return { id, preparedAt: now, ...input };
 }
 export function wasPreparedBeforeEvent(event: EventPreparation): boolean {
-  return dateValid(event.preparedAt) && dateValid(event.scheduledAt)
-    && new Date(event.preparedAt).getTime() < new Date(event.scheduledAt).getTime();
+  return dateValid(event.preparedAt) && dateValid(event.scheduledAt) && dateValid(event.expectationAsOf)
+    && new Date(event.preparedAt).getTime() < new Date(event.scheduledAt).getTime()
+    && new Date(event.expectationAsOf).getTime() <= new Date(event.preparedAt).getTime();
 }
 export function attachEventResult(event: EventPreparation, input: NewEventResult): EventPreparation | null {
   if (event.result || !limited(input.actual, 100) || !dateValid(input.publishedAt) ||
@@ -151,9 +160,10 @@ export function validThesisUpdate(value: unknown): value is ThesisUpdate {
 export function validEventPreparation(value: unknown): value is EventPreparation {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
-  if (!["id", "title", "scheduledAt", "preparedAt", "expected", "previous", "unit", "higherScenario", "lowerScenario"]
+  if (!["id", "title", "scheduledAt", "preparedAt", "expected", "previous", "unit", "expectationPublisher", "expectationSourceUrl", "expectationAsOf", "higherScenario", "lowerScenario"]
     .every(k => typeof v[k] === "string" && (v[k] as string).length < 3000)) return false;
-  if (!dateValid(v.scheduledAt as string) || !dateValid(v.preparedAt as string)) return false;
+  if (!dateValid(v.scheduledAt as string) || !dateValid(v.preparedAt as string) ||
+    !dateValid(v.expectationAsOf as string) || !publicUrl(v.expectationSourceUrl as string)) return false;
   if (v.result === undefined) return true;
   if (!v.result || typeof v.result !== "object") return false;
   const r = v.result as Record<string, unknown>;
