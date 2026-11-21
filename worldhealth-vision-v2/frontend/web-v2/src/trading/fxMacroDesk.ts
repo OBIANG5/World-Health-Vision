@@ -13,6 +13,35 @@ import { newTradePlan, type TradePlan, type Evidence } from "./tradePlan";
 export const FX_MACRO_KEY = "world-vision:trading-macro-desk:v1";
 export const FX_CURRENCIES = ["EUR", "GBP", "AUD", "NZD", "USD", "CAD", "CHF", "JPY"] as const;
 export type FxCurrency = (typeof FX_CURRENCIES)[number];
+
+/**
+ * Institutional research starting points, NOT data feeds, live publications,
+ * endorsements, consensus providers or automatically verified citations.
+ * A user MUST open a specific dated publication and enter its exact URL,
+ * original publisher and observation; no link below is saved as evidence.
+ * All 16 sites are public institutional homepages, reviewed 2026-11-21.
+ */
+export const FX_OFFICIAL_RESEARCH_STARTS: Readonly<Record<FxCurrency, {
+  monetary: { name: string; url: string };
+  statistics: { name: string; url: string };
+}>> = Object.freeze({
+  EUR: { monetary: { name: "European Central Bank", url: "https://www.ecb.europa.eu/" },
+    statistics: { name: "Eurostat", url: "https://ec.europa.eu/eurostat" } },
+  GBP: { monetary: { name: "Bank of England", url: "https://www.bankofengland.co.uk/" },
+    statistics: { name: "Office for National Statistics", url: "https://www.ons.gov.uk/" } },
+  AUD: { monetary: { name: "Reserve Bank of Australia", url: "https://www.rba.gov.au/" },
+    statistics: { name: "Australian Bureau of Statistics", url: "https://www.abs.gov.au/" } },
+  NZD: { monetary: { name: "Reserve Bank of New Zealand", url: "https://www.rbnz.govt.nz/" },
+    statistics: { name: "Stats NZ", url: "https://www.stats.govt.nz/" } },
+  USD: { monetary: { name: "Federal Reserve", url: "https://www.federalreserve.gov/" },
+    statistics: { name: "Bureau of Labor Statistics", url: "https://www.bls.gov/" } },
+  CAD: { monetary: { name: "Bank of Canada", url: "https://www.bankofcanada.ca/" },
+    statistics: { name: "Statistics Canada", url: "https://www.statcan.gc.ca/" } },
+  CHF: { monetary: { name: "Swiss National Bank", url: "https://www.snb.ch/en" },
+    statistics: { name: "Swiss Federal Statistical Office", url: "https://www.bfs.admin.ch/bfs/en/home.html" } },
+  JPY: { monetary: { name: "Bank of Japan", url: "https://www.boj.or.jp/en/" },
+    statistics: { name: "Statistics Bureau of Japan", url: "https://www.stat.go.jp/english/" } },
+});
 export const MAX_MACRO_VERSIONS = 8;
 export const MAX_MACRO_SOURCES = 4;
 export const MAX_MACRO_DESK_BYTES = 450_000;
