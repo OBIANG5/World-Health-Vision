@@ -28,7 +28,7 @@ type CountryPhoto = {
  * For a high-traffic product: serve a reviewable, optimized, self-hosted copy
  * with immutable digest and identical attribution; do not bulk hotlink Commons.
  */
-export const REVIEWED_COUNTRY_PHOTOS: Readonly<Partial<Record<string, CountryPhoto>>> = {
+const REVIEWED_COUNTRY_PHOTOS: Readonly<Partial<Record<string, CountryPhoto>>> = {
   GAB: {
     imageUrl: "https://commons.wikimedia.org/wiki/Special:FilePath/Libreville_bord_de_mer.jpg?width=1280",
     attributionUrl: "https://commons.wikimedia.org/wiki/File:Libreville_bord_de_mer.jpg",
