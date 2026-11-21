@@ -106,7 +106,7 @@ async function run(argv){
       shots.push({
         id:shot.id,durationFrames:shot.durationFrames,template:shot.template,
         title:shot.title,subtitle:shot.subtitle,eyebrow:shot.eyebrow,
-        titleFrameZero:shot.titleFrameZero??false,
+        titleFrameZero:shot.titleFrameZero??false,titleTreatment:shot.titleTreatment,
         footnote:shot.footnote,media,
         foreground:shot.foreground?{src:await stageFile(shot.foreground.file),credit:shot.foreground.credit}:null,
         accent:shot.accent,motion:shot.motion,
@@ -125,6 +125,11 @@ async function run(argv){
       version:1,title:project.title,script:project.script,shots,
       // Same project-supplied global frame cues in browser Player and exported MP4.
       captions:shotId?[]:(project.captions??[]),
+      wordCaptions:shotId?[]:(project.wordCaptions??[]),
+      soundCues:shotId?[]:await Promise.all((project.soundCues??[]).map(async cue=>({
+        src:await stageFile(cue.file),startFrame:cue.startFrame,
+        durationFrames:cue.durationFrames,volume:cue.volume??0.25,label:cue.label
+      }))),
       narration:project.voice?{
         src:await stageFile(project.voice.file),
         volume:project.voice.volume??1,
@@ -194,6 +199,8 @@ async function run(argv){
       duration_frames:outputFrames,canvas:{width:1080,height:1920,fps:30},
       track_voice:project.voice?.label??(project.voice?"externally_supplied":"no_narration"),
       caption_cues:review?props.captions.filter(cue=>cue.startFrame<=review.frameRange[1]&&cue.endFrame>review.frameRange[0]).length:props.captions.length,
+      word_caption_cues:review?props.wordCaptions.filter(cue=>cue.startFrame<=review.frameRange[1]&&cue.endFrame>review.frameRange[0]).length:props.wordCaptions.length,
+      sound_cues:review?props.soundCues.filter(cue=>cue.startFrame<=review.frameRange[1]&&cue.startFrame+cue.durationFrames>review.frameRange[0]).length:props.soundCues.length,
       caption_timing_source:"editor_supplied_not_auto_verified",
       media:ledger,
       actual_rendered_stills:stills,
