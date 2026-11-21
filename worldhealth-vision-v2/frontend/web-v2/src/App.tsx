@@ -139,6 +139,7 @@ function AppContent() {
   const [navDomain, setNavDomain] = useState<NavDomain>("all");
   const toolsButtonRef = useRef<HTMLButtonElement>(null);
   const closeVisionHub = useCallback(() => navigate({ kind: "home" }), [navigate]);
+  const closeTradingPanel = useCallback(() => navigate({ kind: "home" }), [navigate]);
   const closeWorldDiscovery = useCallback(() => navigate({ kind: "home" }), [navigate]);
   const [toolsAnchor, setToolsAnchor] = useState({ top: 80, left: 16 });
   const [countryAnchor, setCountryAnchor] = useState({ top: 80, left: 16 });
@@ -884,7 +885,7 @@ function AppContent() {
       )}
 
       {route.kind === "trading" && (
-        <TradingProcessPanel onClose={() => navigate({ kind: "home" })} />
+        <TradingProcessPanel onClose={closeTradingPanel} />
       )}
 
       <VisionHub open={showVisionHub} language={lang}
