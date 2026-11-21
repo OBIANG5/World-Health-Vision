@@ -51,6 +51,20 @@ test('PHOTO×DATA: reveal animates WIDTH, never fabricates changing statistics',
   assert.ok(frames.every((f,i)=>i===0||f.bars[1].width>=frames[i-1].bars[1].width));
   assert.ok(frames.every((f,i)=>i===0||f.bars[0].width>=frames[i-1].bars[0].width));
 });
+test('PHOTO×DATA: the ENTIRE data panel waits for the semantic re-hook',()=>{
+  const c=comparison();
+  for(const frame of [0,18,37,38]){
+    const pose=photoComparisonPose(c,frame);
+    assert.equal(pose.panelProgress,0);
+    assert.equal(pose.reveal,0);
+  }
+  assert.ok(photoComparisonPose(c,43).panelProgress>0);
+  assert.ok(photoComparisonPose(c,43).panelProgress<1);
+  assert.equal(photoComparisonPose(c,50).panelProgress,1);
+  assert.ok(photoComparisonPose(c,50).reveal<.1);
+  assert.equal(photoComparisonPose(c,124).panelProgress,1);
+  assert.equal(photoComparisonPose(c,124).reveal,1);
+});
 test('PHOTO×DATA: one-sided and zero values retain honest geometry',()=>{
   const c=comparison();c.domain={min:0,max:100};
   c.first.value=0;c.second.value=60;
