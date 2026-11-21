@@ -53,7 +53,7 @@ https://www.nasa.gov/nasa-brand-center/images-and-media/ ;
 
 ## 5. REPRISE EXACTE DANS UN AUTRE CHAT
 
-1. Dépôt `OBIANG5/World-Health-Vision`. Ouvrir **PR #139** (draft) / branche `feature/worldvision-media-artemis2-visual-review-without-kokoro-2026-11-21`, fille de PR #138 et #137, ne pas fusionner.
+1. Dépôt `OBIANG5/World-Health-Vision`. Ouvrir **PR #141** (draft) / branche `feature/worldvision-media-artemis2-visual-review-without-kokoro-2026-11-21`, fille de PR #138 et #137, ne pas fusionner.
 2. Lire la **TOUTE PREMIÈRE SECTION** de `CONTINUITE_WORLD_VISION.md`, ce document, `MEDIA_CREATIVE_PRIORITY_CANON_2026-11-21.md`, `MEDIA_P0_7_VIVIENNE_C52_OWNER_REVIEW_2026-11-21.md` et le commentaire PR/issue #116.
 3. Vérifier le HEAD SHA et les Actions `worldvision-media-artemis2-owner-visual-only`; inspecter les logs ET l'artefact MP4 + PNG réels ; vérifier la source `dec6af...`, la voix exclue et la présence du rapport; corriger les erreurs sur la même PR, sans prétendre à des résultats non exécutés.
 4. **NE PAS ABANDONNER la vidéo en prétendant que l'utilisateur ne l'a pas autorisée.** Il a au contraire autorisé le test pour la voir. Ne pas considérer le film sans voix comme un master.
