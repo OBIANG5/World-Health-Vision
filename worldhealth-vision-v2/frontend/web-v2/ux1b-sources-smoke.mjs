@@ -117,10 +117,10 @@ try {
     await topic.locator(".whv-country-news-expand").click();
     assert.equal(await topic.locator(".whv-country-news-source-list a").count(), 3,
       "Expanded dossier must offer original national/regional/international links");
-    const urls = await topic.locator(".whv-country-news-source-list a").evaluateAll(
+    const newsUrls = await topic.locator(".whv-country-news-source-list a").evaluateAll(
       elements => elements.map(a => a.getAttribute("href")),
     );
-    assert(urls.every(url => url?.startsWith("https://")),
+    assert(newsUrls.every(url => url?.startsWith("https://")),
       "Only HTTPS original publications may be linked");
     assert.equal(await topic.locator(".whv-country-news-research-link").getAttribute("href"),
       "?wv=radar", "Deep research navigation must work");
