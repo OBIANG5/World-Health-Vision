@@ -281,3 +281,20 @@ def test_no_redirects_no_html_no_second_source_when_archive_missing():
         GdeltStaticEventsClient(transport=_provider(handler)).fetch_latest_events()
     assert len(called) == 2
     assert all(item.startswith("https://data.gdeltproject.org/gdeltv2/") for item in called)
+
+
+def test_official_manifest_mixed_case_suffix_preserved_for_exact_provider_download():
+    raw, archive = _one()
+    rewritten = raw.replace(b".export.CSV.zip", b".export.csv.zip")
+    rewritten = rewritten.replace(b".mentions.CSV.zip", b".mentions.csv.zip")
+    rewritten = rewritten.replace(b".gkg.CSV.zip", b".gkg.csv.zip")
+    manifest = parse_manifest(rewritten, as_of=FIXED_NOW)
+    assert manifest.export().url.endswith(".export.csv.zip")
+    # Provider member casing also follows the filename announced in manifest.
+    lower_archive = _build_zip([_row()], filename=f"{SLOT}.export.csv")
+    lower_manifest = _manifest(lower_archive).replace(
+        b".export.CSV.zip", b".export.csv.zip"
+    )
+    batch = parse_event_archive(parse_manifest(lower_manifest, as_of=FIXED_NOW), lower_archive)
+    assert batch.export_md5_verified is True
+    assert batch.links[0].verification == "DISCOVERY_ONLY"
