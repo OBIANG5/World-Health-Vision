@@ -1,0 +1,64 @@
+name: WHV V2 Trading Private Client P1B1
+on:
+  push:
+    branches:
+      - product/v2-trading-private-client-p1b1-2026-11-21
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/frontend/web-v2/src/auth/researchIdentity.ts'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/trading/privateCaseApi.ts'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/components/layout/TradingPrivateWorkspace.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/src/components/layout/TradingProcessPanel.tsx'
+      - 'worldhealth-vision-v2/frontend/web-v2/scripts/test-private-case-api.mjs'
+      - 'worldhealth-vision-v2/frontend/web-v2/scripts/trading-process-browser-smoke.mjs'
+      - '.github/workflows/whv-v2-trading-private-client-p1b1.yml'
+permissions:
+  contents: read
+jobs:
+  private-client-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Reproducible dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci
+      - name: Trading domain, local multi-case and private gateway contract tests
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm run test:trading
+          npm run test:cases
+          npm run test:private-cases
+      - name: Lint all touched feature files
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx eslint src/auth/researchIdentity.ts src/trading/privateCaseApi.ts src/trading/tradeCaseLibrary.ts src/trading/tradePlan.ts src/trading/tradeResearch.ts src/components/layout/TradingCaseLibrary.tsx src/components/layout/TradingProcessPanel.tsx src/components/layout/TradingPrivateWorkspace.tsx scripts/test-private-case-api.mjs scripts/trading-process-browser-smoke.mjs
+      - name: TypeScript 6 and Vite production build
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build
+      - name: Chromium dependency
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo 'WHV_BROWSER_CHANNEL=chrome' >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Real Chromium local+cloud-disconnected UI checks at 320,390,1440
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node scripts/trading-process-browser-smoke.mjs
+      - name: Synthetic screenshots only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1b1-browser-synthetic-evidence
+          path: worldhealth-vision-v2/frontend/web-v2/trading-process-artifacts/
+          if-no-files-found: warn
