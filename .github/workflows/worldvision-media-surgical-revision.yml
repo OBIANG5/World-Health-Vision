@@ -1,0 +1,138 @@
+name: World-Vision MEDIA P0.4 — surgical revision and real AV review
+on:
+  push:
+    branches:
+      - 'feature/worldvision-media-surgical-beat-revision-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/surgical-revision*'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/revise-shot.mjs'
+      - '.github/workflows/worldvision-media-surgical-revision.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/surgical-revision*'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/revise-shot.mjs'
+      - '.github/workflows/worldvision-media-surgical-revision.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  surgical-edit-real-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing pinned Remotion toolchain
+        run: npm install --no-audit --no-fund
+      - name: Node invariants, source lock and non-regression tests
+        run: |
+          node --check creative/surgical-revision.mjs
+          node --check creative/revise-shot.mjs
+          node --test creative/surgical-revision.test.mjs creative/review-range.test.mjs creative/editorial-timeline.test.mjs
+          npm run typecheck
+      - name: Ensure FFmpeg and ffprobe exist
+        run: |
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          fi
+      - name: Create clearly synthetic technical assets and editorial patch
+        run: |
+          mkdir -p /tmp/wv-surgical/assets output/surgical
+          ffmpeg -hide_banner -nostdin -loglevel error -y -f lavfi -i "sine=frequency=550:duration=6" -ar 48000 -ac 1 /tmp/wv-surgical/assets/voice.wav
+          ffmpeg -hide_banner -nostdin -loglevel error -y -f lavfi -i "sine=frequency=160:duration=6" -ar 48000 -ac 1 /tmp/wv-surgical/assets/bed.wav
+          ffmpeg -hide_banner -nostdin -loglevel error -y -f lavfi -i "sine=frequency=400:duration=1" -ar 48000 -ac 1 /tmp/wv-surgical/assets/cue.wav
+          ffmpeg -hide_banner -nostdin -loglevel error -y -f lavfi -i "sine=frequency=900:duration=1" -ar 48000 -ac 1 /tmp/wv-surgical/assets/add.wav
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          const p=JSON.parse(fs.readFileSync('creative/project.example.json','utf8'));
+          p.voice={file:'voice.wav',label:'SYNTHETIC OSCILLATOR — NOT SPEECH',volume:.65};
+          p.music={file:'bed.wav',label:'SYNTHETIC BED — NOT MUSIC',volume:.02};
+          p.wordCaptions=[{text:'exemple',startFrame:90,endFrame:100,emphasis:false}];
+          p.soundCues=[{file:'cue.wav',startFrame:110,durationFrames:10,volume:.18,label:'SYNTHETIC SFX'}];
+          const raw=JSON.stringify(p,null,2)+'\n';
+          fs.writeFileSync('/tmp/wv-surgical/original.json',raw);
+          const patch={
+            schema_version:'worldvision-shot-revision-v1',
+            source_project_sha256:createHash('sha256').update(raw).digest('hex'),
+            shot_id:'plan-02',
+            reason:'Editor-reviewed technical re-hook: title, exact emphasis and one additional synthetic cue',
+            set:{title:'RELANCE VISUELLE TEST',motion:'push',titleTreatment:'cyan-slab'},
+            word_emphasis:[{index:0,emphasis:true}],
+            sound_volume:[{index:0,volume:.1}],
+            sound_add:[{file:'add.wav',startFrame:125,durationFrames:11,volume:.2,label:'SYNTHETIC FX ONLY'}]
+          };
+          fs.writeFileSync('/tmp/wv-surgical/patch.json',JSON.stringify(patch,null,2));
+          JS
+      - name: Revise only selected shot and create checksum review manifest
+        run: |
+          node creative/revise-shot.mjs \
+            --project /tmp/wv-surgical/original.json \
+            --patch /tmp/wv-surgical/patch.json \
+            --assets /tmp/wv-surgical/assets \
+            --output /tmp/wv-surgical/revised.json
+      - name: Render genuine source-timeline before preview
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/wv-surgical/original.json \
+            --assets /tmp/wv-surgical/assets \
+            --review-shot plan-02 \
+            --output output/surgical/before.mp4
+      - name: Render genuine source-timeline after preview
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/wv-surgical/revised.json \
+            --assets /tmp/wv-surgical/assets \
+            --review-shot plan-02 \
+            --output output/surgical/after.mp4
+      - name: Compare actual pixels and prove original narration, duration and AAC
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {getVideoMetadata} from '@remotion/renderer';
+          const read=x=>JSON.parse(fs.readFileSync(x,'utf8'));
+          const p=read('/tmp/wv-surgical/original.json');
+          const a=read('/tmp/wv-surgical/revised.json');
+          const r=read('/tmp/wv-surgical/revised.json.revision-review.json');
+          const before=read('output/surgical/before.mp4.report.json');
+          const after=read('output/surgical/after.mp4.report.json');
+          const bm=await getVideoMetadata('output/surgical/before.mp4');
+          const am=await getVideoMetadata('output/surgical/after.mp4');
+          const expected=createHash('sha256').update(p.script).digest('hex');
+          if(r.human_audio_visual_review!=='required_before_publication' ||
+             r.referenced_asset_sha256.length!==4 || r.review_frame_count!==99 ||
+             p.script!==a.script || p.voice.file!==a.voice.file ||
+             JSON.stringify(p.shots[0])!==JSON.stringify(a.shots[0]) ||
+             before.source_script_sha256!==expected || after.source_script_sha256!==expected ||
+             before.track_voice!==after.track_voice ||
+             before.source_project_duration_frames!==after.source_project_duration_frames ||
+             JSON.stringify(before.review_source_frame_range)!=='[52,150]' ||
+             JSON.stringify(after.review_source_frame_range)!=='[52,150]' ||
+             bm.width!==1080 || bm.height!==1920 || bm.codec!=='h264' ||
+             am.width!==1080 || am.height!==1920 || am.codec!=='h264' ||
+             Math.abs(bm.durationInSeconds-99/30)>.15 || Math.abs(am.durationInSeconds-99/30)>.15)
+            throw Error('Original source/timeline/H264 review contract failed');
+          const hash=f=>createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+          const first='frame-01-at-52.png',middle='frame-02-at-101.png';
+          if(hash('output/surgical/before.mp4.stills/'+first)!==
+             hash('output/surgical/after.mp4.stills/'+first))
+            throw Error('Pre-roll outside the corrected shot unexpectedly changed');
+          if(hash('output/surgical/before.mp4.stills/'+middle)===
+             hash('output/surgical/after.mp4.stills/'+middle))
+            throw Error('Target re-hook failed to change actual rendered pixels');
+          console.log('PASS: same previous beat, changed target beat, same voice and script on real 1080x1920 Remotion pixels');
+          JS
+          test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=nw=1:nk=1 output/surgical/after.mp4 | head -n1)" = "aac"
+      - name: Save internal QA comparison — not a licensed news release
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-media-p04-surgical-synthetic-comparison
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/surgical/
+          retention-days: 7
