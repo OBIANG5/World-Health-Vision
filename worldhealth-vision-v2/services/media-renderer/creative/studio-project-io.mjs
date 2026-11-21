@@ -6,6 +6,7 @@
  * The caller explicitly reconnects local assets by their original filenames.
  */
 import {captionCueIssues} from "../src/caption-timeline.mjs";
+import {photoComparisonIssues} from "../src/photo-comparison-motion.mjs";
 
 export const STUDIO_PROJECT_FORMAT="worldvision-creative-project-v1";
 const SHOT_TYPES=new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus","photo_story","data_story"]);
@@ -101,12 +102,23 @@ export function parseStudioProject(text){
     }
     if(s.photo!=null){
       if(s.template!=="photo_story")fail(label+" : pistes PHOTO incompatibles avec ce modèle.");
-      only(s.photo,["camera","subject","mask","focus","metric"],label+".photo");
+      only(s.photo,["camera","subject","mask","focus","metric","comparison"],label+".photo");
       if(s.photo.camera)only(s.photo.camera,["zoomFrom","zoomTo","panX","panY","startFrame","endFrame"],label+".photo.camera");
       if(s.photo.subject)only(s.photo.subject,["dx","dy","scale","startFrame","endFrame"],label+".photo.subject");
       if(s.photo.mask)only(s.photo.mask,["axis","startFrame","endFrame"],label+".photo.mask");
       if(s.photo.focus)only(s.photo.focus,["x","y","radius","startFrame","endFrame"],label+".photo.focus");
       if(s.photo.metric)only(s.photo.metric,["label","value","unit","precision","sourceLabel","startFrame","endFrame"],label+".photo.metric");
+      if(s.photo.comparison!==undefined){
+        if(s.photo.metric!==undefined)
+          fail(label+" : comparaison et valeur seule utilisent la même zone de texte mobile.");
+        const c=s.photo.comparison;
+        only(c,["title","first","second","domain","unit","precision","locale","source","startFrame","endFrame"],label+".photo.comparison");
+        for(const k of ["first","second"])if(c[k])only(c[k],["label","value"],label+".photo.comparison."+k);
+        if(c.domain)only(c.domain,["min","max"],label+".photo.comparison.domain");
+        if(c.source)only(c.source,["publisher","dataset","asOf","url"],label+".photo.comparison.source");
+        const errors=photoComparisonIssues(c,s.durationFrames);
+        if(errors.length)fail(label+".photo.comparison."+errors[0].field+" : "+errors[0].reason);
+      }
     }
     if(s.documentRegion!=null){
       if(s.template!=="document_focus")fail(label+" : région documentaire incompatible avec ce modèle.");
@@ -254,10 +266,18 @@ export function studioShotToEditor(s,defaults){
       subject:{...settings.subject,...photo.subject},
       mask:{...settings.mask,...photo.mask},
       focus:{...settings.focus,...photo.focus},
-      metric:{...settings.metric,...photo.metric}
+      metric:{...settings.metric,...photo.metric},
+      comparison:{
+        ...settings.comparison,...photo.comparison,
+        first:{...settings.comparison?.first,...photo.comparison?.first},
+        second:{...settings.comparison?.second,...photo.comparison?.second},
+        domain:{...settings.comparison?.domain,...photo.comparison?.domain},
+        source:{...settings.comparison?.source,...photo.comparison?.source}
+      }
     },
     photoUseSubject:Boolean(photo.subject),photoUseMask:Boolean(photo.mask),
     photoUseFocus:Boolean(photo.focus),photoUseMetric:Boolean(photo.metric),
+    photoUseComparison:Boolean(photo.comparison),
     dataMode:data.mode??defaults.dataMode,dataRaw:d,
     dataPublisher:data.source?.publisher??"",dataDataset:data.source?.dataset??"",
     dataAsOf:data.source?.asOf??"",dataUrl:data.source?.url??"",

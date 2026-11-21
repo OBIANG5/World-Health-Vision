@@ -4,6 +4,7 @@ import {parseSrtCaptions,captionCueIssues} from "../../../../services/media-rend
 import type {CaptionCue} from "../../../../services/media-renderer/src/caption-timeline.mjs";
 import {parseStudioProject,studioShotToEditor,studioAssetNames,frameCaptionsToSrt} from "../../../../services/media-renderer/creative/studio-project-io.mjs";
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
+import {photoComparisonIssues} from "../../../../services/media-renderer/src/photo-comparison-motion.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
@@ -30,13 +31,20 @@ type PhotoSettings={
   mask:NonNullable<PhotoMotion["mask"]>;
   focus:NonNullable<PhotoMotion["focus"]>;
   metric:NonNullable<PhotoMotion["metric"]>;
+  comparison:NonNullable<PhotoMotion["comparison"]>;
 };
 const initialPhotoSettings=():PhotoSettings=>({
   camera:{zoomFrom:1.05,zoomTo:1.13,panX:18,panY:-14,startFrame:0,endFrame:132},
   subject:{dx:-12,dy:-17,scale:.055,startFrame:12,endFrame:125},
   mask:{axis:"horizontal",startFrame:18,endFrame:68},
   focus:{x:.5,y:.48,radius:83,startFrame:48,endFrame:91},
-  metric:{label:"",value:0,unit:"",precision:0,sourceLabel:"",startFrame:71,endFrame:122}
+  metric:{label:"",value:0,unit:"",precision:0,sourceLabel:"",startFrame:71,endFrame:122},
+  comparison:{
+    title:"",first:{label:"",value:0},second:{label:"",value:0},
+    domain:{min:0,max:1},unit:"",precision:0,locale:"fr-FR",
+    source:{publisher:"",dataset:"",asOf:""},
+    startFrame:40,endFrame:130
+  }
 });
 
 type Shot = {
@@ -54,7 +62,7 @@ type Shot = {
   geoShowTarget:boolean;geoTargetLon:number;geoTargetLat:number;geoTargetLabel:string;
   geoShowRoute:boolean;geoFromLon:number;geoFromLat:number;
   geoShowMetric:boolean;geoMetricLabel:string;geoMetricValue:string;geoMetricUnit:string;
-  photoSettings:PhotoSettings;photoUseSubject:boolean;photoUseMask:boolean;photoUseFocus:boolean;photoUseMetric:boolean;
+  photoSettings:PhotoSettings;photoUseSubject:boolean;photoUseMask:boolean;photoUseFocus:boolean;photoUseMetric:boolean;photoUseComparison:boolean;
   dataMode:DataDirection["mode"];dataRaw:string;dataPublisher:string;dataDataset:string;dataAsOf:string;
   dataUrl:string;dataUnit:string;dataPrecision:number;dataLocale:"fr-FR"|"en-US";dataMin:string;dataMax:string;
 };
@@ -88,7 +96,7 @@ const initialShot=():Shot=>({
   geoShowTarget:false,geoTargetLon:0,geoTargetLat:0,geoTargetLabel:"",
   geoShowRoute:false,geoFromLon:0,geoFromLat:0,
   geoShowMetric:false,geoMetricLabel:"",geoMetricValue:"",geoMetricUnit:"",
-  photoSettings:initialPhotoSettings(),photoUseSubject:false,photoUseMask:true,photoUseFocus:false,photoUseMetric:false,
+  photoSettings:initialPhotoSettings(),photoUseSubject:false,photoUseMask:true,photoUseFocus:false,photoUseMetric:false,photoUseComparison:false,
   dataMode:"line",dataRaw:"",dataPublisher:"",dataDataset:"",dataAsOf:"",dataUrl:"",
   dataUnit:"",dataPrecision:0,dataLocale:"fr-FR",dataMin:"",dataMax:""
 });
@@ -121,7 +129,8 @@ const buildPhoto=(shot:Shot):PhotoMotion=>({
   ...(shot.photoUseSubject?{subject:shot.photoSettings.subject}:{}),
   ...(shot.photoUseMask?{mask:shot.photoSettings.mask}:{}),
   ...(shot.photoUseFocus?{focus:shot.photoSettings.focus}:{}),
-  ...(shot.photoUseMetric?{metric:shot.photoSettings.metric}:{})
+  ...(shot.photoUseMetric?{metric:shot.photoSettings.metric}:{}),
+  ...(shot.photoUseComparison?{comparison:shot.photoSettings.comparison}:{})
 });
 const validPhoto=(s:Shot)=>{
   if(s.template!=="photo_story")return true;
@@ -144,6 +153,8 @@ const validPhoto=(s:Shot)=>{
       ["horizontal","vertical"].includes(s.photoSettings.mask.axis)))&&
     (!s.photoUseFocus||(beats(f,20)&&within(f.x,.07,.93)&&within(f.y,.09,.76)&&
       within(f.radius,35,190)))&&
+    (!s.photoUseComparison||(!s.photoUseMetric&&
+      photoComparisonIssues(s.photoSettings.comparison,s.durationFrames).length===0))&&
     (!s.photoUseMetric||(beats(m,25)&&m.label.trim()&&m.label.length<=55&&
       Number.isFinite(m.value)&&Math.abs(m.value)<=1e12&&
       m.unit.length<=12&&m.sourceLabel.trim()&&m.sourceLabel.length<=85&&
@@ -437,6 +448,7 @@ export default function CinematicProductionBoard() {
   };
   const updateShot=(change:Partial<Shot>)=>setShots(old=>old.map(s=>s.id===selectedId?{...s,...change}:s));
   const updatePhotoTrack=(key:keyof PhotoSettings,change:Record<string,unknown>)=>updateShot({photoSettings:{...active.photoSettings,[key]:{...active.photoSettings[key],...change}}});
+  const updatePhotoComparison=(change:Partial<NonNullable<PhotoMotion["comparison"]>>)=>updatePhotoTrack("comparison",change);
   const addShot=()=>{
     const existing=new Set(shots.map(x=>x.id));
     let n=shots.length+1;let id="plan-"+String(n).padStart(2,"0");
@@ -676,7 +688,7 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updatePhotoTrack("focus",{endFrame:Math.round(Number(e.target.value)*30)})}/></label>
             </div>}
             <label className="wvc-geo-toggle"><input type="checkbox" checked={active.photoUseMetric}
-              onChange={e=>updateShot({photoUseMetric:e.target.checked})}/>Chiffre animé et ATTRIBUTION obligatoire</label>
+              onChange={e=>updateShot({photoUseMetric:e.target.checked,photoUseComparison:e.target.checked?false:active.photoUseComparison})}/>Chiffre animé et ATTRIBUTION obligatoire</label>
             {active.photoUseMetric&&<div className="wvc-two-col">
               <label>INTITULÉ <input maxLength={55} value={active.photoSettings.metric.label}
                 onChange={e=>updatePhotoTrack("metric",{label:e.target.value})}/></label>
@@ -690,6 +702,48 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updatePhotoTrack("metric",{startFrame:Math.round(Number(e.target.value)*30)})}/></label>
               <label>FIN (s) <input type="number" step=".1" value={active.photoSettings.metric.endFrame/30}
                 onChange={e=>updatePhotoTrack("metric",{endFrame:Math.round(Number(e.target.value)*30)})}/></label>
+            </div>}
+            <label className="wvc-geo-toggle"><input type="checkbox" checked={active.photoUseComparison}
+              onChange={e=>updateShot({photoUseComparison:e.target.checked,photoUseMetric:e.target.checked?false:active.photoUseMetric})}/>
+              PHOTO + COMPARAISON DATA ANIMÉE EN MÊME TEMPS (valeurs et source obligatoires)</label>
+            {active.photoUseComparison&&<div className="wvc-two-col">
+              <label>TITRE DE COMPARAISON <input maxLength={65}
+                value={active.photoSettings.comparison.title}
+                onChange={e=>updatePhotoComparison({title:e.target.value})}/></label>
+              <label>UNITÉ <input maxLength={12} value={active.photoSettings.comparison.unit}
+                onChange={e=>updatePhotoComparison({unit:e.target.value})}/></label>
+              <label>PREMIÈRE CATÉGORIE <input maxLength={30} value={active.photoSettings.comparison.first.label}
+                onChange={e=>updatePhotoComparison({first:{...active.photoSettings.comparison.first,label:e.target.value}})}/></label>
+              <label>PREMIÈRE VALEUR <input type="number" value={active.photoSettings.comparison.first.value}
+                onChange={e=>updatePhotoComparison({first:{...active.photoSettings.comparison.first,value:Number(e.target.value)}})}/></label>
+              <label>DEUXIÈME CATÉGORIE <input maxLength={30} value={active.photoSettings.comparison.second.label}
+                onChange={e=>updatePhotoComparison({second:{...active.photoSettings.comparison.second,label:e.target.value}})}/></label>
+              <label>DEUXIÈME VALEUR <input type="number" value={active.photoSettings.comparison.second.value}
+                onChange={e=>updatePhotoComparison({second:{...active.photoSettings.comparison.second,value:Number(e.target.value)}})}/></label>
+              <label>ÉCHELLE MINIMUM (DOIT INCLURE 0) <input type="number"
+                value={active.photoSettings.comparison.domain.min}
+                onChange={e=>updatePhotoComparison({domain:{...active.photoSettings.comparison.domain,min:Number(e.target.value)}})}/></label>
+              <label>ÉCHELLE MAXIMUM (DOIT INCLURE 0) <input type="number"
+                value={active.photoSettings.comparison.domain.max}
+                onChange={e=>updatePhotoComparison({domain:{...active.photoSettings.comparison.domain,max:Number(e.target.value)}})}/></label>
+              <label>ÉDITEUR / INSTITUTION SOURCE <input maxLength={80} value={active.photoSettings.comparison.source.publisher}
+                onChange={e=>updatePhotoComparison({source:{...active.photoSettings.comparison.source,publisher:e.target.value}})}/></label>
+              <label>JEU DE DONNÉES / PUBLICATION <input maxLength={120} value={active.photoSettings.comparison.source.dataset}
+                onChange={e=>updatePhotoComparison({source:{...active.photoSettings.comparison.source,dataset:e.target.value}})}/></label>
+              <label>DATE DE SOURCE (AAAA-MM-JJ) <input type="date" value={active.photoSettings.comparison.source.asOf}
+                onChange={e=>updatePhotoComparison({source:{...active.photoSettings.comparison.source,asOf:e.target.value}})}/></label>
+              <label>URL SOURCE HTTPS (FACULTATIF) <input type="url" value={active.photoSettings.comparison.source.url??""}
+                onChange={e=>updatePhotoComparison({source:{
+                  ...active.photoSettings.comparison.source,
+                  ...(e.target.value?{url:e.target.value}:{url:undefined})
+                }})}/></label>
+              <label>ENTRÉE DE LA COMPARAISON (s) <input type="number" step=".1" min="0"
+                value={active.photoSettings.comparison.startFrame/30}
+                onChange={e=>updatePhotoComparison({startFrame:Math.round(Number(e.target.value)*30)})}/></label>
+              <label>FIN DE RÉVÉLATION DES BARRES (s) <input type="number" step=".1" min="0"
+                value={active.photoSettings.comparison.endFrame/30}
+                onChange={e=>updatePhotoComparison({endFrame:Math.round(Number(e.target.value)*30)})}/></label>
+              <span className="wvc-hint">Les valeurs restent exactes pendant toute l'animation : seule la longueur des barres se dévoile. Les négatifs partent vers la gauche du zéro, les positifs vers la droite. La date, les catégories et l'échelle ne sont jamais inventées.</span>
             </div>}
             <p className="wvc-hint">Ces réglages sont des pistes de montage, pas une preuve des faits. Le masque et le focus utilisent les pixels de l'image importée. Vérifie cadrage et sujet après mouvement ; seuls les assets aux droits connus peuvent être diffusés.</p>
           </div>}
