@@ -64,6 +64,33 @@ try {
     });
     await page.goto(origin + "/?wv=radar", { waitUntil: "domcontentloaded" });
     await page.locator(".radar-dialog").waitFor({ state: "visible" });
+    const editorial = page.locator(".radar-case");
+    assert((await editorial.innerText()).includes("Gabon et FMI"),
+      "Actual dated AGP/IMF/EcoMatin research dossier must be reachable");
+    await editorial.locator(".radar-case-toggle").click();
+    const sourceCards = editorial.locator(".radar-case-source-grid .radar-case-source");
+    assert.equal(await sourceCards.count(), 3,
+      "Real Gabon national/IMF primary/Central Africa regional articles required");
+    const originalHosts = await editorial.locator(".radar-case-source-grid a[href]")
+      .evaluateAll(links => links.map(a => new URL(a.href).hostname));
+    assert.deepEqual(originalHosts, ["agpgabon.ga", "www.imf.org", "ecomatin.net"]);
+    assert((await editorial.innerText()).includes("Ces documents ne suffisent pas"),
+      "Do not claim government aspirations are an IMF-approved programme");
+    assert((await editorial.innerText()).includes("extraits publics indexés"),
+      "Unfetched original text must NOT be called independently verified");
+    await sourceCards.nth(0).getByRole("button", { name: "Confronter" }).click();
+    assert.equal(await editorial.locator(".radar-case-comparison").count(), 0,
+      "A single original document never corroborates itself");
+    await sourceCards.nth(1).getByRole("button", { name: "Confronter" }).click();
+    const editorialCompare = editorial.locator(".radar-case-comparison");
+    await editorialCompare.waitFor();
+    assert.equal(await editorialCompare.locator(".radar-case-source").count(), 2);
+    assert((await editorialCompare.innerText()).includes("ne prouvent"),
+      "Two different time periods must not become an automatic agreement");
+    await editorial.locator(".radar-case-toggle").click();
+    assert.equal(await editorial.locator(".radar-case-comparison").count(), 0,
+      "Research dossier collapse must actually hide the comparison UI");
+
     await page.locator(".radar-archive-grid .radar-archive-candidate").first().waitFor({
       state: "visible", timeout: 18000,
     });
