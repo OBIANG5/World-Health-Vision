@@ -2,7 +2,7 @@ name: WHV V2 Trading MTA process
 on:
   push:
     branches:
-      - product/v2-trading-mta-datanalyse-process-v1-2026-11-21
+      - 'product/v2-trading-mta-*'
   pull_request:
     paths:
       - 'worldhealth-vision-v2/frontend/web-v2/**'
@@ -26,11 +26,14 @@ jobs:
       - name: Seven-stage trading process domain tests
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: npm run test:trading
+      - name: Multi-dossier library and import model tests
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run test:cases
       # The full inherited frontend has 28 pre-existing lint errors, tracked
       # outside this feature. New code is never exempted from its lint gate.
       - name: Lint touched TypeScript and JavaScript
         working-directory: worldhealth-vision-v2/frontend/web-v2
-        run: npx eslint src/trading/tradePlan.ts src/trading/tradeResearch.ts src/components/layout/TradingProcessPanel.tsx src/components/layout/TradingResearchPanel.tsx src/product/visionProducts.ts src/navigation/worldRoute.ts src/App.tsx scripts/test-trade-plan.mjs scripts/trading-process-browser-smoke.mjs
+        run: npx eslint src/trading/tradePlan.ts src/trading/tradeResearch.ts src/trading/tradeCaseLibrary.ts src/components/layout/TradingProcessPanel.tsx src/components/layout/TradingResearchPanel.tsx src/components/layout/TradingCaseLibrary.tsx src/product/visionProducts.ts src/navigation/worldRoute.ts src/App.tsx scripts/test-trade-plan.mjs scripts/test-trade-library.mjs scripts/trading-process-browser-smoke.mjs
       - name: Typescript and Vite build
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: npm run build
