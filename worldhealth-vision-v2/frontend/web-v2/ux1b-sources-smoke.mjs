@@ -76,6 +76,51 @@ try {
     // archival fixture. This is a catalog comparison, NOT three live feeds.
     await page.goto(origin + "/?wv=country&iso3=GAB", { waitUntil: "domcontentloaded" });
     await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 15000 });
+    // COUNTRY-LIVE U1 is a REAL feature on this same compiled country sheet,
+    // not a screenshot-only redesign or a synthetic dynamic news feed.
+    const story = page.locator(".whv-country-story");
+    await story.waitFor({ state: "visible", timeout: 15000 });
+    assert((await story.locator("h2").innerText()).includes("Gabon"),
+      "Country identity must be visible before data widgets");
+    const picture = story.locator("img.whv-country-story-photo");
+    // The Commons CDN may be unreachable from CI; verify license metadata and
+    // graceful visual fallback separately, not an arbitrary external response.
+    if (await picture.count()) {
+      assert((await picture.getAttribute("src")).includes("Libreville_bord_de_mer"),
+        "Only a reviewed Gabon photograph may represent GAB");
+      assert((await story.locator(".whv-country-story-credit").innerText()).includes("Shirmy25"),
+        "Photographer attribution must remain visible");
+      const licenseUrl = await story.locator('a[href*="creativecommons.org/licenses/by-sa/4.0"]').getAttribute("href");
+      assert(licenseUrl?.startsWith("https://"), "Photo license link is required");
+    } else {
+      assert(await story.locator(".whv-country-story-no-photo").isVisible(),
+        "No image must fail visibly without showing unrelated scenery");
+    }
+    const topic = page.locator(".whv-country-now-feature");
+    await topic.waitFor({ state: "visible" });
+    assert((await topic.locator("h4").innerText()).includes("FMI"),
+      "Real dated Gabon editorial dossier must be reachable from country sheet");
+    assert.equal(await topic.locator(".whv-country-now-sources a").count(), 3,
+      "National, international and regional original links must stay visible");
+    const newsLinks = await topic.locator(".whv-country-now-sources a").evaluateAll(
+      nodes => nodes.map(a => a.getAttribute("href")),
+    );
+    assert(newsLinks.every(h => h?.startsWith("https://")),
+      "News sources must go to original HTTPS publishers");
+    assert((await topic.locator(".whv-country-now-caution").innerText()).includes("pas un fil d'actualité en direct"),
+      "A dated dossier may not masquerade as live news");
+    assert.equal(await topic.locator(".whv-country-now-deep-link").getAttribute("href"), "?wv=radar",
+      "One click must lead from country to existing research dossier");
+    const storyBounds = await story.evaluate(node => ({
+      inner: node.clientWidth, actual: node.scrollWidth,
+    }));
+    assert(storyBounds.actual <= storyBounds.inner + 3,
+      device.name + " country story horizontal overflow: " + JSON.stringify(storyBounds));
+    await page.screenshot({
+      path: "ux1b-artifacts/" + device.name + "-country-editorial-top.png",
+      fullPage: false,
+    });
+
     const evidence = page.locator(".whv-national-evidence");
     await evidence.waitFor({ state: "attached", timeout: 12000 });
     await page.locator(".whv-national-evidence-source").first().waitFor({ state: "attached", timeout: 15000 });
