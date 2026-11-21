@@ -74,7 +74,7 @@ export const EDITORIAL_GABON_IMF_CASE: EditorialSourceCase = {
       outlet: "FMI — Fonds monétaire international",
       role: "international_primary",
       publishedDay: "2026-09-26",
-      originalUrl: "https://www.imf.org/fr/news/articles/2026/09/26/pr2305-imf-staff-concludes-visit-to-gabon",
+      originalUrl: "https://www.imf.org/en/news/articles/2026/09/26/pr2305-imf-staff-concludes-visit-to-gabon",
       dependence: "ORIGINAL_INSTITUTION",
       summary: {
         fr: "Le FMI décrit une mission de discussions techniques sur les finances publiques et la dette, avec des échanges appelés à se poursuivre afin de préparer d'éventuelles discussions de programme.",
