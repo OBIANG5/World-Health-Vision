@@ -8,6 +8,8 @@ import {
   type RouteMode, type StageField, type TradePlan,
 } from "../../trading/tradePlan";
 import TradingResearchPanel from "./TradingResearchPanel";
+import TradingMacroDesk from "./TradingMacroDesk";
+import { newResearchFromMacroPair } from "../../trading/fxMacroDesk";
 import TradingCaseLibrary from "./TradingCaseLibrary";
 import TradingPrivateWorkspace from "./TradingPrivateWorkspace";
 import { researchIdentityNotConfigured } from "../../auth/researchIdentity";
@@ -64,6 +66,7 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
   const [stepIndex, setStepIndex] = useState(0);
   const [showEvidence, setShowEvidence] = useState(false);
   const [showResearch, setShowResearch] = useState(false);
+  const [showMacroDesk, setShowMacroDesk] = useState(false);
   const [evidenceDraft, setEvidenceDraft] = useState<Evidence>(emptyEvidence);
   const [feedback, setFeedback] = useState("");
   // Opening a remote dossier detaches any local file association and vice versa.
@@ -172,23 +175,46 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
           <nav className="tvp-stages" aria-label={copy(lang, "Étapes du processus", "Process stages")}>
             {STAGES.map((item, index) => {
               const isComplete = stageMissing(plan, item).length === 0;
-              return <button type="button" key={item.id} className={"tvp-stage" + (stepIndex === index && !showEvidence && !showResearch ? " active" : "")}
-                aria-current={stepIndex === index && !showEvidence && !showResearch ? "step" : undefined} onClick={() => { setStepIndex(index); setShowEvidence(false); setShowResearch(false); }}>
+              return <button type="button" key={item.id} className={"tvp-stage" + (stepIndex === index && !showEvidence && !showResearch && !showMacroDesk ? " active" : "")}
+                aria-current={stepIndex === index && !showEvidence && !showResearch && !showMacroDesk ? "step" : undefined} onClick={() => { setStepIndex(index); setShowEvidence(false); setShowResearch(false); setShowMacroDesk(false); }}>
                 <span aria-hidden="true">{isComplete ? "✓" : String(index + 1).padStart(2, "0")}</span>
                 <strong>{item.title[lang].split(" · ")[1]}</strong>
               </button>;
             })}
             <button type="button" className={"tvp-stage" + (showEvidence ? " active" : "")}
-              onClick={() => { setShowEvidence(true); setShowResearch(false); }}>
+              onClick={() => { setShowEvidence(true); setShowResearch(false); setShowMacroDesk(false); }}>
               <span aria-hidden="true">◎</span><strong>{copy(lang, "Registre des preuves", "Evidence registry")}</strong>
             </button>
             <button type="button" className={"tvp-stage" + (showResearch ? " active" : "")}
-              onClick={() => { setShowResearch(true); setShowEvidence(false); }}>
+              onClick={() => { setShowResearch(true); setShowEvidence(false); setShowMacroDesk(false); }}>
               <span aria-hidden="true">↻</span><strong>{copy(lang, "Suivi et annonces", "Thesis & events")}</strong>
+            </button>
+            <button type="button" className={"tvp-stage" + (showMacroDesk ? " active" : "")}
+              onClick={() => { setShowMacroDesk(true); setShowEvidence(false); setShowResearch(false); }}>
+              <span aria-hidden="true">28</span><strong>{copy(lang, "Macro Desk · 8 devises", "FX Macro Desk · 8 currencies")}</strong>
             </button>
           </nav>
           <main className="tvp-main">
-            {showResearch ? (
+            {showMacroDesk ? (
+              <TradingMacroDesk onStartPair={(pair, desk) => {
+                const newPlan = newResearchFromMacroPair(desk, pair);
+                if (!newPlan) return;
+                // No previous local case ID or private ETag survives this action.
+                setPlan(newPlan);
+                setStepIndex(0);
+                setShowEvidence(false);
+                setShowResearch(false);
+                setShowMacroDesk(false);
+                setEvidenceDraft(emptyEvidence());
+                setLocalReset((previous) => previous + 1);
+                setRemoteReset((previous) => previous + 1);
+                setFeedback(copy(lang,
+                  "NOUVEAU dossier non sauvegardé : recherches utilisateur copiées pour " + pair.symbol +
+                    ". Le sens, les niveaux, les conditions et toute exécution restent à décider.",
+                  "NEW unsaved dossier: user-authored evidence copied for " + pair.symbol +
+                    ". Direction, levels, conditions and any execution remain undecided."));
+              }} />
+            ) : showResearch ? (
               <TradingResearchPanel plan={plan} onChange={setPlan}/>
             ) : showEvidence ? (
               <>
@@ -296,6 +322,7 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
             setStepIndex(0);
             setShowEvidence(false);
             setShowResearch(false);
+            setShowMacroDesk(false);
             setEvidenceDraft(emptyEvidence());
             setFeedback("");
             setRemoteReset((previous) => previous + 1);
@@ -309,6 +336,7 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
               setStepIndex(0);
               setShowEvidence(false);
               setShowResearch(false);
+              setShowMacroDesk(false);
               setEvidenceDraft(emptyEvidence());
               setFeedback("");
               setLocalReset((previous) => previous + 1);
