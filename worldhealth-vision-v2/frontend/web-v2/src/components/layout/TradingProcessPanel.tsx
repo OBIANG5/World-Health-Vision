@@ -7,6 +7,7 @@ import {
   type Direction, type Evidence, type EvidencePerspective, type EvidenceStance,
   type RouteMode, type StageField, type TradePlan,
 } from "../../trading/tradePlan";
+import TradingResearchPanel from "./TradingResearchPanel";
 import "../../styles/trading-process.css";
 
 const STORAGE_KEY = "world-vision:trading-mta-process:v1";
@@ -60,6 +61,7 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
   const [plan, setPlan] = useState<TradePlan>(newTradePlan);
   const [stepIndex, setStepIndex] = useState(0);
   const [showEvidence, setShowEvidence] = useState(false);
+  const [showResearch, setShowResearch] = useState(false);
   const [evidenceDraft, setEvidenceDraft] = useState<Evidence>(emptyEvidence);
   const [feedback, setFeedback] = useState("");
   const dialog = useRef<HTMLElement>(null);
@@ -201,19 +203,25 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
           <nav className="tvp-stages" aria-label={copy(lang, "Étapes du processus", "Process stages")}>
             {STAGES.map((item, index) => {
               const isComplete = stageMissing(plan, item).length === 0;
-              return <button type="button" key={item.id} className={"tvp-stage" + (stepIndex === index && !showEvidence ? " active" : "")}
-                aria-current={stepIndex === index && !showEvidence ? "step" : undefined} onClick={() => { setStepIndex(index); setShowEvidence(false); }}>
+              return <button type="button" key={item.id} className={"tvp-stage" + (stepIndex === index && !showEvidence && !showResearch ? " active" : "")}
+                aria-current={stepIndex === index && !showEvidence && !showResearch ? "step" : undefined} onClick={() => { setStepIndex(index); setShowEvidence(false); setShowResearch(false); }}>
                 <span aria-hidden="true">{isComplete ? "✓" : String(index + 1).padStart(2, "0")}</span>
                 <strong>{item.title[lang].split(" · ")[1]}</strong>
               </button>;
             })}
             <button type="button" className={"tvp-stage" + (showEvidence ? " active" : "")}
-              onClick={() => setShowEvidence(true)}>
+              onClick={() => { setShowEvidence(true); setShowResearch(false); }}>
               <span aria-hidden="true">◎</span><strong>{copy(lang, "Registre des preuves", "Evidence registry")}</strong>
+            </button>
+            <button type="button" className={"tvp-stage" + (showResearch ? " active" : "")}
+              onClick={() => { setShowResearch(true); setShowEvidence(false); }}>
+              <span aria-hidden="true">↻</span><strong>{copy(lang, "Suivi et annonces", "Thesis & events")}</strong>
             </button>
           </nav>
           <main className="tvp-main">
-            {showEvidence ? (
+            {showResearch ? (
+              <TradingResearchPanel plan={plan} onChange={setPlan}/>
+            ) : showEvidence ? (
               <>
                 <div className="tvp-section-title">
                   <small>{copy(lang, "SOURCES ET POINTS DE VUE", "SOURCES AND PERSPECTIVES")}</small>
@@ -321,7 +329,7 @@ export default function TradingProcessPanel({ onClose }: { onClose: () => void }
             <button type="button" onClick={eraseLocal}>{copy(lang, "Effacer l'enregistrement", "Erase saved draft")}</button>
             <button type="button" onClick={() => {
               if (window.confirm(copy(lang, "Réinitialiser le dossier non enregistré ?", "Reset unsaved dossier?"))) {
-                setPlan(newTradePlan()); setStepIndex(0); setShowEvidence(false);
+                setPlan(newTradePlan()); setStepIndex(0); setShowEvidence(false); setShowResearch(false);
               }
             }}>{copy(lang, "Nouveau dossier", "New dossier")}</button>
           </div>
