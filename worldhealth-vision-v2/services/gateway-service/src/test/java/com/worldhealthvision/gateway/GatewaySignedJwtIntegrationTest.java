@@ -95,7 +95,7 @@ class GatewaySignedJwtIntegrationTest {
             research.createContext("/api/trading/cases", exchange -> {
                 researchForwarded.incrementAndGet();
                 lastResearchAuth = exchange.getRequestHeaders().getFirst("Authorization");
-                json(exchange, "{\\"privateResearch\\":true}");
+                json(exchange, "{}");
             });
             research.start();
         }
