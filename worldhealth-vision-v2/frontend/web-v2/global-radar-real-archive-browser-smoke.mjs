@@ -1,0 +1,140 @@
+/**
+ * R2B browser acceptance: actual built World-Vision V2 React + static /radar/
+ * snapshot. Follows identical path with SYNTHETIC fixture or REAL GDELT batch
+ * (WHV_RADAR_REAL=1); never claims any publisher's news was fact-checked.
+ */
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { readFileSync, mkdirSync } from "node:fs";
+import { chromium } from "playwright";
+import { join } from "node:path";
+
+const dir = process.env.WHV_PREVIEW_DIRECTORY ?? "dist";
+const fixture = JSON.parse(readFileSync(join(dir, "radar", "global-latest.json"), "utf8"));
+const real = process.env.WHV_RADAR_REAL === "1";
+assert.equal(fixture.sourceDataset, "GDELT_2_EVENTS_EXPORT");
+assert.equal(fixture.providerAttribution, "Data: The GDELT Project — https://www.gdeltproject.org/");
+assert.equal(fixture.publisherTextPresent, false);
+assert.equal(fixture.eventFactsVerified, false);
+assert.equal(fixture.originalPublisherArticleRights, "NOT_REVIEWED_NO_ARTICLE_TEXT_COPIED");
+assert.equal(fixture.stats.selectedForPreview, fixture.candidates.length);
+assert(fixture.candidates.length >= 2);
+if (real) {
+  assert.notEqual(fixture.sourceManifestSha256, "a".repeat(64),
+    "Real-provider browser mode must never consume synthetic fixture");
+  assert.notEqual(fixture.sourceArchiveSha256, "b".repeat(64),
+    "Real-provider browser mode must never consume synthetic fixture");
+  assert(fixture.stats.codedRows >= fixture.candidates.length);
+  assert(fixture.stats.distinctOriginalUrlsFound >= fixture.candidates.length);
+}
+const port = 5253, origin = "http://127.0.0.1:" + port;
+const server = spawn("python3", ["-m", "http.server", String(port), "--bind", "127.0.0.1",
+  "--directory", dir], { stdio: "ignore" });
+mkdirSync("global-radar-r2b-artifacts", { recursive: true });
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+let browser;
+try {
+  let ok = false;
+  for (let i = 0; i < 60; i++) {
+    try { ok = (await fetch(origin + "/index.html")).ok; if (ok) break; }
+    catch { /* wait for preview server */ }
+    await delay(250);
+  }
+  assert(ok, "Built real World-Vision V2 cannot be served");
+  browser = await chromium.launch({
+    headless: true, args: ["--no-sandbox"],
+    ...(process.env.WHV_BROWSER_CHANNEL ? { channel: process.env.WHV_BROWSER_CHANNEL } : {}),
+  });
+
+  for (const device of [
+    { name: "320px", width: 320, height: 700, mobile: true },
+    { name: "390px", width: 390, height: 844, mobile: true },
+    { name: "1440px", width: 1440, height: 900, mobile: false },
+  ]) {
+    const page = await browser.newPage({
+      viewport: { width: device.width, height: device.height },
+      isMobile: device.mobile, hasTouch: device.mobile, deviceScaleFactor: 1,
+    });
+    const pageErrors = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    let upstreamCalls = 0, staticCalls = 0;
+    page.on("request", (req) => {
+      if (req.url().includes("gdeltproject.org/api/v2/")) upstreamCalls++;
+      if (req.url().endsWith("/radar/global-latest.json")) staticCalls++;
+    });
+    await page.goto(origin + "/?wv=radar", { waitUntil: "domcontentloaded" });
+    await page.locator(".radar-dialog").waitFor({ state: "visible" });
+    await page.locator(".radar-archive-grid .radar-archive-candidate").first().waitFor({
+      state: "visible", timeout: 18000,
+    });
+    assert.equal(upstreamCalls, 0, "Opening static archive must NOT issue costly DOC API query");
+    assert.equal(staticCalls, 1, "One explicit same-origin asset load per panel mount");
+    const archive = page.locator(".radar-archive");
+    assert((await archive.innerText()).includes("Pas du direct"),
+      "Real batch must never imply a live publisher news service");
+    assert((await archive.innerText()).includes("Les « événements » sont des codes automatiques"),
+      "Must disclose machine-coded signal rather than confirmed event");
+    assert((await archive.innerText()).includes("GDELT Project"),
+      "Mandatory official GDELT credit must be visible");
+    assert((await archive.innerText()).includes("droits des ARTICLES"),
+      "Publisher rights must be separated from GDELT data terms");
+    const cards = page.locator(".radar-archive-grid .radar-archive-candidate");
+    assert((await cards.count()) >= 2);
+    const links = await archive.locator(".radar-archive-candidate .radar-original").evaluateAll(
+      anchors => anchors.map(a => ({
+        url: a.href, target: a.getAttribute("target"), rel: a.getAttribute("rel"),
+      })),
+    );
+    assert(links.length >= 2);
+    assert(links.every(a => a.url.startsWith("https://") &&
+      a.target === "_blank" && a.rel.includes("noopener") && a.rel.includes("noreferrer")));
+    assert.equal(await archive.locator("img, iframe, script").count(), 0,
+      "Publisher text/HTML/images must never be embedded");
+
+    await cards.nth(0).getByRole("button", { name: "Confronter" }).click();
+    assert.equal(await archive.locator(".radar-archive-comparison").count(), 0,
+      "One URL is never a corroborated report");
+    await cards.nth(1).getByRole("button", { name: "Confronter" }).click();
+    const comparison = archive.locator(".radar-archive-comparison");
+    await comparison.waitFor();
+    assert.equal(await comparison.locator(".radar-archive-candidate").count(), 2);
+    assert((await comparison.innerText()).includes("NON VÉRIFIÉES") ||
+      (await comparison.innerText()).includes("Aucune corroboration"),
+      "No automatic verification or agreement may be suggested");
+    assert(await cards.nth(2).getByRole("button", { name: "Confronter" }).isDisabled().catch(() => true),
+      "A third selection must not silently override the visitor's choice");
+
+    const toolbar = archive.locator(".radar-archive-toolbar input");
+    await toolbar.fill(fixture.candidates[0].outletDomainFromUrl);
+    assert((await archive.locator(".radar-archive-grid .radar-archive-candidate").count()) >= 1);
+    assert.equal(await archive.locator(".radar-archive-comparison").count(), 0,
+      "Changing source filter invalidates chosen perspective comparison");
+    await toolbar.fill("nonexistent-publisher-do-not-match.invalid");
+    assert((await archive.innerText()).includes("Aucun lien correspondant"),
+      "No matching URL does NOT mean no events occurred");
+    await toolbar.fill("");
+
+    for (const selector of [".radar-dialog", ".radar-content", ".radar-archive"]) {
+      const width = await page.locator(selector).evaluate(el => ({
+        client: el.clientWidth, scroll: el.scrollWidth,
+      }));
+      assert(width.scroll <= width.client + 3,
+        device.name + " overflow: " + selector + JSON.stringify(width));
+    }
+
+    await page.screenshot({
+      path: "global-radar-r2b-artifacts/" + device.name + (real ? "-real-gdelt-" : "-synthetic-") +
+        "source-archive.png",
+    });
+    assert.deepEqual(pageErrors, [], "React runtime errors: " + pageErrors.join("; "));
+    await page.keyboard.press("Escape");
+    assert.equal(new URL(page.url()).searchParams.get("wv"), null);
+    assert.equal(await page.locator(".radar-dialog").count(), 0);
+    console.log("PASS R2B " + device.name + " " + (real ? "REAL_PROVIDER" : "SYNTHETIC_FIXTURE") +
+      ": actual V2 browser, batch attribution, no DOC auto call, choice/filter, real URL links and no overflow");
+    await page.close();
+  }
+} finally {
+  await browser?.close();
+  server.kill("SIGTERM");
+}
