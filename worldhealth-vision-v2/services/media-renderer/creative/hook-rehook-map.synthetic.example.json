@@ -1,0 +1,181 @@
+{
+  "schema_version": "worldvision-creative-project-v1",
+  "id": "wv-hooks-sound-geo-technical",
+  "title": "World-Vision — essai créatif, aucun sujet d'actualité",
+  "script": "VOIR LE MONDE. COMPRENDRE L'IDÉE. UN PAYS. UNE CARTE. PUIS RÉVÉLER L'ESSENTIEL.",
+  "aspect_ratio": "9:16",
+  "fps": 30,
+  "brandMark": "worldvision",
+  "style": {
+    "background": "#031121",
+    "ink": "#f7fdff",
+    "accent": "#03eee9"
+  },
+  "shots": [
+    {
+      "id": "hook-cyan-title",
+      "durationFrames": 120,
+      "template": "kinetic",
+      "title": "LE MONDE\nEN MOUVEMENT",
+      "titleTreatment": "cyan-slab",
+      "titleFrameZero": true,
+      "eyebrow": "WORLD-VISION • MOTION LAB",
+      "subtitle": "Une idée. Un premier hook.",
+      "motion": "locked",
+      "transitionAfter": "dissolve",
+      "transitionFrames": 8
+    },
+    {
+      "id": "rehook-world-map",
+      "durationFrames": 150,
+      "template": "geo_story",
+      "title": "GABON · REPÈRE",
+      "eyebrow": "CARTE RÉELLE · DÉMONSTRATION",
+      "subtitle": "Atlas Natural Earth — aucune actualité inventée.",
+      "motion": "locked",
+      "transitionAfter": "cut",
+      "transitionFrames": 0,
+      "geo": {
+        "center": {
+          "lon": 2,
+          "lat": 12
+        },
+        "spinDegrees": 10,
+        "look": "vector",
+        "target": {
+          "lon": 11.6,
+          "lat": -0.7,
+          "label": "GABON — POINT CARTOGRAPHIQUE"
+        },
+        "camera": {
+          "to": {
+            "lon": 11.6,
+            "lat": -0.7
+          },
+          "startFrame": 15,
+          "endFrame": 108,
+          "zoom": 1.1
+        },
+        "spotlight": {
+          "countryId": "266"
+        }
+      }
+    },
+    {
+      "id": "payoff-impact-title",
+      "durationFrames": 100,
+      "template": "kinetic",
+      "title": "FAIRE VOIR.\nFAIRE COMPRENDRE.",
+      "titleTreatment": "cyan-slab",
+      "eyebrow": "DEUXIÈME RELANCE",
+      "subtitle": "Une démonstration de montage, pas une vraie information.",
+      "motion": "locked",
+      "transitionAfter": "cut",
+      "transitionFrames": 0
+    }
+  ],
+  "wordCaptions": [
+    {
+      "text": "VOIR",
+      "startFrame": 0,
+      "endFrame": 17,
+      "emphasis": true
+    },
+    {
+      "text": "LE",
+      "startFrame": 17,
+      "endFrame": 30,
+      "emphasis": false
+    },
+    {
+      "text": "MONDE.",
+      "startFrame": 30,
+      "endFrame": 58,
+      "emphasis": true
+    },
+    {
+      "text": "COMPRENDRE",
+      "startFrame": 64,
+      "endFrame": 90,
+      "emphasis": true
+    },
+    {
+      "text": "L'IDÉE.",
+      "startFrame": 90,
+      "endFrame": 112,
+      "emphasis": true
+    },
+    {
+      "text": "UN",
+      "startFrame": 134,
+      "endFrame": 146,
+      "emphasis": false
+    },
+    {
+      "text": "PAYS.",
+      "startFrame": 146,
+      "endFrame": 170,
+      "emphasis": true
+    },
+    {
+      "text": "UNE",
+      "startFrame": 178,
+      "endFrame": 190,
+      "emphasis": false
+    },
+    {
+      "text": "CARTE.",
+      "startFrame": 190,
+      "endFrame": 216,
+      "emphasis": true
+    },
+    {
+      "text": "PUIS",
+      "startFrame": 269,
+      "endFrame": 281,
+      "emphasis": false
+    },
+    {
+      "text": "RÉVÉLER",
+      "startFrame": 281,
+      "endFrame": 307,
+      "emphasis": true
+    },
+    {
+      "text": "L'ESSENTIEL.",
+      "startFrame": 307,
+      "endFrame": 352,
+      "emphasis": true
+    }
+  ],
+  "soundCues": [
+    {
+      "file": "audio/first-whoosh.wav",
+      "startFrame": 0,
+      "durationFrames": 24,
+      "volume": 0.24,
+      "label": "Synthèse originale — ouverture"
+    },
+    {
+      "file": "audio/geo-pulse.wav",
+      "startFrame": 138,
+      "durationFrames": 22,
+      "volume": 0.22,
+      "label": "Synthèse originale — carte"
+    },
+    {
+      "file": "audio/reveal.wav",
+      "startFrame": 283,
+      "durationFrames": 26,
+      "volume": 0.25,
+      "label": "Synthèse originale — révélation"
+    }
+  ],
+  "voice": null,
+  "music": {
+    "file": "audio/ambience.wav",
+    "volume": 0.1,
+    "label": "Bande sonore synthétique de contrôle — non finale"
+  },
+  "outro": null
+}
