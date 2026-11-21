@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
@@ -57,8 +58,8 @@ public class ResearchPlanValidation {
                 throw bad("Invalid dated original-source reference");
             }
         }
-        boundedArray(plan, "updates", 30);
-        boundedArray(plan, "events", 30);
+        validateUpdates(plan.path("updates"));
+        validateEvents(plan.path("events"));
         try {
             String serialized = mapper.writeValueAsString(plan);
             if (serialized.getBytes(StandardCharsets.UTF_8).length > MAX_BYTES) {
@@ -70,12 +71,70 @@ public class ResearchPlanValidation {
         }
     }
 
-    private static void boundedArray(JsonNode plan, String key, int cap) {
-        if (!plan.has(key)) return;
-        JsonNode value = plan.get(key);
-        if (!value.isArray() || value.size() > cap) throw bad("Invalid research history");
-        for (JsonNode entry : value) {
-            if (!entry.isObject()) throw bad("Invalid research history record");
+    private static void validateUpdates(JsonNode updates) {
+        if (updates.isMissingNode()) return; // v1 exported pre-history cases
+        if (!updates.isArray() || updates.size() > 30) throw bad("Invalid thesis revision list");
+        for (JsonNode revision : updates) {
+            JsonNode snapshot = revision.path("snapshot");
+            if (!revision.isObject() || !required(revision, "id", 128) ||
+                !validInstant(revision.path("recordedAt").asText()) ||
+                !required(revision, "event", 2000) ||
+                !required(revision, "newInformation", 2000) ||
+                !required(revision, "conclusion", 2000) ||
+                !oneOf(revision.path("disposition"), "watch", "reconsider", "reject") ||
+                !snapshot.isObject() || !text(snapshot, "instrument", 150) ||
+                !oneOf(snapshot.path("direction"), "undecided", "long", "short")) {
+                throw bad("Invalid dated thesis revision");
+            }
+            for (String key : Set.of("theme", "pricedIn", "catalyst", "setup",
+                    "initialEntry", "initialStop", "initialTarget")) {
+                if (!text(snapshot, key, 8000)) throw bad("Invalid thesis snapshot field");
+            }
+            JsonNode publishers = snapshot.path("originalPublishers");
+            if (!publishers.isArray() || publishers.size() > 50) {
+                throw bad("Invalid original-source snapshot");
+            }
+            for (JsonNode publisher : publishers) {
+                if (!publisher.isTextual() || publisher.asText().length() > 3000)
+                    throw bad("Invalid original-source snapshot label");
+            }
+        }
+    }
+
+    private static void validateEvents(JsonNode events) {
+        if (events.isMissingNode()) return;
+        if (!events.isArray() || events.size() > 30) throw bad("Invalid event preparation list");
+        for (JsonNode event : events) {
+            if (!event.isObject() || !required(event, "id", 128) ||
+                !required(event, "title", 240) || !validInstant(event.path("scheduledAt").asText()) ||
+                !validInstant(event.path("preparedAt").asText()) ||
+                !validInstant(event.path("expectationAsOf").asText()) ||
+                !required(event, "expected", 100) || !text(event, "previous", 100) ||
+                !required(event, "unit", 60) ||
+                !required(event, "expectationPublisher", 240) ||
+                !validHttps(event.path("expectationSourceUrl").asText()) ||
+                !required(event, "higherScenario", 2000) ||
+                !required(event, "lowerScenario", 2000)) {
+                throw bad("Invalid sourced macro-event preparation");
+            }
+            if (!event.has("result")) continue;
+            JsonNode result = event.path("result");
+            if (!result.isObject() || !required(result, "actual", 100) ||
+                !validInstant(result.path("publishedAt").asText()) ||
+                !validHttps(result.path("originalUrl").asText()) ||
+                !required(result, "reaction", 3000) ||
+                !result.path("comparabilityReviewed").isBoolean()) {
+                throw bad("Invalid dated macro-event result");
+            }
+        }
+    }
+
+    private static boolean validInstant(String value) {
+        try {
+            Instant.parse(value);
+            return true;
+        } catch (DateTimeParseException invalid) {
+            return false;
         }
     }
 
