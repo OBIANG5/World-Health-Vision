@@ -1,0 +1,142 @@
+name: World-Vision MEDIA — audio-context re-hook review
+
+on:
+  push:
+    branches:
+      - 'feature/worldvision-media-audio-context-*'
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/**'
+      - '.github/workflows/worldvision-media-audio-context.yml'
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/creative/**'
+      - '.github/workflows/worldvision-media-audio-context.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-audio-context-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify-real-audiovisual-slice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install existing pinned Remotion / FFmpeg toolchain only
+        run: npm install --no-audit --no-fund
+      - name: Verify actual TypeScript scene composition
+        run: npm run typecheck
+      - name: Test immutable source ranges, transitions and unsafe IDs
+        run: node --test creative/review-range.test.mjs creative/editorial-timeline.test.mjs
+      - name: Ensure FFmpeg/FFprobe are present before audio test fixtures
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffmpeg -hide_banner -version | head -n 1
+          ffprobe -hide_banner -version | head -n 1
+      - name: Create labelled synthetic audio and factual-free test scene
+        shell: bash
+        run: |
+          mkdir -p /tmp/worldvision-review-assets output/creative
+          # Audible alternating frequencies prove that the AUDIO starts at
+          # the source film's true global time, never at frame zero.
+          ffmpeg -hide_banner -nostdin -loglevel error -y \
+            -f lavfi -i 'sine=frequency=300:duration=2' \
+            -f lavfi -i 'sine=frequency=900:duration=3.5' \
+            -filter_complex '[0:a][1:a]concat=n=2:v=0:a=1[a]' \
+            -map '[a]' -ar 48000 -ac 1 /tmp/worldvision-review-assets/technical-voice.wav
+          ffmpeg -hide_banner -nostdin -loglevel error -y \
+            -f lavfi -i 'sine=frequency=160:duration=5.5' \
+            -ar 48000 -ac 1 /tmp/worldvision-review-assets/technical-bed.wav
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('creative/project.example.json','utf8'));
+          p.voice={file:'technical-voice.wav',label:'SYNTHETIC OSCILLATOR — NO JOURNALISM',volume:0.85};
+          p.music={file:'technical-bed.wav',label:'SYNTHETIC LOW-LEVEL SOUND BED',volume:0.025};
+          p.captions=[
+            {startFrame:50,endFrame:75,text:'EXEMPLE TECHNIQUE — AUDIO',position:'upper'},
+            {startFrame:95,endFrame:120,text:'RELANCE TECHNIQUE, AUCUNE ACTUALITÉ',position:'upper'}
+          ];
+          fs.writeFileSync('/tmp/worldvision-review-project.json',JSON.stringify(p,null,2));
+          JS
+      - name: Render real review MP4 from original movie timeline with audio and caption cues
+        run: |
+          node creative/render-project.mjs \
+            --project /tmp/worldvision-review-project.json \
+            --assets /tmp/worldvision-review-assets \
+            --review-shot plan-02 \
+            --output output/creative/re-hook-original-audio-review.mp4
+      - name: Verify original source clock, AAC, exact frames, unchanged script and original voice
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {getVideoMetadata} from '@remotion/renderer';
+          import {createHash} from 'node:crypto';
+          const p=JSON.parse(fs.readFileSync('/tmp/worldvision-review-project.json','utf8'));
+          const r=JSON.parse(fs.readFileSync('output/creative/re-hook-original-audio-review.mp4.report.json','utf8'));
+          const m=await getVideoMetadata('output/creative/re-hook-original-audio-review.mp4');
+          const expectedScriptHash=createHash('sha256').update(p.script,'utf8').digest('hex');
+          if(r.mode!=='audio_context_shot_review'||r.shot_id!=='plan-02'||r.duration_frames!==99 ||
+             JSON.stringify(r.review_source_frame_range)!=='[52,150]' ||
+             r.caption_cues!==2 || r.track_voice!==p.voice.label ||
+             r.source_script_sha256!==expectedScriptHash || r.exact_script_unchanged!==true ||
+             m.width!==1080||m.height!==1920||m.codec!=='h264' ||
+             Math.abs(m.durationInSeconds-(99/30))>0.15 ||
+             r.actual_rendered_stills.length!==3 ||
+             r.actual_rendered_stills[0].frame!==52 ||
+             r.actual_rendered_stills.at(-1).frame!==150 ||
+             r.media.length!==2) {
+            throw new Error('Original audio-context render contract failed: '+JSON.stringify({r,m}));
+          }
+          console.log('PASS: genuine H264 and original project source timeline',JSON.stringify({
+            frames:r.duration_frames,source_range:r.review_source_frame_range,
+            captions:r.caption_cues,source_tracks:r.media.length,
+            voice:r.track_voice,sha:r.output_sha256
+          }));
+          JS
+          test "$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=nw=1:nk=1 output/creative/re-hook-original-audio-review.mp4 | head -n1)" = "aac"
+      - name: Prove audio begins at the original time (900 Hz after initial source transition), not zero
+        shell: bash
+        run: |
+          ffmpeg -hide_banner -nostdin -loglevel error -y \
+            -i output/creative/re-hook-original-audio-review.mp4 \
+            -vn -ar 48000 -ac 1 -f s16le output/creative/review-audio.pcm
+          python3 <<'PY'
+          from array import array
+          from pathlib import Path
+          raw=Path('output/creative/review-audio.pcm').read_bytes()
+          audio=array('h');audio.frombytes(raw)
+          sample_rate=48000
+          # Source review starts at 52/30=1.7333s; at local 0.6s the
+          # original source should be on its 900Hz segment, not 300Hz.
+          a=audio[round(0.55*sample_rate):round(0.75*sample_rate)]
+          if len(a)<round(0.19*sample_rate):
+              raise SystemExit('Decoded review AAC too short for audio offset audit')
+          crosses=sum(1 for x,y in zip(a,a[1:]) if (x<0<=y) or (y<0<=x))
+          hz=crosses/(2*(len(a)/sample_rate))
+          print('Measured original-time voice cue:',round(hz,1),'Hz')
+          if not (720<hz<1060):
+              raise SystemExit(f'Audio not synchronized to the source timeline (expected ~900Hz, got {hz})')
+          PY
+      - name: Publish private technical QA artifact (not a newsroom video)
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-media-audio-context-technical-qa
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/creative/re-hook-original-audio-review.mp4
+            worldhealth-vision-v2/services/media-renderer/output/creative/re-hook-original-audio-review.mp4.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/re-hook-original-audio-review.mp4.stills/
+          retention-days: 7

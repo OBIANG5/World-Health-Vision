@@ -1,3 +1,33 @@
+# WORLD-VISION MEDIA — PRIORITÉ ACTUELLE 21 NOVEMBRE 2026 : HOOKS, RE-HOOKS ET MONTAGE SONORE RAPIDE
+
+**Cette section est plus récente que les états historiques ci-dessous.** Elle concerne **uniquement le média**, pas le logiciel produit/Atlas traité dans un autre chat.
+
+## OBJECTIF VRAIMENT DEMANDÉ PAR LE PROPRIÉTAIRE
+Le propriétaire conserve le choix des idées/sujets/scripts ; notre métier premier est de **transformer rapidement ses idées, photos, vidéos et sons en films extrêmement captivants**, avec un **hook dès le début et des re-hooks continus**, mouvements/typographie conçus autour de la signification des mots, démonstrations visuelles, cartes, finance, preuves, photographie et mixage professionnel. Identité originale World-Vision œil/globe, bleu nuit/cyan, titres très gras/italiques et sous-titres DM Sans ; styles internationalement adaptables aux autres clients.
+
+**RÈGLE CENTRALE : REUSE-FIRST.** Exploiter Remotion/FFmpeg et nos modules existants ; auditer les meilleurs skills/FX externes (officiels Remotion `@remotion/captions` et Word Highlight/Popping, HyperFrames, claude-motion), puis **utiliser ce qui démontre un avantage sur le véritable rendu et le temps total**. NE PAS créer de moteur vidéo concurrent, NE PAS connecter le compte ChatGPT/Gemini par principe : ces derniers ne sont qu'une option si le gain mesuré est supérieur. Aucune installation/compte/achat automatique.
+
+## JALON ACTIF P0.1 — AUDIO-CONTEXT SHOT REVIEW
+
+- **PR #118 draft** : https://github.com/OBIANG5/World-Health-Vision/pull/118
+- Branche : `feature/worldvision-media-audio-context-review-2026-11-21`, issue prioritaire [#116](https://github.com/OBIANG5/World-Health-Vision/issues/116).
+- Base : PR #110 à SHA `b1025c4d28220bc6e1b9cbf868dce4e7574b24a9` (pas fusionnée).
+- Nouvel outil `creative/render-project.mjs --review-shot <shot-id>` : utilise l'EDL existante et le `frameRange` officiel Remotion **sur la composition originale** ; voix, musique, sous-titres et transitions sont conservés, avec jusqu'à 15 frames de contexte. Le vieux `--shot` muet reste compatible. Aucun nouveau fournisseur de voix et aucun média externe ajouté.
+- Nouveau module `creative/review-range.mjs` et 5 tests de plage ; l'exécution Actions initiale a **validé 9/9 tests Node (incluant 4 tests EDL) et le typecheck**, mais a échoué avant le MP4 parce que la machine ne trouvait pas `ffmpeg`. Correctif d'installation conditionnelle committé. **Statut du vrai MP4/AAC : attendre la CI du HEAD final et regarder l'artefact. Ne jamais annoncer succès sur une CI pending.**
+- Workflow dédié : `.github/workflows/worldvision-media-audio-context.yml`, contrôles vrais fichiers H264/AAC, conservation de la voix/texte approuvés, audio offset par fréquence source 300→900 Hz, 3 captures aux frames absolus.
+- Rapport/handoff détaillé : [MEDIA_P0_AUDIO_CONTEXT_REHOOK_REVIEW_2026-11-21.md](worldhealth-vision-v2/docs/media/MEDIA_P0_AUDIO_CONTEXT_REHOOK_REVIEW_2026-11-21.md).
+
+## SUITE INCHANGÉE (ordre de valeur)
+1. **Certifier ou réparer** le nouveau rendu avec audio source exact, sous-titres et vrais pixels 390px ; enregistrer le HEAD, la CI, l'audio et ses limites dans un commentaire PR sans multiplier les commits documentaires.
+2. **P0.2 montage hook/re-hook visuel** : tester **les animations prêtes à l'emploi** de texte `Word Highlight` / `Popping Word` Remotion, `@remotion/captions` compatible 4.0.542, puis 1–2 FX pertinents HyperFrames/claude-motion, avant toute recréation. Benchmark sur mêmes 8–12s de parole et vrai son, 390px. Associer mots exacts à leur vrai timecode, images et idées, sans surcharge.
+3. **P0.3 design sonore** : catalogue SFX originaux/licenciés et cue-sheet synchronisée, espace pour la narration, stems non destructifs, niveaux mesurés, demande de correction d'un passage sans régénérer voix/plans inchangés.
+4. **P0.4 film complet** à partir de l'idée/script **choisi par l'utilisateur**, images authentiques sous droits et rythme; puis bibliothèque de scènes seulement après validation humaine, styles GEO/Finance/Documentaire et profils indépendants pour d'autres clients.
+5. Mesurer **temps jusqu'au master réellement accepté**, corrections, qualité iPhone, coût, puis plus tard analytics rétention/relecture si effectivement disponibles. Aucune publication automatique.
+
+**Règles irrévocables :** script approuvé jamais réécrit/tronqué silencieusement ; voix préférée historique Vivienne C5.2 Impact média sans substitution ni réutilisation d'un ancien MP3 pour un autre reportage ; sources/archives/visuels IA véridiques ou clairement explicités, ne pas inventer de guerre ni de chiffres ; les deux vidéos de référence tierces ne sont **pas** des assets libres à recopier ; toutes PR en brouillon et aucun merge/déploiement sans approbation.
+
+---
+
 # WORLD-VISION — REPRISE IMMÉDIATE — FILM-2B2 AVEC VRAIE PISTE AUDIO FRANÇAISE
 
 **20 novembre 2026. Le propriétaire a constaté que la dernière vidéo était MUETTE.** C'était exact : le MP4 NASA de 25 s sur PR #105 ne comportait aucune piste audio, malgré des images NASA réelles et une CI réussie. **RÉPONSE / PRIORITÉ ACTUELLE : un reportage que l'on peut réellement ÉCOUTER** avec voix française, sound design, 7 phrases minutées sur le VRAI signal audio, film H264/AAC, contrôles loudness/true peak, vérification sur mobile. Ne pas faire encore des micro-effets et ne pas confondre un film muet réussi avec un produit média fini.
