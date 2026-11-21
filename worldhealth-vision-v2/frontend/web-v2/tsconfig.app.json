@@ -20,7 +20,7 @@
       "@remotion/transitions/slide": ["./node_modules/@remotion/transitions/dist/presentations/slide.d.ts"],
       "@remotion/layout-utils": ["./node_modules/@remotion/layout-utils"],
       "@remotion/captions": ["./node_modules/@remotion/captions"],
-      "@remotion/google-fonts/*": ["./node_modules/@remotion/google-fonts/*"],
+      "@remotion/google-fonts/*": ["./node_modules/@remotion/google-fonts/dist/cjs/*"],
       "@remotion/three": ["./node_modules/@remotion/three"],
       "@react-three/fiber": ["./node_modules/@react-three/fiber"],
       "three": ["./node_modules/@types/three"],
