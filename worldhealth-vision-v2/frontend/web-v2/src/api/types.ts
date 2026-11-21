@@ -623,3 +623,36 @@ export interface ForecastResponse {
   points: ForecastPoint[];
   metadata: ForecastMetadata;
 }
+
+/**
+ * P2C3C2: source-NATIVE scoped values, NEVER interchangeable with national ISO3
+ * totals. No geography or rights signature may be inferred from these fields.
+ */
+export interface ScopedPublishedValue {
+  sourceCode: string;
+  datasetCode: string;
+  indicatorCode: string;
+  countryIso3Parent: string;
+  sourceNativeGeographyCode: string;
+  geographicVersion: string;
+  geographicReferenceYear: number | null;
+  scopeDisplayLabel: string;
+  coverageKind: "PARTIAL_COUNTRY" | "SUBNATIONAL";
+  territorialExclusions: string[];
+  periodStart: string;
+  periodEnd: string;
+  periodLabel: string;
+  numericValue: number;
+  valueStatus: "OBSERVED" | "ESTIMATED";
+  methodologyCode: string;
+  unitCode: string;
+  attributionText: string;
+  sourceMetadataUrl: string;
+  fetchedAtUtc: string;
+  comparabilityStatus: "SOURCE_SCOPED_NOT_COUNTRY_EQUIVALENT";
+}
+
+export interface ScopedPublishedValuesResponse {
+  count: number;
+  items: ScopedPublishedValue[];
+}
