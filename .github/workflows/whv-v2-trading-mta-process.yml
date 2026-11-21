@@ -1,0 +1,57 @@
+name: WHV V2 Trading MTA process
+on:
+  push:
+    branches:
+      - product/v2-trading-mta-datanalyse-process-v1-2026-11-21
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/frontend/web-v2/**'
+      - '.github/workflows/whv-v2-trading-mta-process.yml'
+permissions:
+  contents: read
+jobs:
+  process-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci
+      - name: Seven-stage trading process domain tests
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run test:trading
+      # The full inherited frontend has 28 pre-existing lint errors, tracked
+      # outside this feature. New code is never exempted from its lint gate.
+      - name: Lint touched TypeScript and JavaScript
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npx eslint src/trading/tradePlan.ts src/trading/tradeResearch.ts src/components/layout/TradingProcessPanel.tsx src/components/layout/TradingResearchPanel.tsx src/product/visionProducts.ts src/navigation/worldRoute.ts src/App.tsx scripts/test-trade-plan.mjs scripts/trading-process-browser-smoke.mjs
+      - name: Typescript and Vite build
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build
+      - name: Browser dependency (system Chrome preferred)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo 'WHV_BROWSER_CHANNEL=chrome' >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Real iPhone 320/390 and desktop 1440 interactive workflow
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node scripts/trading-process-browser-smoke.mjs
+      - name: Archive only SYNTHETIC browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trading-mta-synthetic-browser-evidence
+          path: worldhealth-vision-v2/frontend/web-v2/trading-process-artifacts/
+          if-no-files-found: warn
