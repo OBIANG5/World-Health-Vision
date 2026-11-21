@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { fetchCountryLocalContext, fetchCountryNationalComparisons, fetchCountryPublishedCoverage } from "../../api/whvApi";
 import type { CountryLocalContext, CountryNationalComparisons, CountryPublishedCoverage } from "../../api/types";
 import PublishedIndicatorExplorer from "./PublishedIndicatorExplorer";
+import ScopedValueExplorer from "./ScopedValueExplorer";
 
 type Props = {
   iso3: string;
@@ -308,6 +309,9 @@ export default function CountryLocalEvidencePanel({ iso3, enabled, lang }: Props
           publicCoverage?.coverageStatus === "PUBLISHED_DATA_AVAILABLE" && (
             <PublishedIndicatorExplorer key={iso3} iso3={iso3} lang={lang} />
           )}
+        {/* Distinct consented source-native read: never merged into
+            country totals or national series explorer. Lazy until expanded. */}
+        <ScopedValueExplorer iso3={iso3} lang={lang} enabled={enabled} />
         {status === "loading" && <p role="status">{copy.loading}</p>}
         {status === "unavailable" && <p role="status">{copy.unknown}</p>}
         {status === "ready" && data?.localSourceCount === 0 && <p>{copy.empty}</p>}

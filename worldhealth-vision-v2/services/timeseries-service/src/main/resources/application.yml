@@ -75,3 +75,8 @@ whv:
     # Empty => public Timeseries writes DENIED (even with reviewer rights).
     # Never deploy the witness private signing key to Timeseries or web.
     evidence-trust-public-key-base64: ${WHV_EVIDENCE_TRUST_PUBLIC_KEY_BASE64:}
+
+    # Independently reviewed geography PUBLIC Ed25519 key. Separate from
+    # signed licence rights and original Bronze witness. Empty = scoped GET
+    # refuses values, and there are NO default institution approvals.
+    scope-trust-public-key-base64: ${WHV_SCOPE_TRUST_PUBLIC_KEY_BASE64:}

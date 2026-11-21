@@ -20,6 +20,7 @@ import type {
   CountryPublishedCoverage,
   CountryPublishedIndicatorsResponse,
   PublishedLatestSourcesResponse,
+  ScopedPublishedValuesResponse,
   CatalogIndicatorDetail,
   TimeseriesSeriesResponse,
 } from "./types";
@@ -522,4 +523,59 @@ export async function fetchCompareCountries(
   } catch (error) {
     throw new Error(`Unable to load comparison: ${extractErrorMessage(error)}`);
   }
+}
+
+/**
+ * Scoped observations are NOT national totals or country-comparison inputs.
+ * No caching: an Ed25519 geography grant or original reuse right may be
+ * revoked after a previously displayed value.
+ */
+export async function fetchCountryScopedPublishedValues(
+  iso3: string, limit = 20,
+): Promise<ScopedPublishedValuesResponse> {
+  const code = iso3.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(code) || !Number.isInteger(limit) || limit < 1 || limit > 50)
+    throw new Error("Invalid scoped source request");
+  const response = await whvApi.get<ScopedPublishedValuesResponse>(
+    "/api/timeseries/countries/" + code + "/scoped-values",
+    { params: { limit }, timeout: 12000, headers: { "Cache-Control": "no-cache" } },
+  );
+  const data = response.data;
+  if (!data || !Array.isArray(data.items) || !Number.isSafeInteger(data.count) ||
+      data.count !== data.items.length || data.count > limit ||
+      !data.items.every(item => {
+        if (!item || item.countryIso3Parent !== code ||
+            item.comparabilityStatus !== "SOURCE_SCOPED_NOT_COUNTRY_EQUIVALENT" ||
+            !["PARTIAL_COUNTRY","SUBNATIONAL"].includes(item.coverageKind) ||
+            !["OBSERVED","ESTIMATED"].includes(item.valueStatus) ||
+            !Number.isFinite(item.numericValue) ||
+            ![item.sourceCode,item.datasetCode,item.indicatorCode].every(
+              key => typeof key === "string" && /^[A-Z0-9._-]{1,64}$/.test(key)) ||
+            typeof item.sourceNativeGeographyCode !== "string" ||
+            !/^[A-Za-z0-9._-]{1,96}$/.test(item.sourceNativeGeographyCode) ||
+            typeof item.geographicVersion !== "string" ||
+            !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(item.geographicVersion) ||
+            (item.geographicReferenceYear !== null &&
+              (!Number.isInteger(item.geographicReferenceYear) ||
+               item.geographicReferenceYear < 1800 || item.geographicReferenceYear > 2200)) ||
+            typeof item.scopeDisplayLabel !== "string" ||
+            item.scopeDisplayLabel.trim().length === 0 ||
+            item.scopeDisplayLabel.length > 256 ||
+            !Array.isArray(item.territorialExclusions) || item.territorialExclusions.length > 32 ||
+            !item.territorialExclusions.every(x => typeof x === "string" && x.length <= 256) ||
+            typeof item.methodologyCode !== "string" || !/^[A-Za-z0-9._-]{1,96}$/.test(item.methodologyCode) ||
+            typeof item.unitCode !== "string" || !/^[A-Za-z0-9._-]{1,64}$/.test(item.unitCode) ||
+            typeof item.attributionText !== "string" || !item.attributionText.trim() ||
+            typeof item.periodStart !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.periodStart) ||
+            typeof item.periodEnd !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(item.periodEnd) ||
+            typeof item.periodLabel !== "string" || item.periodLabel.length > 32 ||
+            typeof item.fetchedAtUtc !== "string")
+          return false;
+        try {
+          const src = new URL(item.sourceMetadataUrl);
+          return src.protocol === "https:" && item.sourceMetadataUrl.length <= 1024;
+        } catch { return false; }
+      }))
+    throw new Error("Unverified or misleading scoped publication response");
+  return data;
 }

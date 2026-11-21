@@ -5,6 +5,7 @@ import com.worldhealthvision.common.http.WhvHttpHeaders;
 import com.worldhealthvision.timeseries.persistence.ImmutableSourceRunConflictException;
 import com.worldhealthvision.timeseries.service.ProtectedResearchPublicationException;
 import com.worldhealthvision.timeseries.service.RightsAuthorizationException;
+import com.worldhealthvision.timeseries.service.ScopedPublicationAuthorizationException;
 import com.worldhealthvision.timeseries.service.EvidenceAttestationException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -59,6 +60,14 @@ public class TimeseriesExceptionHandler {
     ) {
         return buildResponse(HttpStatus.FORBIDDEN,
                 "No independently signed, currently valid permission for public API ingest.", request);
+    }
+
+    @ExceptionHandler(ScopedPublicationAuthorizationException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnverifiedScopedPermission(
+            ScopedPublicationAuthorizationException exception, HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.FORBIDDEN,
+                "No independently verified current permission for scoped publication.", request);
     }
 
     @ExceptionHandler(ImmutableSourceRunConflictException.class)

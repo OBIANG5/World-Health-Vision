@@ -41,6 +41,9 @@ final class PublicReadRoutes {
             // unlicensed, revoked and not-attested series.
             "/api/timeseries/countries/*/published-coverage",
             "/api/timeseries/countries/*/published-indicators",
+            // Distinct from national comparisons. Requires two authentic
+            // independent signatures + a reverified original Bronze witness.
+            "/api/timeseries/countries/*/scoped-values",
             "/api/timeseries/series",
             "/api/timeseries/series/latest",
             "/api/timeseries/series/availability",

@@ -1,0 +1,7 @@
+# P2C3C2: disposable third Ed25519 PUBLIC geography trust anchor.
+# Existing P2C2 overlay supplies separate public rights and witness keys.
+# NEVER provide an external institution's private signing key to services.
+services:
+  timeseries-service:
+    environment:
+      WHV_SCOPE_TRUST_PUBLIC_KEY_BASE64: ${WHV_SCOPE_TRUST_PUBLIC_KEY_BASE64:?CI independent geographic public key required}
