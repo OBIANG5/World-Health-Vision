@@ -156,7 +156,7 @@ export function validEvidence(e: Evidence): boolean {
   if (!e.name.trim() || !e.originalPublisher.trim() || !e.observation.trim() || !e.publishedAt.trim()) return false;
   try {
     const url = new URL(e.url);
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(e.publishedAt)) return false;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(e.publishedAt)) return false;
     const date = new Date(e.publishedAt);
     return url.protocol === "https:" && Boolean(url.hostname) && !url.username && !url.password
       && Number.isFinite(date.valueOf()) && date.toISOString().slice(0, 10) === e.publishedAt
