@@ -29,7 +29,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: worldvision-media-p08-same-shot-one-test-run
+  group: worldvision-media-p08-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   sourced-multi-layer-contract:
