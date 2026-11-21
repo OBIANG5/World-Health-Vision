@@ -135,3 +135,40 @@ test("frame-zero headline option roundtrips as an editable Studio control",()=>{
   p.shots[1].titleFrameZero=true;
   assert.throws(()=>parseStudioProject(JSON.stringify(p)),/Projet non importable/);
 });
+
+test("P0.6: Studio reopens and preserves caption-safe documentary crop and real-pixel zoom",()=>{
+  const p=clone(),s=p.shots[1];
+  s.template="document_focus";s.durationFrames=165;s.title="DOCUMENT SOURCE";
+  s.media={kind:"image",file:"original-evidence.png",credit:"Original rights review pending"};
+  s.documentRegion={x:.30,y:.28,width:.37,height:.43};
+  s.evidencePresentation="mobile-safe";
+  s.documentZoomMax=1.95;
+  const loaded=parseStudioProject(JSON.stringify(p));
+  assert.equal(inspectProject(loaded).ok,true);
+  const form=studioShotToEditor(loaded.shots[1],{...defaults,documentMobileSafe:false,documentZoomMax:1.85});
+  assert.equal(form.documentMobileSafe,true);
+  assert.equal(form.documentZoomMax,1.95);
+  assert.equal(form.documentX,.30);
+  assert.equal(form.documentW,.37);
+  assert.equal(form.mediaName,"original-evidence.png");
+  assert.deepEqual(loaded.shots[0],p.shots[0]);
+  assert.equal(loaded.script,example.script);
+});
+test("P0.6: Studio rejects unsafe or impossible documentary zoom instead of losing fields",()=>{
+  const original=clone();
+  original.shots[1].template="document_focus";
+  original.shots[1].durationFrames=165;
+  original.shots[1].title="PREUVE";
+  original.shots[1].media={kind:"image",file:"source.jpg"};
+  original.shots[1].documentRegion={x:.2,y:.2,width:.4,height:.3};
+  const invalid=(mutate)=>{
+    const p=structuredClone(original);mutate(p.shots[1]);
+    assert.throws(()=>parseStudioProject(JSON.stringify(p)),/Projet non importable/);
+  };
+  invalid(s=>s.evidencePresentation="ambiguous");
+  invalid(s=>s.documentZoomMax=2.5);
+  invalid(s=>{s.evidencePresentation="mobile-safe";s.documentZoomMax=0.4;});
+  invalid(s=>{s.evidencePresentation="mobile-safe";s.documentZoomMax=Infinity;});
+  invalid(s=>{s.evidencePresentation="mobile-safe";s.documentZoomMax="2.0";});
+  invalid(s=>{s.evidencePresentation="mobile-safe";s.template="kinetic";});
+});
