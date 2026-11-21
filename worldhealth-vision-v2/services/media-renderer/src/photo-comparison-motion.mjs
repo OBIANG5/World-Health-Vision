@@ -63,6 +63,10 @@ export function photoComparisonPose(c,frame){
   const d=c.domain;
   const width=d.max-d.min;
   const origin=(0-d.min)/width;
+  // Story beat: first let the photo and hook breathe. Reveal the actual
+  // panel only from the editor-authored startFrame, then let the two bars
+  // progress independently across their longer interval.
+  const panelProgress=ease((frame-c.startFrame)/12);
   const reveal=ease((frame-c.startFrame)/Math.max(1,c.endFrame-c.startFrame));
   const bars=[c.first,c.second].map(entry=>{
     const target=(entry.value-d.min)/width;
@@ -77,5 +81,5 @@ export function photoComparisonPose(c,frame){
       direction:entry.value<0?'negative':entry.value>0?'positive':'zero'
     };
   });
-  return {reveal,origin,axisMin:d.min,axisMax:d.max,bars};
+  return {reveal,panelProgress,origin,axisMin:d.min,axisMax:d.max,bars};
 }
