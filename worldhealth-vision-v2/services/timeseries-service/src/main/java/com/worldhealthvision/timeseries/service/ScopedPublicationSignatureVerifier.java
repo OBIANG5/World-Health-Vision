@@ -49,6 +49,7 @@ public final class ScopedPublicationSignatureVerifier {
         if (!isConfigured()
                 || !trustedKeySha256.equals(decision.signingPublicKeySha256())
                 || !"PUBLIC_SCOPED_WEB_DISPLAY".equals(decision.operation())
+                || !decision.attestedItemsSha256().matches("[a-f0-9]{64}")
                 || !decision.originalHttpSha256().matches("[a-f0-9]{64}")
                 || !decision.sourceMetadataSha256().matches("[a-f0-9]{64}")
                 || !decision.reviewerId().matches("[A-Za-z0-9_.:@-]{1,128}")

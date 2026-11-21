@@ -11,8 +11,8 @@ import java.util.UUID;
 /** Separately signed geography proof: NOT a dataset license, not a national
  * comparability grant and not an ingestion permission. */
 public record SignedScopedPublicationDecision(
-        UUID decisionId, UUID geographicScopeId,
-        String sourceCode, String datasetCode, String indicatorCode, String operation,
+        UUID decisionId, UUID geographicScopeId, UUID sourceRunId,
+        String attestedItemsSha256, String sourceCode, String datasetCode, String indicatorCode, String operation,
         String originalHttpSha256, String sourceMetadataSha256,
         String methodologyCode, String unitCode,
         LocalDate periodStart, LocalDate periodEnd,
@@ -28,7 +28,7 @@ public record SignedScopedPublicationDecision(
             for (String field : new String[] {
                     "WORLD_VISION_SCOPED_PUBLICATION_DECISION_V1",
                     decisionId.toString(), geographicScopeId.toString(),
-                    sourceCode, datasetCode, indicatorCode, operation,
+                    sourceRunId.toString(), attestedItemsSha256, sourceCode, datasetCode, indicatorCode, operation,
                     originalHttpSha256, sourceMetadataSha256, methodologyCode, unitCode,
                     periodStart.toString(), periodEnd.toString(),
                     validFromUtc.toInstant().toString(), validUntilUtc.toInstant().toString(),
