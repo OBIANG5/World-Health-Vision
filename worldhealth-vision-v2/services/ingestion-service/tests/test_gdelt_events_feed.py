@@ -298,3 +298,84 @@ def test_official_manifest_mixed_case_suffix_preserved_for_exact_provider_downlo
     batch = parse_event_archive(parse_manifest(lower_manifest, as_of=FIXED_NOW), lower_archive)
     assert batch.export_md5_verified is True
     assert batch.links[0].verification == "DISCOVERY_ONLY"
+
+
+def test_manifest_can_precede_zip_publication_by_two_bounded_404s():
+    """Real GDELT edge observed 21/11/2026: manifest HTTP 200 but ZIP 404."""
+    manifest, archive = _one()
+    calls = []
+    sleeps = []
+    archive_url = "https://data.gdeltproject.org/gdeltv2/" + SLOT + ".export.CSV.zip"
+    def handler(request):
+        current = str(request.url)
+        calls.append(current)
+        if current == MANIFEST_URL:
+            return httpx.Response(200, content=manifest)
+        if calls.count(archive_url) < 3:
+            return httpx.Response(404, content=b"batch not visible on CDN yet")
+        return httpx.Response(200, content=archive)
+    batch = GdeltStaticEventsClient(transport=_provider(handler),
+                                   sleep=sleeps.append).fetch_latest_events()
+    assert batch.export_md5_verified is True
+    assert len(batch.links) == 1
+    assert calls == [MANIFEST_URL, archive_url, archive_url, archive_url]
+    assert sleeps == [5.0, 10.0]
+    assert batch.source_url == archive_url
+
+
+def test_export_404_remains_unavailable_after_two_short_retries_not_zero_news():
+    manifest, archive = _one()
+    calls = []
+    sleeps = []
+    def handler(request):
+        url = str(request.url)
+        calls.append(url)
+        if url == MANIFEST_URL:
+            return httpx.Response(200, content=manifest)
+        return httpx.Response(404, content=b"provider not yet published")
+    with pytest.raises(GdeltFeedError, match="provider_http_404"):
+        GdeltStaticEventsClient(transport=_provider(handler),
+                                sleep=sleeps.append).fetch_latest_events()
+    assert len(calls) == 4
+    assert calls.count(MANIFEST_URL) == 1
+    assert len(set(calls)) == 2
+    assert sleeps == [5.0, 10.0]
+
+
+@pytest.mark.parametrize("status,expected", [
+    (429, "provider_throttled"),
+    (403, "provider_http_403"),
+    (500, "provider_http_500"),
+    (503, "provider_http_503"),
+])
+def test_export_non_404_errors_are_never_retried(status, expected):
+    manifest, archive = _one()
+    calls = []
+    sleeps = []
+    def handler(request):
+        current = str(request.url)
+        calls.append(current)
+        return httpx.Response(200, content=manifest) if current == MANIFEST_URL else httpx.Response(status)
+    with pytest.raises(GdeltFeedError, match=expected):
+        GdeltStaticEventsClient(transport=_provider(handler),
+                                sleep=sleeps.append).fetch_latest_events()
+    assert len(calls) == 2
+    assert not sleeps
+
+
+def test_retry_never_approves_zip_with_wrong_md5_even_after_404():
+    manifest, archive = _one()
+    bad_zip = archive + b"tampered"
+    calls = []
+    def handler(req):
+        current = str(req.url)
+        calls.append(current)
+        if current == MANIFEST_URL:
+            return httpx.Response(200, content=manifest)
+        if len(calls) == 2:
+            return httpx.Response(404)
+        return httpx.Response(200, content=bad_zip)
+    with pytest.raises(GdeltFeedError, match="export_size_mismatch"):
+        GdeltStaticEventsClient(transport=_provider(handler),
+                                sleep=lambda _: None).fetch_latest_events()
+    assert len(calls) == 3
