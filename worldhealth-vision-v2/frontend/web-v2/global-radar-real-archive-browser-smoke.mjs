@@ -105,6 +105,48 @@ try {
     assert.deepEqual(originalHosts, ["agpgabon.ga", "www.imf.org", "ecomatin.net"]);
     assert((await editorial.innerText()).includes("Ces documents ne suffisent pas"),
       "Do not claim government aspirations are an IMF-approved programme");
+    const claims = editorial.locator(".radar-claims");
+    const claimRows = claims.locator(".radar-claim");
+    assert.equal(await claimRows.count(), 4,
+      "Editorial pilot must explain four concrete claim-specific verification questions");
+    const dateIssue = claims.locator('[data-claim-id="MISSION_END_DAY"]');
+    assert.equal(await dateIssue.locator(".radar-claim-evidence").count(), 2,
+      "Unresolved mission date discrepancy must retain AGP and IMF references");
+    const dateNarrative = await dateIssue.innerText();
+    assert(dateNarrative.includes("19 septembre 2026") &&
+      dateNarrative.includes("14–25 septembre 2026"),
+      "Do not silently erase AGP 19 Sep vs IMF 14–25 Sep attributed date discrepancy");
+    assert(dateNarrative.includes("pas une erreur définitivement attribuée"),
+      "Disagreement must remain uncertain, not automatic publisher error");
+    const imfIssue = claims.locator('[data-claim-id="PROGRAMME_DISCUSSIONS_STAGE"]');
+    await imfIssue.locator(".radar-claim-trigger").click();
+    assert.equal(await dateIssue.locator(".radar-claim-evidence").count(), 0,
+      "Opening a second question must collapse the first without losing sources");
+    assert((await imfIssue.innerText()).includes("Conseil d'administration"),
+      "Approval requires a dated IMF Executive Board statement, not a reporter inference");
+    const targets = claims.locator('[data-claim-id="DECEMBER_STAFF_LEVEL_TARGET"]');
+    await targets.locator(".radar-claim-trigger").click();
+    assert((await targets.innerText()).includes("Bloomberg"),
+      "Secondhand Bloomberg provenance must be shown explicitly");
+    assert((await targets.innerText()).includes("ne constitue ni"),
+      "Government target must never be rendered as IMF-approved agreement");
+    const ratio = claims.locator('[data-claim-id="GOVERNMENT_DEBT_AUDIT_RATIO"]');
+    await ratio.locator(".radar-claim-trigger").click();
+    assert((await ratio.innerText()).includes("n'a pas encore validé"),
+      "Reported 69% debt estimate must remain unapproved by IMF in dated source");
+    const evidenceLinks = await ratio.locator("a[href]").evaluateAll(
+      anchors => anchors.map(a => ({ href: a.href, rel: a.getAttribute("rel") })),
+    );
+    assert.equal(evidenceLinks.length, 1);
+    assert(evidenceLinks.every(a => a.href.startsWith("https://ecomatin.net/") &&
+      a.rel.includes("noopener") && a.rel.includes("noreferrer")),
+      "Never proxy source text or drop outbound URL security");
+    await ratio.locator(".radar-claim-trigger").click();
+    assert.equal(await ratio.locator(".radar-claim-evidence").count(), 0,
+      "Evidence disclosure must be operable on iPhone touch");
+    assert((await claims.innerText()).includes("aucun événement") ||
+      (await claims.innerText()).includes("Aucun événement"),
+      "Fact-checking limitations must remain visible even with all disclosures collapsed");
     assert((await editorial.innerText()).includes("extraits publics indexés"),
       "Unfetched original text must NOT be called independently verified");
     await sourceCards.nth(0).getByRole("button", { name: "Confronter" }).click();
