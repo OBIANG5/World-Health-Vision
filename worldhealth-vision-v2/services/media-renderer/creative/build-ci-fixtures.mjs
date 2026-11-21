@@ -229,7 +229,7 @@ photoDataProject.captions=[
   {startFrame:79,endFrame:141,text:"Des valeurs test, aucune actualité.",position:"lower"}
 ];
 const photoDataPath=path.join(path.dirname(outputJson),"worldvision-photo-data-same-shot.json");
-fs.writeFileSync(photoDataPath,JSON.stringify(photoDataProject,null,2)+"\\n");
+fs.writeFileSync(photoDataPath,JSON.stringify(photoDataProject,null,2)+String.fromCharCode(10));
 
 // DATA-1 three original abstract chart modes. All numbers are explicitly
 // fabricated, labelled DEMO, and must NEVER be shown as stock-market facts.
