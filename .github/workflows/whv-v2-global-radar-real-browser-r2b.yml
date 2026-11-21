@@ -21,7 +21,6 @@ on:
       - "worldhealth-vision-v2/frontend/web-v2/scripts/test-global-radar-editorial-case.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/global-radar-real-archive-browser-smoke.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/build-radar-preview.sh"
-      - "worldhealth-vision-v2/frontend/web-v2/vercel.json"
       - ".github/workflows/whv-v2-global-radar-real-browser-r2b.yml"
 
 permissions:
@@ -68,14 +67,15 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFileSync } from 'node:fs';
           import assert from 'node:assert/strict';
-          const config = JSON.parse(readFileSync('vercel.json', 'utf8'));
-          assert(config.headers.some(h => h.source === '/(.*)' &&
-            h.headers.some(value => value.key.toLowerCase() === 'x-robots-tag' &&
-              /noindex/.test(value.value))), 'Protected preview should never be indexed');
+          import { existsSync } from 'node:fs';
+          assert(!existsSync('vercel.json'),
+            'Unconditional vercel.json noindex would destroy search discovery on eventual production merge');
           const shell = readFileSync('scripts/build-radar-preview.sh', 'utf8');
           assert(shell.includes('WHV_RADAR_PREVIEW_FETCH'), 'Live provider call requires explicit opt-in');
           assert(shell.includes('rm -f -- "$SNAPSHOT"'), 'Cannot carry forward stale fetched data');
-          console.log('PASS preview configuration: opt-in source and noindex response headers');
+          assert(shell.includes('noindex, nofollow, noarchive'),
+            'Preview-only robots policy must be stamped into compiled HTML');
+          console.log('PASS preview configuration: no global SEO block, opt-in GDELT, preview-only robots');
           NODE
       - name: Test production TypeScript snapshot boundary and 429 search fallback
         working-directory: worldhealth-vision-v2/frontend/web-v2
@@ -143,6 +143,18 @@ jobs:
       - name: Built real V2 browser — explicitly SYNTHETIC archive, source choice and responsive UI
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: node global-radar-real-archive-browser-smoke.mjs
+      - name: Preview-only robots and no-network build acceptance (production default remains indexable)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          test ! -f vercel.json
+          if grep -q 'name="robots".*noindex' dist/index.html; then
+            echo "FAIL: default Vite production build must not be globally noindexed"
+            exit 1
+          fi
+          WHV_RADAR_PREVIEW_FETCH=0 bash scripts/build-radar-preview.sh
+          grep -Fq '<meta name="robots" content="noindex, nofollow, noarchive">' dist/index.html
+          test ! -f public/radar/global-latest.json
+          echo "PASS: only explicit preview has robots noindex; absent source remains absent"
       - name: Screenshots from SYNTHETIC offline tests ONLY
         if: always()
         uses: actions/upload-artifact@v4
