@@ -53,7 +53,7 @@
 - Les URL internes de vidéo/PHOTO/HD ne doivent PAS être inventées par suffixe. **Voie officielle uniquement :** page de la référence → consulter « Information », « Shotlist », « Conditions of use » et « Downloads » → récupérer le fichier autorisé via l'interface → contrôler octets, résolution, codec, SHA-256, crédit et éventuelles limites.
 - Les deux originaux Wikimedia de 6 000 × 4 000 du 10/11 restent des alternatives **non téléchargées** après le HTTP 429. **Aucun retry automatique** contre Wikimedia. L'original identifié sur une fiche externe n'est PAS un fichier déjà détenu.
 
-## 3. Décision de réalisation après la découverte de ruches filmées
+## 3. Décision de réalisation après la découverte de rushes filmés
 
 **Ce qui change vraiment :** les séquences filmées européennes datées du 17–19 peuvent offrir un **re-hook humain mobile** plus fort que le collage de deux photos 800×533, sous réserve que des extraits précis soient sélectionnés et licenciés. Cela ne change PAS le cœur du hook documentaire C16→C19.
 
