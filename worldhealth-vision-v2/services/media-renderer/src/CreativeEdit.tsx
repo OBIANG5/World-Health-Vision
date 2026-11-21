@@ -306,7 +306,10 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
       border:"1px solid rgba(155,194,208,.28)",
       borderRadius:26,
       overflow:"hidden",
-      background:"#ecf0f1",
+      // The image itself is ALWAYS original/unmodified; its letterbox
+      // must be dark rather than a bright fake "paper" frame (especially
+      // for NASA lunar annotations and dark-source documents).
+      background:"#071520",
       boxShadow:"0 28px 75px rgba(0,0,0,.44)",
       opacity:.93+.07*enter,
       transform:"translateY("+Math.round((1-documentEntrance)*28)+"px)"
