@@ -75,7 +75,10 @@ async function run(argv){
   const project=shotId?{
     ...fullProject,
     shots:fullProject.shots.filter(s=>s.id===shotId).map(s=>({...s,transitionAfter:"cut",transitionFrames:0})),
-    voice:null,music:null,outro:null
+    // An isolated --shot preview is an intentionally different technical
+    // timeline; original-clock director beats belong to the FULL project only.
+    // The source JSON and --review-shot retain every authored beat unchanged.
+    voice:null,music:null,outro:null,directorBeats:[]
   }:fullProject;
   const inspection=inspectProject(project);
   if(!inspection.ok){
