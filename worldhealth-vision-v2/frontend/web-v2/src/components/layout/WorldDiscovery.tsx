@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { CountrySummary } from "../../api/types";
+import { worldBankCatalogProvenance, type CountryCatalogSource } from "../../catalog/worldBankCountryCatalog";
 import { VISION_PRODUCTS, type VisionId } from "../../product/visionProducts";
 import { WorldIcon, type WorldIconName } from "../ui/WorldIcon";
 
@@ -19,6 +20,7 @@ interface Props {
   countries: readonly CountrySummary[];
   loading: boolean;
   unavailable: boolean;
+  catalogSource: CountryCatalogSource;
   onClose: () => void;
   onCountry: (iso3: string) => void;
   onVision: (id: VisionId) => void;
@@ -31,7 +33,8 @@ function normalize(value: string) {
 }
 
 export default function WorldDiscovery({
-  language, onToggleLanguage, countries, loading, unavailable, onClose, onCountry, onVision, onSources,
+  language, onToggleLanguage, countries, loading, unavailable, catalogSource,
+  onClose, onCountry, onVision, onSources,
 }: Props) {
   const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLElement>(null);
@@ -232,6 +235,18 @@ export default function WorldDiscovery({
             </button>
           </section>
         </div>
+        {catalogSource === "WORLD_BANK_SNAPSHOT" && <p className="whv-discovery-snapshot-attribution">
+          {language === "fr"
+            ? "Répertoire de secours : économies et territoires classés par la Banque mondiale, non les séries officielles World-Vision."
+            : "Fallback directory: World Bank-classified economies and territories, not World-Vision's authorized indicator data."}
+          {" · "}{worldBankCatalogProvenance.asOfUtc.slice(0, 10)}
+          {" · "}<a href={worldBankCatalogProvenance.sourceUrl}
+            target="_blank" rel="noopener noreferrer">
+            {language === "fr" ? "Source" : "Source"}
+          </a>
+          {" · "}<a href={worldBankCatalogProvenance.termsUrl}
+            target="_blank" rel="noopener noreferrer">{language === "fr" ? "Licence" : "License"}</a>
+        </p>}
         <footer className="world-discovery-footer">
           <WorldIcon name="shield" size={15}/>
           {language === "fr"

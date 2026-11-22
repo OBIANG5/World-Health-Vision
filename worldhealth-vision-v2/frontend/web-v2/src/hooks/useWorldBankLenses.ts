@@ -126,37 +126,50 @@ const wbCache = new Map<
 >();
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
+type CountryScopedWbState = {
+  iso3: string;
+  data: Record<string, { value: number; year: string }>;
+  fetchedAt: number;
+};
+const EMPTY_WB_COUNTRY: Record<string, { value: number; year: string }> = {};
+
+/**
+ * A request result is always tagged with ISO3. No state reset is needed in
+ * useEffect: the render for a new country immediately hides old data.
+ * This remains true even if network responses resolve out of order.
+ */
 export function useWorldBankLenses(iso3: string, enabled: boolean) {
-  const [wbData, setWbData] = useState<Record<string, { value: number; year: string }>>({});
-  const [loading, setLoading] = useState(false);
+  const [state, setState] = useState<CountryScopedWbState | null>(null);
+  const validCode = /^[A-Z]{3}$/.test(iso3);
 
   useEffect(() => {
-    if (!enabled || !iso3 || iso3 === "-99") {
-      setWbData({});
-      return;
-    }
+    if (!enabled || !validCode) return;
 
-    // Résultat déjà en cache et frais
     const cached = wbCache.get(iso3);
-    if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-      setWbData(cached.data);
-      return;
-    }
+    if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) return;
 
     let active = true;
-    setLoading(true);
+    void fetchWbMultipleLatest(iso3, WB_DIRECT_CODES)
+      .then(results => {
+        if (!active) return;
+        const fetchedAt = Date.now();
+        wbCache.set(iso3, { data: results, fetchedAt });
+        setState({ iso3, data: results, fetchedAt });
+      })
+      .catch(() => {
+        if (active) setState({ iso3, data: EMPTY_WB_COUNTRY, fetchedAt: Date.now() });
+      });
+    return () => { active = false; };
+  }, [iso3, enabled, validCode]);
 
-    fetchWbMultipleLatest(iso3, WB_DIRECT_CODES).then((results) => {
-      if (!active) return;
-      wbCache.set(iso3, { data: results, fetchedAt: Date.now() });
-      setWbData(results);
-      setLoading(false);
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [iso3, enabled]);
-
-  return { wbData, loading };
+  // Render must be pure: Date.now belongs to the effect (refresh decision),
+  // never the render phase. While revalidating, a cached *dated* official
+  // observation may remain visible; it never becomes a WHV licensed series.
+  const cached = wbCache.get(iso3);
+  const scopedState = state?.iso3 === iso3 ? state : null;
+  const data = enabled && validCode ? scopedState?.data ?? cached?.data : null;
+  return {
+    wbData: data ?? EMPTY_WB_COUNTRY,
+    loading: enabled && validCode && !scopedState && !cached,
+  };
 }

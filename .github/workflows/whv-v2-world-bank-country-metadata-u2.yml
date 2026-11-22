@@ -1,0 +1,80 @@
+name: World-Vision V2 Atlas U2 — review World Bank country metadata snapshot
+
+on:
+  push:
+    branches:
+      - product/v2-atlas-world-bank-metadata-u2-2026-11-22
+    paths:
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/build-world-bank-country-catalog.py"
+      - ".github/workflows/whv-v2-world-bank-country-metadata-u2.yml"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/build-world-bank-country-catalog.py"
+      - ".github/workflows/whv-v2-world-bank-country-metadata-u2.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: whv-atlas-wb-metadata-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-reviewable-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check snapshot generator syntax
+        run: |
+          python -m py_compile worldhealth-vision-v2/frontend/web-v2/scripts/build-world-bank-country-catalog.py
+      - name: Retrieve ONE official country metadata response (NO indicator data)
+        run: |
+          python worldhealth-vision-v2/frontend/web-v2/scripts/build-world-bank-country-catalog.py \
+            --output "worldhealth-vision-v2/frontend/web-v2/src/data/worldBankCountryCatalog.snapshot.json"
+      - name: Fail closed if official metadata does not pass structural audit
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          p=Path("worldhealth-vision-v2/frontend/web-v2/src/data/worldBankCountryCatalog.snapshot.json")
+          v=json.loads(p.read_text(encoding="utf-8"))
+          assert v["countryEntryCount"] == len(v["items"])
+          assert v["upstreamEntryCount"] == v["countryEntryCount"] + v["aggregateExcludedCount"] + v["otherExcludedCount"]
+          assert v["countryEntryCount"] >= 190
+          assert all(item["regionCode"] != "NA" for item in v["items"])
+          assert all(len(item["iso3"]) == 3 and len(item["iso2"]) == 2 for item in v["items"])
+          assert v["dataset"] == "WORLD_BANK_COUNTRY_METADATA"
+          assert v["sourceUrl"].startswith("https://api.worldbank.org/v2/country?")
+          assert not any("GDP" in key or "population" in key.lower()
+                         for item in v["items"] for key in item)
+          print("PASS verified World Bank geography only; no indicator series or aggregates")
+          PY
+      - name: Save official metadata for HUMAN review, never publish automatically
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-country-metadata-source-review
+          path: worldhealth-vision-v2/frontend/web-v2/src/data/worldBankCountryCatalog.snapshot.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Commit scrutinized metadata only to the isolated DRAFT branch (never production)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/product/v2-atlas-world-bank-metadata-u2-2026-11-22'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add worldhealth-vision-v2/frontend/web-v2/src/data/worldBankCountryCatalog.snapshot.json
+          if git diff --cached --quiet; then
+            echo "Reviewed metadata is unchanged"
+          else
+            git commit -m "data(atlas): pin verified World Bank country metadata snapshot for static fallback"
+            git push origin HEAD:product/v2-atlas-world-bank-metadata-u2-2026-11-22
+          fi
