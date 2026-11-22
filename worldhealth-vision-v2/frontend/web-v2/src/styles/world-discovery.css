@@ -115,3 +115,24 @@
    background:#eff9ff;border-radius:9px;
  }
 }
+
+/* Readable provenance for the offline Atlas index. Not a claim that
+   World-Vision has independently verified 217 statistical datasets. */
+.world-discovery .whv-discovery-snapshot-attribution {
+  margin: 0 18px 8px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid #dce9e9;
+  background: #eff7f7;
+  color: #405f68;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.world-discovery .whv-discovery-snapshot-attribution a {
+  color: #14647d;
+  text-underline-offset: 2px;
+}
+.world-discovery .whv-discovery-snapshot-attribution a:focus-visible {
+  outline: 3px solid #1687aa;
+  outline-offset: 2px;
+}
