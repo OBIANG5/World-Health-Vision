@@ -1,0 +1,62 @@
+name: World-Vision V2 Atlas U2 — review World Bank country metadata snapshot
+
+on:
+  push:
+    branches:
+      - product/v2-atlas-world-bank-metadata-u2-2026-11-22
+    paths:
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/build-world-bank-country-catalog.py"
+      - ".github/workflows/whv-v2-world-bank-country-metadata-u2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: whv-atlas-wb-metadata-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-reviewable-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check snapshot generator syntax
+        run: |
+          python -m py_compile worldhealth-vision-v2/frontend/web-v2/scripts/build-world-bank-country-catalog.py
+      - name: Retrieve ONE official country metadata response (NO indicator data)
+        run: |
+          python worldhealth-vision-v2/frontend/web-v2/scripts/build-world-bank-country-catalog.py \
+            --output "$RUNNER_TEMP/world-bank-country-metadata.snapshot.json"
+      - name: Fail closed if official metadata does not pass structural audit
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          p=Path(os.environ["RUNNER_TEMP"]) / "world-bank-country-metadata.snapshot.json"
+          v=json.loads(p.read_text(encoding="utf-8"))
+          assert v["countryEntryCount"] == len(v["items"])
+          assert v["upstreamEntryCount"] == v["countryEntryCount"] + v["aggregateExcludedCount"] + v["otherExcludedCount"]
+          assert v["countryEntryCount"] >= 190
+          assert all(item["regionCode"] != "NA" for item in v["items"])
+          assert all(len(item["iso3"]) == 3 and len(item["iso2"]) == 2 for item in v["items"])
+          assert v["dataset"] == "WORLD_BANK_COUNTRY_METADATA"
+          assert v["sourceUrl"].startswith("https://api.worldbank.org/v2/country?")
+          assert not any("GDP" in key or "population" in key.lower()
+                         for item in v["items"] for key in item)
+          print("PASS verified World Bank geography only; no indicator series or aggregates")
+          PY
+      - name: Save official metadata for HUMAN review, never publish automatically
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-country-metadata-source-review
+          path: ${{ runner.temp }}/world-bank-country-metadata.snapshot.json
+          if-no-files-found: error
+          retention-days: 14
