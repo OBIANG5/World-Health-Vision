@@ -20,23 +20,20 @@ type CountrySheetState = {
 };
 
 export function useCountrySheet(countryIso3: string, enabled: boolean): CountrySheetState {
-  const [backendLoading, setBackendLoading] = useState(false);
   const [backendError, setBackendError] = useState<string | null>(null);
   const [backendCountryIso3, setBackendCountryIso3] = useState<string | null>(null);
   const [countryDetail, setCountryDetail] = useState<CountryDetail | null>(null);
   const [economicSnapshot, setEconomicSnapshot] = useState<CountryEconomicSnapshotResponse | null>(null);
   const [relativeCostSnapshot, setRelativeCostSnapshot] = useState<CountryRelativeCostSnapshotResponse | null>(null);
+  const backendLoading = enabled && backendCountryIso3 !== countryIso3;
 
   useEffect(() => {
     if (!enabled || countryIso3.trim().length === 0) return;
 
     let active = true;
-    setBackendLoading(true);
-    setBackendError(null);
-    setBackendCountryIso3(null);
-    setCountryDetail(null);
-    setEconomicSnapshot(null);
-    setRelativeCostSnapshot(null);
+    // Scope-tagged state below already hides every value from the previous
+    // country during the first render, before this effect even executes.
+    // Synchronous state resets inside effects cause avoidable cascading renders.
 
     async function loadBackend() {
       // Losing Analytics MUST NOT make a successful Catalog country detail
@@ -54,7 +51,6 @@ export function useCountrySheet(countryIso3: string, enabled: boolean): CountryS
       setEconomicSnapshot(econ);
       setRelativeCostSnapshot(cost);
       setBackendCountryIso3(countryIso3);
-      setBackendLoading(false);
       const rejection = [detailResult, econResult, costResult].find(
         result => result.status === "rejected",
       );
