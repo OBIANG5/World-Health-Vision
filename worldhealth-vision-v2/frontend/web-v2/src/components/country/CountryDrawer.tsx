@@ -665,13 +665,9 @@ function IndicatorTabView({
 }) {
   const [selectedCode, setSelectedCode] = useState<string>("");
 
-  useEffect(() => {
-    if (lenses.length > 0 && (!selectedCode || !lenses.find((l) => l.lensCode === selectedCode))) {
-      setSelectedCode(lenses[0].lensCode);
-    }
-  }, [lenses, selectedCode]);
-
-  const selectedLens = lenses.find((l) => l.lensCode === selectedCode);
+  const effectiveSelectedCode = lenses.some(l => l.lensCode === selectedCode)
+    ? selectedCode : lenses[0]?.lensCode ?? "";
+  const selectedLens = lenses.find(l => l.lensCode === effectiveSelectedCode);
 
   if (lenses.length === 0) {
     return (
@@ -684,9 +680,9 @@ function IndicatorTabView({
   return (
     <div className="indicator-tab-view">
       <p className="tab-section-title">{title}</p>
-      <IndicatorPillBar lenses={lenses} selected={selectedCode} onSelect={setSelectedCode} />
+      <IndicatorPillBar lenses={lenses} selected={effectiveSelectedCode} onSelect={setSelectedCode} />
       {selectedLens && (
-        <IndicatorDetailPanel lens={selectedLens} iso3={iso3} lang={lang} key={selectedCode} />
+        <IndicatorDetailPanel lens={selectedLens} iso3={iso3} lang={lang} key={effectiveSelectedCode} />
       )}
     </div>
   );
@@ -844,13 +840,9 @@ function ForecastsTab({
     });
   }, [allEconomicLenses]);
 
-  useEffect(() => {
-    if (projectableLenses.length > 0 && (!selectedCode || !projectableLenses.find((l) => l.lensCode === selectedCode))) {
-      setSelectedCode(projectableLenses[0].lensCode);
-    }
-  }, [projectableLenses, selectedCode]);
-
-  const selectedLens = projectableLenses.find((l) => l.lensCode === selectedCode);
+  const effectiveSelectedCode = projectableLenses.some(l => l.lensCode === selectedCode)
+    ? selectedCode : projectableLenses[0]?.lensCode ?? "";
+  const selectedLens = projectableLenses.find(l => l.lensCode === effectiveSelectedCode);
 
   return (
     <div className="forecasts-tab">
@@ -872,7 +864,7 @@ function ForecastsTab({
         </div>
       ) : (
         <>
-          <IndicatorPillBar lenses={projectableLenses} selected={selectedCode} onSelect={setSelectedCode} />
+          <IndicatorPillBar lenses={projectableLenses} selected={effectiveSelectedCode} onSelect={setSelectedCode} />
           {selectedLens && (
             <div className="forecasts-detail">
               <div className="forecasts-current-val">
@@ -1335,10 +1327,12 @@ export default function CountryDrawer({
     });
   }
 
-  const economyLenses   = useMemo(() => filterLenses(ECONOMY_CODES),    [allLenses]);
-  const healthLenses    = useMemo(() => filterLenses(HEALTH_CODES),     [allLenses]);
-  const governanceLenses = useMemo(() => filterLenses(GOVERNANCE_CODES), [allLenses]);
-  const marketsLenses   = useMemo(() => filterLenses(MARKETS_CODES),    [allLenses]);
+  // A country holds only dozens of indicators; this simple deterministic
+  // filtering is cheaper/safer than memoizing a newly created closure.
+  const economyLenses = filterLenses(ECONOMY_CODES);
+  const healthLenses = filterLenses(HEALTH_CODES);
+  const governanceLenses = filterLenses(GOVERNANCE_CODES);
+  const marketsLenses = filterLenses(MARKETS_CODES);
 
   // CSV export
   function downloadCsv() {
