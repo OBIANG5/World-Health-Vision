@@ -126,37 +126,50 @@ const wbCache = new Map<
 >();
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
+type CountryScopedWbState = {
+  iso3: string;
+  data: Record<string, { value: number; year: string }>;
+  loading: boolean;
+};
+const EMPTY_WB_COUNTRY: Record<string, { value: number; year: string }> = {};
+
+/**
+ * No cross-country data leaks during rapid Atlas navigation:
+ * old results are invisible immediately, even before useEffect executes.
+ * Late responses are ignored after the user chooses another country.
+ */
 export function useWorldBankLenses(iso3: string, enabled: boolean) {
-  const [wbData, setWbData] = useState<Record<string, { value: number; year: string }>>({});
-  const [loading, setLoading] = useState(false);
+  const [state, setState] = useState<CountryScopedWbState | null>(null);
 
   useEffect(() => {
-    if (!enabled || !iso3 || iso3 === "-99") {
-      setWbData({});
+    if (!enabled || !/^[A-Z]{3}$/.test(iso3)) {
+      setState(null);
       return;
     }
 
-    // Résultat déjà en cache et frais
     const cached = wbCache.get(iso3);
     if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-      setWbData(cached.data);
+      setState({ iso3, data: cached.data, loading: false });
       return;
     }
 
     let active = true;
-    setLoading(true);
-
-    fetchWbMultipleLatest(iso3, WB_DIRECT_CODES).then((results) => {
-      if (!active) return;
-      wbCache.set(iso3, { data: results, fetchedAt: Date.now() });
-      setWbData(results);
-      setLoading(false);
-    });
-
-    return () => {
-      active = false;
-    };
+    setState({ iso3, data: EMPTY_WB_COUNTRY, loading: true });
+    void fetchWbMultipleLatest(iso3, WB_DIRECT_CODES)
+      .then(results => {
+        if (!active) return;
+        wbCache.set(iso3, { data: results, fetchedAt: Date.now() });
+        setState({ iso3, data: results, loading: false });
+      })
+      .catch(() => {
+        if (active) setState({ iso3, data: EMPTY_WB_COUNTRY, loading: false });
+      });
+    return () => { active = false; };
   }, [iso3, enabled]);
 
-  return { wbData, loading };
+  const safe = enabled && state?.iso3 === iso3 ? state : null;
+  return {
+    wbData: safe?.data ?? EMPTY_WB_COUNTRY,
+    loading: enabled && /^[A-Z]{3}$/.test(iso3) && (!safe || safe.loading),
+  };
 }
