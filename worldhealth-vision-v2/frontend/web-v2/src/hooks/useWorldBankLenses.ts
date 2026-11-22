@@ -162,13 +162,14 @@ export function useWorldBankLenses(iso3: string, enabled: boolean) {
     return () => { active = false; };
   }, [iso3, enabled, validCode]);
 
+  // Render must be pure: Date.now belongs to the effect (refresh decision),
+  // never the render phase. While revalidating, a cached *dated* official
+  // observation may remain visible; it never becomes a WHV licensed series.
   const cached = wbCache.get(iso3);
-  const recentCache = cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS ? cached : null;
-  const recentState = state?.iso3 === iso3 &&
-    Date.now() - state.fetchedAt < CACHE_TTL_MS ? state : null;
-  const data = enabled && validCode ? recentCache?.data ?? recentState?.data : null;
+  const scopedState = state?.iso3 === iso3 ? state : null;
+  const data = enabled && validCode ? scopedState?.data ?? cached?.data : null;
   return {
     wbData: data ?? EMPTY_WB_COUNTRY,
-    loading: enabled && validCode && !recentCache && !recentState,
+    loading: enabled && validCode && !scopedState && !cached,
   };
 }
