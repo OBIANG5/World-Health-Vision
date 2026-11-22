@@ -1,5 +1,6 @@
 /**
- * World-Vision RC0: REAL V2 + no backend/catalog fixture must fail CLOSED.
+ * Atlas U2: REAL V2 still usable without the private backend.
+ * A reviewed WB geographic snapshot is allowed; fake statistical series aren't.
  * A 404 or disconnected static preview is NOT evidence of zero local sources,
  * zero publishable observations, or a resolved news event.
  */
@@ -42,12 +43,30 @@ try {
     await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 18000 });
     assert.equal(await page.locator(".whv-route-notice").count(), 0,
       "Catalog outage must never mislabel a valid GAB country URL as invalid");
-    const catalogStatus = page.locator(".whv-country-profile-source-status");
+    // Country is the product: a dated official GEOGRAPHIC fallback survives
+    // even with no Gateway/Catalog/Timeseries, without inventing statistics.
+    const catalogStatus = page.locator(".whv-country-profile-snapshot-note");
     await catalogStatus.waitFor({ state: "visible", timeout: 15000 });
-    assert((await catalogStatus.innerText()).includes("Le catalogue des pays est momentanément inaccessible"),
-      "Show a human-readable catalog outage, never raw HTTP/404 traces");
-    assert.equal(await page.locator("#country-select").count(), 0,
-      "Do not show an empty/invalid country selector without a catalog");
+    const provenance = await catalogStatus.innerText();
+    assert(provenance.includes("Banque mondiale") && provenance.includes("2026-11-22"),
+      "WB metadata source and date must be human-readable on every country");
+    assert.equal(await catalogStatus.locator('a[href^="https://"]').count(), 2,
+      "Direct original provider and license links must remain visible");
+    const countryPicker = page.locator("#country-select");
+    await countryPicker.waitFor({ state: "visible" });
+    assert((await countryPicker.locator("option").count()) >= 190,
+      "Global country search may not vanish merely because Gateway is down");
+    assert(await countryPicker.locator('option[value="FRA"]').count() === 1 &&
+      await countryPicker.locator('option[value="BRA"]').count() === 1 &&
+      await countryPicker.locator('option[value="CIV"]').count() === 1,
+      "World Bank geographic fallback must cover multiple continents");
+    const facts = page.locator(".whv-country-profile-facts");
+    await facts.waitFor({ state: "visible" });
+    const countryFacts = await facts.innerText();
+    assert(countryFacts.includes("Libreville") && countryFacts.includes("Afrique subsaharienne"),
+      "GAB must show actual sourced capital and region, not an empty state or fictitious figures");
+    assert(!countryFacts.includes("0 sources") && !countryFacts.includes("PIB"),
+      "Geographic metadata must not become fabricated statistical coverage");
     const editorial = page.locator(".whv-country-story");
     await editorial.waitFor({ state: "visible" });
     const nav = page.locator(".whv-country-section-nav");
@@ -96,6 +115,13 @@ try {
       await page.goto(origin + "/?wv=country&iso3=FRA",
         { waitUntil: "domcontentloaded" });
       await page.locator(".country-drawer.open").waitFor({ state: "visible" });
+      const franceFacts = page.locator(".whv-country-profile-facts");
+      await franceFacts.waitFor({ state: "visible" });
+      assert((await franceFacts.innerText()).includes("Paris"),
+        "France must display its own sourced capital");
+      assert(!(await franceFacts.innerText()).includes("Libreville"),
+        "Country switch must not reuse Gabon geographic facts");
+
       assert.equal(await page.locator(".whv-route-notice").count(), 0,
         "Valid FRA country link cannot be flagged invalid because the backend is down");
       await page.locator(".whv-country-section-nav").getByRole("button", { name: "Actualités" }).click();
@@ -111,6 +137,25 @@ try {
       await page.screenshot({
         path: "ux1b-artifacts/390-country-france-honest-unavailable.png",
         fullPage: false,
+      });
+    }
+    if (device.width === 390) {
+      // End-to-end from global search to a real country profile on mobile.
+      await page.goto(origin + "/?wv=search", { waitUntil: "domcontentloaded" });
+      const discovery = page.locator('.world-discovery[role="dialog"]');
+      await discovery.waitFor({ state: "visible" });
+      await discovery.locator("input").fill("Gabon");
+      const entry = discovery.locator(".world-discovery-result")
+        .filter({ hasText: "Gabon" }).first();
+      await entry.waitFor({ state: "visible" });
+      assert((await entry.innerText()).includes("Libreville"),
+        "Local search results must contain real country metadata");
+      await entry.click();
+      assert.equal(new URL(page.url()).searchParams.get("iso3"), "GAB",
+        "Mobile search must open the requested country");
+      await page.locator(".whv-country-overview").waitFor({ state: "visible" });
+      await page.screenshot({
+        path: "ux1b-artifacts/390-atlas-search-to-gabon.png", fullPage: false,
       });
     }
     await page.close();
