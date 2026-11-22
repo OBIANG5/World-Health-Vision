@@ -19,6 +19,7 @@ import { useCountrySheet } from "../../hooks/useCountrySheet";
 import CountryLocalEvidencePanel from "./CountryLocalEvidencePanel";
 import CountryEditorialStory from "./CountryEditorialStory";
 import CountryNewsPanel from "./CountryNewsPanel";
+import { getWorldBankCountryMetadata, worldBankCatalogProvenance, type CountryCatalogSource } from "../../catalog/worldBankCountryCatalog";
 import { useFxRates } from "../../hooks/useFxRates";
 import { useIndicatorHistory } from "../../hooks/useIndicatorHistory";
 import { useIndicatorOverview } from "../../hooks/useIndicatorOverview";
@@ -47,6 +48,7 @@ type Props = {
   countries: CountrySummary[];
   countriesLoading: boolean;
   countriesError: string | null;
+  catalogSource: CountryCatalogSource;
   watched?: boolean;
   onToggleWatch?: () => void;
 };
@@ -1253,7 +1255,7 @@ function ComparatorSection({
 
 export default function CountryDrawer({
   open, onClose, selectedCountryIso3, onCountryChange,
-  countries, countriesLoading, countriesError,
+  countries, countriesLoading, countriesError, catalogSource,
   watched = false, onToggleWatch,
 }: Props) {
   const lang = useLang();
@@ -1284,6 +1286,15 @@ export default function CountryDrawer({
     () => countries.find((c) => c.iso3 === selectedCountryIso3) ?? null,
     [countries, selectedCountryIso3],
   );
+  const bankMetadata = catalogSource === "WORLD_BANK_SNAPSHOT"
+    ? getWorldBankCountryMetadata(selectedCountryIso3) : null;
+  const countryReference = countryDetail ?? selectedCountry;
+  const incomeGroupFromSnapshot = bankMetadata?.incomeLevelCode
+    ? (fr ? ({
+      HIC: "Revenu élevé", UMC: "Revenu intermédiaire supérieur",
+      LMC: "Revenu intermédiaire inférieur", LIC: "Faible revenu",
+    } as Record<string, string>)[bankMetadata.incomeLevelCode] ?? bankMetadata.incomeLevelName
+      : bankMetadata.incomeLevelName) : null;
 
   useEffect(() => {
     setActiveSection("overview");
@@ -1486,11 +1497,37 @@ export default function CountryDrawer({
                 {country.displayName} ({country.iso3})
               </option>)}
             </select>}
-            {countriesError && <p className="whv-country-profile-source-status" role="status">
-              {fr
-                ? "Le catalogue des pays est momentanément inaccessible. Les informations connectées ne peuvent pas toutes être actualisées."
-                : "The country catalog is temporarily unavailable. Connected information cannot all be refreshed."}
-            </p>}
+            {catalogSource === "WORLD_BANK_SNAPSHOT" && (
+              <p className="whv-country-profile-source-status whv-country-profile-snapshot-note" role="status">
+                {fr
+                  ? "Répertoire géographique de secours · Banque mondiale · "
+                  : "Geographic fallback directory · World Bank · "}
+                <time dateTime={worldBankCatalogProvenance.asOfUtc}>
+                  {worldBankCatalogProvenance.asOfUtc.slice(0, 10)}
+                </time>
+                {" · "}
+                <a href={worldBankCatalogProvenance.sourceUrl} target="_blank" rel="noopener noreferrer">
+                  {fr ? "Source des repères" : "Geographic source"}
+                </a>
+                {" · "}
+                <a href={worldBankCatalogProvenance.termsUrl} target="_blank" rel="noopener noreferrer">
+                  {fr ? "Droits et attribution" : "Rights and attribution"}
+                </a>
+                {". "}
+                {fr
+                  ? "Économies et territoires selon la Banque mondiale, pas la couverture statistique officielle de World-Vision."
+                  : "World Bank economies and territories, not World-Vision's verified statistical coverage."}
+                {countriesError && (fr
+                  ? " Le catalogue World-Vision est momentanément inaccessible."
+                  : " The World-Vision catalog is temporarily unavailable.")}
+              </p>
+            )}
+            {catalogSource === "WHV_CATALOG" && countriesError && (
+              <p className="whv-country-profile-source-status" role="status">
+                {fr ? "Certaines métadonnées du catalogue sont indisponibles."
+                  : "Some catalog metadata is unavailable."}
+              </p>
+            )}
           </div>
 
           {selectedCountryIso3 === "-99" && <p className="whv-country-profile-source-status" role="status">
@@ -1509,23 +1546,32 @@ export default function CountryDrawer({
                 ? "L’identité du pays, ses informations essentielles et les indicateurs documentés. Explorez ensuite chaque rubrique selon votre besoin."
                 : "The country's identity, essential reference details and documented indicators. Explore the other sections as needed."}</p>
             </div>
-            {countryDetail && <div className="country-meta-grid whv-country-profile-facts">
-              <MetaItem label={t(lang, "capitale")} value={countryDetail.capitalCity ?? "—"} />
-              <MetaItem label={t(lang, "devise")} value={countryDetail.currencyCode
-                ? [countryDetail.currencyCode, countryDetail.currencyName].filter(Boolean).join(" — ") : "—"} />
-              <MetaItem label={t(lang, "region")} value={countryDetail.regionName ?? "—"} />
-              <MetaItem label={t(lang, "sousRegion")} value={countryDetail.subregionName ?? "—"} />
-              <MetaItem label={t(lang, "classeRevenu")} value={countryDetail.worldBankIncomeGroup ?? "—"} />
-              <MetaItem label={t(lang, "qualiteDonnees")} value={
-                fr ? "Couverture variable selon l’indicateur" : "Coverage varies by indicator"
-              } />
-            </div>}
-            {!countryDetail && <div className="whv-country-profile-reference-empty" role="status">
-              <strong>{fr ? "Repères institutionnels non vérifiables actuellement" : "Institutional reference details unavailable"}</strong>
-              <p>{fr
-                ? "Nous n’affichons pas de capitale, devise ou catégorie statistique inventée lorsque le service pays est inaccessible."
-                : "We do not invent a capital, currency or statistical classification when the country service is unavailable."}</p>
-            </div>}
+            {countryReference && (
+              <div className="country-meta-grid whv-country-profile-facts">
+                {countryReference.capitalCity && <MetaItem label={t(lang, "capitale")}
+                  value={countryReference.capitalCity} />}
+                {countryReference.regionName && <MetaItem label={t(lang, "region")}
+                  value={countryReference.regionName} />}
+                {countryReference.subregionName && <MetaItem label={t(lang, "sousRegion")}
+                  value={countryReference.subregionName} />}
+                {countryReference.currencyCode && <MetaItem label={t(lang, "devise")}
+                  value={countryReference.currencyCode +
+                    (countryReference.currencyName ? " — " + countryReference.currencyName : "")} />}
+                {(countryDetail?.worldBankIncomeGroup || incomeGroupFromSnapshot) && (
+                  <MetaItem label={t(lang, "classeRevenu")}
+                    value={countryDetail?.worldBankIncomeGroup ?? incomeGroupFromSnapshot ?? "—"} />
+                )}
+              </div>
+            )}
+            {!countryReference && (
+              <div className="whv-country-profile-reference-empty" role="status">
+                <strong>{fr ? "Repères géographiques indisponibles pour ce code"
+                  : "Geographic metadata unavailable for this code"}</strong>
+                <p>{fr
+                  ? "Aucun pays n'est fabriqué lorsque ni le catalogue World-Vision ni le répertoire externe n'identifient ce territoire."
+                  : "No country is fabricated when neither World-Vision nor the external directory identifies the territory."}</p>
+              </div>
+            )}
             {economicSnapshot || relativeCostSnapshot ? <OverviewTab
               allLenses={allLenses} highlights={combinedHighlights}
               decisionSignals={decisionSignals} lang={lang}
