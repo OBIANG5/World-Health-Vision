@@ -1491,31 +1491,6 @@ export default function CountryDrawer({
                 {country.displayName} ({country.iso3})
               </option>)}
             </select>}
-            {catalogSource === "WORLD_BANK_SNAPSHOT" && (
-              <p className="whv-country-profile-source-status whv-country-profile-snapshot-note" role="status">
-                {fr
-                  ? "Répertoire géographique de secours · Banque mondiale · "
-                  : "Geographic fallback directory · World Bank · "}
-                <time dateTime={worldBankCatalogProvenance.asOfUtc}>
-                  {worldBankCatalogProvenance.asOfUtc.slice(0, 10)}
-                </time>
-                {" · "}
-                <a href={worldBankCatalogProvenance.sourceUrl} target="_blank" rel="noopener noreferrer">
-                  {fr ? "Source des repères" : "Geographic source"}
-                </a>
-                {" · "}
-                <a href={worldBankCatalogProvenance.termsUrl} target="_blank" rel="noopener noreferrer">
-                  {fr ? "Droits et attribution" : "Rights and attribution"}
-                </a>
-                {". "}
-                {fr
-                  ? "Économies et territoires selon la Banque mondiale, pas la couverture statistique officielle de World-Vision."
-                  : "World Bank economies and territories, not World-Vision's verified statistical coverage."}
-                {countriesError && (fr
-                  ? " Le catalogue World-Vision est momentanément inaccessible."
-                  : " The World-Vision catalog is temporarily unavailable.")}
-              </p>
-            )}
             {catalogSource === "WHV_CATALOG" && countriesError && (
               <p className="whv-country-profile-source-status" role="status">
                 {fr ? "Certaines métadonnées du catalogue sont indisponibles."
@@ -1556,6 +1531,35 @@ export default function CountryDrawer({
                     value={countryDetail?.worldBankIncomeGroup ?? incomeGroupFromSnapshot ?? "—"} />
                 )}
               </div>
+            )}
+            {catalogSource === "WORLD_BANK_SNAPSHOT" && (
+              <details className="whv-country-profile-source-status whv-country-profile-snapshot-note">
+                <summary>
+                  {fr ? "Repères : Banque mondiale" : "Geographic data: World Bank"}
+                  {" · "}
+                  <time dateTime={worldBankCatalogProvenance.asOfUtc}>
+                    {worldBankCatalogProvenance.asOfUtc.slice(0, 10)}
+                  </time>
+                  {" · "}
+                  <span>{fr ? "Source et limites" : "Source and limitations"}</span>
+                </summary>
+                <p>
+                  {fr
+                    ? "Répertoire de secours des économies et territoires classés par la Banque mondiale. Il ne remplace ni le registre World-Vision ni les données statistiques autorisées."
+                    : "A fallback World Bank directory of economies and territories. It does not replace the World-Vision registry or rights-approved statistical observations."}
+                  {countriesError && (fr
+                    ? " Le catalogue World-Vision est actuellement inaccessible."
+                    : " The World-Vision catalog is currently unavailable.")}
+                </p>
+                <div className="whv-country-snapshot-links">
+                  <a href={worldBankCatalogProvenance.sourceUrl} target="_blank" rel="noopener noreferrer">
+                    {fr ? "Données d'origine" : "Original metadata"}
+                  </a>
+                  <a href={worldBankCatalogProvenance.termsUrl} target="_blank" rel="noopener noreferrer">
+                    {fr ? "Licence et attribution" : "License and attribution"}
+                  </a>
+                </div>
+              </details>
             )}
             {!countryReference && (
               <div className="whv-country-profile-reference-empty" role="status">
