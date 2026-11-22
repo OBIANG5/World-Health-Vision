@@ -622,15 +622,40 @@
 }
 /* Source credit is part of a usable Atlas, not a popup or a top-level panel. */
 .whv-page .country-drawer .whv-country-profile-snapshot-note {
+  margin: -3px 0 13px;
   font-size: 11px;
-  line-height: 1.6;
-  padding: 9px 12px;
-  border-left: 3px solid #8cc3d5;
-  background: #f2f7f9;
+  line-height: 1.55;
+  padding: 8px 12px;
+  border: 1px solid #e2eaec;
+  border-radius: 9px;
+  background: #f8fafb;
+  color: #546f7d;
+}
+.whv-page .country-drawer .whv-country-profile-snapshot-note summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: #3e687a;
+  font-weight: 680;
+}
+.whv-page .country-drawer .whv-country-profile-snapshot-note summary span {
+  color: #197296;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .whv-page .country-drawer .whv-country-profile-snapshot-note :is(a,time) {
   color: #175f80;
   font-weight: 680;
+}
+.whv-page .country-drawer .whv-country-profile-snapshot-note p {
+  margin: 9px 0 7px;
+  font-size: 11px;
+  color: #506c78;
+}
+.whv-page .country-drawer .whv-country-snapshot-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 4px 0 2px;
 }
 .whv-page .country-drawer .whv-country-profile-facts {
   align-items: stretch;
