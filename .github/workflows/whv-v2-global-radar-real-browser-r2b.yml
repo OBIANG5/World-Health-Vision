@@ -7,6 +7,7 @@ on:
       - product/v2-radar-gabon-imf-claims-evidence-r2c-2026-11-21
       - qa/v2-radar-ux-crossflow-rc0-2026-11-21
       - product/v2-country-editorial-story-u1-2026-11-21
+      - product/v2-atlas-world-bank-metadata-u2-2026-11-22
   workflow_dispatch:
   pull_request:
     paths:
@@ -31,6 +32,15 @@ on:
       - "worldhealth-vision-v2/frontend/web-v2/src/components/country/CountryEditorialStory.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/components/country/CountryDrawer.tsx"
       - "worldhealth-vision-v2/frontend/web-v2/src/styles/country-editorial.css"
+      - "worldhealth-vision-v2/frontend/web-v2/src/catalog/worldBankCountryCatalog.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/data/worldBankCountryCatalog.snapshot.json"
+      - "worldhealth-vision-v2/frontend/web-v2/src/hooks/useCountryCatalog.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/hooks/useCountrySheet.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/hooks/useWorldBankLenses.ts"
+      - "worldhealth-vision-v2/frontend/web-v2/src/components/layout/WorldDiscovery.tsx"
+      - "worldhealth-vision-v2/frontend/web-v2/src/App.tsx"
+      - "worldhealth-vision-v2/frontend/web-v2/src/styles/world-discovery.css"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/test-world-bank-country-catalog.mjs"
       - "worldhealth-vision-v2/frontend/web-v2/scripts/build-radar-preview.sh"
       - ".github/workflows/whv-v2-global-radar-real-browser-r2b.yml"
 
@@ -95,6 +105,7 @@ jobs:
           node --test scripts/test-global-radar-editorial-case.mjs
           node --test scripts/test-global-radar-claims.mjs
           node --test scripts/test-global-radar.mjs
+          node --test scripts/test-world-bank-country-catalog.mjs
       - name: ESLint strict on all R2B changes and existing R1 integration
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
@@ -109,7 +120,12 @@ jobs:
             global-radar-real-archive-browser-smoke.mjs \
             ux1b-sources-smoke.mjs \
             ux1b-no-backend-smoke.mjs \
-            src/components/country/CountryEditorialStory.tsx
+            src/components/country/CountryEditorialStory.tsx \
+            src/components/country/CountryDrawer.tsx \
+            src/components/layout/WorldDiscovery.tsx \
+            src/hooks/useCountryCatalog.ts src/hooks/useCountrySheet.ts \
+            src/hooks/useWorldBankLenses.ts src/catalog/worldBankCountryCatalog.ts \
+            src/App.tsx scripts/test-world-bank-country-catalog.mjs
       - name: Build deliberate SYNTHETIC preview fixture only in CI workspace
         working-directory: worldhealth-vision-v2/services/ingestion-service
         env:
