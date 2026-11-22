@@ -160,6 +160,53 @@ try {
     }
     await page.close();
   }
+
+  // Simulate an actual late official indicator response. A person who switches
+  // from GAB to FRA before GAB finishes must NEVER see GAB numeric data under
+  // France. The browser still runs the real hook & React country drawer.
+  const switching = await browser.newPage({ viewport: { width: 390, height: 844 },
+    isMobile: true, hasTouch: true });
+  const errors = [];
+  switching.on("pageerror", error => errors.push(error.message));
+  let gabCalls = 0, fraCalls = 0;
+  await switching.route(/^https:\/\/api\.worldbank\.org\/v2\/country\/(GAB|FRA)\/indicator\//,
+    async route => {
+      const url = new URL(route.request().url());
+      const gab = url.pathname.includes("/country/GAB/");
+      if (gab) gabCalls++; else fraCalls++;
+      // Independent mocked 2025 values, explicitly SYNTHETIC for CI ONLY.
+      await delay(gab ? 1200 : 50);
+      const rows = url.searchParams.get("source") === "2"
+        ? [{ indicator: { id: "NY.GDP.PCAP.CD" }, date: "2025",
+            value: gab ? 123456 : 987654 }] : [];
+      await route.fulfill({ status: 200,
+        headers: { "access-control-allow-origin": "*", "content-type": "application/json" },
+        body: JSON.stringify([{ page: 1, pages: 1, total: rows.length }, rows]) });
+    });
+  await switching.goto(origin + "/?wv=country&iso3=GAB",
+    { waitUntil: "domcontentloaded" });
+  await switching.locator(".country-drawer.open").waitFor({ state: "visible" });
+  await switching.locator("#country-select").selectOption("FRA");
+  await switching.locator(".whv-country-story h2").filter({ hasText: "France" })
+    .waitFor({ state: "visible" });
+  await switching.waitForFunction(() =>
+    [...document.querySelectorAll(".overview-kpi-value")]
+      .some(node => (node.textContent ?? "").includes("987")),
+    null, { timeout: 15000 });
+  await delay(1500);
+  const numbersAfterLateGabon = await switching.locator(".overview-kpi-value").allTextContents();
+  assert(numbersAfterLateGabon.some(text => text.includes("987")),
+    "A synthetic France response must be displayed under France");
+  assert(!numbersAfterLateGabon.some(text => text.includes("123")),
+    "Late GAB API responses must never contaminate the FRA country profile");
+  assert(gabCalls > 0 && fraCalls > 0,
+    "The race test must genuinely exercise both countries");
+  assert.deepEqual(errors, [], "No React browser errors during fast country navigation");
+  await switching.screenshot({
+    path: "ux1b-artifacts/390-country-switch-no-cross-contamination.png",
+    fullPage: false,
+  });
+  await switching.close();
 } finally {
   await browser?.close();
   server.kill("SIGTERM");
