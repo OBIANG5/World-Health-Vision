@@ -144,12 +144,16 @@ function AppContent() {
   const [countryAnchor, setCountryAnchor] = useState({ top: 80, left: 16 });
   const [selectedCountryIso3, setSelectedCountryIso3] = useState(() => route.kind === "country" ? route.iso3 : "FRA");
   const { profile, hasProfile } = useUserProfile();
-  const { countries, loading: countriesLoading, error: countriesError } = useCountryCatalog();
-  const isOffline = !countriesLoading && !!countriesError && countries.length === 0;
+  const { countries, loading: countriesLoading, error: countriesError,
+    source: catalogSource } = useCountryCatalog();
+  const isOffline = catalogSource !== "WHV_CATALOG";
   const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
 
   const activeIso3 = route.kind === "country" ? route.iso3 : selectedCountryIso3;
   const routedCountryMissing = route.kind === "country"
+    // A World Bank fallback is NOT a complete World-Vision country registry.
+    // Never mark a valid WHV territory link invalid merely because WB omits it.
+    && catalogSource === "WHV_CATALOG"
     && !countriesLoading && countries.length > 0
     && !countries.some((country) => country.iso3 === route.iso3 && country.active && !country.aggregate);
   const activeCountryDrawerOpen = (drawerOpen || route.kind === "country") && !routedCountryMissing;
@@ -493,7 +497,8 @@ function AppContent() {
       <span className={"whv-service-status " +
           (isPreview || isOffline ? "whv-service-status--offline" : countriesLoading ? "whv-service-status--loading" : "whv-service-status--online")}
         title={isPreview ? "Aperçu statique : données nationales versionnées, sans backend permanent" :
-          isOffline ? "Services de données indisponibles" : countriesLoading ? "Connexion..." : countries.length + " pays chargés"}>
+          isOffline ? "Atlas : métadonnées Banque mondiale, services WHV non connectés" :
+          countriesLoading ? "Connexion..." : countries.length + " entrées du catalogue WHV"}>
         <span className="whv-service-status-dot" />
         {isPreview ? (lang === "fr" ? "Aperçu" : "Preview") : isOffline ? (lang === "fr" ? "Hors ligne" : "Offline") :
           countriesLoading ? "…" : (lang === "fr" ? "Connecté" : "Connected")}
@@ -659,7 +664,11 @@ function AppContent() {
           </div>
         </div>
         <div className="whv-story-metrics" aria-label={lang === "fr" ? "Aperçu du catalogue" : "Catalog overview"}>
-          <div><strong>{countries.length || "—"}</strong><span>{lang === "fr" ? "pays & territoires" : "countries & territories"}</span></div>
+          <div><strong>{countries.length || "—"}</strong><span>
+            {catalogSource === "WORLD_BANK_SNAPSHOT"
+              ? (lang === "fr" ? "économies et territoires · Banque mondiale" : "economies & territories · World Bank")
+              : (lang === "fr" ? "pays et territoires · catalogue World-Vision" : "countries & territories · World-Vision catalog")}
+          </span></div>
           <div><strong>{VISION_PRODUCTS.length}</strong><span>{lang === "fr" ? "Visions sur la feuille de route" : "Visions on the roadmap"}</span></div>
         </div>
         <div className="whv-story-topics">
@@ -767,6 +776,7 @@ function AppContent() {
         countries={countries}
         countriesLoading={countriesLoading}
         countriesError={countriesError}
+        catalogSource={catalogSource}
         watched={isWatched(activeIso3)}
         onToggleWatch={() => toggleWatch(activeIso3)}
       />}
@@ -887,7 +897,8 @@ function AppContent() {
 
       {route.kind === "search" && (
         <WorldDiscovery language={lang} onToggleLanguage={toggleLang} countries={countries}
-          loading={countriesLoading} unavailable={isOffline}
+          loading={countriesLoading} unavailable={countries.length === 0}
+          catalogSource={catalogSource}
           onClose={closeWorldDiscovery}
           onCountry={handleCountryClick}
           onVision={(id) => openVisionHub(id)}
