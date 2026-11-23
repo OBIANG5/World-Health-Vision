@@ -11,6 +11,7 @@ import type {DirectorBeat,DirectorIntent} from "../../../../services/media-rende
 import {attentionCueIssues} from "../../../../services/media-renderer/creative/attention-cues.mjs";
 import type {SourceSoundCue} from "../../../../services/media-renderer/creative/attention-cues.mjs";
 import {wordCaptionIssues} from "../../../../services/media-renderer/creative/word-caption-contract.mjs";
+import {alignBeatToSpokenWords,snapPhotoTrackToBeat,snapSoundCueToBeat} from "../../../../services/media-renderer/creative/voice-beat-motion-sync.mjs";
 import type {WordCaption} from "../../../../services/media-renderer/creative/word-caption-contract.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
@@ -556,6 +557,55 @@ export default function CinematicProductionBoard() {
         (error instanceof Error?error.message:String(error)));
     }
   };
+  /** Source-locked 30fps voice -> semantic beat. Never guesses an ASR result. */
+  const syncBeatToVoice=(beatId:string)=>{
+    try{
+      const result=alignBeatToSpokenWords({
+        shots,script,voice:voiceFile?{file:voiceFile}:null,
+        captions:parsedCaptions.cues,wordCaptions,directorBeats
+      },beatId);
+      setDirectorBeats(result.directorBeats);
+      setFeedback("Relance calée sur la vraie prise vocale à "+
+        (result.sourceStartFrame/30).toFixed(2)+" s. Aucun mot, média ni son modifié.");
+    }catch(error){
+      setFeedback("Synchronisation voix refusée : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
+  /** Move an existing, validated PHOTO layer; never fabricate a comparison. */
+  const syncPhotoToBeat=(beatId:string,layer:"comparison"|"metric"|"focus")=>{
+    try{
+      if(active.template!=="photo_story"||
+        (layer==="comparison"&&!active.photoUseComparison)||
+        (layer==="metric"&&!active.photoUseMetric)||
+        (layer==="focus"&&!active.photoUseFocus)||
+        !validPhoto(active))
+        throw Error("Choisir d'abord une piste PHOTO complète, activée et sourcée.");
+      const result=snapPhotoTrackToBeat({shots,script,directorBeats},beatId,
+        active.photoSettings[layer],layer);
+      updatePhotoTrack(layer,{
+        startFrame:result.track.startFrame,
+        endFrame:result.track.endFrame
+      });
+      setFeedback("Piste "+layer+" calée à "+(result.sourceStartFrame/30).toFixed(2)+
+        " s dans le vrai film. Chiffres, source, durée de révélation et autres pistes inchangés.");
+    }catch(error){
+      setFeedback("Révélation PHOTO refusée : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
+  const syncSfxToBeat=(cueIndex:number,beatId:string)=>{
+    if(!beatId)return;
+    try{
+      const result=snapSoundCueToBeat({shots,directorBeats,soundCues},beatId,cueIndex);
+      setSoundCues(result.soundCues);
+      setFeedback("Effet sonore existant calé à "+(result.sourceStartFrame/30).toFixed(2)+
+        " s, sans changer son fichier, sa durée ni son volume.");
+    }catch(error){
+      setFeedback("Synchronisation sonore refusée : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
   const reviewDirectorBeat=(beat:DirectorBeat)=>{
     if(!fullFilmCanRender){
       setFeedback("Corrige les médias et la timeline avant de revoir cette séquence dans le film.");
@@ -778,6 +828,30 @@ export default function CinematicProductionBoard() {
               <div className="wvc-director-beat" key={beat.id}>
                 <div className="wvc-director-row"><strong>{beat.id} · {(beat.startFrame/30).toFixed(2)}–{(beat.endFrame/30).toFixed(2)} s</strong>
                   <div>
+                    {wordCaptions.length>0&&<button type="button" className="wvc-sync-action"
+                      disabled={!beat.spokenExcerpt.trim()||wordIssues.length>0}
+                      onClick={()=>syncBeatToVoice(beat.id)}
+                      title="Aligner l'intervalle de cette relance sur les mots exacts de la prise sélectionnée">
+                      Caler à la voix
+                    </button>}
+                    {active.template==="photo_story"&&active.photoUseComparison&&
+                      <button type="button" className="wvc-sync-action"
+                        disabled={!validPhoto(active)}
+                        onClick={()=>syncPhotoToBeat(beat.id,"comparison")}>
+                        Caler PHOTO×DATA
+                      </button>}
+                    {active.template==="photo_story"&&active.photoUseMetric&&
+                      <button type="button" className="wvc-sync-action"
+                        disabled={!validPhoto(active)}
+                        onClick={()=>syncPhotoToBeat(beat.id,"metric")}>
+                        Caler chiffre PHOTO
+                      </button>}
+                    {active.template==="photo_story"&&active.photoUseFocus&&
+                      <button type="button" className="wvc-sync-action"
+                        disabled={!validPhoto(active)}
+                        onClick={()=>syncPhotoToBeat(beat.id,"focus")}>
+                        Caler focus PHOTO
+                      </button>}
                     <button type="button" disabled={!fullFilmCanRender||directorIssues.length>0}
                       onClick={()=>reviewDirectorBeat(beat)}>▶ Écouter en contexte</button>
                     <button type="button" onClick={()=>setDirectorBeats(old=>old.filter(item=>item.id!==beat.id))}>Retirer</button>
@@ -874,6 +948,15 @@ export default function CinematicProductionBoard() {
                       onChange={e=>updateSoundCue(index,{label:e.target.value})}/>
                   </label>
                 </div>
+                {directorBeats.length>0&&<label className="wvc-sfx-beat-link">
+                  CALER CET EFFET SONORE SUR UN MOMENT DU RÉCIT
+                  <select value="" onChange={e=>syncSfxToBeat(index,e.target.value)}>
+                    <option value="">Choisir une relance existante…</option>
+                    {directorBeats.map(beat=><option key={beat.id} value={beat.id}>
+                      {beat.id} · {beat.intent} · {(beat.startFrame/30).toFixed(2)} s
+                    </option>)}
+                  </select>
+                </label>
               </div>)}
             {soundIssues.length>0&&<p role="alert" className="wvc-director-error">
               SFX invalide : {soundIssues[0].field} — {soundIssues[0].reason}
