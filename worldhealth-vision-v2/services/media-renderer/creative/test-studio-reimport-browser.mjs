@@ -217,6 +217,90 @@ try{
  if((await page.$eval("#wvc-project",el=>el.value))!=="ALIGNEMENT UI - SIMULATION CI")
    throw Error("Mismatched alignment overwrote the approved spoken-word project.");
 
+ // End-to-end consumer of the real Remotion PHOTO comparison engine:
+ // approved word timing -> same authored beat -> existing sourced PHOTO×DATA
+ // reveal -> original-clock SFX. These numbers/pixels are explicitly fictional.
+ const photoSaved={
+   ...wordSaved,id:"wv-photo-voice-sync",title:"PHOTO + VOIX - SIMULATION CI",
+   script:"UNE PREUVE CHANGE TOUT.",
+   wordCaptions:[
+     {text:"UNE",startFrame:0,endFrame:20,emphasis:false},
+     {text:"PREUVE",startFrame:48,endFrame:64,emphasis:true},
+     {text:"CHANGE",startFrame:64,endFrame:85,emphasis:false},
+     {text:"TOUT.",startFrame:85,endFrame:120,emphasis:false}
+   ],
+   directorBeats:[{id:"beat-ci-proof",shotId:"plan-01",
+     startFrame:132,endFrame:160,intent:"rehook",
+     idea:"Un nouveau résultat fictif change l'interprétation",
+     spokenExcerpt:"PREUVE CHANGE",proofNote:"Fixture artificielle non publiable",
+     visualDirection:"Une comparaison approuvée entre les deux catégories simulées",
+     audioDirection:"WAV d'essai raccordé au mot effectivement aligné"}],
+   soundCues:[{file:"click-synthetic.wav",startFrame:118,durationFrames:10,
+     volume:.2,label:"SFX artificiel uniquement pour test"}],
+   shots:[{
+     id:"plan-01",template:"photo_story",durationFrames:180,
+     title:"PREUVE EN IMAGE",subtitle:"Chiffres artificiels - NON journalistique",
+     eyebrow:"SIMULATION CI",motion:"locked",transitionAfter:"cut",transitionFrames:0,
+     media:{kind:"image",file:"synthetic-landscape.png",credit:"Simulation CI"},
+     photo:{
+       camera:{zoomFrom:1.05,zoomTo:1.13,panX:18,panY:-14,startFrame:0,endFrame:132},
+       comparison:{title:"Exemple sans données réelles",
+         first:{label:"A",value:12},second:{label:"B",value:18},
+         domain:{min:0,max:20},unit:"points",precision:0,locale:"fr-FR",
+         source:{publisher:"Simulation CI",dataset:"Fixture artificielle",asOf:"2026-11-23"},
+         startFrame:100,endFrame:148}
+     }
+   }]
+ };
+ const photoPath=path.join(tmp,"photo-voice-sync-ui.json");
+ fs.writeFileSync(photoPath,JSON.stringify(photoSaved));
+ await (await page.$("#wvc-load-project")).uploadFile(photoPath);
+ try{
+   await page.waitForFunction(()=>
+     document.querySelector("#wvc-project")?.value==="PHOTO + VOIX - SIMULATION CI",
+     {timeout:12000});
+ }catch(error){
+   throw Error("PHOTO edit reimport failed: "+await page.$eval(".wvc-feedback",el=>el.textContent||"")+" / "+String(error));
+ }
+ await page.evaluate(()=>{
+   Array.from(document.querySelectorAll(".wvc-director-row button"))
+     .find(button=>button.textContent?.includes("Caler à la voix"))?.click();
+ });
+ await page.waitForFunction(()=>Array.from(document.querySelectorAll(".wvc-director-row strong"))
+   .some(el=>el.textContent?.includes("beat-ci-proof")&&el.textContent.includes("1.60")),{timeout:10000});
+ const photoLinkButton=await page.evaluate(()=>Array.from(document.querySelectorAll(".wvc-director-row button"))
+   .find(button=>button.textContent?.includes("Caler PHOTO×DATA"))?.disabled??null);
+ if(photoLinkButton!==false)throw Error("Sourced PHOTO×DATA layer did not become actionable.");
+ await page.evaluate(()=>Array.from(document.querySelectorAll(".wvc-director-row button"))
+   .find(button=>button.textContent?.includes("Caler PHOTO×DATA"))?.click());
+ await page.waitForFunction(()=>document.querySelector(".wvc-feedback")?.textContent?.includes("Piste comparison calée"),
+   {timeout:10000});
+ await page.select(".wvc-sfx-beat-link select","beat-ci-proof");
+ await page.waitForFunction(()=>document.querySelector(".wvc-feedback")?.textContent?.includes("Effet sonore existant calé"),
+   {timeout:10000});
+ await page.evaluate(()=>{window.__wvExportedJson=null;});
+ await page.evaluate(()=>Array.from(document.querySelectorAll("button"))
+   .find(button=>button.textContent?.includes("Exporter le projet"))?.click());
+ await page.waitForFunction(()=>Boolean(window.__wvExportedJson),{timeout:12000});
+ const linked=JSON.parse(await page.evaluate(()=>window.__wvExportedJson));
+ if(linked.script!==photoSaved.script||linked.voice?.file!==photoSaved.voice.file||
+   linked.shots[0]?.photo?.comparison?.startFrame!==48||
+   linked.shots[0]?.photo?.comparison?.endFrame!==96||
+   linked.shots[0]?.photo?.comparison?.source?.dataset!=="Fixture artificielle"||
+   linked.shots[0]?.photo?.comparison?.first?.value!==12||
+   linked.shots[0]?.photo?.comparison?.second?.value!==18||
+   linked.directorBeats[0].startFrame!==48||linked.directorBeats[0].endFrame!==85||
+   linked.soundCues[0].startFrame!==48||
+   linked.soundCues[0].durationFrames!==10||
+   JSON.stringify(linked.wordCaptions)!==JSON.stringify(photoSaved.wordCaptions))
+   throw Error("Real PHOTO/data/voice/SFX retime lost approved facts, images or original time: "+
+     JSON.stringify(linked));
+ // The exact composition is on the film-mode Player, not an isolated fake shot.
+ await page.evaluate(()=>Array.from(document.querySelectorAll(".wvc-preview-switch button"))
+   .find(button=>button.textContent?.includes("Film entier"))?.click());
+ await page.waitForFunction(()=>Boolean(document.querySelector(
+   '[aria-label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"]'
+  )),{timeout:18000});
  if(errors.length)throw Error("Browser errors: "+errors.join(" / "));
  const screenshot=path.join(output,"studio-reimport-mobile-390.png");
  await page.screenshot({path:screenshot,fullPage:true,type:"png"});
@@ -228,6 +312,7 @@ try{
   alignedWordImportExportVerified:true,sourceVoiceLocked:true,
   wordHighlightEditedWithoutChangingSourceTiming:true,
   invalidWordAlignmentRejected:true,
+  actualPhotoComparisonAndSfxReframedToApprovedSpokenWord:true,
   invalidImportPreservedTitle:title,screenshot};
  fs.writeFileSync(path.join(output,"studio-reimport-browser.report.json"),JSON.stringify(report,null,2)+"\n");
  console.log(JSON.stringify(report));
