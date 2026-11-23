@@ -115,34 +115,33 @@ function paintRing(ctx:CanvasRenderingContext2D,ring:Ring,pose:Pose,cx:number,cy
  }
 }
 function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
- // Brand identity: TWO OPEN ARCS around a larger Earth, never a closed
- // white sclera or a decorative complete ring. Source: user's eye-Earth
- // reference (Nov 2026), with white reduced so the planet remains dominant.
+ // Two luminous OPEN arcs, not a white closed border or cartoon circular iris.
  const left=cx-r*1.38,right=cx+r*1.38;
- const arc=(upper:boolean,offset=0)=>{
+ function curve(upper:boolean,offset=0){
    const side=upper?-1:1;
-   const y=cy+side*offset;
-   ctx.beginPath();ctx.moveTo(left,y);
-   ctx.bezierCurveTo(cx-r*.83,cy+side*r*1.72+side*offset,
-                     cx+r*.83,cy+side*r*1.72+side*offset,right,y);
- };
- ctx.save();
+   ctx.beginPath();ctx.moveTo(left,cy+side*offset);
+   ctx.bezierCurveTo(cx-r*.83,cy+side*(r*1.72+offset),
+                     cx+r*.83,cy+side*(r*1.72+offset),right,cy+side*offset);
+ }
+ ctx.save();ctx.lineCap="round";
  for(const upper of [true,false]){
-   arc(upper);
-   ctx.shadowColor="rgba(0,207,255,.63)";
-   ctx.shadowBlur=Math.max(8,r*.065);
-   ctx.strokeStyle="#0378ed";
-   ctx.lineWidth=Math.max(4,r*.045);
-   ctx.stroke();
-   ctx.shadowBlur=0;
-   arc(upper,5);
-   ctx.strokeStyle="rgba(99,229,255,.94)";
-   ctx.lineWidth=Math.max(2,r*.02);
-   ctx.stroke();
-   arc(upper,11);
-   ctx.strokeStyle="rgba(251,255,255,.75)";
-   ctx.lineWidth=Math.max(1.5,r*.015);
-   ctx.stroke();
+   curve(upper,-r*.09);
+   ctx.shadowColor="rgba(70,221,255,.36)";
+   ctx.shadowBlur=Math.max(9,r*.1);
+   ctx.strokeStyle="rgba(246,255,255,.92)";
+   ctx.lineWidth=Math.max(8,r*.12);ctx.stroke();
+   curve(upper,r*.025);
+   ctx.shadowColor="rgba(4,181,255,.9)";
+   ctx.shadowBlur=Math.max(13,r*.15);
+   ctx.strokeStyle="#0061d4";
+   ctx.lineWidth=Math.max(10,r*.16);ctx.stroke();
+   const ribbon=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
+   ribbon.addColorStop(0,"#1171ee");ribbon.addColorStop(.32,"#1bcafc");
+   ribbon.addColorStop(.72,"#04a5ff");ribbon.addColorStop(1,"#0467df");
+   curve(upper,r*.025);ctx.shadowBlur=0;ctx.strokeStyle=ribbon;
+   ctx.lineWidth=Math.max(5,r*.091);ctx.stroke();
+   curve(upper,r*.072);ctx.strokeStyle="rgba(222,255,255,.94)";
+   ctx.lineWidth=Math.max(2.1,r*.018);ctx.stroke();
  }
  ctx.restore();
 }
@@ -162,7 +161,7 @@ function landColor(region:string,latitude:number,longitude:number){
 }
 function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:FeatureCollection|null,selected:string,hover:string|null,countries:Map<string,CountrySummary>,textureCanvas:HTMLCanvasElement|null){
  ctx.clearRect(0,0,w,h);
- const cx=w/2,cy=h*.51,r=Math.min(w*.32,h*.41)*pose.zoom;
+ const cx=w/2,cy=h*.51,r=Math.min(w*.36,h*.41)*pose.zoom;
  // Behind the eye: clean midnight space as on the reference artwork.
  const sky=ctx.createRadialGradient(cx,cy,r*.52,cx,cy,Math.max(w,h)*.79);
  sky.addColorStop(0,"#063981");sky.addColorStop(.56,"#031843");sky.addColorStop(1,"#000621");
@@ -365,7 +364,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
  },[schedule]);
  const location=(x:number,y:number)=>{
   const r=canvas.current?.getBoundingClientRect();if(!r)return null;
-  const radius=Math.min(r.width*.32,r.height*.41)*pose.current.zoom;
+  const radius=Math.min(r.width*.36,r.height*.41)*pose.current.zoom;
   return inverseProjection((x-r.left-r.width/2)/radius,-(y-r.top-r.height*.51)/radius,pose.current.lon,pose.current.lat);
  };
  const hoverAt=(x:number,y:number)=>{
@@ -395,7 +394,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
    if(pinch.current.distance>0)pose.current.zoom=clamp(pinch.current.zoom*d/pinch.current.distance,.75,1.25);
   }else if(drag.current){
    const rect=canvas.current?.getBoundingClientRect();
-   const radius=rect?Math.max(80,Math.min(rect.width*.32,rect.height*.41)):180;
+   const radius=rect?Math.max(80,Math.min(rect.width*.36,rect.height*.41)):180;
    const dx=e.clientX-prev.x,dy=e.clientY-prev.y;
    drag.current.moved+=Math.hypot(dx,dy);
    if(drag.current.moved>5){
