@@ -79,6 +79,31 @@ try {
     const mapBounds = await page.locator(".wv3-geo-hero").boundingBox();
     assert(mapBounds && mapBounds.y >= 55 && mapBounds.width > size.width * .65,
       "Real geographic country map must dominate the first screen after header");
+    const structure = await page.evaluate(() => {
+      const rect = selector => {
+        const element = document.querySelector(selector);
+        if (!element) return null;
+        const r = element.getBoundingClientRect();
+        return { top:Math.round(r.top),left:Math.round(r.left),
+          bottom:Math.round(r.bottom),right:Math.round(r.right),
+          width:Math.round(r.width),height:Math.round(r.height),
+          display:getComputedStyle(element).display };
+      };
+      return { hero:rect(".wv3-geo-hero"),map:rect(".wv3-country-map"),
+        identity:rect(".wv3-country-identity"),tabs:rect(".whv-country-section-nav"),
+        bodyScroll:document.querySelector(".country-drawer-body")?.scrollTop ?? -1 };
+    });
+    console.log("V3_COUNTRY_LAYOUT",size.n,JSON.stringify(structure));
+    assert(structure.identity?.height > 100 && structure.hero?.height > 200,
+      "Country identity must not be collapsed or clipped on any viewport");
+    assert(structure.tabs?.top >= structure.hero.bottom - 3,
+      "Country tabs must appear AFTER the complete geographic hero");
+    if(size.width <= 960){
+      assert(structure.identity.top >= structure.map.bottom - 2,
+        "Mobile country identity must follow the country map, not overlay it");
+    }
+    assert((await page.locator(".whv-country-section-tab").first().evaluate(node =>
+      getComputedStyle(node).display)) === "flex", "Country tabs must not inherit six-column legacy grid");
 
     const cats = page.locator(".wv3-directory-categories button");
     assert.equal(await cats.count(), 6);
