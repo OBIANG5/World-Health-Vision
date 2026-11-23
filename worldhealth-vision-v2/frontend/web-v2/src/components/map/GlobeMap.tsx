@@ -134,11 +134,11 @@ function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
    ctx.lineWidth=Math.max(4,r*.045);
    ctx.stroke();
    ctx.shadowBlur=0;
-   arc(upper,upper?5:-5);
+   arc(upper,5);
    ctx.strokeStyle="rgba(99,229,255,.94)";
    ctx.lineWidth=Math.max(2,r*.02);
    ctx.stroke();
-   arc(upper,upper?11:-11);
+   arc(upper,11);
    ctx.strokeStyle="rgba(251,255,255,.75)";
    ctx.lineWidth=Math.max(1.5,r*.015);
    ctx.stroke();
