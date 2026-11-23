@@ -60,6 +60,10 @@ try {
       "All country Visions discoverable on overview");
     assert.equal(await page.locator(".whv-country-section-tab").count(), 6,
       "Peer sections preserved, news secondary");
+    await page.screenshot({ path: `v3-artifacts/${size.n}-gabon-map-first.png`, animations: "disabled" });
+    const mapBounds = await page.locator(".wv3-geo-hero").boundingBox();
+    assert(mapBounds && mapBounds.y >= 55 && mapBounds.width > size.width * .65,
+      "Real geographic country map must dominate the first screen after header");
 
     const cats = page.locator(".wv3-directory-categories button");
     assert.equal(await cats.count(), 6);
