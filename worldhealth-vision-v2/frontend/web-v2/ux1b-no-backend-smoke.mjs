@@ -63,8 +63,9 @@ try {
     const facts = page.locator(".whv-country-profile-facts");
     await facts.waitFor({ state: "visible" });
     const countryFacts = await facts.innerText();
-    assert(countryFacts.includes("Libreville") && countryFacts.includes("Afrique subsaharienne"),
-      "GAB must show actual sourced capital and region, not an empty state or fictitious figures");
+    assert(countryFacts.includes("Afrique subsaharienne") &&
+      (await page.locator(".wv3-country-identity").innerText()).includes("Libreville"),
+      "GAB must show its real capital ONCE in identity, then sourced regional facts");
     assert(!countryFacts.includes("0 sources") && !countryFacts.includes("PIB"),
       "Geographic metadata must not become fabricated statistical coverage");
     const map = page.locator(".wv3-geo-hero");
@@ -120,8 +121,8 @@ try {
       await page.locator(".country-drawer.open").waitFor({ state: "visible" });
       const franceFacts = page.locator(".whv-country-profile-facts");
       await franceFacts.waitFor({ state: "visible" });
-      assert((await franceFacts.innerText()).includes("Paris"),
-        "France must display its own sourced capital");
+      assert((await page.locator(".wv3-country-identity").innerText()).includes("Paris"),
+        "France must display its own sourced capital in identity");
       assert(!(await franceFacts.innerText()).includes("Libreville"),
         "Country switch must not reuse Gabon geographic facts");
 
