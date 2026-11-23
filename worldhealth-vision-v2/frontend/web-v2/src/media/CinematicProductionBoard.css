@@ -354,3 +354,25 @@
   .wvc-word-cues{max-height:190px}
   .wvc-word-cues button{min-height:46px}
 }
+
+/* One-click alignment: actual authored voice -> existing PHOTO/DATA/SFX motion.
+ * The action is visually subordinate to source/proof and the film player. */
+.wvc-director-row .wvc-sync-action{
+  border-color:rgba(125,204,221,.6);
+  color:#c4eff9;
+  background:#183a4b;
+}
+.wvc-director-row .wvc-sync-action:hover:not(:disabled){background:#27576c}
+.wvc-sfx-cue .wvc-sfx-beat-link{
+  margin-top:4px;
+  color:#abcad9;
+}
+.wvc-sfx-beat-link select{
+  min-height:42px;
+  font-size:12px;
+  width:100%;
+}
+@media(max-width:560px){
+  .wvc-director-row>div{align-items:stretch}
+  .wvc-director-row .wvc-sync-action{flex:1 1 42%;white-space:normal}
+}
