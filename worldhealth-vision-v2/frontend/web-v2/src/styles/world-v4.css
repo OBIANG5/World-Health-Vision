@@ -516,3 +516,63 @@ body .wv3-service-menu .wv3-menu-status{color:#96b8ca;}
 @media(prefers-reduced-motion:reduce){
  .whv-page .wv4-country-map .wv4-map-scanline{display:none;}
 }
+
+/* ART REVIEW #2: first actual Chromium capture at 320px showed three
+   mistakes: small country silhouette, overly dark texture and a collision
+   between Earth hint/source/disclaimer. Correct the original composition
+   rather than shrinking content to fool viewport tests. */
+.whv-page .wv4-country-texture{
+  filter:saturate(1.52) contrast(1.18) brightness(1.06)!important;
+}
+.whv-page .wv4-country-map-surface::after{
+  background:linear-gradient(180deg,rgba(1,10,28,.08),transparent 50%,rgba(2,9,28,.28)),
+             radial-gradient(ellipse at 50% 50%,transparent 0%,rgba(1,10,28,.12) 90%)!important;
+}
+.whv-page .whv-globe-disclaimer{
+  display:none!important; /* the explicit archival caveat lives in the HOME
+  disclosure below and in the full NASA/Three.js provenance link */
+}
+.whv-page .whv-globe-source{
+  left:auto;right:15px;top:20px;bottom:auto;max-width:156px;
+  text-align:right;text-decoration:underline;text-underline-offset:3px;
+  font-size:9px;line-height:1.45;opacity:.84;
+}
+.whv-page .whv-globe-hint{
+  bottom:17px!important;max-width:calc(100% - 46px);
+  font-weight:650;
+}
+.whv-page .whv-globe-zoom{bottom:54px;}
+@media(max-width:600px){
+ .whv-page .whv-globe-source{
+   top:29px;right:9px;bottom:auto;max-width:125px;
+   font-size:8px;line-height:1.3;
+ }
+ .whv-page .whv-globe-hint{
+   bottom:9px!important;font-size:9px;max-width:calc(100% - 36px);
+   padding:6px 10px;
+ }
+ .whv-page .whv-globe-zoom{bottom:41px;}
+ .whv-page .wv4-country-map-name{
+   text-shadow:0 3px 15px #001623,0 0 12px #035f70;
+ }
+ .whv-page .wv4-country-identity{
+   gap:6px!important;padding:15px 17px 17px!important;
+ }
+ .whv-page .wv4-country-identity h2{font-size:34px!important;}
+ .whv-page .wv4-country-identity dl{
+   margin:6px 0!important;gap:9px!important;
+ }
+ .whv-page .wv4-country-identity .wv3-country-key-actions{
+   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+   gap:5px;margin:7px 0 0;width:100%;
+ }
+ .whv-page .wv4-country-identity .wv3-country-key-actions button{
+   justify-content:center;min-width:0;
+   gap:4px;padding:9px 4px;font-size:10px;
+   min-height:43px;white-space:nowrap;
+ }
+ .whv-page .wv4-country-identity .wv3-country-key-actions svg{
+   width:15px;height:15px;flex:0 0 15px;
+ }
+ .whv-page .wv4-country-identity > small{font-size:9px;line-height:1.45;}
+}
