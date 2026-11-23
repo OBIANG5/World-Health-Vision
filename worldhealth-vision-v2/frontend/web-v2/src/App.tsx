@@ -42,7 +42,12 @@ import "./styles/world-editorial.css";
 import "./styles/world-electric.css";
 import "./styles/vision-hub.css";
 import "./styles/world-discovery.css";
+// Load legacy country styles before the V3/V4 Atlas layers. Lazy-loading the
+// country route must never override final V4 contrast and responsive rules.
+import "./styles/country.css";
+import "./styles/country-editorial.css";
 import "./styles/world-v3.css";
+import "./styles/world-v4.css";
 
 // ---------- Sélecteur de pays (popover) ----------
 

@@ -8,6 +8,7 @@ import type {PointerEvent as PointerEventReact,KeyboardEvent as KeyboardEventRea
 import type {FeatureCollection,Feature,Geometry} from "geojson";
 import type {CountrySummary} from "../../api/types";
 import "../../styles/globe.css";
+import { createEarthTextureRenderer, type EarthTextureRenderer } from "./earthTextureRenderer";
 
 const RAD=Math.PI/180,DEG=180/Math.PI;
 const clamp=(x:number,a:number,b:number)=>Math.max(a,Math.min(b,x));
@@ -114,34 +115,33 @@ function paintRing(ctx:CanvasRenderingContext2D,ring:Ring,pose:Pose,cx:number,cy
  }
 }
 function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
- // Brand identity: TWO OPEN ARCS around a larger Earth, never a closed
- // white sclera or a decorative complete ring. Source: user's eye-Earth
- // reference (Nov 2026), with white reduced so the planet remains dominant.
+ // Two luminous OPEN arcs, not a white closed border or cartoon circular iris.
  const left=cx-r*1.38,right=cx+r*1.38;
- const arc=(upper:boolean,offset=0)=>{
+ function curve(upper:boolean,offset=0){
    const side=upper?-1:1;
-   const y=cy+side*offset;
-   ctx.beginPath();ctx.moveTo(left,y);
-   ctx.bezierCurveTo(cx-r*.83,cy+side*r*1.72+side*offset,
-                     cx+r*.83,cy+side*r*1.72+side*offset,right,y);
- };
- ctx.save();
+   ctx.beginPath();ctx.moveTo(left,cy+side*offset);
+   ctx.bezierCurveTo(cx-r*.83,cy+side*(r*1.72+offset),
+                     cx+r*.83,cy+side*(r*1.72+offset),right,cy+side*offset);
+ }
+ ctx.save();ctx.lineCap="round";
  for(const upper of [true,false]){
-   arc(upper);
-   ctx.shadowColor="rgba(0,207,255,.63)";
-   ctx.shadowBlur=Math.max(8,r*.065);
-   ctx.strokeStyle="#0378ed";
-   ctx.lineWidth=Math.max(4,r*.045);
-   ctx.stroke();
-   ctx.shadowBlur=0;
-   arc(upper,5);
-   ctx.strokeStyle="rgba(99,229,255,.94)";
-   ctx.lineWidth=Math.max(2,r*.02);
-   ctx.stroke();
-   arc(upper,11);
-   ctx.strokeStyle="rgba(251,255,255,.75)";
-   ctx.lineWidth=Math.max(1.5,r*.015);
-   ctx.stroke();
+   curve(upper,-r*.09);
+   ctx.shadowColor="rgba(70,221,255,.36)";
+   ctx.shadowBlur=Math.max(9,r*.1);
+   ctx.strokeStyle="rgba(246,255,255,.92)";
+   ctx.lineWidth=Math.max(8,r*.12);ctx.stroke();
+   curve(upper,r*.025);
+   ctx.shadowColor="rgba(4,181,255,.9)";
+   ctx.shadowBlur=Math.max(13,r*.15);
+   ctx.strokeStyle="#0061d4";
+   ctx.lineWidth=Math.max(10,r*.16);ctx.stroke();
+   const ribbon=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
+   ribbon.addColorStop(0,"#1171ee");ribbon.addColorStop(.32,"#1bcafc");
+   ribbon.addColorStop(.72,"#04a5ff");ribbon.addColorStop(1,"#0467df");
+   curve(upper,r*.025);ctx.shadowBlur=0;ctx.strokeStyle=ribbon;
+   ctx.lineWidth=Math.max(5,r*.091);ctx.stroke();
+   curve(upper,r*.072);ctx.strokeStyle="rgba(222,255,255,.94)";
+   ctx.lineWidth=Math.max(2.1,r*.018);ctx.stroke();
  }
  ctx.restore();
 }
@@ -159,14 +159,14 @@ function landColor(region:string,latitude:number,longitude:number){
  if(region==="Sub-Saharan Africa")return "#239443";
  return palette[region]??(Math.abs(latitude)<26?"#3eaa53":"#83b64d");
 }
-function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:FeatureCollection|null,selected:string,hover:string|null,countries:Map<string,CountrySummary>){
+function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:FeatureCollection|null,selected:string,hover:string|null,countries:Map<string,CountrySummary>,textureCanvas:HTMLCanvasElement|null){
  ctx.clearRect(0,0,w,h);
- const cx=w/2,cy=h*.51,r=Math.min(w*.32,h*.41)*pose.zoom;
+ const cx=w/2,cy=h*.51,r=Math.min(w*.36,h*.41)*pose.zoom;
  // Behind the eye: clean midnight space as on the reference artwork.
  const sky=ctx.createRadialGradient(cx,cy,r*.52,cx,cy,Math.max(w,h)*.79);
  sky.addColorStop(0,"#063981");sky.addColorStop(.56,"#031843");sky.addColorStop(1,"#000621");
  ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
- for(let i=0;i<95;i++){
+ for(let i=0;i<27;i++){
   const x=((i*7907+421)%997)/997*w,y=((i*541+153)%991)/991*h;
   const distance=Math.hypot(x-cx,y-cy);
   if(distance<r*1.18)continue;
@@ -184,11 +184,16 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
  sea.addColorStop(0,"#168de6");sea.addColorStop(.42,"#096cc9");
  sea.addColorStop(.75,"#07469c");sea.addColorStop(1,"#02144d");
  ctx.fillStyle=sea;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+ if(textureCanvas){
+  // Real satellite texture mapped to the identical ortho pose used by
+  // country borders and pointer hit detection. Never a static globe image.
+  ctx.drawImage(textureCanvas,cx-r,cy-r,r*2,r*2);
+ }
  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
  // Quiet ocean currents and subtle polar/atmospheric highlights; no graticule
  // that would cover the vivid earth photo-inspired look.
  ctx.strokeStyle="rgba(156,229,252,.12)";ctx.lineWidth=.6;
- for(let latitude=-75;latitude<=75;latitude+=30){
+ if(!textureCanvas)for(let latitude=-75;latitude<=75;latitude+=30){
   ctx.beginPath();let started=false;
   for(let lon=-180;lon<=180;lon+=4){
    const p=projectCoordinates(lon,latitude,pose.lon,pose.lat);
@@ -205,15 +210,19 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
    const polys=rings(f.geometry),outer=polys[0]?.[0];
    const latitude=outer?.length?outer.reduce((sum,p)=>sum+p[1],0)/outer.length:0;
    const active=code===selected,over=code===hover;
-   ctx.fillStyle=active?"#90dc55":over?"#d8ed6f":landColor(region,latitude,outer?.length?outer.reduce((sum,p)=>sum+p[0],0)/outer.length:0);
-   ctx.strokeStyle=active?"#f7ffff":over?"#ffffff":"rgba(248,255,252,.93)";
+   ctx.fillStyle=textureCanvas
+     ? active?"rgba(67,228,250,.15)":over?"rgba(70,230,239,.23)":"rgba(0,0,0,0)"
+     : active?"#90dc55":over?"#d8ed6f":landColor(region,latitude,outer?.length?outer.reduce((sum,p)=>sum+p[0],0)/outer.length:0);
+   ctx.strokeStyle=textureCanvas
+     ? active?"#b2faff":over?"#e4ffff":"rgba(235,252,255,.65)"
+     : active?"#f7ffff":over?"#ffffff":"rgba(248,255,252,.93)";
    ctx.lineWidth=active?2.0:over?1.7:Math.max(.58,r*.0025);
    for(const p of polys)if(p[0])paintRing(ctx,p[0],pose,cx,cy,r);
   }
  }
  // High-frequency light glints and limited cloud strokes; never factual weather.
  ctx.globalAlpha=.12;ctx.strokeStyle="#f4fbff";ctx.lineWidth=Math.max(.6,r*.007);
- for(let k=0;k<16;k++){
+ if(!textureCanvas)for(let k=0;k<16;k++){
   const lat=-52+(k*37)%110,lon=-162+(k*47)%325;
   const p=projectCoordinates(lon,lat,pose.lon,pose.lat);
   if(p.z<.25)continue;
@@ -245,6 +254,8 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
  const pinch=useRef<{distance:number;zoom:number}|null>(null);
  const hovering=useRef<string|null>(null),frame=useRef<number|null>(null);
  const live=useRef({selectedCountryIso3,countriesMap});
+ const textureRenderer=useRef<EarthTextureRenderer|null>(null);
+ const [textureStatus,setTextureStatus]=useState<"loading"|"ready"|"fallback">("loading");
  live.current={selectedCountryIso3,countriesMap};
  const [status,setStatus]=useState<"loading"|"ready"|"error">("loading");
  const [hoverName,setHoverName]=useState<string|null>(null);
@@ -258,12 +269,41 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   const w=Math.round(rect.width*dpr),h=Math.round(rect.height*dpr);
   if(el.width!==w||el.height!==h){el.width=w;el.height=h;}
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  render(ctx,rect.width,rect.height,pose.current,geo.current,live.current.selectedCountryIso3,hovering.current,live.current.countriesMap);
+  const gpu=textureRenderer.current;
+  if(gpu){
+   gpu.render(pose.current.lon,pose.current.lat,
+     Math.min(rect.width*.64,rect.height*.82)*pose.current.zoom*dpr);
+  }
+  render(ctx,rect.width,rect.height,pose.current,geo.current,
+    live.current.selectedCountryIso3,hovering.current,
+    live.current.countriesMap,gpu?.canvas??null);
  },[]);
  const schedule=useCallback(()=>{
   if(frame.current!==null)return;
   frame.current=requestAnimationFrame(()=>{frame.current=null;draw();});
  },[draw]);
+ useEffect(()=>{
+  let alive=true;
+  const earth=new Image();
+  earth.decoding="async";
+  earth.onload=()=>{
+   if(!alive)return;
+   try{
+    textureRenderer.current=createEarthTextureRenderer(earth);
+    setTextureStatus("ready");
+   }catch(error){
+    console.warn("WebGL unavailable; geographic globe fallback retained:",error);
+    setTextureStatus("fallback");
+   }
+   schedule();
+  };
+  earth.onerror=()=>{if(alive){setTextureStatus("fallback");schedule();}};
+  // A single self-hosted archival texture, cached by browsers and CDN:
+  // no third-party map-tile calls per animation frame.
+  earth.src="/earth-atmos-2048.jpg";
+  return()=>{alive=false;earth.onload=null;earth.onerror=null;
+   textureRenderer.current?.destroy();textureRenderer.current=null;};
+ },[schedule]);
  useEffect(()=>{
   const ac=new AbortController();
   fetch("/countries.geojson",{signal:ac.signal})
@@ -324,7 +364,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
  },[schedule]);
  const location=(x:number,y:number)=>{
   const r=canvas.current?.getBoundingClientRect();if(!r)return null;
-  const radius=Math.min(r.width*.32,r.height*.41)*pose.current.zoom;
+  const radius=Math.min(r.width*.36,r.height*.41)*pose.current.zoom;
   return inverseProjection((x-r.left-r.width/2)/radius,-(y-r.top-r.height*.51)/radius,pose.current.lon,pose.current.lat);
  };
  const hoverAt=(x:number,y:number)=>{
@@ -354,7 +394,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
    if(pinch.current.distance>0)pose.current.zoom=clamp(pinch.current.zoom*d/pinch.current.distance,.75,1.25);
   }else if(drag.current){
    const rect=canvas.current?.getBoundingClientRect();
-   const radius=rect?Math.max(80,Math.min(rect.width*.32,rect.height*.41)):180;
+   const radius=rect?Math.max(80,Math.min(rect.width*.36,rect.height*.41)):180;
    const dx=e.clientX-prev.x,dy=e.clientY-prev.y;
    drag.current.moved+=Math.hypot(dx,dy);
    if(drag.current.moved>5){
@@ -389,7 +429,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   e.preventDefault();schedule();
  };
  const zoom=(step:number)=>{interaction.current=performance.now();pose.current.zoom=clamp(pose.current.zoom+step,.82,1.18);schedule();};
- return <div className="whv-globe-shell">
+ return <div className="whv-globe-shell" data-earth-renderer={textureStatus}>
   <canvas ref={canvas} className="whv-globe-canvas" role="application" tabIndex={0}
    aria-label="Globe terrestre interactif. Glisser pour tourner, toucher un pays pour ouvrir sa fiche, flèches pour tourner, plus et moins pour zoomer."
    onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
@@ -403,7 +443,15 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
    <button type="button" aria-label="Agrandir le globe" onClick={()=>zoom(.12)}>+</button>
    <button type="button" aria-label="Réduire le globe" onClick={()=>zoom(-.12)}>−</button>
   </div>
-  <div className="whv-globe-disclaimer">Couleurs géographiques · pas de données simulées</div>
+  <div className="whv-globe-disclaimer">
+   {textureStatus==="ready"
+    ? "Texture terrestre d’archive · frontière interactive, pas une image satellite en direct"
+    : "Contours géographiques · rendu de secours"}
+  </div>
+  <a className="whv-globe-source" href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/"
+    target="_blank" rel="noopener noreferrer" aria-label="Source et contexte de l’imagerie terrestre NASA">
+    Sources d’imagerie : NASA / exemple Three.js
+  </a>
  </div>;
 }
 export default memo(GlobeMap);

@@ -46,7 +46,27 @@ try {
       "Do not keep previous brochure-like desktop story behind new home");
     assert.equal(await page.locator(".whv-offline-banner").count(), 0,
       "The CDN geographic fallback must not trigger a giant obstructive offline alert");
+    await page.waitForFunction(() => {
+      const shell = document.querySelector(".whv-globe-shell");
+      return shell && ["ready","fallback"].includes(shell.dataset.earthRenderer);
+    },null,{timeout:12000});
+    const renderer = await page.locator(".whv-globe-shell").getAttribute("data-earth-renderer");
+    console.log("V4_EARTH_RENDERER",size.n,renderer);
+    assert(["ready","fallback"].includes(renderer),"Globe must attempt a real self-hosted Earth texture");
+    const homepageSurface = await page.locator(".whv-header").evaluate(node => getComputedStyle(node).backgroundColor);
+    assert(!homepageSurface.includes("255, 255, 255"),
+      "Visual reset must not show the old white header against the Earth");
     await page.screenshot({ path: `v3-artifacts/${size.n}-home.png`, animations: "disabled" });
+    // Regression: an interactive Globe must NEVER intercept the home shortcuts.
+    // Exercise the real button on every size; do not bypass pointer hit-testing.
+    await page.locator(".wv3-home-quick button").filter({hasText:"Fiche pays"}).click({timeout:8000});
+    assert.equal(new URL(page.url()).searchParams.get("wv"),"country",
+      "The actual home Country shortcut must navigate on touch or mouse");
+    await page.locator(".country-drawer.open").waitFor({state:"visible",timeout:15000});
+    await page.goto(origin + "/?wv=home", { waitUntil: "domcontentloaded" });
+    await page.locator(".wv3-home-intro").waitFor({state:"visible",timeout:15000});
+    // The globe itself must still be pointer-accessible after fixing the stack.
+    await page.locator("canvas.whv-globe-canvas").click({trial:true,timeout:5000});
     await page.locator(".wv3-services-trigger").click();
     const menu = page.locator(".wv3-service-menu");
     await menu.waitFor({ state: "visible" });
@@ -75,6 +95,14 @@ try {
       "All country Visions discoverable on overview");
     assert.equal(await page.locator(".whv-country-section-tab").count(), 6,
       "Peer sections preserved, news secondary");
+    await page.waitForFunction(() => {
+      const canvas = document.querySelector(".wv4-country-texture");
+      return canvas && ["ready","unavailable"].includes(canvas.dataset.imageState);
+    },null,{timeout:12000});
+    const imageryState = await page.locator(".wv4-country-texture").getAttribute("data-image-state");
+    assert.equal(imageryState,"ready","Country imagery is self-hosted and can be decoded without remote provider keys");
+    const basemapColor = await page.locator(".wv4-country-map").evaluate(node=>getComputedStyle(node).backgroundColor);
+    console.log("V4_COUNTRY_BASEMAP",size.n,imageryState,basemapColor);
     await page.screenshot({ path: `v3-artifacts/${size.n}-gabon-map-first.png`, animations: "disabled" });
     const mapBounds = await page.locator(".wv3-geo-hero").boundingBox();
     assert(mapBounds && mapBounds.y >= 55 && mapBounds.width > size.width * .65,
@@ -104,6 +132,29 @@ try {
     }
     assert((await page.locator(".whv-country-section-tab").first().evaluate(node =>
       getComputedStyle(node).display)) === "flex", "Country tabs must not inherit six-column legacy grid");
+    const contrast = await page.evaluate(() => {
+      const heading = document.querySelector(".whv-country-overview .whv-country-section-heading h3");
+      const facts = document.querySelector(".whv-country-profile-facts");
+      const value = facts?.querySelector(".country-meta-value");
+      const metric = facts?.querySelector(".country-meta-item");
+      return {
+        heading: heading ? getComputedStyle(heading).color : null,
+        value: value ? getComputedStyle(value).color : null,
+        metric: metric ? getComputedStyle(metric).backgroundColor : null,
+        sheet: facts ? getComputedStyle(facts).backgroundColor : null,
+      };
+    });
+    console.log("V4_OVERVIEW_CONTRAST",size.n,JSON.stringify(contrast));
+    const isBright = css => {
+      const values = css?.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      return values && Math.min(...values.slice(1).map(Number)) >= 165;
+    };
+    assert(isBright(contrast.heading) && isBright(contrast.value),
+      "Country data headings and actual source facts must have light text on the dark atlas, not old dark ink");
+    assert(!contrast.sheet?.includes("255, 255, 255"),
+      "Old large white country facts slab must not reappear inside dark country profile");
+    await page.locator(".whv-country-profile-facts").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `v3-artifacts/${size.n}-gabon-overview-facts.png`, animations:"disabled" });
 
     const cats = page.locator(".wv3-directory-categories button");
     assert.equal(await cats.count(), 6);
@@ -142,7 +193,7 @@ try {
 
     // Separate, honest follow: bookmarking exists; push news notifications do not.
     await page.locator(".whv-country-section-nav button").filter({ hasText: "Vue d’ensemble" }).click();
-    const favorite = page.locator(".wv3-country-key-actions button").filter({ hasText: "Suivre ce pays" });
+    const favorite = page.locator(".wv3-country-key-actions button[aria-pressed=false]");
     await favorite.click();
     assert.equal(await page.locator(".wv3-country-key-actions button[aria-pressed=true]").count(), 1,
       "Country favorite actually changes persistent local watchlist state");
@@ -157,7 +208,7 @@ try {
     assert.deepEqual(errors, [], "No runtime page exceptions: " + size.n);
     await page.close();
   }
-  console.log("WORLD_VISION_V3_PASS: 320/390/820/1440 actual Vite+React globe/country map/11 Visions/news/follow");
+  console.log("WORLD_VISION_V4_PASS: 320/390/820/1440 actual Vite+React globe/country map/11 Visions/news/follow");
 } catch (err) {
   console.error("WORLD_VISION_V3_FAIL", err);
   process.exitCode = 1;
