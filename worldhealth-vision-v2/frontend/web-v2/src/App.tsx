@@ -7,6 +7,7 @@ import type { CountrySummary } from "./api/types";
 import EyeLayout from "./components/layout/EyeLayout";
 import EyeMapFrame from "./components/layout/EyeMapFrame";
 import WorldLandingV3 from "./components/layout/WorldLandingV3";
+import ServicesMegaMenuV3 from "./components/layout/ServicesMegaMenuV3";
 import {WorldIcon} from "./components/ui/WorldIcon";
 import { VISION_PRODUCTS, type VisionAction, type VisionId } from "./product/visionProducts";
 import { useWorldNavigation } from "./navigation/worldRoute";
@@ -459,127 +460,31 @@ function AppContent() {
         <WorldIcon name="user" size={18}/>
       </button>}
       {showToolsMenu && createPortal(
-        <div className="whv-tools-menu whv-domain-menu" id="whv-tools-menu" role="menu"
-          data-domain={navDomain} aria-label={lang === "fr" ? "Navigation thématique" : "Thematic navigation"}
-          style={{ position: "fixed", top: toolsAnchor.top, left: toolsAnchor.left, zIndex: 1200 }}>
-          <div className="whv-domain-heading">
-            <div>
-              <span className="whv-domain-overline">WORLD HEALTH VISION · ATLAS</span>
-              <h2>{navDomain === "explore" ? (lang === "fr" ? "Explorer le monde" : "Explore the world") :
-                navDomain === "markets" ? (lang === "fr" ? "Comprendre l’économie" : "Explore the economy") :
-                navDomain === "travel" ? (lang === "fr" ? "Voyager et s’installer" : "Travel and living") :
-                navDomain === "safety" ? (lang === "fr" ? "Comprendre les risques" : "Understand risks") :
-                (lang === "fr" ? "Toutes les fonctionnalités" : "All features")}</h2>
-            </div>
-            <button type="button" className="whv-domain-close" aria-label={lang === "fr" ? "Fermer le menu" : "Close menu"}
-              onClick={() => setShowToolsMenu(false)}><WorldIcon name="close" size={17}/></button>
-          </div>
-          <div className="whv-domain-grid">
-            {(navDomain === "explore" || navDomain === "all") && (
-              <section className="whv-domain-group" aria-label={lang === "fr" ? "Pays et régions" : "Countries and regions"}>
-                <h3>{lang === "fr" ? "01 · Pays & régions" : "01 · Countries & regions"}</h3>
-                <button type="button" className="whv-tools-item" onClick={openCountrySearch}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="map" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Explorer les pays" : "Explore countries"}</strong>
-                    <small>{lang === "fr" ? "Rechercher et ouvrir les fiches pays" : "Search country profiles"}</small></span>
-                </button>
-                <button type="button" className="whv-tools-item" onClick={() => { handleOpenRegions(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="regions" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Régions du monde" : "World regions"}</strong>
-                    <small>{lang === "fr" ? "Parcourir les grandes régions" : "Browse world regions"}</small></span>
-                </button>
-                <button type="button" className="whv-tools-item whv-nav-btn--watchlist" onClick={openFavorites}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="star" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Favoris" : "Watchlist"}{watchlist.size ? " · " + watchlist.size : ""}</strong>
-                    <small>{lang === "fr" ? "Retrouver ses pays enregistrés" : "Your saved countries"}</small></span>
-                </button>
-              </section>
-            )}
-            {(navDomain === "markets" || navDomain === "all") && (
-              <section className="whv-domain-group" aria-label={lang === "fr" ? "Économie et marchés" : "Economy and markets"}>
-                <h3>{lang === "fr" ? "02 · Économie & marchés" : "02 · Economy & markets"}</h3>
-                <button type="button" className="whv-tools-item whv-nav-btn--currency" onClick={() => { handleToggleCurrencyPanel(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="currency" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Devises & taux de change" : "Currencies & FX"}</strong>
-                    <small>{lang === "fr" ? "Comparer les monnaies" : "Compare currencies"}</small></span>
-                </button>
-                <button type="button" className="whv-tools-item whv-nav-btn--pp" onClick={() => { handleTogglePurchasingPower(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="scale" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Pouvoir d'achat" : "Purchasing power"}</strong>
-                    <small>{lang === "fr" ? "Comparer les niveaux de vie" : "Compare living standards"}</small></span>
-                </button>
-                <button type="button" className="whv-tools-item" onClick={() => { handleToggleAdvisor(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="advisor" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Conseiller économique" : "Economic advisor"}</strong>
-                    <small>{lang === "fr" ? "Lire les indicateurs et leurs limites" : "Understand the indicators"}</small></span>
-                </button>
-                <p className="whv-domain-disclosure">{lang === "fr"
-                  ? "Actions, obligations, indices et matières premières : futurs espaces dédiés, sans cotations fictives."
-                  : "Stocks, bonds, indices and commodities: planned spaces, with no fabricated market quotes."}</p>
-              </section>
-            )}
-            {(navDomain === "travel" || navDomain === "all") && (
-              <section className="whv-domain-group" aria-label={lang === "fr" ? "Tourisme et vie" : "Travel and living"}>
-                <h3>{lang === "fr" ? "03 · Voyager & vivre" : "03 · Travel & living"}</h3>
-                <button type="button" className="whv-tools-item whv-nav-btn--travel" onClick={() => { handleToggleTravel(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="travel" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Voyage" : "Travel"}</strong>
-                    <small>{lang === "fr" ? "Explorer une destination" : "Explore a destination"}</small></span>
-                </button>
-                <button type="button" className="whv-tools-item whv-nav-btn--score" onClick={() => { handleToggleDestinationScore(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="destination" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Score destination" : "Destination score"}</strong>
-                    <small>{lang === "fr" ? "Comparer les options" : "Compare destinations"}</small></span>
-                </button>
-                <button type="button" className="whv-tools-item" onClick={() => { handleToggleRetirement(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="home" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Expat & Retraite" : "Expat & Retirement"}</strong>
-                    <small>{lang === "fr" ? "Préparer un projet de vie" : "Plan a move"}</small></span>
-                </button>
-                <button type="button" className="whv-tools-item whv-nav-btn--realestate" onClick={() => { handleToggleRealEstate(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="building" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Immobilier" : "Real estate"}</strong>
-                    <small>{lang === "fr" ? "Explorer des contextes immobiliers" : "Explore property data"}</small></span>
-                </button>
-              </section>
-            )}
-            {(navDomain === "safety" || navDomain === "all") && (
-              <section className="whv-domain-group" aria-label={lang === "fr" ? "Sécurité" : "Safety"}>
-                <h3>{lang === "fr" ? "04 · Sécurité & vigilance" : "04 · Safety & awareness"}</h3>
-                <button type="button" className="whv-tools-item whv-nav-btn--alerts" onClick={() => { handleToggleAlerts(); setShowToolsMenu(false); }}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="alert" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Alertes" : "Alerts"}</strong>
-                    <small>{lang === "fr" ? "Outil dépendant des services de suivi" : "Requires alert services"}</small></span>
-                </button>
-                <button type="button" className="whv-tools-item" onClick={openCountrySearch}>
-                  <span className="whv-menu-icon" aria-hidden="true"><WorldIcon name="map" size={19}/></span>
-                  <span><strong>{lang === "fr" ? "Consulter un pays" : "Explore a country"}</strong>
-                    <small>{lang === "fr" ? "Contexte et indicateurs disponibles" : "Available context and indicators"}</small></span>
-                </button>
-                <p className="whv-domain-disclosure">{lang === "fr"
-                  ? "Les indices de sécurité et avis aux voyageurs officiels seront distingués des informations générales et ne sont pas simulés ici."
-                  : "Official safety ratings and travel advisories will remain distinct from general country data and are not simulated."}</p>
-              </section>
-            )}
-          </div>
-          {navDomain === "all" && <section className="wv3-mega-visions" aria-label={lang === "fr" ? "Toutes les Visions World-Vision" : "All World-Vision products"}>
-            <h3>{lang === "fr" ? "Les Visions World-Vision" : "World-Vision products"}</h3>
-            <p>{lang === "fr" ? "Découvrez leur rôle, leur avancement et leurs limites avant d'utiliser un outil." :
-              "See each product's scope, maturity and limitations before using a tool."}</p>
-            <div className="wv3-mega-products">
-              {VISION_PRODUCTS.map(product => <button key={product.id} type="button"
-                onClick={() => openVisionHub(product.id)}>
-                <span><strong>{product.name}</strong><small>{product.tagline[lang]}</small></span>
-                <span className="wv3-mega-stage">{product.stage === "planned" ?
-                  (lang === "fr" ? "En préparation" : "Planned") :
-                  product.stage === "partial" ? (lang === "fr" ? "Partiel" : "Partial") :
-                  (lang === "fr" ? "À explorer" : "Explore")}</span>
-              </button>)}
-            </div>
-          </section>}
-          <p className="whv-domain-footer">{lang === "fr"
-            ? "World Health Vision · Voir le monde, le comprendre. Sources et limites consultables depuis le menu Sources."
-            : "World Health Vision · See the world, understand it. Sources and limitations are available under Sources."}</p>
+        <div className="wv3-service-menu-portal" style={{
+          position: "fixed", top: toolsAnchor.top, left: toolsAnchor.left, zIndex: 1200,
+        }}>
+          <ServicesMegaMenuV3 language={lang}
+            onClose={() => setShowToolsMenu(false)}
+            onVision={(product) => { setShowToolsMenu(false); openVisionHub(product); }}
+            handlers={{
+              country: openCountrySearch,
+              regions: () => { handleOpenRegions(); setShowToolsMenu(false); },
+              sources: () => { navigate({ kind: "sources" }); setShowToolsMenu(false); },
+              currency: () => { handleToggleCurrencyPanel(); setShowToolsMenu(false); },
+              purchasingPower: () => { handleTogglePurchasingPower(); setShowToolsMenu(false); },
+              advisor: () => { handleToggleAdvisor(); setShowToolsMenu(false); },
+              travel: () => { handleToggleTravel(); setShowToolsMenu(false); },
+              destinationScore: () => { handleToggleDestinationScore(); setShowToolsMenu(false); },
+              retirement: () => { handleToggleRetirement(); setShowToolsMenu(false); },
+              realEstate: () => { handleToggleRealEstate(); setShowToolsMenu(false); },
+              favorites: () => { openFavorites(); setShowToolsMenu(false); },
+              news: () => {
+                if (route.kind === "country") handleCountryClick(activeIso3, "news");
+                else openWorldDiscovery();
+                setShowToolsMenu(false);
+              },
+              alerts: () => { handleToggleAlerts(); setShowToolsMenu(false); },
+            }}/>
         </div>,
         document.body,
       )}
