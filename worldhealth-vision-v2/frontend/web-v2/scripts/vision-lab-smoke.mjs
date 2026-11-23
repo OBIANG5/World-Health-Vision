@@ -62,6 +62,11 @@ try{
       assert(await page.locator('[data-section-panel="overview"]').isVisible());
       assert(!(await page.locator('[data-section-panel="news"]').isVisible()));
       assert((await page.locator(".facts-strip").innerText()).includes("Libreville"));
+      await page.waitForFunction(() => document.querySelector('.country-photo img')?.complete,
+        null, { timeout: 12000 }).catch(() => {});
+      const photoLoaded = await page.locator('.country-photo img').evaluate(el => el.complete && el.naturalWidth > 0);
+      assert(photoLoaded, "Human design review screenshots must have their licensed source photograph fully loaded");
+
       if(["iphone-390","desktop-1440","mobile-320"].includes(size.name)){
         await page.screenshot({path:"design-artifacts/"+concept+"-"+size.name+"-gabon.png"});
       }
