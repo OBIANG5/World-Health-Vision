@@ -145,7 +145,7 @@ function AppContent() {
   const [countryAnchor, setCountryAnchor] = useState({ top: 80, left: 16 });
   const [selectedCountryIso3, setSelectedCountryIso3] = useState(() => route.kind === "country" ? route.iso3 : "FRA");
   const [requestedCountrySection, setRequestedCountrySection] = useState<"overview" | "compare" | "news">("overview");
-  const { profile, hasProfile } = useUserProfile();
+  const { hasProfile } = useUserProfile();
   const { countries, loading: countriesLoading, error: countriesError,
     source: catalogSource } = useCountryCatalog();
   const isOffline = catalogSource !== "WHV_CATALOG";
@@ -293,12 +293,10 @@ function AppContent() {
     setShowTravelPanel(false);
   }
 
-  const anyToolOpen = showPurchasingPower || showDestinationScore || showRetirement || showRealEstate
-    || showTravelPanel || showAdvisor || showAlerts || showWatchlist || showCurrencyPanel;
-
 
   function openNavDomain(domain: NavDomain, trigger?: HTMLElement | null) {
-    if (route.kind !== "home") navigate({ kind: "home" });
+    // Services is a global menu, not a command to abandon the country.
+    // Keep geographic context and the full-page country visible underneath.
     const rect = trigger?.getBoundingClientRect() ?? document.querySelector(".whv-nav")?.getBoundingClientRect();
     if (rect) {
       const menuWidth = Math.min(580, window.innerWidth - 24);
