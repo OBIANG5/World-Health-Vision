@@ -1,0 +1,75 @@
+name: World-Vision V3 — real country map + News / Follow + all Visions
+on:
+  push:
+    branches:
+      - frontend/v3-country-services-news-follow-2026-11-23
+    paths:
+      - "worldhealth-vision-v2/frontend/web-v2/src/**"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/v3-browser-smoke.mjs"
+      - ".github/workflows/whv-v3-frontend-country-hub.yml"
+  pull_request:
+    paths:
+      - "worldhealth-vision-v2/frontend/web-v2/src/**"
+      - "worldhealth-vision-v2/frontend/web-v2/scripts/v3-browser-smoke.mjs"
+      - ".github/workflows/whv-v3-frontend-country-hub.yml"
+permissions:
+  contents: read
+concurrency:
+  group: world-vision-v3-\${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-test-real-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Install exact frontend dependencies
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm ci --no-audit --no-fund
+      - name: Compile TypeScript and production bundle
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: npm run build
+      - name: Strict lint of redesigned code, no disabled rules
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npx eslint src/App.tsx \
+            src/components/country/CountryDrawer.tsx \
+            src/components/country/CountryGeographicHero.tsx \
+            src/components/country/CountryServiceDirectory.tsx \
+            src/components/layout/WorldLandingV3.tsx \
+            src/product/visionNavigation.ts src/product/visionProducts.ts \
+            scripts/v3-browser-smoke.mjs scripts/design-country-hub-contract.test.mjs
+      - name: Preserve exhaustive 11-Vision product contract
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          node --test scripts/design-country-hub-contract.test.mjs
+          node --test scripts/test-world-bank-country-catalog.mjs
+      - name: Install Playwright Chromium
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo "WHV_BROWSER_CHANNEL=chrome" >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Chrome real V3 journeys and mobile screenshots (no fake backend)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node scripts/v3-browser-smoke.mjs
+      - name: Archive proof for HUMAN visual review, never auto approve
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-vision-v3-geo-visions-news-follow-mobile-browser
+          path: worldhealth-vision-v2/frontend/web-v2/v3-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
