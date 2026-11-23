@@ -9,7 +9,7 @@ import EyeMapFrame from "./components/layout/EyeMapFrame";
 import WorldLandingV3 from "./components/layout/WorldLandingV3";
 import ServicesMegaMenuV3 from "./components/layout/ServicesMegaMenuV3";
 import {WorldIcon} from "./components/ui/WorldIcon";
-import { VISION_PRODUCTS, type VisionAction, type VisionId } from "./product/visionProducts";
+import { type VisionAction, type VisionId } from "./product/visionProducts";
 import { useWorldNavigation } from "./navigation/worldRoute";
 import { LanguageProvider, useLang, useToggleLang } from "./context/LanguageContext";
 import { UserProfileProvider, useUserProfile } from "./context/UserProfileContext";
