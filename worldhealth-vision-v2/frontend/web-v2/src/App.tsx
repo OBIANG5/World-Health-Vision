@@ -149,7 +149,6 @@ function AppContent() {
   const { hasProfile } = useUserProfile();
   const { countries, loading: countriesLoading, error: countriesError,
     source: catalogSource } = useCountryCatalog();
-  const isOffline = catalogSource !== "WHV_CATALOG";
 
   const activeIso3 = route.kind === "country" ? route.iso3 : selectedCountryIso3;
   const routedCountryMissing = route.kind === "country"
@@ -435,7 +434,8 @@ function AppContent() {
         <span className="wv3-nav-desktop"><WorldIcon name="chevron" size={13}/></span>
       </button>
       <button type="button" className="whv-nav-btn wv3-nav-desktop"
-        onClick={() => handleCountryClick(activeIso3, "news")}>
+        onClick={() => route.kind === "country"
+          ? handleCountryClick(activeIso3, "news") : openWorldDiscovery()}>
         {lang === "fr" ? "Actualités" : "News"}
       </button>
       <button type="button" className="whv-nav-btn wv3-nav-desktop"
@@ -611,6 +611,7 @@ function AppContent() {
         onTravel={() => handleVisionAction("travel")}
         onVision={openVisionHub}
         onOpenCountry={() => handleCountryClick(activeIso3)}
+        onSources={() => navigate({ kind: "sources" })}
       />}
 
       <Suspense fallback={null}>
@@ -643,19 +644,6 @@ function AppContent() {
           setShowSourcesModal(false);
           if (route.kind === "sources") navigate({ kind: "home" });
         }} />
-      )}
-
-      {/* Bandeau hors-ligne */}
-      {isOffline && (
-        <div className="whv-offline-banner">
-          <span className="whv-offline-banner-icon">⚠</span>
-          <div>
-            <strong>{lang === "fr" ? "Données temporairement indisponibles" : "Data temporarily unavailable"}</strong>
-            <span>{lang === "fr"
-              ? "Le globe reste consultable. Les fiches et outils indiquent les informations accessibles."
-              : "You can still explore the globe. Country profiles and tools will show available information."}</span>
-          </div>
-        </div>
       )}
 
       {showProfilePanel && (
