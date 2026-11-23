@@ -115,35 +115,26 @@ function paintRing(ctx:CanvasRenderingContext2D,ring:Ring,pose:Pose,cx:number,cy
  }
 }
 function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
- // Two luminous OPEN arcs, not a white closed border or cartoon circular iris.
- const left=cx-r*1.38,right=cx+r*1.38;
- function curve(upper:boolean,offset=0){
-   const side=upper?-1:1;
-   ctx.beginPath();ctx.moveTo(left,cy+side*offset);
-   ctx.bezierCurveTo(cx-r*.83,cy+side*(r*1.72+offset),
-                     cx+r*.83,cy+side*(r*1.72+offset),right,cy+side*offset);
- }
- ctx.save();ctx.lineCap="round";
- for(const upper of [true,false]){
-   curve(upper,-r*.09);
-   ctx.shadowColor="rgba(70,221,255,.36)";
-   ctx.shadowBlur=Math.max(9,r*.1);
-   ctx.strokeStyle="rgba(246,255,255,.92)";
-   ctx.lineWidth=Math.max(8,r*.12);ctx.stroke();
-   curve(upper,r*.025);
-   ctx.shadowColor="rgba(4,181,255,.9)";
-   ctx.shadowBlur=Math.max(13,r*.15);
-   ctx.strokeStyle="#0061d4";
-   ctx.lineWidth=Math.max(10,r*.16);ctx.stroke();
-   const ribbon=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
-   ribbon.addColorStop(0,"#1171ee");ribbon.addColorStop(.32,"#1bcafc");
-   ribbon.addColorStop(.72,"#04a5ff");ribbon.addColorStop(1,"#0467df");
-   curve(upper,r*.025);ctx.shadowBlur=0;ctx.strokeStyle=ribbon;
-   ctx.lineWidth=Math.max(5,r*.091);ctx.stroke();
-   curve(upper,r*.072);ctx.strokeStyle="rgba(222,255,255,.94)";
-   ctx.lineWidth=Math.max(2.1,r*.018);ctx.stroke();
- }
- ctx.restore();
+  // Two open arcs close to the actual Earth, not a cropped neon iris.
+  const left=cx-r*1.28,right=cx+r*1.28;
+  const curve=(upper:boolean,offset=0)=>{
+    const side=upper?-1:1;
+    ctx.beginPath();ctx.moveTo(left,cy+side*offset);
+    ctx.bezierCurveTo(cx-r*.78,cy+side*(r*1.50+offset),
+                      cx+r*.78,cy+side*(r*1.50+offset),right,cy+side*offset);
+  };
+  ctx.save();ctx.lineCap="round";
+  for(const upper of [true,false]){
+    curve(upper);
+    ctx.shadowColor="rgba(20,150,194,.24)";
+    ctx.shadowBlur=Math.max(5,r*.045);
+    ctx.strokeStyle="#0878ad";
+    ctx.lineWidth=Math.max(5,r*.07);ctx.stroke();
+    curve(upper,r*.023);ctx.shadowBlur=0;
+    ctx.strokeStyle="rgba(242,254,255,.94)";
+    ctx.lineWidth=Math.max(1.8,r*.014);ctx.stroke();
+  }
+  ctx.restore();
 }
 function landColor(region:string,latitude:number,longitude:number){
  // Broad geographical/climatic impression, deliberately not a measured metric.
@@ -166,7 +157,7 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
  const sky=ctx.createRadialGradient(cx,cy,r*.52,cx,cy,Math.max(w,h)*.79);
  sky.addColorStop(0,"#063981");sky.addColorStop(.56,"#031843");sky.addColorStop(1,"#000621");
  ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
- for(let i=0;i<27;i++){
+ for(let i=0;i<16;i++){
   const x=((i*7907+421)%997)/997*w,y=((i*541+153)%991)/991*h;
   const distance=Math.hypot(x-cx,y-cy);
   if(distance<r*1.18)continue;
@@ -176,8 +167,8 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
  }
  drawEye(ctx,cx,cy,r);
  const aura=ctx.createRadialGradient(cx,cy,r*.76,cx,cy,r*1.19);
- aura.addColorStop(0,"rgba(0,194,255,.40)");
- aura.addColorStop(.72,"rgba(0,191,255,.22)");
+ aura.addColorStop(0,"rgba(0,145,185,.16)");
+ aura.addColorStop(.72,"rgba(0,130,175,.08)");
  aura.addColorStop(1,"rgba(0,204,255,0)");
  ctx.fillStyle=aura;ctx.beginPath();ctx.arc(cx,cy,r*1.21,0,Math.PI*2);ctx.fill();
  const sea=ctx.createRadialGradient(cx-r*.33,cy-r*.36,r*.08,cx+r*.12,cy+r*.06,r*1.15);
@@ -237,9 +228,9 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
  ctx.fillStyle=light;ctx.fillRect(cx-r,cy-r,r*2,r*2);
  ctx.restore();
  // Electric-blue atmosphere makes the globe read as a single spherical object.
- ctx.save();ctx.shadowColor="#00d9ff";ctx.shadowBlur=Math.max(12,r*.065);
+ ctx.save();ctx.shadowColor="rgba(48,168,195,.62)";ctx.shadowBlur=Math.max(5,r*.035);
  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
- ctx.strokeStyle="rgba(79,238,255,.98)";ctx.lineWidth=Math.max(2,r*.009);ctx.stroke();
+ ctx.strokeStyle="rgba(118,222,231,.68)";ctx.lineWidth=Math.max(1.3,r*.005);ctx.stroke();
  ctx.restore();
  ctx.strokeStyle="rgba(239,255,255,.55)";ctx.lineWidth=.8;
  ctx.beginPath();ctx.arc(cx,cy,r-2.5,0,Math.PI*2);ctx.stroke();
