@@ -1,0 +1,518 @@
+/*
+ * WORLD-VISION VISUAL SYSTEM / V4 — designed around the user's eye-Earth
+ * reference: the EARTH is the content; controlled cyan light is an affordance.
+ *
+ * Scope remains software V2, not TikTok/Media or the separate Trading app.
+ * Dark graphite-navy surfaces, optical glow, deep layered geography, high
+ * contrast names, 44px tap targets, one restrained product directory.
+ *
+ * Phase II cleans old CSS layers after visual/functional approval. All
+ * selectors here are isolated to the actual World-Vision V2 app.
+ */
+.whv-page{
+  --wv4-abyss:#020c20;--wv4-night:#04132b;--wv4-panel:#071d35;
+  --wv4-panel-2:#0a2945;--wv4-edge:rgba(76,174,219,.27);
+  --wv4-ink:#f2fbff;--wv4-sub:#a7c5d8;--wv4-quiet:#7c9bad;
+  --wv4-cyan:#22d7f4;--wv4-lime:#8eebbd;--wv4-sun:#dfba74;
+  background:radial-gradient(ellipse 70% 60% at 76% 35%,#093c67 0%,transparent 70%),
+             radial-gradient(ellipse 55% 43% at 4% 4%,#0b2546 0%,transparent 68%),
+             var(--wv4-abyss)!important;
+  color:var(--wv4-ink);
+  font-family:Inter,"Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+.whv-page::before{content:none!important;}
+.whv-page .whv-header{
+  background:rgba(2,12,30,.985)!important;
+  border-bottom:1px solid rgba(79,184,234,.23)!important;
+  box-shadow:0 6px 22px rgba(1,5,17,.34)!important;
+  color:#f4fbff;backdrop-filter:blur(16px);
+}
+.whv-page .whv-header .whv-brand-text h1{color:#fff!important;letter-spacing:-.035em;}
+.whv-page .whv-header .whv-brand-text p{color:#a5cbe5!important;font-size:10px;}
+.whv-page .whv-header .whv-brand-logo{filter:drop-shadow(0 0 9px rgba(1,214,255,.30));}
+.whv-page .wv3-topnav .whv-nav-btn{
+  color:#c2d7e7!important;background:transparent!important;border:1px solid transparent!important;
+  border-radius:9px!important;
+}
+.whv-page .wv3-topnav .whv-nav-btn:hover,
+.whv-page .wv3-topnav .whv-nav-btn:focus-visible{
+  color:#fff!important;background:#112c47!important;border-color:#286382!important;
+}
+.whv-page .wv3-topnav .whv-nav-btn.active,
+.whv-page .wv3-topnav .whv-nav-btn[aria-current="page"]{
+  color:#c7fbff!important;background:#0b3b59!important;border-color:rgba(32,210,237,.42)!important;
+}
+.whv-page .wv3-topnav .wv3-nav-search{
+  color:#b5d2e7!important;background:rgba(7,36,64,.93)!important;
+  border-color:rgba(84,161,203,.45)!important;
+}
+.whv-page .wv3-topnav .wv3-nav-icon{color:#d7f2ff!important;}
+.whv-page :is(.wv3-home button,.country-drawer button,.wv3-topnav button):focus-visible{
+  outline:3px solid #67e6ff!important;outline-offset:3px;
+}
+/* HOME: one immersive editorial stage, never a paper document with an eye
+   thumbnail. The globe remains fully interactive and independently layered. */
+.whv-page .wv3-home{
+  background:transparent!important;color:#f1fcff;scrollbar-color:#1d5a78 transparent;
+}
+.whv-page .wv3-home-intro{
+  width:min(40%,548px);min-height:clamp(555px,72vh,705px);
+  padding-top:clamp(52px,9vh,105px);
+}
+.whv-page .wv3-home-intro > .wv3-eyebrow{
+  display:inline-flex;gap:8px;align-items:center;color:#72dff4!important;
+  font-size:10px;letter-spacing:.19em;font-weight:850;
+}
+.whv-page .wv3-home-intro > .wv3-eyebrow::before{
+  content:"";width:19px;height:2px;border-radius:2px;background:#35e9f6;
+  box-shadow:0 0 12px #19dff1;
+}
+.whv-page .wv3-home-intro h2{
+  color:#fff!important;font-size:clamp(38px,4.4vw,66px);line-height:1.075;
+  font-weight:850;letter-spacing:-.068em;
+  text-shadow:0 8px 28px rgba(0,0,0,.12);
+  margin:22px 0 19px;
+}
+.whv-page .wv3-home-intro > p:not(.wv3-home-disclosure){
+  color:#bed9e8!important;font-size:clamp(13px,1.14vw,16px);
+  line-height:1.77;max-width:490px;margin-bottom:26px;
+}
+.whv-page .wv3-home-search{
+  color:#a8d1e7;background:rgba(5,25,47,.95);border:1px solid #2d9fc3;
+  border-radius:12px;min-height:60px;max-width:495px;padding:13px 15px;
+  box-shadow:0 0 0 4px rgba(0,160,223,.055),0 14px 34px rgba(0,0,0,.16);
+  font-size:13px;
+}
+.whv-page .wv3-home-search:hover{background:#0a3153;border-color:#57d5f4;}
+.whv-page .wv3-home-search > svg{color:#55d7ef;}
+.whv-page .wv3-home-search .wv3-search-shortcut{
+  color:#9bc7dc;background:#0d3150;border-color:#286f8f;
+}
+.whv-page .wv3-home-quick{
+  display:flex;align-items:center;gap:8px;margin-top:23px;
+}
+.whv-page .wv3-home-quick button{
+  min-height:43px;padding:8px 13px;gap:9px;
+  background:rgba(10,42,69,.64);border:1px solid rgba(49,148,201,.35);
+  border-radius:8px;color:#d8effa;font-weight:740;line-height:1.2;
+}
+.whv-page .wv3-home-quick button:hover{
+  background:rgba(9,82,111,.72);border-color:#34cee9;color:#fff;
+}
+.whv-page .wv3-home-quick button svg{color:#59cae7;}
+.whv-page .wv3-home-disclosure{
+  max-width:440px;color:#82a3b9!important;
+  font-size:10px!important;margin-top:22px!important;line-height:1.65!important;
+}
+.whv-page .wv3-home-discovery{
+  background:linear-gradient(180deg,rgba(3,17,37,.98),rgba(6,22,41,.99))!important;
+  border:1px solid rgba(42,136,186,.3)!important;
+  border-radius:17px;padding:28px 28px 31px;
+  box-shadow:0 26px 60px rgba(0,0,0,.16);
+  margin-top:0;
+}
+.whv-page .wv3-home-directory-header h3{
+  color:#f4fcff;font-size:clamp(25px,2.8vw,35px);margin-top:8px;
+}
+.whv-page .wv3-home-directory-header p{color:#98bbce;font-size:12px;}
+.whv-page .wv3-home-directory-grid{
+  border:1px solid rgba(46,146,188,.32);border-radius:12px;
+  background:#061831;
+}
+.whv-page .wv3-home-tasks{
+  background:linear-gradient(155deg,#091f3a,#06172e);border-color:#164060;
+  padding:12px;gap:7px;
+}
+.whv-page .wv3-home-tasks button{
+  color:#b8d6e7;background:transparent;border:1px solid transparent;
+  border-radius:9px;min-height:51px;
+}
+.whv-page .wv3-home-tasks button svg{color:#4fcce8;}
+.whv-page .wv3-home-tasks button:hover:not(.is-selected){background:#102c46;color:#fff;}
+.whv-page .wv3-home-tasks button.is-selected{
+  background:linear-gradient(110deg,#0c3c5a,#0b2844)!important;
+  border-color:#177da3;color:#dbffff;box-shadow:0 0 0 1px rgba(39,212,245,.08) inset;
+}
+.whv-page .wv3-home-task-result{background:linear-gradient(140deg,#08213b,#07152c);padding:25px 29px;}
+.whv-page .wv3-home-task-result h4{color:#f5fbff;font-size:23px;}
+.whv-page .wv3-home-task-result > p{color:#9dc0d2;font-size:12px;}
+.whv-page .wv3-home-task-result > div{border-color:#214563;}
+.whv-page .wv3-home-task-result button{border-color:rgba(76,158,200,.23);color:#d4eef7;}
+.whv-page .wv3-home-task-result button:hover{background:#0b2946;}
+.whv-page .wv3-home-task-result button strong{color:#eaf9ff;font-size:13px;}
+.whv-page .wv3-home-task-result button small{color:#8bb1c7;}
+.whv-page .wv3-home-task-result button > span:nth-child(2){color:#84b9cc;}
+/* Earth and eye: wide crisp viewing area, no pale-page inset.
+   The photographic texture is rendered by a separate WebGL shader INSIDE
+   the same original Canvas and interacts with real GeoJSON country picking. */
+.whv-page .eye-stage.globe-mode,
+.whv-page .eye-stage.globe-mode.drawer-open{
+  top:105px!important;bottom:auto!important;left:44%!important;right:28px!important;
+  width:auto!important;height:clamp(480px,61vh,600px)!important;
+  border:1px solid rgba(26,145,220,.48)!important;border-radius:22px!important;
+  overflow:hidden!important;
+  background:#000b25!important;
+  box-shadow:0 0 0 1px rgba(0,208,255,.06),
+             0 0 58px rgba(0,123,223,.14),0 24px 62px rgba(0,0,0,.27)!important;
+}
+.whv-page .whv-globe-shell{background:#000b25!important;}
+.whv-page .whv-globe-topline{
+  font-size:9px;top:17px;left:19px;color:#c8edff!important;
+  letter-spacing:.12em;opacity:.85;
+}
+.whv-page .whv-globe-hint{
+  background:rgba(2,14,33,.84);color:#def7ff;border-color:#2d709e;
+  padding:8px 13px;font-size:11px;
+}
+.whv-page .whv-globe-zoom button{
+  background:rgba(2,35,64,.92);border:1px solid #50b6e6;
+  color:#fff;border-radius:10px;
+}
+.whv-page .whv-globe-disclaimer{
+  bottom:9px;opacity:.75;font-size:9px;color:#d4e8f6;
+  white-space:normal;text-align:center;max-width:75%;
+}
+.whv-page .whv-globe-source{
+  position:absolute;bottom:8px;left:13px;max-width:150px;
+  color:#9fc2db;text-decoration:underline;text-underline-offset:3px;
+  font-size:9px;z-index:7;
+}
+.whv-page .whv-globe-source:hover{color:#fff;}
+/* COUNTRY: immersive geography as a true country page; sources and existing
+   data remain visible, but secondary to a well-composed, useful map. */
+.whv-page .country-drawer.open{
+  color:#eaf7ff;background:#040f23!important;
+  box-shadow:0 8px 60px rgba(1,7,19,.5);
+}
+.whv-page .country-drawer.open::before{
+  background:linear-gradient(180deg,#061732,#040e20)!important;
+}
+.whv-page .country-drawer .country-drawer-body{
+  background:radial-gradient(ellipse 65% 30% at 35% 0%,#0a2b46 0%,transparent 86%),#051125!important;
+  color:#edfaff;
+}
+.whv-page .country-drawer .country-drawer-header.whv-country-drawer-toolbar{
+  color:#ccecff;border-bottom:1px solid #173b59;
+}
+.whv-page .country-drawer .drawer-btn{
+  background:#0b2946!important;color:#d8f3ff!important;
+  border:1px solid #29638c!important;
+}
+.whv-page .country-drawer .drawer-btn:hover{background:#174866!important;}
+.whv-page .wv3-geo-hero.wv4-geo-hero{
+  border:1px solid #1b5272!important;
+  background:linear-gradient(125deg,#061d38,#061529)!important;
+  box-shadow:0 16px 55px rgba(0,0,0,.21),0 0 30px rgba(2,169,230,.04);
+  border-radius:15px;min-height:345px;overflow:hidden;
+}
+.whv-page .wv4-country-map{
+  background:radial-gradient(ellipse at 50% 47%,#123b59,#07192f 70%,#061224)!important;
+  border-right:1px solid rgba(63,142,186,.38);min-height:345px;
+  position:relative;
+}
+.whv-page .wv4-country-map-surface{
+  position:absolute;inset:0;overflow:hidden;isolation:isolate;
+}
+.whv-page .wv4-country-map-surface::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+  background:linear-gradient(180deg,rgba(3,18,36,.18),rgba(3,19,40,.05) 45%,rgba(2,11,27,.5)),
+             radial-gradient(circle at 50% 46%,transparent 0%,rgba(0,8,29,.32) 85%);
+}
+.whv-page .wv4-country-texture{
+  position:absolute;inset:0;width:100%;height:100%;z-index:0;
+  filter:saturate(1.40) contrast(1.23) brightness(.78);
+}
+.whv-page .wv4-country-geometry{
+  position:absolute;inset:0;width:100%;height:100%;z-index:2;
+  filter:none!important;
+}
+.whv-page .wv4-country-map .wv4-map-topline{
+  color:#d7fcff;top:16px;left:17px;right:17px;letter-spacing:.14em;
+  font-weight:800;text-shadow:0 2px 12px #011b29;
+}
+.whv-page .wv4-map-live-dot{
+  display:inline-block;width:6px;height:6px;margin-right:6px;
+  vertical-align:middle;background:#37eecf;border-radius:50%;
+  box-shadow:0 0 12px #1efddd;
+}
+.whv-page .wv4-country-map-name{
+  position:absolute;z-index:4;left:50%;top:53%;transform:translate(-50%,-50%);
+  font-size:clamp(20px,3.1vw,37px);letter-spacing:.24em;text-transform:uppercase;
+  color:#f1ffff;font-weight:850;text-shadow:0 3px 18px #00182b,0 0 18px #007e9a;
+  pointer-events:none;white-space:nowrap;max-width:85%;overflow:hidden;text-overflow:ellipsis;
+}
+.whv-page .wv4-map-attribution{
+  bottom:10px;left:15px;right:124px;z-index:5;color:#c4dae7;
+  text-shadow:0 2px 5px #002c47;font-size:10px;
+}
+.whv-page .wv4-country-map .wv3-map-controls{z-index:7;bottom:19px;}
+.whv-page .wv4-country-map .wv3-map-controls button{
+  color:#e6fbff;background:#03233dda;border-color:#58a8d5;border-radius:8px;
+}
+.whv-page .wv4-country-map .wv3-map-controls button:hover{background:#0a5077;}
+.whv-page .wv4-country-identity{
+  color:#f1fcff;background:linear-gradient(132deg,#0b2a45,#06172f);
+  padding:30px clamp(24px,3vw,48px);
+}
+.whv-page .wv4-country-identity .wv3-eyebrow{
+  font-size:11px;color:#71e4ed;letter-spacing:.18em;
+}
+.whv-page .wv4-country-identity h2{
+  color:#fff;font-weight:850;font-size:clamp(38px,4.4vw,58px);
+  letter-spacing:-.057em;
+}
+.whv-page .wv4-country-region{color:#b5d1df!important;font-size:13px;}
+.whv-page .wv4-country-identity dl{margin:12px 0;gap:20px;}
+.whv-page .wv4-country-identity dt{color:#82aabc;font-size:11px;}
+.whv-page .wv4-country-identity dd{color:#f4fcff;font-size:17px;}
+.whv-page .wv4-country-identity .wv3-country-key-actions button{
+  background:#0b3350;color:#e9fbff;border:1px solid #27779d;
+  min-height:43px;padding:10px 13px;font-weight:780;
+}
+.whv-page .wv4-country-identity .wv3-country-key-actions button:hover{
+  background:#0d5778;border-color:#52d9ec;
+}
+.whv-page .wv4-country-identity .wv3-country-key-actions button[aria-pressed="true"]{
+  color:#d1fff9;background:#0d594f;border-color:#3be8ba;
+}
+.whv-page .wv4-country-identity > small{
+  color:#8fb5c6;font-size:10px;line-height:1.55;max-width:38ch;
+}
+.whv-page .country-drawer .whv-country-section-nav{
+  background:#071b32!important;border-color:#1b4766!important;
+  box-shadow:0 6px 20px rgba(1,7,17,.24)!important;
+}
+.whv-page .country-drawer .whv-country-section-tab{
+  color:#afcfe1!important;font-size:12px;font-weight:770;
+  min-height:54px!important;padding:14px 20px!important;
+}
+.whv-page .country-drawer .whv-country-section-tab:hover{
+  color:#e8ffff!important;background:#103b58!important;
+}
+.whv-page .country-drawer .whv-country-section-tab.is-selected{
+  color:#6bf1ff!important;background:rgba(13,80,113,.24)!important;
+  border-bottom-color:#15defb!important;
+}
+.whv-page .country-drawer .whv-country-profile-switch{
+  border-color:rgba(80,144,178,.27);padding:9px 0 18px;gap:10px;
+}
+.whv-page .country-drawer .whv-country-profile-switch label{
+  color:#bcd8e6;font-weight:750;
+}
+.whv-page .country-drawer .whv-country-profile-switch select.country-select{
+  color:#e9f7ff;background:#0b2947;border:1px solid #326c8b;border-radius:8px;
+  min-height:44px;
+}
+.whv-page .country-drawer .whv-country-profile-source-status{
+  color:#a8c8da;background:rgba(10,43,70,.75);border-color:#224a67;
+}
+.whv-page .country-drawer .whv-country-section-heading h3,
+.whv-page .country-drawer .whv-country-section-heading p{color:#eaf8ff;}
+.whv-page .country-drawer .whv-country-section-heading p{color:#a9c8d8;}
+.whv-page .country-drawer .whv-country-section-kicker{color:#6ee1ee;}
+/* Tactile, considered service navigator. Six roles, eleven exact product
+   identities, 0 invented implementation status or fake local coverage. */
+.whv-page .wv3-directory-heading h3{color:#f4fbff;}
+.whv-page .wv3-directory-heading p{color:#9cbfd2;}
+.whv-page .wv3-directory-category{
+  color:#b9d9e7;border-color:transparent;background:transparent;
+  min-height:52px;border-radius:9px;
+}
+.whv-page .wv3-directory-category svg{color:#71def1;}
+.whv-page .wv3-directory-category:hover{background:#113451;color:#fff;}
+.whv-page .wv3-directory-category.is-selected{
+  color:#e5ffff;background:#0b3b58;border:1px solid #207aa2;
+}
+.whv-page .wv3-directory-detail{
+  background:linear-gradient(140deg,#092642,#07172f)!important;
+  border:1px solid #255471;padding:23px 25px;border-radius:12px;color:#e9f8ff;
+}
+.whv-page .wv3-directory-detail-head h4{color:#f5fcff;font-size:21px;}
+.whv-page .wv3-directory-detail-head p{color:#a8c8dc;}
+.whv-page .wv3-directory-actions button{
+  background:#102f4a;color:#def7ff;border:1px solid #245b7b;
+  min-height:43px;border-radius:8px;
+}
+.whv-page .wv3-directory-actions button:hover{background:#124c70;border-color:#3fc6ea;}
+.whv-page .wv3-vision-rows{border-color:#1c4765;}
+.whv-page .wv3-vision-row{border-color:#193d5c;color:#c6e5f4;}
+.whv-page .wv3-vision-row:hover{background:#0e3b56;color:#e7ffff;}
+.whv-page .wv3-vision-row strong{color:#eafbff;font-size:14px;}
+.whv-page .wv3-vision-row small{color:#8eb5ca;}
+.whv-page .wv3-vision-row .wv3-product-stage{
+  color:#d0deec;background:#18344d;
+}
+.whv-page .wv3-vision-row .wv3-product-stage[data-stage="explorable"]{
+  color:#b0ffee;background:#124e53;
+}
+.whv-page .wv3-directory-note{color:#95b6c9;}
+.whv-page .country-drawer :is(.whv-country-profile-reference-empty,.whv-country-news-empty){
+  background:#0b2a46!important;border-color:#285771!important;color:#e2f3fa;
+}
+.whv-page .country-drawer .whv-country-profile-reference-empty strong,
+.whv-page .country-drawer .whv-country-news-empty strong{color:#e5fbff;}
+.whv-page .country-drawer .whv-country-profile-reference-empty p,
+.whv-page .country-drawer .whv-country-news-empty p{color:#a8c9d7;}
+.whv-page .country-drawer .whv-country-profile-facts{
+  background:transparent;border:0;padding:0;gap:11px;
+}
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-item{
+  background:#0d2c49!important;border-color:#24506d!important;
+  color:#e6f8ff!important;
+}
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-label{color:#92b7c9!important;}
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-value{color:#eafaff!important;}
+.whv-page .country-drawer .wv3-news-follow-bar,
+.whv-page .country-drawer .whv-country-news-article{
+  background:#0a2843!important;border-color:#255776!important;color:#f1fcff;
+}
+.whv-page .country-drawer .wv3-news-follow-bar strong,
+.whv-page .country-drawer .whv-country-news-article h4{color:#f3fcff;}
+.whv-page .country-drawer .wv3-news-follow-bar p,
+.whv-page .country-drawer .whv-country-news-article > p{color:#a3c2d2;}
+.whv-page .country-drawer .wv3-news-follow-bar button,
+.whv-page .country-drawer .whv-country-news-expand{
+  color:#e9faff;background:#11506e;border:1px solid #349ac3;
+}
+.whv-page .country-drawer .whv-country-news-source-list a{
+  color:#aef1ff;background:#0b3550;border-color:#297196;
+}
+.whv-page .country-drawer .whv-country-news-details p{color:#b5d1df;}
+.whv-page .country-drawer .whv-country-data-subtab{
+  color:#b6d4e7;background:#0d2947;border-color:#2a5677;
+}
+.whv-page .country-drawer .whv-country-data-subtab.is-selected{
+  color:#beffff;background:#115477;border-color:#47bed6;
+}
+.whv-page .country-drawer .wv3-legacy-tools{
+  color:#a9ccdf;background:#0b2945;border-color:#246283;
+}
+.whv-page .country-drawer .wv3-legacy-tools > summary{color:#8fe8f2;}
+/* The inherited data and source cards remain light in this phase for tested
+   readability; their migration requires independent dense-data QA. */
+.whv-page .country-drawer .whv-country-profile-content :is(.overview-kpi-card,.kpi-card,.indicator-card,.lens-card,.decision-card,.evidence-card,.info-card){
+  border-radius:11px!important;
+  box-shadow:0 5px 26px rgba(0,2,15,.2)!important;
+}
+body .wv3-service-menu{
+  color:#eaf8ff;background:#061830;border:1px solid #2b6992;
+  box-shadow:0 23px 75px rgba(0,2,15,.64);
+}
+body .wv3-service-menu-top{background:#0a223d;border-color:#245675;}
+body .wv3-service-menu-top strong{color:#fff;}
+body .wv3-service-menu-top span{color:#9abbd0;}
+body .wv3-service-menu-top button{color:#e1f5ff;background:#0d3a56;border-color:#2a7aa0;}
+body .wv3-service-menu-groups{
+  background:#081b33;border-color:#1e4e71;
+}
+body .wv3-service-menu-groups button{color:#afcee2;}
+body .wv3-service-menu-groups button.is-selected{
+  background:#124260;color:#c6faff;box-shadow:none;border:1px solid #2085af;
+}
+body .wv3-service-menu-groups button:hover:not(.is-selected){background:#0f314e;}
+body .wv3-service-menu-content{background:#06162e;}
+body .wv3-service-menu-content h2{color:#f3fcff;}
+body .wv3-service-menu-content > p{color:#aac9d9;}
+body .wv3-service-menu-actions button{
+  color:#e5f9ff;background:#0b2b47;border-color:#24597c;
+}
+body .wv3-service-menu-actions button:hover{background:#0d3e5f;border-color:#35c4e3;}
+body .wv3-service-menu-actions strong{color:#ecfaff;}
+body .wv3-service-menu-actions small{color:#9ab9cb;}
+body .wv3-service-menu-product-list{border-color:#1d4664;}
+body .wv3-service-menu-product-list button{color:#b9d5e7;border-color:#204460;}
+body .wv3-service-menu-product-list button:hover{background:#103957;}
+body .wv3-service-menu-product-list strong{color:#edfbff;}
+body .wv3-service-menu-product-list small,
+body .wv3-service-menu-product-list button span:nth-child(2){color:#8eafc3;}
+body .wv3-service-menu .wv3-menu-status{color:#96b8ca;}
+@media(max-width:1120px){
+ .whv-page .wv3-home-intro{width:min(42%,485px);}
+ .whv-page .wv3-home-intro h2{font-size:clamp(35px,4.1vw,52px);}
+ .whv-page .eye-stage.globe-mode,.whv-page .eye-stage.globe-mode.drawer-open{
+   left:45%!important;right:16px!important;height:clamp(410px,56vh,540px)!important;
+ }
+}
+@media(max-width:960px){
+ .whv-page .whv-header{height:64px;}
+ .whv-page .wv3-home-intro{min-height:460px;padding-top:51px;}
+ .whv-page .wv3-home-discovery{padding:22px;margin:0 18px 30px;}
+ .whv-page .wv4-geo-hero{display:grid;grid-template-columns:1fr;}
+ .whv-page .wv4-country-map{min-height:290px;height:290px;border-right:0;border-bottom:1px solid #215875;}
+ .whv-page .wv4-country-identity{padding:22px;}
+ .whv-page .wv4-country-identity h2{font-size:40px;}
+ .whv-page .wv3-vision-row strong{font-size:13px;}
+}
+@media(max-width:600px){
+ .whv-page .whv-header{padding:0 12px;}
+ .whv-page .whv-header .whv-brand-text h1{font-size:16px;}
+ .whv-page .whv-nav.wv3-topnav .wv3-services-trigger{
+   color:#e7faff!important;border-color:rgba(69,158,202,.35)!important;
+   background:#0b2b47!important;
+ }
+ .whv-page .wv3-topnav .wv3-nav-search{
+   border-radius:10px;min-width:40px;min-height:41px;
+ }
+ .whv-page .eye-stage.globe-mode,.whv-page .eye-stage.globe-mode.drawer-open{
+   top:78px!important;left:10px!important;right:10px!important;
+   width:calc(100% - 20px)!important;height:304px!important;
+   border-radius:15px!important;
+ }
+ .whv-page .whv-globe-topline{top:12px;left:12px;font-size:8px;}
+ .whv-page .whv-globe-disclaimer{font-size:8px;bottom:6px;max-width:90%;}
+ .whv-page .whv-globe-source{font-size:8px;bottom:19px;left:9px;max-width:122px;}
+ .whv-page .whv-globe-hint{bottom:36px;font-size:9px;}
+ .whv-page .whv-globe-zoom{right:9px;bottom:54px;}
+ .whv-page .wv3-home-intro{
+   padding-top:20px!important;margin:324px 17px 0;min-height:0;
+   width:calc(100% - 34px);padding-bottom:22px;
+ }
+ .whv-page .wv3-home-intro > .wv3-eyebrow{font-size:9px;}
+ .whv-page .wv3-home-intro h2{
+   font-size:clamp(33px,9.1vw,42px);line-height:1.09;margin:14px 0 15px;
+ }
+ .whv-page .wv3-home-intro > p:not(.wv3-home-disclosure){
+   font-size:13px;line-height:1.65;margin-bottom:19px;
+ }
+ .whv-page .wv3-home-search{min-height:52px;font-size:12px;}
+ .whv-page .wv3-home-quick{gap:7px;margin:16px 0 0;}
+ .whv-page .wv3-home-quick button{
+   min-height:44px;font-size:11px;padding:8px 11px;
+ }
+ .whv-page .wv3-home-disclosure{font-size:10px!important;}
+ .whv-page .wv3-home-discovery{
+   margin:9px 12px 32px;padding:20px 12px 22px;border-radius:12px;
+ }
+ .whv-page .wv3-home-directory-header h3{font-size:25px;}
+ .whv-page .wv3-home-directory-header p{font-size:11px;}
+ .whv-page .wv3-home-tasks{padding:8px;gap:4px;}
+ .whv-page .wv3-home-tasks button{min-height:46px;font-size:12px;padding:10px 11px;}
+ .whv-page .wv3-home-task-result{padding:20px 15px;}
+ .whv-page .country-drawer .country-drawer-header.whv-country-drawer-toolbar{
+   min-height:45px;height:45px;
+ }
+ .whv-page .wv4-geo-hero{width:calc(100% - 18px);border-radius:10px;}
+ .whv-page .wv4-country-map{height:255px;min-height:255px;}
+ .whv-page .wv4-country-map-name{font-size:24px;letter-spacing:.18em;}
+ .whv-page .wv4-country-map .wv4-map-topline{font-size:9px;left:10px;right:10px;top:10px;}
+ .whv-page .wv4-map-attribution{left:10px;right:114px;font-size:8px;bottom:7px;}
+ .whv-page .wv4-country-identity{padding:21px 19px;}
+ .whv-page .wv4-country-identity h2{font-size:36px;}
+ .whv-page .wv4-country-identity dl{margin:8px 0;}
+ .whv-page .wv4-country-identity .wv3-country-key-actions button{
+   min-height:44px;font-size:11px;padding:8px 11px;
+ }
+ .whv-page .country-drawer .whv-country-section-tab{
+   min-height:48px!important;padding:12px 15px!important;font-size:11px;
+ }
+ .whv-page .country-drawer .whv-country-profile-content{
+   width:calc(100% - 20px);padding:18px 0 45px;
+ }
+ .whv-page .wv3-directory-heading h3{font-size:24px;}
+ .whv-page .wv3-directory-detail{padding:17px;}
+ body .wv3-service-menu-portal{top:67px!important;}
+ body .wv3-service-menu{border-radius:11px;}
+}
+@media(prefers-reduced-motion:reduce){
+ .whv-page .wv4-country-map .wv4-map-scanline{display:none;}
+}
