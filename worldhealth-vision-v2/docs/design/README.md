@@ -6,6 +6,13 @@
 
 ## À LIRE EN PREMIER
 
+**CORRECTION LA PLUS RÉCENTE — après rejet de la série de maquettes multicolores :**
+
+- **[RESET VISUEL avant toute nouvelle génération](VISUAL_RESET_BEFORE_IMAGES_2026-11-23.md)** : quatre rendus rejetés pour répétition de la même architecture, couleurs multiples, icônes stickers, grandes mosaïques, faux chiffres de marchés et typographie mal hiérarchisée. Charte unique navy/blanc/cyan rare, pictogrammes vectoriels cohérents et refonte *du placement*, pas seulement des couleurs.
+- **[Wireframes de l'accueil et de la fiche pays entièrement repensés](WIREFRAMES_WORLDVISION_RESET_V2_2026-11-23.md)** : menu `Explorer · Comparer · Services ▾ · Suivi` aligné à gauche, recherche à droite; globe sans six grosses cartes; pays = carte géographique en premier puis liste de besoins à gauche / espace de tâche à droite sur desktop; mobile construit séparément. **Schémas de disposition, pas maquettes approuvées ni code métier.**
+
+Ces deux fichiers ont priorité pour **la disposition, la typographie, les icônes et la palette** par rapport aux concepts A/B/C rejetés. Le document ci-dessous conserve autorité pour la **vision complète et l'inventaire métier**.
+
 **[1. L'œil–Terre, la fiche pays cartographique et tous les services — architecture actuelle proposée](WORLD_VISION_COUNTRY_HUB_AND_GLOBAL_IA_2026-11-23.md)**
 
 Ce document répond au retour utilisateur sur les anciennes maquettes :
