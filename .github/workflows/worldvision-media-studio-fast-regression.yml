@@ -64,7 +64,7 @@ jobs:
                   rows.extend((20 + 40*x//(w-1), 45 + 45*y//(h-1), 62 + 30*(x+y)//(w+h-2)))
           def chunk(name, data):
               return pack('>I', len(data)) + name + data + pack('>I', crc32(name + data) & 0xffffffff)
-          img = b'\\x89PNG\\r\\n\\x1a\\n' + chunk(b'IHDR', pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0))
+          img = bytes((137,80,78,71,13,10,26,10)) + chunk(b'IHDR', pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0))
           img += chunk(b'IDAT', compress(bytes(rows), 6)) + chunk(b'IEND', b'')
           Path('../../frontend/web-v2/public/smoke/synthetic-landscape.png').write_bytes(img)
           PY
