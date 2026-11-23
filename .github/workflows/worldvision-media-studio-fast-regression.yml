@@ -49,14 +49,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v ffmpeg >/dev/null 2>&1; then
-            sudo apt-get update -qq
-            sudo apt-get install -y -qq ffmpeg
-          fi
           mkdir -p ../../frontend/web-v2/public/smoke output/creative
-          ffmpeg -hide_banner -nostdin -loglevel error -y \
-            -f lavfi -i 'color=c=0x1b4054:s=1280x720:d=0.1' \
-            -frames:v 1 -update 1 ../../frontend/web-v2/public/smoke/synthetic-landscape.png
+          # This quick browser test only needs a synthetic image, not FFmpeg.
+          # Real MP4/FFprobe coverage remains in the full creative-render gate.
+          python3 - <<'PY'
+          from pathlib import Path
+          from struct import pack
+          from zlib import compress, crc32
+          w, h = 1280, 720
+          rows = bytearray()
+          for y in range(h):
+              rows.append(0)
+              for x in range(w):
+                  rows.extend((20 + 40*x//(w-1), 45 + 45*y//(h-1), 62 + 30*(x+y)//(w+h-2)))
+          def chunk(name, data):
+              return pack('>I', len(data)) + name + data + pack('>I', crc32(name + data) & 0xffffffff)
+          img = b'\\x89PNG\\r\\n\\x1a\\n' + chunk(b'IHDR', pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0))
+          img += chunk(b'IDAT', compress(bytes(rows), 6)) + chunk(b'IEND', b'')
+          Path('../../frontend/web-v2/public/smoke/synthetic-landscape.png').write_bytes(img)
+          PY
           test -s ../../frontend/web-v2/public/smoke/synthetic-landscape.png
           npm --prefix ../../frontend/web-v2 run dev -- --host 127.0.0.1 --port 5173 --strictPort >/tmp/worldvision-studio-fast-vite.log 2>&1 &
           echo $! >/tmp/worldvision-studio-fast-vite.pid
