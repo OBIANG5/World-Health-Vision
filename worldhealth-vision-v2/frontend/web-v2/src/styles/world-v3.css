@@ -97,6 +97,16 @@
 .whv-page .country-drawer .country-drawer-body {
   height:calc(100% - 48px);padding:0 0 60px;overflow:auto;overscroll-behavior:contain;
 }
+/* The legacy drawer body is a flex column. Its default flex-shrink:1 used
+   to crush a 543px mobile map+identity into ~116px, overlapping the tabs.
+   Make the genuine country PAGE flow scroll naturally, never collapse items
+   merely to fit a mobile viewport. This is an intentional flex-size contract,
+   not hiding overflow or reducing touch-target sizes. */
+.whv-page .country-drawer .country-drawer-body > :is(
+  .wv3-geo-hero,.whv-country-section-nav,.whv-country-profile-content
+){
+  flex:0 0 auto!important;min-width:0;
+}
 .whv-page .country-drawer .country-drawer-header .whv-country-toolbar-brand strong {font-size:12px;}
 .whv-page .country-drawer .whv-country-profile-content {
   width:min(1250px,calc(100% - 48px));margin:0 auto;padding:23px 0 72px;
