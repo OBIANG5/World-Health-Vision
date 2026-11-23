@@ -36,3 +36,22 @@ La capture de la session à **390px de large affiche 8 547px de défilement**, c
 5. Internationalisation/scalabilité selon `docs/media/ADR_MEDIA_SCALE_READINESS_2026-11-21.md` : mêmes outils TS/Remotion/FFmpeg pour créer le master; versions immuables et audits sources/licences; stockage objet/CDN pour des millions de visionnages; jobs de rendu durables/idempotents/quotas/workers isolés pour de multiples créateurs **au moment opportun**, pas un rendu par spectateur, ni une refonte Rust/Go sans mesures.
 
 **Aucune fusion, aucun déploiement, publication ou achat en conséquence de cette PR.**
+
+## Mise à jour UX mesurée — 23 novembre 2026, PR #147
+
+### Ce que les vrais pixels ont révélé
+La capture Chromium 390px du monteur avec un projet PHOTO + voix + comparaison + WAV faisait **8 547px de hauteur** avant ce changement, malgré le bon fonctionnement des calages. La hiérarchie ancienne faisait défiler chaque champ de direction et toutes les pistes photo.
+
+### Amélioration effectivement codée
+- Même Studio, même React/Remotion, **aucun changement de JSON**, chiffres, sources, WAV, images, voix ou code de rendu.
+- Les scènes **PHOTO, DATA, GEO et PAYS** ont maintenant des sections natives `details/summary` repliables (accès clavier et focus), regroupant leurs contrôles experts sans les détruire. Le conducteur montre l'idée principale et l'état de sa preuve ; ses champs avancés se déplient à la demande.
+- Les commandes **Caler à la voix / Caler PHOTO×DATA / Écouter en contexte** restent visibles et actionnables sans ouvrir les champs avancés. Typographie de la zone Studio orientée `DM Sans` avec fallbacks système.
+- La même CI rapide ajoute des assertions E2E : section PHOTO/beat fermée par défaut, ouverture avec les vrais inputs source/provenance, fermeture sans perte, export JSON toujours exact, report de hauteur inférieur à l'ancienne version.
+
+### Résultat vérifié (HEAD code `a580e2c1195bba573048c06de2bfc2a6156ccc26`)
+Vraie capture Chromium **390×6 297 px** après changement, réduction de **2 250px = 26,3 %** versus 8 547px (même scénario CI synthétique). [GitHub Actions rapide #45225583035](https://github.com/OBIANG5/World-Health-Vision/actions/runs/45225583035) **SUCCESS**, rapport dans l'artefact `studio-fast-synthetic-regression`: `progressiveMobileDisclosureVerified:true` et `mobilePageHeightPixels:6297`. Captures inspectées, boutons de calage et preuves visibles ; la page demeure longue (6 297px) et la largeur réelle iPhone peut varier : **pas de validation complète UX/artistique**.
+
+**Autres contrôles :** au dernier relevé les workflows de P0.7 voix, photo×data, re-hook GEO et audio-context sont success sur le SHA de code. Le workflow documentaire P0.6 et le long render MP4/Player sont encore en cours ; en vérifier les conclusions et corriger sur #147 en cas d'échec.
+
+### Suite à forte valeur
+Le problème restant majeur est la navigation : le conducteur et le film sont loin de la préparation des matériaux sur petit écran. Le prochain incrément doit mesurer le nombre de gestes pour rejoindre une relance, le Player et les modifications 3–5s, puis proposer des accès immédiats (navigation par étapes/onglets/ancres utiles) sans masquer les erreurs de provenance ni supprimer les fonctions. Ensuite un **vrai film sourcé/licencié avec prise Vivienne approuvée**, qualité à l'écran + écoute humaine, coûts et révisions. Ne pas refaire indéfiniment des microtests COP31.
