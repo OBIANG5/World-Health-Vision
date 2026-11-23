@@ -165,7 +165,7 @@ export const VISION_PRODUCTS: readonly VisionProduct[] = [
     },
   },
   {
-    id: "brvm", family: "monitor", stage: "planned", name: "Bourse Afrique Vision",
+    id: "brvm", family: "monitor", stage: "planned", name: "BRVM Vision",
     tagline: { fr: "BRVM et marchés africains", en: "BRVM and African markets" },
     description: {
       fr: "Cours datés, dividendes, événements d'entreprises et suivi d'un portefeuille africain.",
