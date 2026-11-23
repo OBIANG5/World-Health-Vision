@@ -54,7 +54,20 @@ try{
  const good=path.join(tmp,"worldvision-reopen.json");
  fs.writeFileSync(good,JSON.stringify(saved));
  await (await page.$("#wvc-load-project")).uploadFile(good);
- await page.waitForFunction(()=>document.querySelector("#wvc-project")?.value==="REPRISE TECHNIQUE 2026");
+ // Fail rapidly with the actual Studio validator result; waiting only for a
+ // changed title used to hide a rejected import behind a 30s timeout.
+ await page.waitForFunction(()=>
+   document.querySelector("#wvc-project")?.value==="REPRISE TECHNIQUE 2026"||
+   Array.from(document.querySelectorAll(".wvc-feedback"))
+     .some(x=>x.textContent?.includes("Import refusé")),
+   {timeout:12000});
+ const importDiag=await page.evaluate(()=>({
+   title:document.querySelector("#wvc-project")?.value,
+   feedback:document.querySelector(".wvc-feedback")?.textContent||"",
+   errors:Array.from(document.querySelectorAll('[role="alert"]')).map(x=>x.textContent||"")
+ }));
+ if(importDiag.title!=="REPRISE TECHNIQUE 2026")
+   throw Error("Studio project reimport rejected: "+JSON.stringify(importDiag));
  const missing=await page.evaluate(()=>({
    alert:document.querySelector('[role="alert"]')?.textContent||"",
    exportDisabled:document.querySelector("button.wvc-export-test")?.disabled??
