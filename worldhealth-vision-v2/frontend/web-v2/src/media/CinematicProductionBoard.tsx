@@ -956,7 +956,7 @@ export default function CinematicProductionBoard() {
                       {beat.id} · {beat.intent} · {(beat.startFrame/30).toFixed(2)} s
                     </option>)}
                   </select>
-                </label>
+                </label>}
               </div>)}
             {soundIssues.length>0&&<p role="alert" className="wvc-director-error">
               SFX invalide : {soundIssues[0].field} — {soundIssues[0].reason}
