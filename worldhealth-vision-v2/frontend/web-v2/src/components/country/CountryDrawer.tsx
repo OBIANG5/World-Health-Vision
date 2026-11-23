@@ -1263,8 +1263,16 @@ export default function CountryDrawer({
     if (body && nav) {
       const top = body.scrollTop + nav.getBoundingClientRect().top
         - body.getBoundingClientRect().top - 4;
-      body.scrollTo({ top: Math.max(0, top),
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      const motion = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      body.scrollTo({ top: Math.max(0, top), behavior: motion });
+      // Six country sections stay peers. On 320–390px the tab rail is
+      // horizontal: always bring the selected rubric into view without
+      // scrolling the whole document to a new place.
+      const tab = nav.querySelector<HTMLElement>(`button[data-section="${section}"]`);
+      if (tab) nav.scrollTo({
+        left: Math.max(0, tab.offsetLeft + tab.offsetWidth / 2 - nav.clientWidth / 2),
+        behavior: motion,
+      });
     }
   }
 
@@ -1451,7 +1459,7 @@ export default function CountryDrawer({
             ["news", fr ? "Actualités" : "News"],
             ["services", fr ? "Services" : "Services"],
           ] as const).map(([section, label]) => (
-            <button key={section} type="button"
+            <button key={section} type="button" data-section={section}
               className={`whv-country-section-tab${activeSection === section ? " is-selected" : ""}`}
               aria-current={activeSection === section ? "page" : undefined}
               onClick={() => {
