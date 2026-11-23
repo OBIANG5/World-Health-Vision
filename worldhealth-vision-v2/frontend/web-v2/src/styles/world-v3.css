@@ -1,0 +1,285 @@
+/* WORLD-VISION V3 / FIRST INTEGRATED PRODUCT VERTICAL.
+ * One restrained system. GeoJSON country first; services are TASKS, not tiles.
+ * Temporary scoped compatibility with old cascade; replace legacy styles
+ * incrementally after validating real routes and stateful components.
+ */
+.whv-page {
+  --wv3-space: #06162b;
+  --wv3-ink: #132d40;
+  --wv3-muted: #647888;
+  --wv3-cyan: #00afcf;
+  --wv3-line: #dbe5ec;
+  --wv3-paper: #f5f8fa;
+  --wv3-white: #fff;
+  font-family: Inter, "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+.whv-page .whv-header {
+  z-index: 900 !important;
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  top: 0; left: 0; right: 0;
+  height: 72px;
+  padding: 0 clamp(16px,2.4vw,42px);
+  gap: clamp(15px,2vw,34px);
+  box-shadow: none !important;
+  background: rgba(255,255,255,.985) !important;
+  border-bottom: 1px solid var(--wv3-line);
+  pointer-events: auto;
+}
+.whv-page .whv-header .whv-brand {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
+  gap: 10px;
+}
+.whv-page .whv-header .whv-brand-logo {width:48px;flex-basis:48px;height:40px;}
+.whv-page .whv-header .whv-brand-text h1 {
+  font-size: 18px; line-height: 1.15; letter-spacing: -.045em;
+  color:var(--wv3-space);font-weight: 800;
+}
+.whv-page .whv-header .whv-brand-text p {
+  color:#698090;font-size:10px;line-height:1.3;font-weight:580;
+}
+.whv-page .whv-nav.wv3-topnav {
+  display:flex; align-items:center; flex: 1; gap: 2px; min-width: 0;
+  background:transparent;border:0;box-shadow:none;
+  padding:0;overflow:visible;border-radius:0;
+}
+.whv-page .wv3-topnav .whv-nav-btn {
+  font-size:13px; font-weight:670;line-height:1.2;
+  color:#42596c;background:transparent;border:0;
+  padding:13px 12px;min-height:42px;white-space:nowrap;
+  border-radius:8px;box-shadow:none;
+}
+.whv-page .wv3-topnav .whv-nav-btn:hover,.whv-page .wv3-topnav .whv-nav-btn:focus-visible {
+  background:#eff5f7;color:#0e5774;
+}
+.whv-page .wv3-topnav .whv-nav-btn.active,.whv-page .wv3-topnav .whv-nav-btn[aria-current="page"] {
+  color:#087a9a;background:#eaf6f8;
+}
+.whv-page .wv3-topnav .wv3-nav-spacer {flex:1;min-width:6px;}
+.whv-page .wv3-topnav .wv3-nav-search {
+  display:inline-flex; gap:8px;align-items:center;
+  min-width:158px;justify-content:flex-start;
+  border:1px solid #dbe5eb;background:#f6f8f9;
+  color:#6c7d87;padding:10px 12px;
+}
+.whv-page .wv3-topnav .wv3-nav-icon {
+  width:39px;min-width:39px;display:grid;place-items:center;padding:8px;
+}
+.whv-page .wv3-topnav .wv3-nav-compact {display:none;}
+.whv-page .wv3-topnav .wv3-nav-service-note {font-size:10px;color:#738a95;}
+.whv-page :is(.wv3-topnav button,.wv3-directory button,.wv3-geo-hero button):focus-visible {
+  outline:3px solid #11a7c7;outline-offset:2px;
+}
+/* Full country PAGE below shared header; never a 76vh sliding drawer. */
+.whv-page .country-drawer.open {
+  top:72px !important;bottom:0 !important;right:0 !important;left:0;
+  position:absolute;z-index:600 !important;width:100vw !important;
+  height:calc(100dvh - 72px) !important;max-height:none;
+  padding:0 !important;transition:none !important;overflow:hidden;
+  color:var(--wv3-ink);
+}
+.whv-page .country-drawer.open::before {
+  border:0;border-radius:0;background:var(--wv3-paper) !important;
+  box-shadow:none !important;
+}
+.whv-page .country-drawer.open::after {display:none !important;}
+.whv-page .country-drawer .country-drawer-header.whv-country-drawer-toolbar {
+  max-width:1350px;margin:0 auto;height:48px;min-height:48px;padding:5px 24px;
+  border:0;display:flex;align-items:center;
+}
+.whv-page .country-drawer .country-drawer-body {
+  height:calc(100% - 48px);padding:0 0 60px;overflow:auto;overscroll-behavior:contain;
+}
+.whv-page .country-drawer .country-drawer-header .whv-country-toolbar-brand strong {font-size:12px;}
+.whv-page .country-drawer .whv-country-profile-content {
+  width:min(1250px,calc(100% - 48px));margin:0 auto;padding:23px 0 72px;
+  max-width:1250px;
+}
+.whv-page .country-drawer .whv-country-section-nav{
+  position:sticky;top:0;z-index:15;justify-content:flex-start;
+  padding:0 max(24px,calc((100vw - 1250px)/2));
+  background:#fff;border-bottom:1px solid var(--wv3-line);
+  border-top:1px solid var(--wv3-line);border-radius:0;
+  gap:0;overflow-x:auto;flex-wrap:nowrap;
+}
+.whv-page .country-drawer .whv-country-section-tab {
+  background:transparent;color:#506a7a;font-size:12px;font-weight:710;
+  min-height:50px;padding:13px 18px;border:0;border-radius:0;
+  border-bottom:2px solid transparent;white-space:nowrap;box-shadow:none;
+}
+.whv-page .country-drawer .whv-country-section-tab.is-selected {
+  background:transparent;color:#097c9e;border-bottom-color:var(--wv3-cyan);
+}
+.whv-page .country-drawer .whv-country-profile-switch {
+  margin:0 0 17px;padding:8px 0;background:transparent;border:0;box-shadow:none;
+}
+.whv-page .country-drawer .whv-country-overview-pathways {display:none;}
+/* Country map: geographic outline source is the same embedded GeoJSON as GlobeMap.
+   Decorative mineral surface, NEVER a claim of real elevation imagery. */
+.whv-page .wv3-geo-hero {
+  width:min(1300px,calc(100% - 48px));margin:0 auto 18px;
+  display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,.92fr);
+  gap:0;min-height:345px;border:1px solid #d7e3ea;
+  background:#fff;border-radius:13px;overflow:hidden;
+}
+.whv-page .wv3-country-map {
+  position:relative;min-height:345px;overflow:hidden;
+  background:radial-gradient(circle at 47% 50%,#eaf2f1 0%,#dfebed 70%,#d7e5eb 100%);
+}
+.whv-page .wv3-map-topline {
+  position:absolute;z-index:2;top:17px;left:18px;right:18px;display:flex;
+  justify-content:space-between;gap:12px;font-size:10px;font-weight:800;
+  letter-spacing:.15em;color:#477585;
+}
+.whv-page .wv3-country-geometry{
+  display:block;width:100%;height:100%;position:absolute;inset:0;
+  filter:drop-shadow(0 7px 12px rgba(10,69,56,.15));
+}
+.whv-page .wv3-map-controls {
+  position:absolute;z-index:3;right:17px;bottom:32px;display:flex;gap:5px;
+}
+.whv-page .wv3-map-controls button {
+  width:37px;height:37px;display:grid;place-items:center;padding:0;
+  border-radius:7px;border:1px solid #d0e1e8;background:#fff;color:#234960;
+  font-size:19px;font-weight:500;box-shadow:0 3px 8px #10263418;
+}
+.whv-page .wv3-map-controls button:disabled{opacity:.45;}
+.whv-page .wv3-map-attribution {
+  position:absolute;left:15px;bottom:7px;right:148px;margin:0;
+  font-size:10px;color:#537080;line-height:1.3;
+}
+.whv-page .wv3-map-unavailable {
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;gap:9px;color:#527a86;text-align:center;
+  padding:20px;font-size:12px;
+}
+.whv-page .wv3-map-unavailable strong{font-size:14px;}
+.whv-page .wv3-country-identity{
+  display:flex;flex-direction:column;justify-content:center;padding:30px clamp(22px,3vw,45px);
+  gap:10px;min-width:0;color:var(--wv3-ink);
+}
+.whv-page .wv3-eyebrow{
+  font-size:10px;letter-spacing:.13em;font-weight:820;color:#387c90;text-transform:uppercase;
+}
+.whv-page .wv3-country-identity h2 {
+  color:#102c40;font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.052em;
+  line-height:1.04;margin:0;overflow-wrap:anywhere;
+}
+.whv-page .wv3-country-identity > p{font-size:13px;color:#647a86;line-height:1.45;margin:0;}
+.whv-page .wv3-country-identity dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;}
+.whv-page .wv3-country-identity dt{font-size:10px;color:#788b96;margin:0;}
+.whv-page .wv3-country-identity dd{font-size:15px;color:#17394c;font-weight:800;margin:4px 0 0;}
+.whv-page .wv3-country-key-actions{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 0;}
+.whv-page .wv3-country-key-actions button{
+  display:inline-flex;gap:7px;align-items:center;min-height:39px;
+  border:1px solid #cadde5;color:#285a70;padding:9px 11px;background:#fff;
+  border-radius:8px;font-weight:720;font-size:11px;
+}
+.whv-page .wv3-country-key-actions button[aria-pressed="true"]{color:#047c9e;border-color:#88c9d9;background:#eaf7fa;}
+.whv-page .wv3-country-identity > small{font-size:10px;color:#728994;line-height:1.45;}
+/* Service directory: navigation + task result, not decorative cards */
+.whv-page .wv3-directory{margin:22px 0 35px;color:#17364c;}
+.whv-page .wv3-directory-heading{display:flex;align-items:end;gap:20px;justify-content:space-between;margin-bottom:23px;}
+.whv-page .wv3-directory-heading h3{font-size:clamp(23px,2.7vw,34px);font-weight:780;letter-spacing:-.045em;margin:8px 0 0;color:#112e42;}
+.whv-page .wv3-directory-heading p{max-width:405px;margin:0;font-size:12px;color:#647e89;line-height:1.65;}
+.whv-page .wv3-directory-layout{display:grid;grid-template-columns:minmax(190px,.78fr) minmax(0,1.8fr);gap:19px;}
+.whv-page .wv3-directory-categories{display:grid;align-content:start;gap:4px;}
+.whv-page .wv3-directory-category{
+  display:flex;align-items:center;gap:11px;text-align:left;width:100%;
+  padding:13px 14px;border-radius:8px;border:1px solid transparent;
+  color:#36566a;background:transparent;font-weight:740;font-size:13px;
+}
+.whv-page .wv3-directory-category > span{flex:1;}
+.whv-page .wv3-directory-category > svg:last-child{opacity:.4;}
+.whv-page .wv3-directory-category:hover{background:#edf4f6;}
+.whv-page .wv3-directory-category.is-selected{background:#e8f4f7;color:#066d8c;border-color:#d0e6ed;}
+.whv-page .wv3-directory-detail{
+  background:#fff;border:1px solid #dce7eb;border-radius:11px;padding:22px 25px;
+  min-height:285px;
+}
+.whv-page .wv3-directory-detail-head h4{font-size:19px;font-weight:780;letter-spacing:-.03em;color:#16384e;margin:0;}
+.whv-page .wv3-directory-detail-head p{font-size:12px;margin:4px 0 15px;color:#66818f;}
+.whv-page .wv3-directory-actions{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 18px;}
+.whv-page .wv3-directory-actions button{
+  border:1px solid #d5e6ec;background:#f6fafb;color:#205d75;display:flex;
+  align-items:center;gap:7px;min-height:39px;padding:9px 11px;
+  font-weight:750;font-size:11px;border-radius:7px;
+}
+.whv-page .wv3-directory-actions button svg:last-child{opacity:.4;}
+.whv-page .wv3-vision-rows{display:grid;border-top:1px solid #e0e9ed;}
+.whv-page .wv3-vision-row{
+  display:flex;align-items:center;gap:13px;min-height:68px;padding:11px 2px;
+  border:0;border-bottom:1px solid #e8eef1;background:transparent;color:#345c70;
+  width:100%;text-align:left;border-radius:0;box-shadow:none;
+}
+.whv-page .wv3-vision-row:hover{color:#057a9d;background:#f7fbfc;}
+.whv-page .wv3-vision-row > span:nth-child(2){flex:1;display:grid;gap:3px;min-width:0;}
+.whv-page .wv3-vision-row strong{font-size:13px;font-weight:800;color:#193d51;}
+.whv-page .wv3-vision-row small{font-size:11px;color:#728b98;line-height:1.35;}
+.whv-page .wv3-product-stage{
+  font-size:10px;color:#5d7786;padding:4px 8px;border-radius:5px;background:#eff3f5;
+  white-space:nowrap;font-weight:750;
+}
+.whv-page .wv3-product-stage[data-stage="explorable"]{color:#14728a;background:#e9f5f7;}
+.whv-page .wv3-directory-note{font-size:11px;line-height:1.6;padding-top:12px;color:#64808e;margin:0;}
+@media(max-width:960px){
+ .whv-page .whv-header{height:64px;padding:0 15px;gap:14px;}
+ .whv-page .whv-header .whv-brand-text p{display:none;}
+ .whv-page .whv-nav.wv3-topnav{flex:1;width:auto;overflow:visible;min-height:0;}
+ .whv-page .wv3-topnav .wv3-nav-desktop{display:none;}
+ .whv-page .wv3-topnav .wv3-nav-compact{display:inline-flex;}
+ .whv-page .wv3-topnav .wv3-nav-search{min-width:39px;width:39px;justify-content:center;padding:9px;font-size:0;}
+ .whv-page .wv3-topnav .wv3-nav-search svg{width:18px;}
+ .whv-page .country-drawer.open{
+   top:64px !important;height:calc(100dvh - 64px) !important;
+ }
+ .whv-page .wv3-geo-hero{width:calc(100% - 28px);grid-template-columns:1fr;min-height:0;}
+ .whv-page .wv3-country-map{height:265px;min-height:265px;}
+ .whv-page .wv3-country-identity{padding:21px 24px;}
+ .whv-page .country-drawer .whv-country-profile-content{width:calc(100% - 32px);}
+ .whv-page .wv3-directory-layout{grid-template-columns:1fr;}
+ .whv-page .wv3-directory-categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;}
+}
+@media(max-width:600px){
+ .whv-page .whv-header .whv-brand-logo{width:40px;flex-basis:40px;height:33px;}
+ .whv-page .whv-header .whv-brand-text h1{font-size:16px;}
+ .whv-page .whv-nav.wv3-topnav{margin-left:auto;gap:0;}
+ .whv-page .wv3-topnav .whv-nav-btn{min-height:41px;padding:9px;}
+ .whv-page .wv3-nav-service-note,.whv-page .wv3-topnav .wv3-nav-lang-desktop{display:none;}
+ .whv-page .country-drawer .country-drawer-header.whv-country-drawer-toolbar{
+   height:45px;min-height:45px;padding:4px 14px;
+ }
+ .whv-page .country-drawer .country-drawer-header .whv-country-toolbar-brand{font-size:11px;}
+ .whv-page .country-drawer .country-drawer-body{height:calc(100% - 45px);}
+ .whv-page .country-drawer .whv-country-section-nav{padding:0 12px;}
+ .whv-page .country-drawer .whv-country-section-tab{padding:11px 13px;min-height:45px;font-size:11px;}
+ .whv-page .wv3-geo-hero{width:calc(100% - 22px);border-radius:9px;}
+ .whv-page .wv3-country-map{height:220px;min-height:220px;}
+ .whv-page .wv3-country-identity{padding:18px 17px;gap:7px;}
+ .whv-page .wv3-country-identity h2{font-size:32px;}
+ .whv-page .wv3-country-identity dl{margin:7px 0;}
+ .whv-page .wv3-country-key-actions button{min-height:43px;}
+ .whv-page .wv3-map-attribution{font-size:9px;right:110px;line-height:1.2;}
+ .whv-page .wv3-map-controls{right:11px;bottom:35px;}
+ .whv-page .wv3-map-controls button{width:32px;height:32px;}
+ .whv-page .country-drawer .whv-country-profile-content{width:calc(100% - 24px);padding:18px 0 50px;}
+ .whv-page .wv3-directory-heading{display:block;margin-bottom:15px;}
+ .whv-page .wv3-directory-heading h3{font-size:24px;}
+ .whv-page .wv3-directory-heading p{font-size:12px;margin-top:8px;}
+ .whv-page .wv3-directory-categories{grid-template-columns:1fr;gap:1px;}
+ .whv-page .wv3-directory-category{min-height:45px;padding:10px 13px;}
+ .whv-page .wv3-directory-detail{padding:17px 15px;min-height:180px;}
+ .whv-page .wv3-vision-row{gap:8px;}
+ .whv-page .wv3-vision-row strong{font-size:12px;}
+ .whv-page .wv3-product-stage{font-size:9px;padding:3px 5px;}
+}
+@media(prefers-reduced-motion:reduce) {
+ .whv-page .country-drawer.open,.whv-page .wv3-directory button{transition:none!important;}
+}
