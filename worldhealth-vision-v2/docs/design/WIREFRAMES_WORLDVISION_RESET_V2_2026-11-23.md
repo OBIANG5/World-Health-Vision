@@ -16,7 +16,7 @@ La répétition `six catégories dans le header → six grosses cartes juste apr
 - **Services⌄** ouvre **UN** mega-menu (non une nouvelle page de six gros carrés) : une colonne de besoins/Visions et une colonne de fonctionnalités concrètes adaptées au choix. Les 11 Visions et outils transversaux restent découvrables, leurs états distingués. Le mot `Services` annonce un menu par un chevron; le clic peut également ouvrir l'annuaire complet.
 - **Suivi** ouvre favoris, Watch, alertes, Radar et dossiers suivis si fonctionnels. Sinon indicateur explicite de statut; ne pas afficher une fausse cloche de notifications non connectée.
 - **À droite** : recherche universelle, langue, paramètres/compte seulement si un profil vrai existe. Pas de doublon `Explorer` et `Comprendre le pays` au même niveau.
-- Interactions desktop : hover ET click activent mega-menu (avec fermeture claire), navigation clavier/focus visible; sur mobile navigation courte et recherche prioritaire.
+- Interactions desktop : ouverture **au clic et au clavier**, et non exclusivement au survol (éviter les ouvertures accidentelles et assurer clavier/tactile); fermeture avec Échap/clic extérieur, focus visible et retour au bouton d'origine; sur mobile navigation courte et recherche prioritaire.
 - **Icônes** : texte premier; un pictogramme simple seulement lorsque nécessaire, de même famille (Lucide SVG, 20/24 px, stroke cohérent, monochrome). Ne pas rajouter un pictogramme avant chacun des quatre labels simplement pour décorer.
 
 ## II. ÉCRAN 1 — HOME desktop 1440 : globe + recherche, PAS 6 cartes dans le premier écran
