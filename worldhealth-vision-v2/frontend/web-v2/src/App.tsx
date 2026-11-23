@@ -295,7 +295,7 @@ function AppContent() {
     // Keep geographic context and the full-page country visible underneath.
     const rect = trigger?.getBoundingClientRect() ?? document.querySelector(".whv-nav")?.getBoundingClientRect();
     if (rect) {
-      const menuWidth = Math.min(580, window.innerWidth - 24);
+      const menuWidth = Math.min(780, window.innerWidth - 24);
       const left = Math.max(12, Math.min(rect.left, window.innerWidth - menuWidth - 12));
       setToolsAnchor({ top: rect.bottom + 10, left });
     }
