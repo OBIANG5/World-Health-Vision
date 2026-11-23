@@ -1,5 +1,7 @@
 # World-Vision — conception du logiciel V2 (point d'entrée à jour)
 
+> **CORRECTION DU 23/11/2026 APRÈS REJET EXPLICITE DES IMAGES :** lire en priorité **[RESET VISUEL AVANT TOUTE NOUVELLE IMAGE](VISUAL_RESET_BEFORE_IMAGES_2026-11-23.md)**. Les quatre visuels néon multicolores et la même grille de six services ont été rejetés. NE PAS générer de nouvelles captures à partir des précédentes. Reconstruire d'abord l'information, la navigation, l'iconographie monochrome, les surfaces et le parcours pays. Le canon métier pays/services reste valable, mais les dispositions visuelles antérieures ne sont plus la cible.
+
 **Dernière correction de vision : 23 novembre 2026. Aucune direction graphique finale n'est encore approuvée.**
 
 ## À LIRE EN PREMIER
