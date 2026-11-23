@@ -168,6 +168,12 @@ Pour petit écran et bas débit, afficher une géométrie vectorielle locale lé
 | **Suivre, vérifier, s'informer** | Watch-Vision (règles, notifications), favoris, alertes existantes, Global Radar, actualités et dossiers datés, lien vers World-Vision Média | `WatchlistPanel`, `AlertsPanel`, `GlobalRadarPanel` existent; Watch persistant et publication éditoriale non intégrés dans V2 |
 | **Transversal / professionnel** | exports PDF/CSV sous droits, dossiers comparatifs, API/équipes B2B à terme, profil/permissions, suivi des sources et méthodes | exports/profil locaux partiels, identité centralisée/entitlements/B2B non démontrés en preview |
 
+### Règle de présentation du répertoire — 11 entrées, PAS 31 cartes égales
+
+Le registre de conception distingue **11 produits/Visions parents** et **20 fonctions transversales ou internes**. Sur la fiche pays, rendre chaque produit parent **une seule fois** dans le groupe correspondant (titre clair, résultat, état global + état pour ce pays, chemin d'accès), puis afficher ses fonctions actuellement pertinentes en **sous-actions** `Voir les indicateurs / Sources / Lire la carte`, etc. Les fonctions transversales sont présentes via leur contexte et leurs liens (ex. Sources dans Atlas + accès documentaire), **pas vingt cartes décoratives supplémentaires**. Une même fonction peut être accessible depuis plusieurs chemins, mais doit avoir **une seule définition et un seul statut calculé**.
+
+Les groupes peuvent être filtrés ou atteints par des ancres visibles, mais **aucune des 11 Visions ne doit être cachée par défaut dans « Voir plus »** sans un index complet lisible. Sur mobile, sections verticales avec titres clairs et entrées compactes; sur desktop, deux colonnes de groupes max pour éviter un catalogue mural. Les produits non encore actifs disposent d'une **description utile** sans bouton simulant une capacité opérationnelle.
+
 **11 Visions obligatoirement présentes dans ce regroupement :** Atlas, Watch, Money, Transport, Tourisme, Price, Panier, Trading, BRVM, Radar, Média. Une même Vision peut apparaître à deux endroits utiles, mais la **définition et l'état** ne doivent exister **qu'une fois** dans le registre central.
 
 **Contextualiser sans provincialiser** :
