@@ -50,7 +50,7 @@ try {
     const drawer = page.locator(".country-drawer.open");
     await drawer.waitFor({ state: "visible", timeout: 20000 });
     await page.locator(".wv3-geo-hero").waitFor({ state: "visible" });
-    await page.locator(".wv3-country-geometry path").first().waitFor({ state: "visible", timeout: 15000 });
+    await page.locator(".wv3-country-geometry > g > path").first().waitFor({ state: "visible", timeout: 15000 });
     assert.equal(await page.locator(".whv-country-story-photo").count(), 0,
       "No panorama photo as country hero");
     const text = await page.locator(".wv3-geo-hero").innerText();
