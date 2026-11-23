@@ -32,8 +32,6 @@ import TrendChart from "../charts/TrendChart";
 import {WorldIcon,type WorldIconName} from "../ui/WorldIcon";
 import ForecastChart from "../charts/ForecastChart";
 import "../../styles/charts.css";
-import "../../styles/country.css";
-import "../../styles/country-editorial.css";
 
 // ---------------------------------------------------------------------------
 // Types
