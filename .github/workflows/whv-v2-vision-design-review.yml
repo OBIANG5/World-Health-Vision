@@ -1,0 +1,87 @@
+name: World-Vision V2 · design vision lab (unapproved isolated concepts)
+on:
+  push:
+    branches:
+      - design/world-vision-experience-system-v1-2026-11-23
+    paths:
+      - worldhealth-vision-v2/docs/design/**
+      - worldhealth-vision-v2/frontend/web-v2/public/vision-lab/**
+      - worldhealth-vision-v2/frontend/web-v2/scripts/vision-lab-smoke.mjs
+      - worldhealth-vision-v2/frontend/web-v2/scripts/design-country-hub-contract.test.mjs
+      - .github/workflows/whv-v2-vision-design-review.yml
+  pull_request:
+    paths:
+      - worldhealth-vision-v2/docs/design/**
+      - worldhealth-vision-v2/frontend/web-v2/public/vision-lab/**
+      - worldhealth-vision-v2/frontend/web-v2/scripts/vision-lab-smoke.mjs
+      - worldhealth-vision-v2/frontend/web-v2/scripts/design-country-hub-contract.test.mjs
+      - .github/workflows/whv-v2-vision-design-review.yml
+permissions:
+  contents: read
+concurrency:
+  group: vision-lab-design-v1
+  cancel-in-progress: true
+jobs:
+  render-real-concepts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: worldhealth-vision-v2/frontend/web-v2/package-lock.json
+      - name: Verify isolation, rights disclosure and noindex
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          h=Path("public/vision-lab/index.html").read_text(encoding="utf-8")
+          assert '<meta name="robots" content="noindex,nofollow,noarchive">' in h
+          assert "NON APPROUVÉ" in h and "ARCHIVE NON RETENUE" in h
+          assert "Libreville_bord_de_mer.jpg" in h and "Shirmy25" in h
+          assert "AS17-148-22727" in h and "NASA" in h
+          assert 'data-section="news"' in h
+          assert "Aucune série statistique" in h and "Aucun cours ou signal de marché" in h
+          assert 'src="https://' in h and "<iframe" not in h
+          assert "document.cookie" not in h and "localStorage" not in h
+          assert "process.env" not in h and "api.worldbank.org/v2/country" in h
+          print("PASS standalone noindex art-direction experiment and explicit image attribution")
+          PY
+      - name: Design-spec invariants — 11 Visions, every existing module, regional scope & honest availability
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node --test scripts/design-country-hub-contract.test.mjs
+      - name: Install frontend lockfile, build real software without modifying it
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          test -s dist/vision-lab/index.html
+      - name: Install browser harness (not a production dependency)
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        timeout-minutes: 7
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright
+          if command -v google-chrome >/dev/null 2>&1 && \
+             node --input-type=module -e 'import{chromium}from"playwright";const b=await chromium.launch({channel:"chrome",headless:true,args:["--no-sandbox"]});await b.close()'; then
+            echo "WHV_BROWSER_CHANNEL=chrome" >> "$GITHUB_ENV"
+          else
+            timeout 240s npx playwright install --with-deps --only-shell chromium
+          fi
+      - name: Render 3 compositions x 4 sizes, test user journeys without a fake backend
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node scripts/vision-lab-smoke.mjs
+      - name: Save evidence — NOT approval of design
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: whv-design-visionlab-visual-review-unapproved
+          path: worldhealth-vision-v2/frontend/web-v2/design-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
