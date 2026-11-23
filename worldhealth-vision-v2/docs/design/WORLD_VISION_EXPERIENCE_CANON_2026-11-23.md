@@ -1,4 +1,7 @@
 # WORLD-VISION — CANON DE CONCEPTION PRODUIT & DIRECTION ARTISTIQUE
+
+> ⚠️ **CORRECTION SUBSTANTIELLE DU 23/11/2026, APRÈS NOUVEAU RETOUR DU PROPRIÉTAIRE :** le [canon géographie + fiche pays + tous services](./WORLD_VISION_COUNTRY_HUB_AND_GLOBAL_IA_2026-11-23.md) **PRIME** sur les hypothèses de composition A/B/C ci-dessous. Les maquettes A/B/C sont historiques et **NON APPROUVÉES** : leur photographie Apollo 17 ne représente pas fidèlement le globe œil–Terre fourni par le propriétaire, la fiche pays ne doit PAS commencer par une photo de Libreville, et le répertoire de toutes les Visions manque. Le prochain prototype doit présenter un vrai focus cartographique du Gabon et l'ensemble contextualisé des services. Ne pas promouvoir A/B/C en design final.
+
 **Version : 0.1 — CANDIDAT NON VALIDÉ par le propriétaire · 23 novembre 2026**
 **Statut : étude de conception, PAS cahier graphique final approuvé, PAS preuve d'un produit déployé.**
 
