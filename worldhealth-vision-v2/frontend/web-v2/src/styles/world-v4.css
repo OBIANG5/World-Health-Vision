@@ -662,3 +662,59 @@ body .wv3-service-menu-layout{
  .whv-page .country-drawer .wv4-country-breadcrumb strong{font-size:11px;}
  .whv-page .country-drawer .wv4-export-options > summary{width:38px;height:38px;}
 }
+
+/* Visual audit 1440px: legacy country-editorial paints a giant WHITE facts
+   container into the midnight atlas, while dark titles become unreadable.
+   This section restyles the REAL existing data components, not screenshots,
+   and keeps every source/number/metric intact. */
+.whv-page .country-drawer .whv-country-section-heading h3{
+  color:#f1fbff!important;font-weight:820;letter-spacing:-.043em;
+}
+.whv-page .country-drawer .whv-country-section-heading > p{
+  color:#b7cfe0!important;opacity:1!important;
+}
+.whv-page .country-drawer .whv-country-section-kicker{color:#65dfef!important;}
+.whv-page .country-drawer .whv-country-profile-facts{
+  background:transparent!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;padding:0!important;
+  gap:11px!important;
+}
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-item{
+  color:#e8f8ff!important;background:linear-gradient(120deg,#0c2d49,#0a203b)!important;
+  border:1px solid #245576!important;border-radius:10px!important;
+}
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-label{color:#a2c6d9!important;}
+.whv-page .country-drawer .whv-country-profile-facts .country-meta-value{color:#f2fcff!important;}
+.whv-page .country-drawer .whv-country-profile-snapshot-note{
+  background:#0b2842!important;border:1px solid #2b5878!important;
+  color:#a7c8dc!important;
+}
+.whv-page .country-drawer .whv-country-profile-snapshot-note summary{
+  color:#c7e7f2!important;
+}
+.whv-page .country-drawer .whv-country-profile-snapshot-note summary span,
+.whv-page .country-drawer .whv-country-profile-snapshot-note :is(a,time){
+  color:#79deeb!important;
+}
+.whv-page .country-drawer .whv-country-profile-snapshot-note p{color:#acc8da!important;}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-card{
+  background:#0b2944!important;
+  border:1px solid #295778!important;color:#e9f7ff!important;
+}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-card:hover{
+  background:#0d3b59!important;border-color:#37a4c6!important;
+}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-label{color:#a6c9d9!important;}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-value{color:#f1fbff!important;}
+.whv-page .country-drawer .whv-country-overview .overview-kpi-desc{color:#a7c5d6!important;}
+.whv-page .country-drawer .whv-country-overview .overview-shortcut-btn{
+  background:#0d3653!important;color:#d1f5ff!important;border-color:#2c6e92!important;
+}
+.whv-page .country-drawer .whv-country-overview .overview-shortcut-btn:hover{
+  background:#0b5274!important;color:#fff!important;
+}
+.whv-page .country-drawer .whv-country-overview .signal-chip{
+  color:#d5f1f9!important;background:#0c304a!important;border-color:#2a607d!important;
+}
+.whv-page .country-drawer .whv-country-overview :is(.signal-chip-name,.signal-chip-headline){color:#e1f7ff!important;}
+.whv-page .country-drawer .whv-country-overview .signal-chip-conf{color:#9cc3d5!important;}
