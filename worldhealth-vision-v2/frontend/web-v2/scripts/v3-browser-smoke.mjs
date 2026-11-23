@@ -131,6 +131,13 @@ try {
       });
     assert(!(await page.locator(".wv3-directory").isVisible().catch(() => false)),
       "News section is not overridden by the service directory");
+    await page.waitForFunction(() => {
+      const nav = document.querySelector(".whv-country-section-nav");
+      const tab = nav?.querySelector('button[data-section="news"]');
+      if (!nav || !tab || tab.getAttribute("aria-current") !== "page") return false;
+      const n = nav.getBoundingClientRect(), t = tab.getBoundingClientRect();
+      return t.left >= n.left - 2 && t.right <= n.right + 2;
+    }, null, {timeout: 6000});
     await page.screenshot({ path: `v3-artifacts/${size.n}-gabon-news.png`, animations: "disabled" });
 
     // Separate, honest follow: bookmarking exists; push news notifications do not.
