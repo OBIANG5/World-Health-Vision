@@ -136,7 +136,7 @@ try {
     });
     console.log("V4_OVERVIEW_CONTRAST",size.n,JSON.stringify(contrast));
     const isBright = css => {
-      const values = css?.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
+      const values = css?.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
       return values && Math.min(...values.slice(1).map(Number)) >= 165;
     };
     assert(isBright(contrast.heading) && isBright(contrast.value),
