@@ -44,7 +44,22 @@ try {
       "One unified index of six task families, not six repeated neon tiles");
     assert.equal(await page.locator(".whv-desktop-story").count(), 0,
       "Do not keep previous brochure-like desktop story behind new home");
+    assert.equal(await page.locator(".whv-offline-banner").count(), 0,
+      "The CDN geographic fallback must not trigger a giant obstructive offline alert");
     await page.screenshot({ path: `v3-artifacts/${size.n}-home.png`, animations: "disabled" });
+    await page.locator(".wv3-services-trigger").click();
+    const menu = page.locator(".wv3-service-menu");
+    await menu.waitFor({ state: "visible" });
+    assert.equal(await menu.locator(".wv3-service-menu-groups button").count(), 6,
+      "One shared menu has six task families");
+    await menu.locator(".wv3-service-menu-groups button").filter({hasText:"Argent & marchés"}).click();
+    const financeProducts = await menu.innerText();
+    assert(financeProducts.includes("Money Vision") &&
+      financeProducts.includes("Trading Vision") && financeProducts.includes("BRVM Vision"),
+      "All finance Visions must be named correctly in the global menu");
+    await page.screenshot({ path: `v3-artifacts/${size.n}-services-menu.png`, animations: "disabled" });
+    await menu.getByRole("button",{name:"Fermer les services"}).click();
+    await menu.waitFor({state:"hidden"});
 
     await page.goto(origin + "/?wv=country&iso3=GAB", { waitUntil: "domcontentloaded" });
     const drawer = page.locator(".country-drawer.open");
