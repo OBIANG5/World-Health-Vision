@@ -24,6 +24,15 @@
 .content{max-width:1540px;margin:0 auto}.page{display:none}.page[data-visible=true]{display:block}.page-width{max-width:1300px;margin:0 auto;padding:0 48px}.btn-primary,.btn-outline,.text-action{border-radius:9px;min-height:48px;padding:12px 19px;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:12px;text-decoration:none}.btn-primary{background:#006da9;color:#fff;border:1px solid #006da9;box-shadow:0 6px 17px #006da922}.btn-primary:hover{background:#005884}.btn-outline{background:#fff;border:1px solid #bfd5df;color:#144f6a}.btn-outline:hover{border-color:#2689b4;background:#f5fcff}.text-action{border:0;background:none;color:#006b9f;padding:10px 0;min-height:0}
 .vision-footer{max-width:1400px;margin:0 auto;padding:22px 45px 30px;display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;font-size:11px;color:#6c8390;border-top:1px solid var(--line)}
 .vision-footer a{color:#346c86}
+#country-search{border:1px solid #cfdee5;padding:0;max-width:min(530px,calc(100vw - 26px));width:100%;border-radius:17px;box-shadow:0 35px 100px #001d36a0;background:#fff;color:#123c54}
+#country-search::backdrop{background:#00182cb9;backdrop-filter:blur(5px)}
+.search-modal{padding:27px}.search-modal-head{display:flex;align-items:start;justify-content:space-between;gap:14px;margin-bottom:24px}.search-modal-head h2{font-size:24px;letter-spacing:-.04em;margin:9px 0 0}
+.search-modal-head button{width:34px;height:34px;border:1px solid #d8e7ed;background:#f4f9fb;color:#2b5970;border-radius:10px;font-size:23px}
+.search-modal label{display:block;font-size:11px;font-weight:800;color:#496b7e;margin-bottom:8px}.search-modal input{display:block;width:100%;border:1px solid #c8dce7;border-radius:10px;padding:13px 15px;min-height:48px;color:#123b50;font-size:15px}
+.search-modal p{color:#6b8290;font-size:11px;line-height:1.65;margin:12px 0 19px}
+.search-modal .search-match{width:100%;background:#edf7fa;border:1px solid #c9e6ef;border-radius:11px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;text-align:left;color:#1b5876;font-weight:820;font-size:13px}
+.search-modal .search-match:hover{background:#dff2f8}
+.search-modal .search-match[hidden]{display:none}
 /* HOME — the Earth is the main geographic interface, never a financial indicator. */
 .home-hero{position:relative;isolation:isolate;overflow:hidden;min-height:600px;background:linear-gradient(115deg,#061527 3%,#092b4a 58%,#0e5278 100%);color:#fff}
 .home-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 75% 43%,#2c9ddb1d 0,#2c9ddb00 40%),radial-gradient(circle at 10% 22%,#1869a321 0,transparent 43%)}
@@ -36,7 +45,7 @@
 .hero-actions .btn-outline{background:#ffffff10;border-color:#ffffff55;color:#fff}.hero-actions .btn-outline:hover{background:#ffffff24}
 .earth-stage{position:relative;height:550px;display:grid;place-items:center}
 .earth-halo{position:absolute;width:86%;aspect-ratio:1;max-width:550px;border-radius:50%;background:radial-gradient(circle,#24b1ec26 10%,#1a56951b 46%,transparent 69%);filter:blur(5px);transform:scale(1.15)}
-.earth-img{position:relative;z-index:1;width:min(100%,525px);aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 0 25px #5ca9df35) drop-shadow(0 15px 46px #00152899)}
+.earth-img{position:relative;z-index:1;width:min(100%,525px);aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 0 25px #5ca9df35) drop-shadow(0 15px 46px #00152899);mix-blend-mode:screen}
 .eye-open-arc{position:absolute;z-index:2;width:min(105%,620px);height:auto;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:.95;filter:drop-shadow(0 0 13px #84dffa4a)}
 .earth-caption{position:absolute;bottom:0;right:22px;z-index:3;font-size:10px;color:#9ec4d4;letter-spacing:.02em}
 .earth-caption a{color:#c1ebf6}.earth-pin{position:absolute;z-index:3;top:43%;left:50%;border:1px solid #bce8fa80;background:#082f53e8;color:#eefcff;padding:7px 12px;border-radius:100px;font-size:11px;font-weight:700;box-shadow:0 0 0 5px #5dcbfb20}
@@ -182,6 +191,11 @@
  .work-layout{grid-template-columns:1fr;padding:0 21px 54px;gap:25px}.data-grid{grid-template-columns:1fr 1fr;gap:8px}.data-cell{padding:17px;min-height:180px}
  .data-cell h3{font-size:16px}.data-cell p{font-size:11px}.secondary-column{border:0;border-top:1px solid #d7e5ec;padding:25px 0 0}
  .comparison-bar{padding:15px;gap:12px}.compare-country{min-width:100px}.compare-country strong{font-size:16px}
+ #app[data-concept=b] .country-body{display:block}
+ #app[data-concept=b] .context-side{padding:23px 0 0;margin-top:25px;border-left:0;border-top:1px solid #dae5e8}
+ #app[data-concept=c] .work-layout{display:block}
+ #app[data-concept=c] .secondary-column{margin-top:25px}
+
  .work-layout>div{min-width:0}
  .expert-table{width:100%;table-layout:fixed}
  .expert-table th,.expert-table td{overflow-wrap:anywhere;word-break:normal;padding:12px 8px;font-size:10px;vertical-align:top}
@@ -235,8 +249,18 @@
    <button type="button" data-go="compare">Comparer</button>
    <button type="button" data-go="markets">Marchés</button>
  </nav>
- <div class="utility"><button type="button" class="search-trigger" data-go="home" aria-label="Rechercher un pays"><span class="icon" aria-hidden="true">⌕</span> Rechercher</button><button class="user-trigger" type="button" title="Compte non connecté dans la maquette" aria-label="Compte : maquette non connectée" disabled>◯</button></div>
+ <div class="utility"><button type="button" class="search-trigger" data-search="open" aria-label="Rechercher un pays"><span class="icon" aria-hidden="true">⌕</span> Rechercher</button><button class="user-trigger" type="button" title="Compte non connecté dans la maquette" aria-label="Compte : maquette non connectée" disabled>◯</button></div>
 </header>
+<dialog id="country-search" aria-labelledby="country-search-title">
+  <div class="search-modal">
+    <div class="search-modal-head"><div><span class="eyebrow">Explorer un pays</span><h2 id="country-search-title">Rechercher dans le laboratoire</h2></div><button type="button" data-search="close" aria-label="Fermer la recherche">×</button></div>
+    <label for="country-search-input">Nom du pays</label>
+    <input id="country-search-input" type="search" placeholder="Gabon" autocomplete="off">
+    <p>Seul le Gabon est illustré dans ce prototype. La recherche mondiale réelle appartient à World-Vision V2.</p>
+    <button type="button" class="search-match" data-go="country"><span>🇬🇦 &nbsp; Gabon</span><span>Ouvrir la fiche ↗</span></button>
+    <p class="search-empty" hidden>Aucun autre pays n'est maquetté ici.</p>
+  </div>
+</dialog>
 <main class="content">
 <!-- SAME HOME/COUNTRY CONTENT across A/B/C: composition alone changes -->
 <section class="page" id="screen-home" data-visible="true" aria-label="Accueil prototype">
@@ -251,11 +275,11 @@
    <div class="earth-stage" role="img" aria-label="Photographie historique de la Terre vue d'Apollo 17, centrée sur l'Afrique. Image illustrative uniquement, pas un globe actif.">
      <div class="earth-halo"></div><div class="halo-line"></div>
      <img class="earth-img" src="https://upload.wikimedia.org/wikipedia/commons/d/dc/The_Earth_seen_from_Apollo_17_%28AS17-148-22727%29.jpg" alt="" decoding="async" loading="eager">
-     <svg class="eye-open-arc" viewBox="0 0 620 430" aria-hidden="true">
-       <path d="M8 213 Q310 -30 612 213" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
-       <path d="M8 228 Q310 467 612 228" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
-       <path d="M8 208 Q310 -26 612 208" fill="none" stroke="#79dfff" stroke-opacity=".77" stroke-width="1.8"/>
-       <path d="M8 232 Q310 463 612 232" fill="none" stroke="#79dfff" stroke-opacity=".77" stroke-width="1.8"/>
+     <svg class="eye-open-arc" viewBox="0 0 620 520" aria-hidden="true">
+       <path d="M8 240 Q310 -135 612 240" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+       <path d="M8 280 Q310 655 612 280" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+       <path d="M8 235 Q310 -130 612 235" fill="none" stroke="#79dfff" stroke-opacity=".77" stroke-width="1.8"/>
+       <path d="M8 285 Q310 650 612 285" fill="none" stroke="#79dfff" stroke-opacity=".77" stroke-width="1.8"/>
      </svg>
      <div class="earth-caption">Terre : NASA · Apollo 17 (1972), image illustrative <a href="https://www.nasa.gov/nasa-brand-center/images-and-media/" target="_blank" rel="noopener noreferrer">droits</a></div>
    </div>
@@ -369,13 +393,24 @@
       window.scrollTo({top:Math.max(0,y),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
     }
   }
+  const dialog=document.getElementById('country-search');
+  const searchInput=document.getElementById('country-search-input');
+  const match=dialog.querySelector('.search-match');
+  const empty=dialog.querySelector('.search-empty');
+  searchInput.addEventListener('input',function(){
+    const q=searchInput.value.trim().toLocaleLowerCase('fr');
+    const available=!q||'gabon'.includes(q);
+    match.hidden=!available;empty.hidden=available;
+  });
   document.addEventListener('click',function(e){
-    const btn=e.target.closest('[data-go],[data-section],[data-concept-select]');
+    const btn=e.target.closest('[data-go],[data-section],[data-concept-select],[data-search]');
     if(!btn)return;
     e.preventDefault();
+    if(btn.dataset.search==='open'){dialog.showModal();searchInput.focus();return;}
+    if(btn.dataset.search==='close'){dialog.close();return;}
     if(btn.dataset.conceptSelect){setConcept(btn.dataset.conceptSelect);return;}
     if(btn.dataset.section){setSection(btn.dataset.section,true);return;}
-    if(btn.dataset.go){go(btn.dataset.go);return;}
+    if(btn.dataset.go){if(dialog.open)dialog.close();go(btn.dataset.go);return;}
   });
   const u=new URL(location.href);
   setConcept(u.searchParams.get('concept')||'a');
