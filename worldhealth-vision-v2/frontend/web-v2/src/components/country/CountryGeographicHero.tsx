@@ -136,7 +136,7 @@ export default function CountryGeographicHero({
 }){
   const fr=language==="fr";
   const [map,setMap]=useState<MapStatus>({kind:"loading"});
-  const [zoom,setZoom]=useState(1);
+  const [zoom,setZoom]=useState(1.65);
   useEffect(()=>{
     const ac=new AbortController();
     fetch("/countries.geojson",{signal:ac.signal})
@@ -207,11 +207,11 @@ export default function CountryGeographicHero({
       </div>}
       <div className="wv3-map-controls">
         <button type="button" aria-label={fr?"Agrandir la carte":"Zoom map in"}
-          onClick={()=>setZoom(v=>Math.min(2.2,+(v+.25).toFixed(2)))} disabled={!viewport}>+</button>
+          onClick={()=>setZoom(v=>Math.min(2.7,+(v+.25).toFixed(2)))} disabled={!viewport}>+</button>
         <button type="button" aria-label={fr?"Réduire la carte":"Zoom map out"}
           onClick={()=>setZoom(v=>Math.max(.75,+(v-.25).toFixed(2)))} disabled={!viewport}>−</button>
         <button type="button" aria-label={fr?"Recentrer":"Reset zoom"}
-          onClick={()=>setZoom(1)} disabled={!viewport}><WorldIcon name="compass" size={17}/></button>
+          onClick={()=>setZoom(1.65)} disabled={!viewport}><WorldIcon name="compass" size={17}/></button>
       </div>
       <p className="wv3-map-attribution wv4-map-attribution">
         {fr?"Contours GeoJSON · imagerie terrestre d’archive basse résolution"
