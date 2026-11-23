@@ -44,7 +44,7 @@ jobs:
           from pathlib import Path
           h=Path("public/vision-lab/index.html").read_text(encoding="utf-8")
           assert '<meta name="robots" content="noindex,nofollow,noarchive">' in h
-          assert "NON APPROUVÉ" in h and "Prototype" in h
+          assert "NON APPROUVÉ" in h and "ARCHIVE NON RETENUE" in h
           assert "Libreville_bord_de_mer.jpg" in h and "Shirmy25" in h
           assert "AS17-148-22727" in h and "NASA" in h
           assert 'data-section="news"' in h
