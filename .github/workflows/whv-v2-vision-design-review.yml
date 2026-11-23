@@ -48,7 +48,7 @@ jobs:
           assert "Libreville_bord_de_mer.jpg" in h and "Shirmy25" in h
           assert "AS17-148-22727" in h and "NASA" in h
           assert 'data-section="news"' in h
-          assert "Aucune série statistique" in h and "données live" in h
+          assert "Aucune série statistique" in h and "Aucun cours ou signal de marché" in h
           assert 'src="https://' in h and "<iframe" not in h
           assert "document.cookie" not in h and "localStorage" not in h
           assert "process.env" not in h and "api.worldbank.org/v2/country" in h
