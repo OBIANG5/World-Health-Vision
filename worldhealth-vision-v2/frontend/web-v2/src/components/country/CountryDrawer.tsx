@@ -17,7 +17,9 @@ import { useLang } from "../../context/LanguageContext";
 import { useFxHistory } from "../../hooks/useFxHistory";
 import { useCountrySheet } from "../../hooks/useCountrySheet";
 import CountryLocalEvidencePanel from "./CountryLocalEvidencePanel";
-import CountryEditorialStory from "./CountryEditorialStory";
+import CountryGeographicHero from "./CountryGeographicHero";
+import CountryServiceDirectory from "./CountryServiceDirectory";
+import type { VisionAction, VisionId } from "../../product/visionProducts";
 import CountryNewsPanel from "./CountryNewsPanel";
 import { getWorldBankCountryMetadata, worldBankCatalogProvenance, type CountryCatalogSource } from "../../catalog/worldBankCountryCatalog";
 import { useFxRates } from "../../hooks/useFxRates";
@@ -51,6 +53,9 @@ type Props = {
   catalogSource: CountryCatalogSource;
   watched?: boolean;
   onToggleWatch?: () => void;
+  onOpenVision: (id: VisionId) => void;
+  onVisionAction: (action: VisionAction) => void;
+  initialSection?: CountrySection;
 };
 
 // ---------------------------------------------------------------------------
@@ -343,13 +348,6 @@ const TAB_ICONS: Record<DrawerTab, WorldIconName> = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function countryFlag(iso2?: string | null): string {
-  if (!iso2 || iso2.length !== 2) return "—";
-  const base = 0x1f1e6; const A = 65;
-  const u = iso2.toUpperCase();
-  return String.fromCodePoint(u.charCodeAt(0) - A + base) + String.fromCodePoint(u.charCodeAt(1) - A + base);
-}
 
 function fmtCompact(v: number | null, unit: string): string {
   if (v === null) return "—";
@@ -1248,13 +1246,13 @@ function ComparatorSection({
 export default function CountryDrawer({
   open, onClose, selectedCountryIso3, onCountryChange,
   countries, countriesLoading, countriesError, catalogSource,
-  watched = false, onToggleWatch,
+  watched = false, onToggleWatch, onOpenVision, onVisionAction, initialSection = "overview",
 }: Props) {
   const lang = useLang();
   const fr = lang === "fr";
   const [fullscreen, setFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState<DrawerTab>("overview");
-  const [activeSection, setActiveSection] = useState<CountrySection>("overview");
+  const [activeSection, setActiveSection] = useState<CountrySection>(initialSection);
   const countryBodyRef = useRef<HTMLDivElement>(null);
   function navigateToSection(section: CountrySection) {
     setActiveSection(section);
@@ -1265,8 +1263,16 @@ export default function CountryDrawer({
     if (body && nav) {
       const top = body.scrollTop + nav.getBoundingClientRect().top
         - body.getBoundingClientRect().top - 4;
-      body.scrollTo({ top: Math.max(0, top),
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      const motion = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      body.scrollTo({ top: Math.max(0, top), behavior: motion });
+      // Six country sections stay peers. On 320–390px the tab rail is
+      // horizontal: always bring the selected rubric into view without
+      // scrolling the whole document to a new place.
+      const tab = nav.querySelector<HTMLElement>(`button[data-section="${section}"]`);
+      if (tab) nav.scrollTo({
+        left: Math.max(0, tab.offsetLeft + tab.offsetWidth / 2 - nav.clientWidth / 2),
+        behavior: motion,
+      });
     }
   }
 
@@ -1288,15 +1294,10 @@ export default function CountryDrawer({
     } as Record<string, string>)[bankMetadata.incomeLevelCode] ?? bankMetadata.incomeLevelName
       : bankMetadata.incomeLevelName) : null;
 
-  useEffect(() => {
-    setActiveSection("overview");
-    setActiveTab("overview");
-    countryBodyRef.current?.scrollTo({ top: 0, behavior: "auto" });
-  }, [selectedCountryIso3]);
+  // The parent keys this page by country and requested section: changing
+  // countries remounts local navigation, rather than exposing stale tabs.
 
-  const flag = countryFlag(countryDetail?.iso2 ?? selectedCountry?.iso2);
   const displayName = countryDetail?.displayName ?? selectedCountry?.displayName ?? selectedCountryIso3;
-  const subtitle = [countryDetail?.regionName ?? selectedCountry?.regionName, countryDetail?.worldBankIncomeGroup].filter(Boolean).join(" • ");
 
   const allEconomicLenses = useMemo(() => economicSnapshot?.lenses ?? [], [economicSnapshot]);
   const allLenses = useMemo(() => [
@@ -1441,12 +1442,11 @@ export default function CountryDrawer({
       {/* The COUNTRY is primary. All domains are peer sections below its
           identity; news never precedes the actual country profile. */}
       <div className="country-drawer-body" ref={countryBodyRef}>
-        <CountryEditorialStory key={selectedCountryIso3}
-          iso3={selectedCountryIso3}
-          name={displayName} flag={flag} subtitle={subtitle}
-          capital={countryDetail?.capitalCity ?? selectedCountry?.capitalCity}
-          currencyCode={countryDetail?.currencyCode ?? selectedCountry?.currencyCode}
-          locale={lang} open={open}
+        <CountryGeographicHero key={selectedCountryIso3}
+          iso3={selectedCountryIso3} country={selectedCountry} language={lang}
+          onCompare={() => navigateToSection("compare")}
+          onNews={() => navigateToSection("news")}
+          onFollow={onToggleWatch} followed={watched}
         />
 
         <nav className="whv-country-section-nav"
@@ -1459,7 +1459,7 @@ export default function CountryDrawer({
             ["news", fr ? "Actualités" : "News"],
             ["services", fr ? "Services" : "Services"],
           ] as const).map(([section, label]) => (
-            <button key={section} type="button"
+            <button key={section} type="button" data-section={section}
               className={`whv-country-section-tab${activeSection === section ? " is-selected" : ""}`}
               aria-current={activeSection === section ? "page" : undefined}
               onClick={() => {
@@ -1517,8 +1517,6 @@ export default function CountryDrawer({
             </div>
             {countryReference && (
               <div className="country-meta-grid whv-country-profile-facts">
-                {countryReference.capitalCity && <MetaItem label={t(lang, "capitale")}
-                  value={countryReference.capitalCity} />}
                 {countryReference.regionName && <MetaItem label={t(lang, "region")}
                   value={countryReference.regionName} />}
                 {countryReference.subregionName && <MetaItem label={t(lang, "sousRegion")}
@@ -1570,6 +1568,21 @@ export default function CountryDrawer({
                   : "No country is fabricated when neither World-Vision nor the external directory identifies the territory."}</p>
               </div>
             )}
+            <CountryServiceDirectory
+              key={selectedCountryIso3}
+              iso3={selectedCountryIso3} countryName={displayName} language={lang}
+              onOpenVision={onOpenVision}
+              onOpenNews={() => navigateToSection("news")}
+              onOpenFollow={() => { if (onToggleWatch) onToggleWatch(); }}
+              onOpenData={() => { setActiveTab("economy"); navigateToSection("data"); }}
+              onOpenCompare={() => navigateToSection("compare")}
+              onOpenSources={() => navigateToSection("sources")}
+              onOpenCurrency={() => {
+                setActiveTab("fx");
+                navigateToSection("services");
+              }}
+              onOpenTravel={() => onVisionAction("travel")}
+            />
             {economicSnapshot || relativeCostSnapshot ? <OverviewTab
               allLenses={allLenses} highlights={combinedHighlights}
               decisionSignals={decisionSignals} lang={lang}
@@ -1627,8 +1640,21 @@ export default function CountryDrawer({
             />
           </section>}
 
-          {activeSection === "news" && <CountryNewsPanel key={selectedCountryIso3}
-            iso3={selectedCountryIso3} locale={lang} />}
+          {activeSection === "news" && <section className="wv3-news-with-follow" aria-label={fr ? "Actualités du pays et suivi" : "Country news and following"}>
+            <div className="wv3-news-follow-bar">
+              <div><strong>{fr ? `Actualités de ${displayName}` : `${displayName} news`}</strong>
+                <p>{fr
+                  ? "Retrouvez les dossiers datés et leurs sources. Les notifications automatiques de Watch Vision sont en préparation."
+                  : "Read dated reports and their sources. Automated Watch Vision notifications are planned."}</p>
+              </div>
+              {onToggleWatch && <button type="button" onClick={onToggleWatch}
+                aria-pressed={watched}><WorldIcon name="star" size={17}/>
+                {watched ? (fr ? "Pays enregistré" : "Country saved")
+                  : (fr ? "Enregistrer ce pays" : "Save this country")}
+              </button>}
+            </div>
+            <CountryNewsPanel key={selectedCountryIso3} iso3={selectedCountryIso3} locale={lang}/>
+          </section>}
 
           {activeSection === "data" && <section className="whv-country-data" aria-label={fr ? "Données du pays" : "Country data"}>
             <div className="whv-country-section-heading">
@@ -1695,6 +1721,22 @@ export default function CountryDrawer({
           </section>}
 
           {activeSection === "services" && <section className="whv-country-services">
+            <CountryServiceDirectory key={selectedCountryIso3}
+              iso3={selectedCountryIso3} countryName={displayName} language={lang}
+              onOpenVision={onOpenVision}
+              onOpenNews={() => navigateToSection("news")}
+              onOpenFollow={() => { if (onToggleWatch) onToggleWatch(); }}
+              onOpenData={() => { setActiveTab("economy"); navigateToSection("data"); }}
+              onOpenCompare={() => navigateToSection("compare")}
+              onOpenSources={() => navigateToSection("sources")}
+              onOpenCurrency={() => setActiveTab("fx")}
+              onOpenTravel={() => onVisionAction("travel")}
+            />
+            <details className="wv3-legacy-tools">
+              <summary>{fr ? "Outils historiques du pays (devises et contexte)" : "Existing country tools (currency and context)"}</summary>
+              <p>{fr
+                ? "Les indicateurs généraux de vulnérabilité ne constituent pas un avis officiel de sécurité ou de voyage."
+                : "General vulnerability indicators are not official travel or safety advisories."}</p>
             <div className="whv-country-section-heading">
               <span className="whv-country-section-kicker">{fr ? "OUTILS ET SERVICES" : "TOOLS AND SERVICES"}</span>
               <h3>{fr ? "Services liés au pays" : "Country-related services"}</h3>
@@ -1726,6 +1768,7 @@ export default function CountryDrawer({
                   ? "Un indicateur partiel ne constitue pas un avis officiel de sécurité ou de voyage. Les données et périmètres doivent être confirmés."
                   : "An isolated indicator is not an official travel advisory. Data and geographic scope must be verified."}</p>
               </div>}
+            </details>
           </section>}
         </div>
       </div>

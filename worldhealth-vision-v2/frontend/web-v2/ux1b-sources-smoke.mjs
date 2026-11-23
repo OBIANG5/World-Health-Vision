@@ -50,52 +50,40 @@ try {
     await page.locator("canvas.whv-globe-canvas").waitFor({ state: "visible", timeout: 18000 });
     assert((await page.locator("canvas.whv-globe-canvas").count()) === 1, "Do not duplicate the real globe");
 
-    if (device.mobile) {
-      const card = page.locator(".whv-mobile-perspectives");
-      await card.waitFor({ state: "visible" });
-      assert((await card.textContent()).includes("Ne vous arrêtez pas à une source."),
-        "Source plurality is not visible on the actual phone homepage");
-      const sizes = await card.evaluate(node => ({ inner: node.clientWidth, actual: node.scrollWidth }));
-      assert(sizes.actual <= sizes.inner + 2, device.name + " source card overflows: " + JSON.stringify(sizes));
-      await card.locator("button").filter({ hasText: "Sources mondiales" }).click();
-      assert.equal(new URL(page.url()).searchParams.get("wv"), "sources", "Global source directory action is dead");
-      await page.screenshot({ path: "ux1b-artifacts/" + device.name + "-global-sources.png", fullPage: true });
-      await page.goto(origin + "/", { waitUntil: "domcontentloaded" });
-      await page.locator(".whv-mobile-perspectives").locator("button")
-        .filter({ hasText: "Sources du pays" }).click();
-      await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 15000 });
-      assert.equal(new URL(page.url()).searchParams.get("wv"), "country");
-    } else {
-      const desktopEntry = page.locator(".whv-story-perspectives");
-      assert(await desktopEntry.isVisible(), "Desktop has lost source-plurality entry");
-      await desktopEntry.locator("button").filter({ hasText: "Répertoire des sources" }).click();
-      assert.equal(new URL(page.url()).searchParams.get("wv"), "sources", "Desktop source action is dead");
-    }
-
+    // Real software's redesigned homepage preserves direct source access.
+    // No obsolete photo or 'mobile perspectives' promo cards are expected.
+    await page.locator(".wv3-home-tasks").waitFor({ state: "visible" });
+    await page.locator(".wv3-home-tasks button")
+      .filter({ hasText: "Outils professionnels" }).click();
+    await page.locator(".wv3-home-task-result button")
+      .filter({ hasText: "Sources et méthodes" }).click();
+    assert.equal(new URL(page.url()).searchParams.get("wv"), "sources",
+      "Global sources must still open directly from V3 task navigation");
+    await page.screenshot({
+      path: "ux1b-artifacts/" + device.name + "-global-sources.png", fullPage: false,
+    });
+    await page.goto(origin + "/", { waitUntil: "domcontentloaded" });
+    await page.locator(".wv3-home-quick button").filter({ hasText: "Fiche pays" }).click();
+    await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 15000 });
+    assert.equal(new URL(page.url()).searchParams.get("wv"), "country");
+    
     // GAB has THREE documented local-source metadata entries in the existing
     // archival fixture. This is a catalog comparison, NOT three live feeds.
     await page.goto(origin + "/?wv=country&iso3=GAB", { waitUntil: "domcontentloaded" });
     await page.locator(".country-drawer.open").waitFor({ state: "visible", timeout: 15000 });
-    // COUNTRY-LIVE U1 is a REAL feature on this same compiled country sheet,
-    // not a screenshot-only redesign or a synthetic dynamic news feed.
-    const story = page.locator(".whv-country-story");
-    await story.waitFor({ state: "visible", timeout: 15000 });
-    assert((await story.locator("h2").innerText()).includes("Gabon"),
-      "Country identity must be visible before data widgets");
-    const picture = story.locator("img.whv-country-story-photo");
-    // The Commons CDN may be unreachable from CI; verify license metadata and
-    // graceful visual fallback separately, not an arbitrary external response.
-    if (await picture.count()) {
-      assert((await picture.getAttribute("src")).includes("Libreville_bord_de_mer"),
-        "Only a reviewed Gabon photograph may represent GAB");
-      assert((await story.locator(".whv-country-story-credit").innerText()).includes("Shirmy25"),
-        "Photographer attribution must remain visible");
-      const licenseUrl = await story.locator('a[href*="creativecommons.org/licenses/by-sa/4.0"]').getAttribute("href");
-      assert(licenseUrl?.startsWith("https://"), "Photo license link is required");
-    } else {
-      assert(await story.locator(".whv-country-story-no-photo").isVisible(),
-        "No image must fail visibly without showing unrelated scenery");
-    }
+    // The country is geographically located with the SAME real
+    // embedded GeoJSON source as GlobeMap, not a photograph of Libreville.
+    const geo = page.locator(".wv3-geo-hero");
+    await geo.waitFor({ state: "visible", timeout: 15000 });
+    assert((await geo.locator(".wv3-country-identity h2").innerText()).includes("Gabon"),
+      "Country header identity must match selected geographic ISO3");
+    await geo.locator(".wv3-country-geometry > g > path")
+      .first().waitFor({ state: "visible", timeout: 15000 });
+    assert.equal(await page.locator(".whv-country-story-photo").count(), 0,
+      "No city panorama should displace the Gabon map");
+    assert(await page.locator(".wv3-directory").isVisible(),
+      "All World-Vision services must be discoverable from the country overview");
+    
     // CRITICAL REGRESSION GUARD: news must NOT precede the main country
     // profile; the initial view must show six peer sections and an overview.
     const navigation = page.locator(".whv-country-section-nav");
@@ -136,29 +124,20 @@ try {
     assert(await page.locator(".whv-country-compare").isVisible(),
       "Country-to-country comparison must remain a peer action");
     await navigation.getByRole("button", { name: "Services" }).click();
+    assert.equal(await page.locator(".whv-country-services .wv3-directory-categories button").count(), 6,
+      "All six task families must appear in the country Services section");
     assert.equal(await page.locator(".whv-country-services .whv-country-data-subnav button").count(), 2,
-      "Safety and currency tools must remain accessible");
+      "Legacy FX and context tools must remain available for current users");
     await navigation.getByRole("button", { name: "Vue d’ensemble" }).click();
     assert(await page.locator(".whv-country-overview").isVisible(),
       "Returning to the country profile must not lose country context");
-    const storyBounds = await story.evaluate(node => ({
+    const mapBounds = await geo.evaluate(node => ({
       inner: node.clientWidth, actual: node.scrollWidth,
     }));
-    assert(storyBounds.actual <= storyBounds.inner + 3,
-      device.name + " country story horizontal overflow: " + JSON.stringify(storyBounds));
-    // Screenshot must not race the image fetch. CDN failure remains an honest
-    // fallback, not a fake photo or an automatic bypass of image rights.
-    await page.waitForFunction(() => {
-      const image = document.querySelector(".whv-country-story-photo");
-      return !image || (image.complete && image.naturalWidth > 0);
-    }, null, { timeout: 8000 }).catch(() => undefined);
-    const loadedPicture = await page.locator(".whv-country-story-photo").evaluateAll(
-      images => images.some(img => img instanceof HTMLImageElement && img.naturalWidth > 0),
-    );
-    console.log("COUNTRY IMAGE " + device.name + ": " +
-      (loadedPicture ? "REAL COMMONS PHOTO LOADED" : "PHOTO UNAVAILABLE — GRADIENT FALLBACK"));
+    assert(mapBounds.actual <= mapBounds.inner + 3,
+      device.name + " geographic country hero overflow: " + JSON.stringify(mapBounds));
     await page.screenshot({
-      path: "ux1b-artifacts/" + device.name + "-country-editorial-top.png",
+      path: "ux1b-artifacts/" + device.name + "-country-geographic-top.png",
       fullPage: false,
     });
 

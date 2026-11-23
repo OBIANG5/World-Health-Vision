@@ -63,12 +63,16 @@ try {
     const facts = page.locator(".whv-country-profile-facts");
     await facts.waitFor({ state: "visible" });
     const countryFacts = await facts.innerText();
-    assert(countryFacts.includes("Libreville") && countryFacts.includes("Afrique subsaharienne"),
-      "GAB must show actual sourced capital and region, not an empty state or fictitious figures");
+    assert(countryFacts.includes("Afrique subsaharienne") &&
+      (await page.locator(".wv3-country-identity").innerText()).includes("Libreville"),
+      "GAB must show its real capital ONCE in identity, then sourced regional facts");
     assert(!countryFacts.includes("0 sources") && !countryFacts.includes("PIB"),
       "Geographic metadata must not become fabricated statistical coverage");
-    const editorial = page.locator(".whv-country-story");
-    await editorial.waitFor({ state: "visible" });
+    const map = page.locator(".wv3-geo-hero");
+    await map.waitFor({ state: "visible" });
+    await page.locator(".wv3-country-geometry > g > path").first().waitFor({ state: "visible" });
+    assert.equal(await page.locator(".whv-country-story-photo").count(), 0,
+      "Country now starts with genuine geographic geometry, never a city panorama");
     const nav = page.locator(".whv-country-section-nav");
     await nav.waitFor({ state: "visible" });
     assert(await page.locator(".whv-country-overview").isVisible(),
@@ -117,8 +121,8 @@ try {
       await page.locator(".country-drawer.open").waitFor({ state: "visible" });
       const franceFacts = page.locator(".whv-country-profile-facts");
       await franceFacts.waitFor({ state: "visible" });
-      assert((await franceFacts.innerText()).includes("Paris"),
-        "France must display its own sourced capital");
+      assert((await page.locator(".wv3-country-identity").innerText()).includes("Paris"),
+        "France must display its own sourced capital in identity");
       assert(!(await franceFacts.innerText()).includes("Libreville"),
         "Country switch must not reuse Gabon geographic facts");
 
@@ -129,11 +133,12 @@ try {
       await absentFeed.waitFor({ state: "visible" });
       assert.equal(await page.locator(".whv-country-news-article").count(), 0,
         "Never display the Gabon/FMI story on France or another country");
-      const frenchPhoto = page.locator(".whv-country-story-photo");
-      if (await frenchPhoto.count()) {
-        assert((await frenchPhoto.getAttribute("src")).includes("Paris_skyline"),
-          "France must use its own reviewed country photo");
-      }
+      const franceMap = page.locator(".wv3-geo-hero");
+      await franceMap.waitFor({ state: "visible" });
+      assert((await franceMap.innerText()).includes("France"),
+        "FRA map identity must not inherit the previous Gabon title");
+      assert.equal(await franceMap.locator(".whv-country-story-photo").count(), 0,
+        "Country photos must not return as misleading geographic headers");
       await page.screenshot({
         path: "ux1b-artifacts/390-country-france-honest-unavailable.png",
         fullPage: false,
@@ -187,7 +192,7 @@ try {
     { waitUntil: "domcontentloaded" });
   await switching.locator(".country-drawer.open").waitFor({ state: "visible" });
   await switching.locator("#country-select").selectOption("FRA");
-  await switching.locator(".whv-country-story h2").filter({ hasText: "France" })
+  await switching.locator(".wv3-country-identity h2").filter({ hasText: "France" })
     .waitFor({ state: "visible" });
   await switching.waitForFunction(() =>
     [...document.querySelectorAll(".overview-kpi-value")]

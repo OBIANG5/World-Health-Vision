@@ -1,0 +1,549 @@
+/* WORLD-VISION V3 / FIRST INTEGRATED PRODUCT VERTICAL.
+ * One restrained system. GeoJSON country first; services are TASKS, not tiles.
+ * Temporary scoped compatibility with old cascade; replace legacy styles
+ * incrementally after validating real routes and stateful components.
+ */
+.whv-page {
+  --wv3-space: #06162b;
+  --wv3-ink: #132d40;
+  --wv3-muted: #647888;
+  --wv3-cyan: #00afcf;
+  --wv3-line: #dbe5ec;
+  --wv3-paper: #f5f8fa;
+  --wv3-white: #fff;
+  font-family: Inter, "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+.whv-page .whv-header {
+  z-index: 900 !important;
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  top: 0; left: 0; right: 0;
+  height: 72px;
+  padding: 0 clamp(16px,2.4vw,42px);
+  gap: clamp(15px,2vw,34px);
+  box-shadow: none !important;
+  background: rgba(255,255,255,.985) !important;
+  border-bottom: 1px solid var(--wv3-line);
+  pointer-events: auto;
+}
+.whv-page .whv-header .whv-brand {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 0;
+  gap: 10px;
+}
+.whv-page .whv-header .whv-brand-logo {width:48px;flex-basis:48px;height:40px;}
+.whv-page .whv-header .whv-brand-text h1 {
+  font-size: 18px; line-height: 1.15; letter-spacing: -.045em;
+  color:var(--wv3-space);font-weight: 800;
+}
+.whv-page .whv-header .whv-brand-text p {
+  color:#698090;font-size:10px;line-height:1.3;font-weight:580;
+}
+.whv-page .whv-nav.wv3-topnav {
+  display:flex; align-items:center; flex: 1; gap: 2px; min-width: 0;
+  background:transparent;border:0;box-shadow:none;
+  padding:0;overflow:visible;border-radius:0;
+}
+.whv-page .wv3-topnav .whv-nav-btn {
+  font-size:13px; font-weight:670;line-height:1.2;
+  color:#42596c;background:transparent;border:0;
+  padding:13px 12px;min-height:42px;white-space:nowrap;
+  border-radius:8px;box-shadow:none;
+}
+.whv-page .wv3-topnav .whv-nav-btn:hover,.whv-page .wv3-topnav .whv-nav-btn:focus-visible {
+  background:#eff5f7;color:#0e5774;
+}
+.whv-page .wv3-topnav .whv-nav-btn.active,.whv-page .wv3-topnav .whv-nav-btn[aria-current="page"] {
+  color:#087a9a;background:#eaf6f8;
+}
+.whv-page .wv3-topnav .wv3-nav-spacer {flex:1;min-width:6px;}
+.whv-page .wv3-topnav .wv3-nav-search {
+  display:inline-flex; gap:8px;align-items:center;
+  min-width:158px;justify-content:flex-start;
+  border:1px solid #dbe5eb;background:#f6f8f9;
+  color:#6c7d87;padding:10px 12px;
+}
+.whv-page .wv3-topnav .wv3-nav-icon {
+  width:39px;min-width:39px;display:grid;place-items:center;padding:8px;
+}
+.whv-page .wv3-topnav .wv3-nav-compact {display:none;}
+.whv-page .wv3-topnav .wv3-nav-service-note {font-size:10px;color:#738a95;}
+.whv-page :is(.wv3-topnav button,.wv3-directory button,.wv3-geo-hero button):focus-visible {
+  outline:3px solid #11a7c7;outline-offset:2px;
+}
+/* Full country PAGE below shared header; never a 76vh sliding drawer. */
+.whv-page .country-drawer.open {
+  top:72px !important;bottom:0 !important;right:0 !important;left:0;
+  position:absolute;z-index:600 !important;width:100vw !important;
+  height:calc(100dvh - 72px) !important;max-height:none;
+  padding:0 !important;transition:none !important;overflow:hidden;
+  color:var(--wv3-ink);
+}
+.whv-page .country-drawer.open::before {
+  border:0;border-radius:0;background:var(--wv3-paper) !important;
+  box-shadow:none !important;
+}
+.whv-page .country-drawer.open::after {display:none !important;}
+.whv-page .country-drawer .country-drawer-header.whv-country-drawer-toolbar {
+  max-width:1350px;margin:0 auto;height:48px;min-height:48px;padding:5px 24px;
+  border:0;display:flex;align-items:center;
+}
+.whv-page .country-drawer .country-drawer-body {
+  height:calc(100% - 48px);padding:0 0 60px;overflow:auto;overscroll-behavior:contain;
+}
+/* The legacy drawer body is a flex column. Its default flex-shrink:1 used
+   to crush a 543px mobile map+identity into ~116px, overlapping the tabs.
+   Make the genuine country PAGE flow scroll naturally, never collapse items
+   merely to fit a mobile viewport. This is an intentional flex-size contract,
+   not hiding overflow or reducing touch-target sizes. */
+.whv-page .country-drawer .country-drawer-body > :is(
+  .wv3-geo-hero,.whv-country-section-nav,.whv-country-profile-content
+){
+  flex:0 0 auto!important;min-width:0;
+}
+.whv-page .country-drawer .country-drawer-header .whv-country-toolbar-brand strong {font-size:12px;}
+.whv-page .country-drawer .whv-country-profile-content {
+  width:min(1250px,calc(100% - 48px));margin:0 auto;padding:23px 0 72px;
+  max-width:1250px;
+}
+.whv-page .country-drawer .whv-country-section-nav{
+  display:flex!important;grid-template-columns:none!important;
+  position:sticky;top:0;z-index:15;justify-content:flex-start;
+  padding:0 max(24px,calc((100vw - 1250px)/2));
+  background:#fff;border-bottom:1px solid var(--wv3-line);
+  border-top:1px solid var(--wv3-line);border-radius:0!important;
+  margin:0!important;box-shadow:none!important;
+  gap:0;overflow-x:auto;flex-wrap:nowrap;
+}
+.whv-page .country-drawer .whv-country-section-tab {
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 auto!important;position:relative;transform:none!important;
+  background:transparent!important;color:#506a7a;font-size:12px;font-weight:710;
+  line-height:1.3!important;min-height:50px!important;padding:13px 18px!important;
+  border:0!important;border-radius:0!important;
+  border-bottom:2px solid transparent!important;white-space:nowrap;box-shadow:none!important;
+}
+.whv-page .country-drawer .whv-country-section-tab.is-selected {
+  background:transparent!important;color:#097c9e!important;
+  border-bottom-color:var(--wv3-cyan)!important;box-shadow:none!important;
+}
+.whv-page .country-drawer .whv-country-profile-switch {
+  margin:0 0 17px;padding:8px 0;background:transparent;border:0;box-shadow:none;
+}
+.whv-page .country-drawer .whv-country-overview-pathways {display:none;}
+/* Country map: geographic outline source is the same embedded GeoJSON as GlobeMap.
+   Decorative mineral surface, NEVER a claim of real elevation imagery. */
+.whv-page .wv3-geo-hero {
+  width:min(1300px,calc(100% - 48px));margin:0 auto 18px;
+  display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,.92fr);
+  gap:0;min-height:345px;border:1px solid #d7e3ea;
+  background:#fff;border-radius:13px;overflow:hidden;
+}
+.whv-page .wv3-country-map {
+  position:relative;min-height:345px;overflow:hidden;
+  background:radial-gradient(circle at 47% 50%,#eaf2f1 0%,#dfebed 70%,#d7e5eb 100%);
+}
+.whv-page .wv3-map-topline {
+  position:absolute;z-index:2;top:17px;left:18px;right:18px;display:flex;
+  justify-content:space-between;gap:12px;font-size:10px;font-weight:800;
+  letter-spacing:.15em;color:#477585;
+}
+.whv-page .wv3-country-geometry{
+  display:block;width:100%;height:100%;position:absolute;inset:0;
+  filter:drop-shadow(0 7px 12px rgba(10,69,56,.15));
+}
+.whv-page .wv3-map-controls {
+  position:absolute;z-index:3;right:17px;bottom:32px;display:flex;gap:5px;
+}
+.whv-page .wv3-map-controls button {
+  width:37px;height:37px;display:grid;place-items:center;padding:0;
+  border-radius:7px;border:1px solid #d0e1e8;background:#fff;color:#234960;
+  font-size:19px;font-weight:500;box-shadow:0 3px 8px #10263418;
+}
+.whv-page .wv3-map-controls button:disabled{opacity:.45;}
+.whv-page .wv3-map-attribution {
+  position:absolute;left:15px;bottom:7px;right:148px;margin:0;
+  font-size:10px;color:#537080;line-height:1.3;
+}
+.whv-page .wv3-map-unavailable {
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;gap:9px;color:#527a86;text-align:center;
+  padding:20px;font-size:12px;
+}
+.whv-page .wv3-map-unavailable strong{font-size:14px;}
+.whv-page .wv3-country-identity{
+  display:flex;flex-direction:column;justify-content:center;padding:30px clamp(22px,3vw,45px);
+  gap:10px;min-width:0;color:var(--wv3-ink);
+}
+.whv-page .wv3-eyebrow{
+  font-size:10px;letter-spacing:.13em;font-weight:820;color:#387c90;text-transform:uppercase;
+}
+.whv-page .wv3-country-identity h2 {
+  color:#102c40;font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.052em;
+  line-height:1.04;margin:0;overflow-wrap:anywhere;
+}
+.whv-page .wv3-country-identity > p{font-size:13px;color:#647a86;line-height:1.45;margin:0;}
+.whv-page .wv3-country-identity dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;}
+.whv-page .wv3-country-identity dt{font-size:10px;color:#788b96;margin:0;}
+.whv-page .wv3-country-identity dd{font-size:15px;color:#17394c;font-weight:800;margin:4px 0 0;}
+.whv-page .wv3-country-key-actions{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 0;}
+.whv-page .wv3-country-key-actions button{
+  display:inline-flex;gap:7px;align-items:center;min-height:39px;
+  border:1px solid #cadde5;color:#285a70;padding:9px 11px;background:#fff;
+  border-radius:8px;font-weight:720;font-size:11px;
+}
+.whv-page .wv3-country-key-actions button[aria-pressed="true"]{color:#047c9e;border-color:#88c9d9;background:#eaf7fa;}
+.whv-page .wv3-country-identity > small{font-size:10px;color:#728994;line-height:1.45;}
+/* Service directory: navigation + task result, not decorative cards */
+.whv-page .wv3-directory{margin:22px 0 35px;color:#17364c;}
+.whv-page .wv3-directory-heading{display:flex;align-items:end;gap:20px;justify-content:space-between;margin-bottom:23px;}
+.whv-page .wv3-directory-heading h3{font-size:clamp(23px,2.7vw,34px);font-weight:780;letter-spacing:-.045em;margin:8px 0 0;color:#112e42;}
+.whv-page .wv3-directory-heading p{max-width:405px;margin:0;font-size:12px;color:#647e89;line-height:1.65;}
+.whv-page .wv3-directory-layout{display:grid;grid-template-columns:minmax(190px,.78fr) minmax(0,1.8fr);gap:19px;}
+.whv-page .wv3-directory-categories{display:grid;align-content:start;gap:4px;}
+.whv-page .wv3-directory-category{
+  display:flex;align-items:center;gap:11px;text-align:left;width:100%;
+  padding:13px 14px;border-radius:8px;border:1px solid transparent;
+  color:#36566a;background:transparent;font-weight:740;font-size:13px;
+}
+.whv-page .wv3-directory-category > span{flex:1;}
+.whv-page .wv3-directory-category > svg:last-child{opacity:.4;}
+.whv-page .wv3-directory-category:hover{background:#edf4f6;}
+.whv-page .wv3-directory-category.is-selected{background:#e8f4f7;color:#066d8c;border-color:#d0e6ed;}
+.whv-page .wv3-directory-detail{
+  background:#fff;border:1px solid #dce7eb;border-radius:11px;padding:22px 25px;
+  min-height:285px;
+}
+.whv-page .wv3-directory-detail-head h4{font-size:19px;font-weight:780;letter-spacing:-.03em;color:#16384e;margin:0;}
+.whv-page .wv3-directory-detail-head p{font-size:12px;margin:4px 0 15px;color:#66818f;}
+.whv-page .wv3-directory-actions{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0 18px;}
+.whv-page .wv3-directory-actions button{
+  border:1px solid #d5e6ec;background:#f6fafb;color:#205d75;display:flex;
+  align-items:center;gap:7px;min-height:39px;padding:9px 11px;
+  font-weight:750;font-size:11px;border-radius:7px;
+}
+.whv-page .wv3-directory-actions button svg:last-child{opacity:.4;}
+.whv-page .wv3-vision-rows{display:grid;border-top:1px solid #e0e9ed;}
+.whv-page .wv3-vision-row{
+  display:flex;align-items:center;gap:13px;min-height:68px;padding:11px 2px;
+  border:0;border-bottom:1px solid #e8eef1;background:transparent;color:#345c70;
+  width:100%;text-align:left;border-radius:0;box-shadow:none;
+}
+.whv-page .wv3-vision-row:hover{color:#057a9d;background:#f7fbfc;}
+.whv-page .wv3-vision-row > span:nth-child(2){flex:1;display:grid;gap:3px;min-width:0;}
+.whv-page .wv3-vision-row strong{font-size:13px;font-weight:800;color:#193d51;}
+.whv-page .wv3-vision-row small{font-size:11px;color:#728b98;line-height:1.35;}
+.whv-page .wv3-product-stage{
+  font-size:10px;color:#5d7786;padding:4px 8px;border-radius:5px;background:#eff3f5;
+  white-space:nowrap;font-weight:750;
+}
+.whv-page .wv3-product-stage[data-stage="explorable"]{color:#14728a;background:#e9f5f7;}
+.whv-page .wv3-directory-note{font-size:11px;line-height:1.6;padding-top:12px;color:#64808e;margin:0;}
+@media(max-width:960px){
+ .whv-page .whv-header{height:64px;padding:0 15px;gap:14px;}
+ .whv-page .whv-header .whv-brand-text p{display:none;}
+ .whv-page .whv-nav.wv3-topnav{flex:1;width:auto;overflow:visible;min-height:0;}
+ .whv-page .wv3-topnav .wv3-nav-desktop{display:none;}
+ .whv-page .wv3-topnav .wv3-nav-compact{display:inline-flex;}
+ .whv-page .wv3-topnav .wv3-nav-search{min-width:39px;width:39px;justify-content:center;padding:9px;font-size:0;}
+ .whv-page .wv3-topnav .wv3-nav-search svg{width:18px;}
+ .whv-page .country-drawer.open{
+   top:64px !important;height:calc(100dvh - 64px) !important;
+ }
+ .whv-page .wv3-geo-hero{width:calc(100% - 28px);grid-template-columns:1fr;min-height:0;}
+ .whv-page .wv3-country-map{height:265px;min-height:265px;}
+ .whv-page .wv3-country-identity{padding:21px 24px;}
+ .whv-page .country-drawer .whv-country-profile-content{width:calc(100% - 32px);}
+ .whv-page .wv3-directory-layout{grid-template-columns:1fr;}
+ .whv-page .wv3-directory-categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;}
+}
+@media(max-width:600px){
+ .whv-page .whv-header .whv-brand-logo{width:40px;flex-basis:40px;height:33px;}
+ .whv-page .whv-header .whv-brand-text h1{font-size:16px;}
+ .whv-page .whv-nav.wv3-topnav{margin-left:auto;gap:0;}
+ .whv-page .wv3-topnav .whv-nav-btn{min-height:41px;padding:9px;}
+ .whv-page .wv3-nav-service-note,.whv-page .wv3-topnav .wv3-nav-lang-desktop{display:none;}
+ .whv-page .country-drawer .country-drawer-header.whv-country-drawer-toolbar{
+   height:45px;min-height:45px;padding:4px 14px;
+ }
+ .whv-page .country-drawer .country-drawer-header .whv-country-toolbar-brand{font-size:11px;}
+ .whv-page .country-drawer .country-drawer-body{height:calc(100% - 45px);}
+ .whv-page .country-drawer .whv-country-section-nav{padding:0 12px;}
+ .whv-page .country-drawer .whv-country-section-tab{padding:11px 13px;min-height:45px;font-size:11px;}
+ .whv-page .wv3-geo-hero{width:calc(100% - 22px);border-radius:9px;}
+ .whv-page .wv3-country-map{height:220px;min-height:220px;}
+ .whv-page .wv3-country-identity{padding:18px 17px;gap:7px;}
+ .whv-page .wv3-country-identity h2{font-size:32px;}
+ .whv-page .wv3-country-identity dl{margin:7px 0;}
+ .whv-page .wv3-country-key-actions button{min-height:43px;}
+ .whv-page .wv3-map-attribution{font-size:9px;right:110px;line-height:1.2;}
+ .whv-page .wv3-map-controls{right:11px;bottom:35px;}
+ .whv-page .wv3-map-controls button{width:32px;height:32px;}
+ .whv-page .country-drawer .whv-country-profile-content{width:calc(100% - 24px);padding:18px 0 50px;}
+ .whv-page .wv3-directory-heading{display:block;margin-bottom:15px;}
+ .whv-page .wv3-directory-heading h3{font-size:24px;}
+ .whv-page .wv3-directory-heading p{font-size:12px;margin-top:8px;}
+ .whv-page .wv3-directory-categories{grid-template-columns:1fr;gap:1px;}
+ .whv-page .wv3-directory-category{min-height:45px;padding:10px 13px;}
+ .whv-page .wv3-directory-detail{padding:17px 15px;min-height:180px;}
+ .whv-page .wv3-vision-row{gap:8px;}
+ .whv-page .wv3-vision-row strong{font-size:12px;}
+ .whv-page .wv3-product-stage{font-size:9px;padding:3px 5px;}
+}
+@media(prefers-reduced-motion:reduce) {
+ .whv-page .country-drawer.open,.whv-page .wv3-directory button{transition:none!important;}
+}
+
+/* Unified responsive landing: the live canvas globe remains interactive to
+   the right, while search and task navigation use one scrollable layout. */
+.whv-page .wv3-home{
+  position:absolute;inset:72px 0 0;z-index:14;overflow:auto;
+  pointer-events:none;scrollbar-width:thin;scrollbar-color:#cddbe2 transparent;
+  color:var(--wv3-ink);
+}
+.whv-page .wv3-home-intro{
+  pointer-events:auto;position:relative;margin:0 0 0 clamp(22px,4vw,70px);
+  padding:clamp(45px,8vh,105px) 0 40px;width:min(39%,540px);
+  min-height:max(640px,calc(100dvh - 100px));
+}
+.whv-page .wv3-home-intro h2{
+  white-space:pre-line;font-size:clamp(36px,4.2vw,65px);
+  font-weight:800;letter-spacing:-.063em;line-height:1.04;
+  color:#102c42;margin:15px 0 18px;
+}
+.whv-page .wv3-home-intro > p:not(.wv3-home-disclosure){
+  font-size:15px;line-height:1.65;color:#587384;max-width:460px;margin:0 0 24px;
+}
+.whv-page .wv3-home-search{
+  display:flex;align-items:center;gap:12px;width:100%;max-width:480px;
+  min-height:54px;border:1px solid #cbdde5;background:#fff;
+  border-radius:10px;padding:12px 15px;text-align:left;
+  font-size:13px;color:#617d8e;box-shadow:0 5px 21px #0a344110;
+}
+.whv-page .wv3-home-search span:nth-child(2){flex:1;}
+.whv-page .wv3-home-search .wv3-search-shortcut{
+  padding:5px 7px;background:#f3f7f9;border:1px solid #e1e9ef;
+  border-radius:5px;font-size:10px;color:#79909f;
+}
+.whv-page .wv3-home-quick{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0 15px;}
+.whv-page .wv3-home-quick button{
+  background:transparent;border:0;border-bottom:1px solid #cbdde4;
+  display:flex;align-items:center;gap:8px;min-height:36px;
+  padding:7px 2px;font-size:12px;font-weight:760;color:#3f667a;
+}
+.whv-page .wv3-home-quick button:hover{color:#06748d;border-color:#0c95b0;}
+.whv-page .wv3-home-disclosure{font-size:10px;color:#7b8e99;line-height:1.5;margin:18px 0 0;}
+.whv-page .wv3-home-discovery{
+  pointer-events:auto;position:relative;
+  margin:16px clamp(22px,4vw,70px) 55px;
+  padding:30px 0;border-top:1px solid #d9e5eb;
+  background:#f5f8fa;
+}
+.whv-page .wv3-home-directory-header{
+  display:flex;align-items:end;justify-content:space-between;gap:25px;margin-bottom:25px;
+}
+.whv-page .wv3-home-directory-header h3{font-size:clamp(25px,2.7vw,37px);font-weight:800;letter-spacing:-.047em;margin:9px 0 0;color:#102d41;}
+.whv-page .wv3-home-directory-header p{max-width:420px;font-size:12px;line-height:1.6;color:#72838d;margin:0;}
+.whv-page .wv3-home-directory-grid{
+  display:grid;grid-template-columns:minmax(240px,.56fr) minmax(0,1fr);
+  background:#fff;border:1px solid #dfe8ec;border-radius:12px;overflow:hidden;
+}
+.whv-page .wv3-home-tasks{display:grid;gap:0;align-content:start;background:#f0f5f7;padding:12px;border-right:1px solid #e0e8ec;}
+.whv-page .wv3-home-tasks button{
+  display:flex;align-items:center;gap:13px;width:100%;text-align:left;
+  background:transparent;border:0;border-radius:7px;min-height:50px;padding:11px 14px;
+  color:#365c70;font-size:13px;font-weight:730;
+}
+.whv-page .wv3-home-tasks button span{flex:1;}
+.whv-page .wv3-home-tasks button.is-selected{background:#fff;color:#087f9d;box-shadow:0 2px 8px #0d36420e;}
+.whv-page .wv3-home-tasks button:hover:not(.is-selected){background:#e7eff3;}
+.whv-page .wv3-home-task-result{padding:25px 33px;color:#20475b;}
+.whv-page .wv3-home-task-result h4{font-size:21px;margin:0 0 4px;letter-spacing:-.03em;}
+.whv-page .wv3-home-task-result > p{font-size:12px;color:#6d8490;margin:0 0 22px;}
+.whv-page .wv3-home-task-result > div{border-top:1px solid #e3ebef;}
+.whv-page .wv3-home-task-result button{
+  display:flex;align-items:center;gap:14px;width:100%;padding:14px 0;
+  background:transparent;border:0;border-bottom:1px solid #e9eff2;text-align:left;color:#346277;
+}
+.whv-page .wv3-home-task-result button > span:first-child{flex:1;display:grid;gap:3px;}
+.whv-page .wv3-home-task-result button strong{font-size:13px;color:#183d53;}
+.whv-page .wv3-home-task-result button small{font-size:11px;color:#748893;}
+.whv-page .wv3-home-task-result button > span:nth-child(2){font-size:10px;color:#6f8793;}
+.whv-page .wv3-home-task-result button:hover strong{color:#087c98;}
+.whv-page :is(.wv3-home,.wv3-home button):focus-visible{
+  outline:3px solid #0eaac9;outline-offset:2px;
+}
+/* Compact, reliable global service menu on both desktop and phone. */
+body .whv-tools-menu.whv-domain-menu{
+  max-width:min(780px,calc(100vw - 24px));max-height:min(80dvh,780px);
+  overflow-y:auto;border-radius:12px;
+}
+body .whv-domain-menu .whv-domain-group:nth-child(n) .whv-menu-icon{
+  color:#37677b;background:#f2f6f8;border-color:#e2e9ec;
+}
+body .whv-tools-menu .wv3-mega-visions{
+  margin:15px 0 0;padding:15px 3px 4px;border-top:1px solid #dde8ec;color:#183c52;
+}
+body .whv-tools-menu .wv3-mega-visions h3{margin:0 0 6px;font-size:15px;color:#163950;letter-spacing:-.02em;}
+body .whv-tools-menu .wv3-mega-visions p{margin:0 0 12px;font-size:11px;color:#657c88;line-height:1.5;}
+body .whv-tools-menu .wv3-mega-products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 17px;}
+body .whv-tools-menu .wv3-mega-products button{
+  display:flex;align-items:center;gap:8px;padding:10px 4px;min-width:0;text-align:left;
+  border:0;border-bottom:1px solid #e5edef;background:transparent;color:#264f61;
+}
+body .whv-tools-menu .wv3-mega-products button:hover{background:#f4f9fb;}
+body .whv-tools-menu .wv3-mega-products button span:first-child{flex:1;display:grid;gap:3px;min-width:0;}
+body .whv-tools-menu .wv3-mega-products strong{font-size:12px;color:#173b4d;}
+body .whv-tools-menu .wv3-mega-products small{font-size:10px;color:#68828d;}
+body .whv-tools-menu .wv3-mega-stage{color:#5e7684;font-size:10px;white-space:nowrap;}
+.whv-page .country-drawer .wv3-legacy-tools{
+  margin:24px 0;border:1px solid #d9e5eb;border-radius:9px;padding:14px 18px;background:#fff;
+}
+.whv-page .country-drawer .wv3-legacy-tools > summary{font-size:12px;font-weight:760;cursor:pointer;color:#2c657e;}
+.whv-page .country-drawer .wv3-legacy-tools > p{font-size:12px;color:#6c8490;line-height:1.6;margin:12px 0;}
+@media(max-width:960px){
+ .whv-page .wv3-home{top:64px;}
+ .whv-page .wv3-home-intro{width:min(47%,470px);margin-left:24px;min-height:calc(100dvh - 95px);padding-top:50px;}
+ .whv-page .wv3-home-intro h2{font-size:clamp(30px,4.5vw,47px);}
+ .whv-page .wv3-home-discovery{margin-left:24px;margin-right:24px;}
+}
+@media(max-width:600px){
+ .whv-page .eye-stage.globe-mode,.whv-page .eye-stage.globe-mode.drawer-open{
+   top:78px!important;left:12px!important;right:12px!important;
+   height:300px!important;width:calc(100% - 24px)!important;
+   bottom:auto!important;border-radius:11px!important;
+ }
+ .whv-page .wv3-home{top:64px;bottom:0;}
+ .whv-page .wv3-home-intro{
+   margin:322px 17px 0;width:calc(100% - 34px);min-height:0;
+   padding:12px 0 22px;
+ }
+ .whv-page .wv3-home-intro h2{font-size:clamp(28px,8.5vw,39px);margin:11px 0 13px;}
+ .whv-page .wv3-home-intro > p:not(.wv3-home-disclosure){font-size:13px;margin-bottom:15px;}
+ .whv-page .wv3-home-search{min-height:47px;font-size:12px;}
+ .whv-page .wv3-home-search .wv3-search-shortcut{display:none;}
+ .whv-page .wv3-home-quick{gap:6px 13px;margin:12px 0;}
+ .whv-page .wv3-home-quick button{font-size:11px;min-height:38px;}
+ .whv-page .wv3-home-discovery{margin:12px 17px 25px;padding:19px 0 30px;}
+ .whv-page .wv3-home-directory-header{display:block;margin-bottom:17px;}
+ .whv-page .wv3-home-directory-header h3{font-size:26px;}
+ .whv-page .wv3-home-directory-header p{font-size:11px;margin-top:9px;}
+ .whv-page .wv3-home-directory-grid{grid-template-columns:1fr;}
+ .whv-page .wv3-home-tasks{background:#eff5f6;border-right:0;grid-template-columns:1fr;padding:7px;}
+ .whv-page .wv3-home-tasks button{min-height:43px;font-size:12px;padding:9px 11px;}
+ .whv-page .wv3-home-task-result{padding:20px 17px;}
+ .whv-page .wv3-home-task-result h4{font-size:19px;}
+ body .whv-tools-menu .wv3-mega-products{grid-template-columns:1fr;}
+}
+
+/* SINGLE GLOBAL SERVICE MENU — same information model as the country hub.
+   No four-group legacy mosaics, neon stickers, or redundant duplicate cards. */
+body .wv3-service-menu-portal {
+  width:min(780px,calc(100vw - 24px));
+  max-width:calc(100vw - 24px);
+  font-family:Inter,"Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+body .wv3-service-menu {
+  width:100%;color:#183b50;background:#fff;border:1px solid #d8e5eb;
+  border-radius:13px;box-shadow:0 20px 65px #0b30422f;overflow:hidden;
+}
+body .wv3-service-menu-top {
+  display:flex;align-items:center;justify-content:space-between;gap:15px;
+  padding:17px 21px;background:#fff;border-bottom:1px solid #e1eaed;
+}
+body .wv3-service-menu-top > div{display:grid;gap:3px;}
+body .wv3-service-menu-top strong{font-size:16px;font-weight:820;color:#173850;letter-spacing:-.02em;}
+body .wv3-service-menu-top span{font-size:11px;color:#768995;}
+body .wv3-service-menu-top button {
+  border:1px solid #dce7eb;border-radius:7px;background:#f6fafb;
+  width:35px;height:35px;display:grid;place-items:center;color:#3e6778;
+}
+body .wv3-service-menu-layout {
+  display:grid;grid-template-columns:minmax(195px,.72fr) minmax(0,1.4fr);
+  max-height:min(67dvh,670px);overflow:auto;
+}
+body .wv3-service-menu-groups{
+  padding:12px;background:#f5f8fa;border-right:1px solid #e1eaed;
+  display:grid;gap:3px;align-content:start;
+}
+body .wv3-service-menu-groups button {
+  width:100%;display:flex;align-items:center;gap:11px;padding:13px 11px;
+  min-height:45px;border:0;border-radius:8px;background:transparent;
+  font-size:12px;font-weight:730;color:#395b6d;text-align:left;
+}
+body .wv3-service-menu-groups button span{flex:1;}
+body .wv3-service-menu-groups button.is-selected{background:#fff;color:#087b9b;box-shadow:0 2px 8px #102d3c0c;}
+body .wv3-service-menu-groups button:hover:not(.is-selected){background:#eaf2f5;}
+body .wv3-service-menu-content{padding:23px 24px;min-width:0;}
+body .wv3-service-menu-content h2{margin:6px 0;font-size:22px;letter-spacing:-.04em;color:#193a50;}
+body .wv3-service-menu-content > p{margin:0 0 19px;color:#6a8290;font-size:12px;line-height:1.5;}
+body .wv3-service-menu-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0 0 18px;}
+body .wv3-service-menu-actions button{
+  display:flex;align-items:center;gap:8px;padding:12px 11px;min-width:0;
+  border:1px solid #dfe9ed;border-radius:8px;background:#fff;color:#2d5b70;text-align:left;
+}
+body .wv3-service-menu-actions button:hover{border-color:#9fcfdc;background:#f7fbfc;}
+body .wv3-service-menu-actions button span{min-width:0;display:grid;gap:4px;flex:1;}
+body .wv3-service-menu-actions strong{font-size:11px;font-weight:780;color:#26495c;}
+body .wv3-service-menu-actions small{font-size:10px;color:#708895;line-height:1.35;}
+body .wv3-service-menu-product-list{border-top:1px solid #e4ebee;}
+body .wv3-service-menu-product-list button {
+  display:flex;align-items:center;gap:11px;width:100%;padding:12px 2px;
+  text-align:left;border:0;border-bottom:1px solid #e7edef;background:transparent;color:#375e72;
+}
+body .wv3-service-menu-product-list button:hover{background:#f7fafb;}
+body .wv3-service-menu-product-list button span:first-child{
+  min-width:0;flex:1;display:grid;gap:3px;
+}
+body .wv3-service-menu-product-list strong{font-size:12px;color:#173b4d;}
+body .wv3-service-menu-product-list small{font-size:10px;color:#7b9099;}
+body .wv3-service-menu-product-list button span:nth-child(2){
+  font-size:10px;white-space:nowrap;color:#6b8290;
+}
+body .wv3-service-menu .wv3-menu-status{font-size:11px;color:#748b96;line-height:1.5;margin:15px 0 0;}
+body .wv3-service-menu button:focus-visible{outline:3px solid #0d9fbd;outline-offset:2px;}
+@media(max-width:700px){
+ body .wv3-service-menu-portal{width:calc(100vw - 24px);}
+ body .wv3-service-menu-layout{
+   display:block;max-height:min(72dvh,680px);overflow:auto;
+ }
+ body .wv3-service-menu-groups{
+   display:flex;gap:3px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;
+   border-right:0;border-bottom:1px solid #e0e9ed;padding:7px;
+ }
+ body .wv3-service-menu-groups button {
+   width:auto;flex:0 0 auto;min-height:43px;padding:9px;
+   gap:7px;font-size:11px;
+ }
+ body .wv3-service-menu-groups button svg:last-child{display:none;}
+ body .wv3-service-menu-content{padding:16px 14px;}
+ body .wv3-service-menu-content h2{font-size:19px;}
+ body .wv3-service-menu-actions{grid-template-columns:1fr;}
+}
+
+/* News and Following are complementary, not the same capability. */
+.whv-page .wv3-news-follow-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  margin:4px 0 17px;padding:17px 21px;border:1px solid #d8e5ec;
+  border-radius:10px;background:#fff;
+}
+.whv-page .wv3-news-follow-bar strong{font-size:15px;color:#173d52;}
+.whv-page .wv3-news-follow-bar p{font-size:11px;color:#637e8c;line-height:1.55;margin:6px 0 0;}
+.whv-page .wv3-news-follow-bar button{
+  display:flex;align-items:center;gap:8px;min-height:42px;flex:0 0 auto;
+  border-radius:8px;border:1px solid #c8dfe7;padding:10px 13px;
+  color:#17677d;background:#f4f9fb;font-size:12px;font-weight:740;
+}
+.whv-page .wv3-news-follow-bar button[aria-pressed="true"]{
+  color:#0e778f;background:#e7f5f8;border-color:#9ccfdc;
+}
+@media(max-width:600px){
+ .whv-page .wv3-news-follow-bar{display:grid;padding:15px;}
+ .whv-page .wv3-news-follow-bar button{justify-content:center;}
+}

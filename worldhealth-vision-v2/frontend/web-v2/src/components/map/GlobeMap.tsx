@@ -114,27 +114,35 @@ function paintRing(ctx:CanvasRenderingContext2D,ring:Ring,pose:Pose,cx:number,cy
  }
 }
 function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
- // The actual brand emblem: luminous blue outlines around a pure-white sclera.
- const left=cx-r*1.70,right=cx+r*1.70,top=cy-r*1.17,bottom=cy+r*1.17;
- const shape=()=>{
-  ctx.beginPath();ctx.moveTo(left,cy);
-  ctx.bezierCurveTo(cx-r*.8,cy-r*1.11,cx+r*.8,cy-r*1.11,right,cy);
-  ctx.bezierCurveTo(cx+r*.8,cy+r*1.11,cx-r*.8,cy+r*1.11,left,cy);
-  ctx.closePath();
+ // Brand identity: TWO OPEN ARCS around a larger Earth, never a closed
+ // white sclera or a decorative complete ring. Source: user's eye-Earth
+ // reference (Nov 2026), with white reduced so the planet remains dominant.
+ const left=cx-r*1.38,right=cx+r*1.38;
+ const arc=(upper:boolean,offset=0)=>{
+   const side=upper?-1:1;
+   const y=cy+side*offset;
+   ctx.beginPath();ctx.moveTo(left,y);
+   ctx.bezierCurveTo(cx-r*.83,cy+side*r*1.72+side*offset,
+                     cx+r*.83,cy+side*r*1.72+side*offset,right,y);
  };
- const white=ctx.createLinearGradient(cx,top,cx,bottom);
- white.addColorStop(0,"#f8ffff");white.addColorStop(.35,"#ffffff");
- white.addColorStop(.7,"#ffffff");white.addColorStop(1,"#e3faff");
  ctx.save();
- shape();ctx.fillStyle=white;ctx.fill();
- shape();ctx.shadowColor="#00afff";ctx.shadowBlur=Math.max(12,r*.17);
- ctx.strokeStyle="#03a1ff";ctx.lineWidth=Math.max(8,r*.063);ctx.stroke();
- ctx.shadowBlur=0;
- shape();ctx.strokeStyle="#36e9ff";ctx.lineWidth=Math.max(3,r*.017);ctx.stroke();
- ctx.restore();
- // Subtle deeper blue ribbon outside the cyan light.
- ctx.save();shape();ctx.strokeStyle="rgba(3,61,165,.60)";
- ctx.lineWidth=Math.max(2,r*.036);ctx.stroke();
+ for(const upper of [true,false]){
+   arc(upper);
+   ctx.shadowColor="rgba(0,207,255,.63)";
+   ctx.shadowBlur=Math.max(8,r*.065);
+   ctx.strokeStyle="#0378ed";
+   ctx.lineWidth=Math.max(4,r*.045);
+   ctx.stroke();
+   ctx.shadowBlur=0;
+   arc(upper,5);
+   ctx.strokeStyle="rgba(99,229,255,.94)";
+   ctx.lineWidth=Math.max(2,r*.02);
+   ctx.stroke();
+   arc(upper,11);
+   ctx.strokeStyle="rgba(251,255,255,.75)";
+   ctx.lineWidth=Math.max(1.5,r*.015);
+   ctx.stroke();
+ }
  ctx.restore();
 }
 function landColor(region:string,latitude:number,longitude:number){

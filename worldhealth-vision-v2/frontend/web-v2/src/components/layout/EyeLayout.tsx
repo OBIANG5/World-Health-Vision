@@ -27,7 +27,8 @@ export default function EyeLayout({ children, headerActions }: EyeLayoutProps) {
                 </linearGradient>
                 <clipPath id="wv-brand-clip"><circle cx="56" cy="35" r="25"/></clipPath>
               </defs>
-              <path d="M3 35Q56 -14 109 35Q56 84 3 35Z" fill="#ffffff" stroke="#046ad9" strokeWidth="6"/>
+              <path d="M3 35Q56 -14 109 35" fill="none" stroke="#046ad9" strokeWidth="5" strokeLinecap="round"/>
+              <path d="M3 35Q56 84 109 35" fill="none" stroke="#046ad9" strokeWidth="5" strokeLinecap="round"/>
               <path d="M4 35Q56 -13 108 35" fill="none" stroke="#64f1ff" strokeWidth="3.6"/>
               <path d="M4 35Q56 83 108 35" fill="none" stroke="#2de8ff" strokeWidth="3.6"/>
               <circle cx="56" cy="35" r="25.5" fill="url(#wv-brand-sea)" stroke="#35ddff" strokeWidth="2"/>
