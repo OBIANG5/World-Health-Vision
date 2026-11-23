@@ -1509,8 +1509,6 @@ export default function CountryDrawer({
             </div>
             {countryReference && (
               <div className="country-meta-grid whv-country-profile-facts">
-                {countryReference.capitalCity && <MetaItem label={t(lang, "capitale")}
-                  value={countryReference.capitalCity} />}
                 {countryReference.regionName && <MetaItem label={t(lang, "region")}
                   value={countryReference.regionName} />}
                 {countryReference.subregionName && <MetaItem label={t(lang, "sousRegion")}
