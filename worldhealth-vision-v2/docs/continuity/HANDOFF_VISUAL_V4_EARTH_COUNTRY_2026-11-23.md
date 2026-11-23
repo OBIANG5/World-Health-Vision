@@ -48,3 +48,9 @@ La V3 #150 a fait progresser **l’architecture fonctionnelle** (menu Explorer/C
 
 ## Fin de tâche
 Chaque nouvelle tranche doit documenter exact HEAD SHA, tests, visuels, preview, erreurs connues et action suivante dans GitHub. Reprendre EXACTEMENT à la dernière étape validée en cas de blocage, jamais recommencer la v3 white UI, ne jamais confondre média et logiciel, ne jamais remplacer des données/actifs utiles par une jolie maquette.
+
+## Reprise V4/1.1 — correction de non-régression tactile (23 novembre 2026)
+- Diagnostic factuel du HEAD `386eff94` : run Radar R2B/R2C `45253827092` **rouge**, étape UX1B navigateur ; le vrai `canvas.whv-globe-canvas` intercepte le clic sur `Fiche pays`. Les runs V3 Chrome `45253827121` et Radar R1 `45253826948` sont verts sur cette même tête, et Vercel refuse de nouvelles previews après la limite gratuite de 100 déploiements/24 h. Ne pas confondre CI partiellement verte et validation complète.
+- Correction de source : `App.tsx` contenait un commentaire avec des séquences littérales `\\n` qui masquaient les imports CSS pays/V3; imports rétablis dans le bon ordre avant V4. `world-v4.css` place l'accueil au-dessus du Canvas tout en gardant les surfaces transparentes aux événements pointeur, pour conserver les gestes du globe.
+- Garde-fou régressif : `v3-browser-smoke.mjs` clique réellement `Fiche pays`, vérifie ouverture de la route pays puis revient et vérifie l'accessibilité au pointeur du globe sur 320/390/820/1440. Aucun clic forcé, aucun test désactivé.
+- **État de ce correctif au moment de l'écriture : CI NON ENCORE CONNUE**, ne pas annoncer que la correction est prouvée. Récupérer le nouveau HEAD de cette PR, les trois runs Actions correspondants, examiner les erreurs et poursuivre jusqu'aux trois résultats verts ou consigner le blocage exact. Production stable intacte, aucune fusion.

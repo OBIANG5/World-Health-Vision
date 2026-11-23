@@ -53,7 +53,14 @@
 /* HOME: one immersive editorial stage, never a paper document with an eye
    thumbnail. The globe remains fully interactive and independently layered. */
 .whv-page .wv3-home{
+  /* The globe stays touch/drag interactive on its uncovered area. Home
+     controls MUST remain above it at 320–1440px, unlike the failed UX1B run. */
+  z-index:500;
+  pointer-events:none;
   background:transparent!important;color:#f1fcff;scrollbar-color:#1d5a78 transparent;
+}
+.whv-page .wv3-home :is(.wv3-home-intro,.wv3-home-discovery){
+  pointer-events:auto;
 }
 .whv-page .wv3-home-intro{
   width:min(40%,548px);min-height:clamp(555px,72vh,705px);

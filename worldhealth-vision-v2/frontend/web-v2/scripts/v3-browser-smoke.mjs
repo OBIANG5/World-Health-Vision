@@ -57,6 +57,16 @@ try {
     assert(!homepageSurface.includes("255, 255, 255"),
       "Visual reset must not show the old white header against the Earth");
     await page.screenshot({ path: `v3-artifacts/${size.n}-home.png`, animations: "disabled" });
+    // Regression: an interactive Globe must NEVER intercept the home shortcuts.
+    // Exercise the real button on every size; do not bypass pointer hit-testing.
+    await page.locator(".wv3-home-quick button").filter({hasText:"Fiche pays"}).click({timeout:8000});
+    assert.equal(new URL(page.url()).searchParams.get("wv"),"country",
+      "The actual home Country shortcut must navigate on touch or mouse");
+    await page.locator(".country-drawer.open").waitFor({state:"visible",timeout:15000});
+    await page.goto(origin + "/?wv=home", { waitUntil: "domcontentloaded" });
+    await page.locator(".wv3-home-intro").waitFor({state:"visible",timeout:15000});
+    // The globe itself must still be pointer-accessible after fixing the stack.
+    await page.locator("canvas.whv-globe-canvas").click({trial:true,timeout:5000});
     await page.locator(".wv3-services-trigger").click();
     const menu = page.locator(".wv3-service-menu");
     await menu.waitFor({ state: "visible" });
