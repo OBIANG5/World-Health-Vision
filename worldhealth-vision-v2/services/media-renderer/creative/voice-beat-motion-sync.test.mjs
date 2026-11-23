@@ -49,8 +49,8 @@ test('exactly aligns a re-hook to APPROVED words on the original overlapping fil
 test('fails on repeated phrase, stale exact text and invalid selected take',()=>{
  const p=fixture();p.directorBeats[1].spokenExcerpt='PREUVE';
  p.script='OUVERTURE DU DOSSIER. PREUVE PREUVE CHANGE TOUT.';
- p.wordCaptions.splice(3,0,{text:'PREUVE',startFrame:91,endFrame:109});
- p.wordCaptions[4].text='PREUVE';
+ p.wordCaptions[3]={text:'PREUVE',startFrame:91,endFrame:109};
+ p.wordCaptions[4]={text:'PREUVE',startFrame:111,endFrame:132};
  assert.throws(()=>alignBeatToSpokenWords(p,'beat-rehook'),/absente ou répétée/);
  const q=fixture();q.directorBeats[1].spokenExcerpt='autres mots';
  assert.throws(()=>alignBeatToSpokenWords(q,'beat-rehook'),/exacte/);
