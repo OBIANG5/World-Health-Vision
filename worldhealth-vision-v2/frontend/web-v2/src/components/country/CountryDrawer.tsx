@@ -1634,8 +1634,21 @@ export default function CountryDrawer({
             />
           </section>}
 
-          {activeSection === "news" && <CountryNewsPanel key={selectedCountryIso3}
-            iso3={selectedCountryIso3} locale={lang} />}
+          {activeSection === "news" && <section className="wv3-news-with-follow" aria-label={fr ? "Actualités du pays et suivi" : "Country news and following"}>
+            <div className="wv3-news-follow-bar">
+              <div><strong>{fr ? `Actualités de ${displayName}` : `${displayName} news`}</strong>
+                <p>{fr
+                  ? "Retrouvez les dossiers datés et leurs sources. Les notifications automatiques de Watch Vision sont en préparation."
+                  : "Read dated reports and their sources. Automated Watch Vision notifications are planned."}</p>
+              </div>
+              {onToggleWatch && <button type="button" onClick={onToggleWatch}
+                aria-pressed={watched}><WorldIcon name="star" size={17}/>
+                {watched ? (fr ? "Pays enregistré" : "Country saved")
+                  : (fr ? "Enregistrer ce pays" : "Save this country")}
+              </button>}
+            </div>
+            <CountryNewsPanel key={selectedCountryIso3} iso3={selectedCountryIso3} locale={lang}/>
+          </section>}
 
           {activeSection === "data" && <section className="whv-country-data" aria-label={fr ? "Données du pays" : "Country data"}>
             <div className="whv-country-section-heading">
