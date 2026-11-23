@@ -10,7 +10,7 @@ import { WorldIcon } from "../ui/WorldIcon";
 
 export default function WorldLandingV3({
   language, countriesCount, onSearch, onCompare, onMoney,
-  onTravel, onVision, onOpenCountry,
+  onTravel, onVision, onOpenCountry, onSources,
 }: {
   language: "fr" | "en";
   countriesCount: number;
@@ -20,6 +20,7 @@ export default function WorldLandingV3({
   onTravel: () => void;
   onVision: (id: VisionId) => void;
   onOpenCountry: () => void;
+  onSources: () => void;
 }) {
   const fr = language === "fr";
   const [active, setActive] = useState<CountryDirectoryGroup>("understand");
@@ -77,7 +78,7 @@ export default function WorldLandingV3({
                   (fr ? "Partiel" : "Partial") : (fr ? "À explorer" : "Explore")}</span>
               <WorldIcon name="arrow" size={16}/>
             </button>)}
-            {active === "professional" && <button type="button" onClick={() => onVision("atlas")}>
+            {active === "professional" && <button type="button" onClick={onSources}>
               <span><strong>{fr ? "Sources et méthodes" : "Sources and methods"}</strong>
                 <small>{fr ? "Provenance et droits des données" : "Evidence and data rights"}</small></span>
               <WorldIcon name="arrow" size={16}/>
