@@ -857,6 +857,13 @@ export default function CinematicProductionBoard() {
                     <button type="button" onClick={()=>setDirectorBeats(old=>old.filter(item=>item.id!==beat.id))}>Retirer</button>
                   </div>
                 </div>
+                <div className="wvc-beat-summary">
+                  <strong>{beat.idea.trim()||"Séquence à préciser"}</strong>
+                  <small>{beat.proofNote.trim()?"Preuve notée : "+beat.proofNote:"Source ou justification à compléter"}</small>
+                </div>
+                <details className="wvc-beat-edit">
+                  <summary>Modifier le récit, les preuves et les timecodes</summary>
+                  <div className="wvc-beat-edit-fields">
                 <label>RÔLE NARRATIF
                   <select value={beat.intent} onChange={e=>updateDirectorBeat(beat.id,{intent:e.target.value as DirectorIntent})}>
                     {DIRECTOR_INTENTS.map(intent=><option key={intent} value={intent}>{
@@ -900,6 +907,8 @@ export default function CinematicProductionBoard() {
                     onChange={e=>updateDirectorBeat(beat.id,{audioDirection:e.target.value})}
                     placeholder="Entrée voix, respiration, accent bref autorisé, baisse de musique"/>
                 </label>
+                  </div>
+                </details>
               </div>)}
             {directorIssues.length>0&&<p className="wvc-director-error" role="alert">
               Direction incomplète : {directorIssues[0].field} — {directorIssues[0].reason}
@@ -1004,7 +1013,12 @@ export default function CinematicProductionBoard() {
             Accroche immédiate : titre lisible dès la première image (TikTok et formats courts)
           </label>}
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
-          {active.template==="photo_story"&&<div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
+          {active.template==="photo_story"&&<details className="wvc-advanced-section" data-wv-advanced="photo_story">
+            <summary>
+              <strong>PHOTO — Caméra, comparaison et preuves</strong>
+              <small>{active.photoUseComparison?"PHOTO×DATA sourcé activé":active.photoUseMetric?"Chiffre sourcé activé":active.photoUseFocus?"Focus photo activé":"Caméra et mouvements indépendants"}</small>
+            </summary>
+            <div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
             <div className="wvc-focus-heading">
               <strong>PHOTO MOTION — UNE IMAGE, PLUSIEURS ANIMATIONS SIMULTANÉES</strong>
               <span>Source réelle obligatoire. Les pistes ont des temps indépendants : caméra, détourage externe, révélation du même original, focus manuel, chiffre sourcé et typographie. Aucun objet ou fait généré.</span>
@@ -1126,8 +1140,14 @@ export default function CinematicProductionBoard() {
               <span className="wvc-hint">Les valeurs restent exactes pendant toute l'animation : seule la longueur des barres se dévoile. Les négatifs partent vers la gauche du zéro, les positifs vers la droite. La date, les catégories et l'échelle ne sont jamais inventées.</span>
             </div>}
             <p className="wvc-hint">Ces réglages sont des pistes de montage, pas une preuve des faits. Le masque et le focus utilisent les pixels de l'image importée. Vérifie cadrage et sujet après mouvement ; seuls les assets aux droits connus peuvent être diffusés.</p>
-          </div>}
-          {active.template==="data_story"&&<div className="wvc-focus-control" aria-label="Data Motion — graphiques et sources éditoriales">
+            </div>
+          </details>}
+          {active.template==="data_story"&&<details className="wvc-advanced-section" data-wv-advanced="data_story">
+            <summary>
+              <strong>DATA — Chiffres, graphiques et provenance</strong>
+              <small>{validData(active)?"Série contrôlée sur la timeline":"Données et provenance à compléter"}</small>
+            </summary>
+            <div className="wvc-focus-control" aria-label="Data Motion — graphiques et sources éditoriales">
             <div className="wvc-focus-heading">
               <strong>DATA MOTION — GRAPHIQUES ANIMÉS ET SOURCE VÉRIFIABLE</strong>
               <span>Le chiffre, son échelle, sa date et sa provenance viennent uniquement de tes données. Le moteur n'invente ni cours de Bourse, ni classement, ni série financière.</span>
@@ -1196,8 +1216,14 @@ export default function CinematicProductionBoard() {
             <p className="wvc-hint">{validData(active)
               ?"Format, données, échelle et source cohérents pour une prévisualisation technique. Vérifie toujours les faits."
               :"À compléter : données (3–16 lignes suivant le graphique), source, date, bornes et unités cohérentes."}</p>
-          </div>}
-          {active.template==="geo_story"&&<div className="wvc-focus-control" aria-label="Direction du plan géographique">
+            </div>
+          </details>}
+          {active.template==="geo_story"&&<details className="wvc-advanced-section" data-wv-advanced="geo_story">
+            <summary>
+              <strong>GEO — Carte, caméra et informations</strong>
+              <small>{validGeo(active)?"Repères géographiques configurés":"Coordonnées à compléter"}</small>
+            </summary>
+            <div className="wvc-focus-control" aria-label="Direction du plan géographique">
             <div className="wvc-focus-heading">
               <strong>CARTE DU MONDE — DIRECTION GÉOGRAPHIQUE</strong>
               <span>Frontières Natural Earth réelles. Toutes les positions, routes et données doivent être choisies et vérifiées manuellement. Pas de chiffres ou de géocodage inventés.</span>
@@ -1293,8 +1319,14 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updateShot({geoMetricUnit:e.target.value})}/></label>
             </div>}
             <p className="wvc-hint">Une photographie ou un extrait vidéo importé dans « Média source » apparaît dans la même composition que le globe, l'arc, les chiffres et les titres. Aucun élément n'est censé illustrer une actualité sans provenance vérifiée.</p>
-          </div>}
-          {active.template==="country_focus"&&<div className="wvc-focus-control" aria-label="Direction d'un pays / Motion GEO-2">
+            </div>
+          </details>}
+          {active.template==="country_focus"&&<details className="wvc-advanced-section" data-wv-advanced="country_focus">
+            <summary>
+              <strong>PAYS — Carte détaillée et données</strong>
+              <small>{active.geoCountryId?"Pays sélectionné et source à contrôler":"Sélectionner une géométrie réelle"}</small>
+            </summary>
+            <div className="wvc-focus-control" aria-label="Direction d'un pays / Motion GEO-2">
             <div className="wvc-focus-heading">
               <strong>GEO-2 · PAYS EN DÉTAIL — CARTE ET MÉDIAS MULTICOUCHES</strong>
               <span>Choisir une vraie géométrie Natural Earth 1:10m. Le contexte vient du 1:50m. La caméra, la silhouette, le média, la donnée et le texte sont animés indépendamment.</span>
@@ -1323,7 +1355,8 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updateShot({geoMetricUnit:e.target.value})}/></label>
             </div>}
             <p className="wvc-hint">Un marqueur doit appartenir au pays sélectionné selon la géométrie de l'atlas. Le validateur serveur refuse les positions extérieures. Photo/vidéo et éventuel détourage transparent se choisissent dans les champs « Média source » et « Détourage » au-dessus. Aucun chiffre, droit d'image ou événement n'est vérifié automatiquement.</p>
-          </div>}
+            </div>
+          </details>}
           {active.template==="document_focus"&&<div className="wvc-focus-control" aria-label="Sélection de la zone du document à inspecter">
             <div className="wvc-focus-heading">
               <strong>ZONE DU DOCUMENT À METTRE EN LUMIÈRE</strong>

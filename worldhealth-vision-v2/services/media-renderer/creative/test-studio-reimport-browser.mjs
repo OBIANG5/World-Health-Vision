@@ -301,6 +301,37 @@ try{
  await page.waitForFunction(()=>Boolean(document.querySelector(
    '[aria-label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"]'
   )),{timeout:18000});
+ // Progressive controls protect MOBILE creative speed, but never discard
+ // source data or hide the one-click voice/PHOTO/SFX actions.
+ const mobileLayout=await page.evaluate(()=>({
+   height:document.documentElement.scrollHeight,
+   photoClosed:document.querySelector('details[data-wv-advanced="photo_story"]')?.open===false,
+   beatClosed:document.querySelector('.wvc-beat-edit')?.open===false,
+   syncActionVisible:Array.from(document.querySelectorAll('.wvc-director-row button'))
+     .some(button=>button.textContent?.includes('Caler PHOTO×DATA')&&
+       button.getBoundingClientRect().width>0)
+ }));
+ if(!mobileLayout.photoClosed||!mobileLayout.beatClosed||
+    !mobileLayout.syncActionVisible||mobileLayout.height>=7100)
+   throw Error('390px progressive editing did not reduce the old 8547px scroll: '+
+     JSON.stringify(mobileLayout));
+ await page.click('details[data-wv-advanced="photo_story"] > summary');
+ await page.waitForFunction(()=>
+   document.querySelector('details[data-wv-advanced="photo_story"]')?.open===true);
+ const sourceFieldsPresent=await page.evaluate(()=>Boolean(
+   document.querySelector('details[data-wv-advanced="photo_story"] input[type="number"]')));
+ if(!sourceFieldsPresent)throw Error('Collapsed PHOTO panel discarded expert motion inputs');
+ await page.click('details[data-wv-advanced="photo_story"] > summary');
+ await page.waitForFunction(()=>
+   document.querySelector('details[data-wv-advanced="photo_story"]')?.open===false);
+ await page.click('.wvc-beat-edit > summary');
+ await page.waitForFunction(()=>document.querySelector('.wvc-beat-edit')?.open===true);
+ const evidencePreserved=await page.evaluate(()=>Array.from(
+   document.querySelectorAll('.wvc-beat-edit textarea')).some(field=>
+     field.value.includes('Fixture artificielle non publiable')));
+ if(!evidencePreserved)throw Error('Beat expert disclosure lost authored proof note');
+ await page.click('.wvc-beat-edit > summary');
+ await page.waitForFunction(()=>document.querySelector('.wvc-beat-edit')?.open===false);
  if(errors.length)throw Error("Browser errors: "+errors.join(" / "));
  const screenshot=path.join(output,"studio-reimport-mobile-390.png");
  await page.screenshot({path:screenshot,fullPage:true,type:"png"});
@@ -313,6 +344,7 @@ try{
   wordHighlightEditedWithoutChangingSourceTiming:true,
   invalidWordAlignmentRejected:true,
   actualPhotoComparisonAndSfxReframedToApprovedSpokenWord:true,
+  progressiveMobileDisclosureVerified:true,mobilePageHeightPixels:mobileLayout.height,
   invalidImportPreservedTitle:title,screenshot};
  fs.writeFileSync(path.join(output,"studio-reimport-browser.report.json"),JSON.stringify(report,null,2)+"\n");
  console.log(JSON.stringify(report));
