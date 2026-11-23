@@ -14,7 +14,7 @@ import { LanguageProvider, useLang, useToggleLang } from "./context/LanguageCont
 import { UserProfileProvider, useUserProfile } from "./context/UserProfileContext";
 import { useCountryCatalog } from "./hooks/useCountryCatalog";
 import { useWatchlist } from "./hooks/useWatchlist";
-import { t } from "./i18n/labels";
+
 
 // Chargement à la demande (code-splitting) : ces composants ne sont pas affichés
 // au démarrage. On les charge quand ils s'ouvrent → bundle initial plus léger et
@@ -150,7 +150,6 @@ function AppContent() {
   const { countries, loading: countriesLoading, error: countriesError,
     source: catalogSource } = useCountryCatalog();
   const isOffline = catalogSource !== "WHV_CATALOG";
-  const isPreview = import.meta.env.VITE_WHV_PREVIEW_MODE === "true";
 
   const activeIso3 = route.kind === "country" ? route.iso3 : selectedCountryIso3;
   const routedCountryMissing = route.kind === "country"
@@ -160,10 +159,6 @@ function AppContent() {
     && !countriesLoading && countries.length > 0
     && !countries.some((country) => country.iso3 === route.iso3 && country.active && !country.aggregate);
   const activeCountryDrawerOpen = (drawerOpen || route.kind === "country") && !routedCountryMissing;
-  const selectedCountry = useMemo<CountrySummary | null>(
-    () => countries.find((country) => country.iso3 === activeIso3) ?? null,
-    [countries, activeIso3],
-  );
 
   const handleCountryClick = useCallback((iso3: string, section: "overview" | "compare" | "news" = "overview") => {
     setRegionDrawerOpen(false);
