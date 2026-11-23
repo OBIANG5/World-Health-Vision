@@ -576,3 +576,21 @@ body .wv3-service-menu .wv3-menu-status{color:#96b8ca;}
  }
  .whv-page .wv4-country-identity > small{font-size:9px;line-height:1.45;}
 }
+
+/* Real Chrome visual regression: an inherited fullscreen <button> used
+   the user-agent white background while the Services menu was open.
+   It blanked out the whole UI and even the brand. The dismiss layer
+   now starts BELOW the header, with an intentional dark scrim. */
+.whv-page .whv-menu-dismiss{
+  top:72px!important;left:0!important;right:0!important;bottom:0!important;
+  background:rgba(0,6,19,.66)!important;
+  border:0!important;border-radius:0!important;padding:0!important;
+  box-shadow:none!important;backdrop-filter:blur(2px);
+  cursor:default;
+}
+body .wv3-service-menu-layout{
+  scrollbar-color:#276a89 transparent;scrollbar-width:thin;
+}
+@media(max-width:960px){
+ .whv-page .whv-menu-dismiss{top:64px!important;}
+}
