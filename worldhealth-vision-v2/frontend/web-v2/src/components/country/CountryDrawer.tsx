@@ -349,13 +349,6 @@ const TAB_ICONS: Record<DrawerTab, WorldIconName> = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function countryFlag(iso2?: string | null): string {
-  if (!iso2 || iso2.length !== 2) return "—";
-  const base = 0x1f1e6; const A = 65;
-  const u = iso2.toUpperCase();
-  return String.fromCodePoint(u.charCodeAt(0) - A + base) + String.fromCodePoint(u.charCodeAt(1) - A + base);
-}
-
 function fmtCompact(v: number | null, unit: string): string {
   if (v === null) return "—";
   const abs = Math.abs(v);
