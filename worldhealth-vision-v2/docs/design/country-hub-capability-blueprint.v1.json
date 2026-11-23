@@ -1,0 +1,651 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-23",
+  "status": "DESIGN_ONLY_NOT_DEPLOYED",
+  "sourceOfTruth": "frontend/web-v2/src/product/visionProducts.ts",
+  "designDocument": "docs/design/WORLD_VISION_COUNTRY_HUB_AND_GLOBAL_IA_2026-11-23.md",
+  "invariants": [
+    "all_11_product_ids_covered",
+    "no_service_hidden_when_unavailable",
+    "no_fake_provider",
+    "country_context_not_all_scopes",
+    "news_secondary",
+    "actual_map_first",
+    "no_photo_hero",
+    "no_primary_safety_from_macro_proxies"
+  ],
+  "groups": [
+    {
+      "id": "knowledge",
+      "title": {
+        "fr": "Comprendre le pays",
+        "en": "Understand the country"
+      },
+      "purpose": "geography institutions indicators comparisons sources"
+    },
+    {
+      "id": "finance",
+      "title": {
+        "fr": "Argent, économie et marchés",
+        "en": "Money, economy and markets"
+      },
+      "purpose": "FX payments macro finance regional markets"
+    },
+    {
+      "id": "travel",
+      "title": {
+        "fr": "Voyager, se déplacer et vivre",
+        "en": "Travel, transport and living"
+      },
+      "purpose": "destination transport safety local living"
+    },
+    {
+      "id": "shopping",
+      "title": {
+        "fr": "Acheter et comparer",
+        "en": "Shop and compare"
+      },
+      "purpose": "local product prices verified stocks shopping basket"
+    },
+    {
+      "id": "monitor",
+      "title": {
+        "fr": "Suivre, vérifier et s'informer",
+        "en": "Monitor, verify and understand news"
+      },
+      "purpose": "watch notification radar media news"
+    },
+    {
+      "id": "professional",
+      "title": {
+        "fr": "Professionnels et outils transversaux",
+        "en": "Professional and shared tools"
+      },
+      "purpose": "export sources professional data access identity"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": "atlas",
+      "kind": "vision",
+      "visionId": "atlas",
+      "groupId": "knowledge",
+      "scope": "country",
+      "label": {
+        "fr": "Explorer la fiche Atlas et ses régions",
+        "en": "Explore Atlas country and regional profiles"
+      },
+      "requiredInputs": [
+        "country"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "watch",
+      "kind": "vision",
+      "visionId": "watch",
+      "groupId": "monitor",
+      "scope": "country",
+      "label": {
+        "fr": "Surveiller une évolution et recevoir une alerte autorisée",
+        "en": "Watch changes with authorized notifications"
+      },
+      "requiredInputs": [
+        "country",
+        "consent"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "money",
+      "kind": "vision",
+      "visionId": "money",
+      "groupId": "finance",
+      "scope": "country",
+      "label": {
+        "fr": "Convertir une devise et vérifier les conditions d'un transfert",
+        "en": "Convert currencies and verify transfer terms"
+      },
+      "requiredInputs": [
+        "country",
+        "currency",
+        "corridor-if-transfer"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "transport",
+      "kind": "vision",
+      "visionId": "transport",
+      "groupId": "travel",
+      "scope": "corridor",
+      "label": {
+        "fr": "Comparer des trajets et leurs prix réellement disponibles",
+        "en": "Compare journeys and actually available fares"
+      },
+      "requiredInputs": [
+        "origin",
+        "destination",
+        "dates"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "tourism",
+      "kind": "vision",
+      "visionId": "tourism",
+      "groupId": "travel",
+      "scope": "country",
+      "label": {
+        "fr": "Préparer un voyage dans ce pays",
+        "en": "Plan a trip to this country"
+      },
+      "requiredInputs": [
+        "destination"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "price",
+      "kind": "vision",
+      "visionId": "price",
+      "groupId": "shopping",
+      "scope": "local-market",
+      "label": {
+        "fr": "Rechercher un prix observé dans une zone précise",
+        "en": "Find an observed local price"
+      },
+      "requiredInputs": [
+        "place",
+        "product"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "basket",
+      "kind": "vision",
+      "visionId": "basket",
+      "groupId": "shopping",
+      "scope": "local-market",
+      "label": {
+        "fr": "Comparer le coût d'un panier entre magasins réellement couverts",
+        "en": "Compare shopping basket costs across covered stores"
+      },
+      "requiredInputs": [
+        "place",
+        "products"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "trading",
+      "kind": "vision",
+      "visionId": "trading",
+      "groupId": "finance",
+      "scope": "global",
+      "label": {
+        "fr": "Analyser la macroéconomie et les marchés avec des sources",
+        "en": "Analyze macro and markets with sourced evidence"
+      },
+      "requiredInputs": [
+        "market",
+        "license"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "brvm",
+      "kind": "vision",
+      "visionId": "brvm",
+      "groupId": "finance",
+      "scope": "regional-exchange",
+      "label": {
+        "fr": "Explorer la BRVM, marché commun aux pays de l'UEMOA",
+        "en": "Explore the BRVM, the UEMOA regional market"
+      },
+      "requiredInputs": [
+        "regional-market",
+        "license"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "radar",
+      "kind": "vision",
+      "visionId": "radar",
+      "groupId": "monitor",
+      "scope": "country",
+      "label": {
+        "fr": "Explorer des signaux documentés et leurs sources originales",
+        "en": "Explore documented signals and their original sources"
+      },
+      "requiredInputs": [
+        "country"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "media",
+      "kind": "vision",
+      "visionId": "media",
+      "groupId": "monitor",
+      "scope": "country",
+      "label": {
+        "fr": "Accéder aux dossiers et contenus éditoriaux vérifiés",
+        "en": "Open verified editorial dossiers and media"
+      },
+      "requiredInputs": [
+        "country",
+        "editorial-review"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "read-from-visionProducts-not-duplicated"
+    },
+    {
+      "id": "country-map",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "knowledge",
+      "scope": "country",
+      "label": {
+        "fr": "Explorer la carte détaillée du territoire",
+        "en": "Explore the detailed country map"
+      },
+      "sourceAnchor": "map-geojson-licensed",
+      "requiredInputs": [
+        "geodata"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "country-regions",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "knowledge",
+      "scope": "country",
+      "label": {
+        "fr": "Parcourir les régions et villes vérifiées",
+        "en": "Browse verified regions and cities"
+      },
+      "sourceAnchor": "region-geojson",
+      "requiredInputs": [
+        "geodata"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "national-institutions",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "knowledge",
+      "scope": "country",
+      "label": {
+        "fr": "Consulter les institutions et organismes sources",
+        "en": "Consult official institutions and sources"
+      },
+      "sourceAnchor": "CountryLocalEvidencePanel",
+      "requiredInputs": [
+        "source-registry"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "country-indicators",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "knowledge",
+      "scope": "country",
+      "label": {
+        "fr": "Lire des indicateurs par période et méthodologie",
+        "en": "Read period-and-methodology-backed indicators"
+      },
+      "sourceAnchor": "CountryDrawer/DataTab",
+      "requiredInputs": [
+        "approved-time-series"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "country-comparison",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "knowledge",
+      "scope": "multi-country",
+      "label": {
+        "fr": "Comparer plusieurs pays et leurs méthodes",
+        "en": "Compare countries and source methodologies"
+      },
+      "sourceAnchor": "ComparatorSection",
+      "requiredInputs": [
+        "comparable-series"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "trusted-sources",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "professional",
+      "scope": "country",
+      "label": {
+        "fr": "Vérifier la provenance et les documents",
+        "en": "Inspect origin sources and documents"
+      },
+      "sourceAnchor": "CountryLocalEvidencePanel",
+      "requiredInputs": [
+        "evidence-permissions"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "currency-converter",
+      "kind": "feature",
+      "visionId": "money",
+      "groupId": "finance",
+      "scope": "country",
+      "label": {
+        "fr": "Consulter les taux de référence datés",
+        "en": "Consult dated reference FX rates"
+      },
+      "sourceAnchor": "CurrencyPanel",
+      "requiredInputs": [
+        "fx-source"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "purchasing-power",
+      "kind": "feature",
+      "visionId": "money",
+      "groupId": "finance",
+      "scope": "country",
+      "label": {
+        "fr": "Comparer le pouvoir d'achat observé",
+        "en": "Compare documented purchasing power"
+      },
+      "sourceAnchor": "PurchasingPowerPanel",
+      "requiredInputs": [
+        "comparability-check"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "economic-advisor",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "finance",
+      "scope": "country",
+      "label": {
+        "fr": "Comprendre les indicateurs et leurs limites",
+        "en": "Understand economic indicators and limitations"
+      },
+      "sourceAnchor": "AdvisorPanel",
+      "requiredInputs": [
+        "evidence"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "regional-exchange-affiliation",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "finance",
+      "scope": "regional-exchange",
+      "label": {
+        "fr": "Explorer la bourse régionale réellement pertinente",
+        "en": "Explore the correctly affiliated regional exchange"
+      },
+      "sourceAnchor": "BVMAC-CEMAC-proposal",
+      "requiredInputs": [
+        "affiliation-and-license"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "destination-score",
+      "kind": "feature",
+      "visionId": "tourism",
+      "groupId": "travel",
+      "scope": "country",
+      "label": {
+        "fr": "Évaluer une destination avec les limites documentées",
+        "en": "Assess a destination with documented limitations"
+      },
+      "sourceAnchor": "DestinationScorePanel",
+      "requiredInputs": [
+        "methodology"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "traveler-safety",
+      "kind": "feature",
+      "visionId": "tourism",
+      "groupId": "travel",
+      "scope": "country",
+      "label": {
+        "fr": "Consulter les avis de voyage officiels datés",
+        "en": "Read dated official travel advisories"
+      },
+      "sourceAnchor": "SafetyTab-to-be-replaced",
+      "requiredInputs": [
+        "dated-official-advisories"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "real-estate",
+      "kind": "feature",
+      "visionId": "tourism",
+      "groupId": "travel",
+      "scope": "local-market",
+      "label": {
+        "fr": "Explorer un marché immobilier local, sans fausses offres",
+        "en": "Explore documented local real estate, no fake listings"
+      },
+      "sourceAnchor": "RealEstatePanel",
+      "requiredInputs": [
+        "licensed-listings"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "retirement",
+      "kind": "feature",
+      "visionId": "tourism",
+      "groupId": "travel",
+      "scope": "country",
+      "label": {
+        "fr": "Étudier l'installation et la retraite",
+        "en": "Explore relocation and retirement"
+      },
+      "sourceAnchor": "RetirementPanel",
+      "requiredInputs": [
+        "official-rules"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "destination-transport",
+      "kind": "feature",
+      "visionId": "transport",
+      "groupId": "travel",
+      "scope": "corridor",
+      "label": {
+        "fr": "Accéder aux vols, trains, bus et hôtels lorsque vérifiés",
+        "en": "Explore validated flights rail bus and hotels"
+      },
+      "sourceAnchor": "TravelPanel",
+      "requiredInputs": [
+        "origin-dates-provider"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "favorites",
+      "kind": "feature",
+      "visionId": "watch",
+      "groupId": "monitor",
+      "scope": "country",
+      "label": {
+        "fr": "Enregistrer ce pays dans les favoris",
+        "en": "Bookmark this country"
+      },
+      "sourceAnchor": "WatchlistPanel",
+      "requiredInputs": [
+        "storage"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "alerts-exploratory",
+      "kind": "feature",
+      "visionId": "watch",
+      "groupId": "monitor",
+      "scope": "country",
+      "label": {
+        "fr": "Consulter les alertes déjà proposées",
+        "en": "Explore existing alert tools"
+      },
+      "sourceAnchor": "AlertsPanel",
+      "requiredInputs": [
+        "real-notification-status"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "local-news",
+      "kind": "feature",
+      "visionId": "radar",
+      "groupId": "monitor",
+      "scope": "country",
+      "label": {
+        "fr": "Lire des actualités datées dans une rubrique dédiée",
+        "en": "Read dated country news in its own section"
+      },
+      "sourceAnchor": "CountryNewsPanel",
+      "requiredInputs": [
+        "source-and-verification"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "data-exports",
+      "kind": "feature",
+      "visionId": "atlas",
+      "groupId": "professional",
+      "scope": "country",
+      "label": {
+        "fr": "Exporter uniquement les données publiables",
+        "en": "Export only rights-approved data"
+      },
+      "sourceAnchor": "CountryDrawer exports",
+      "requiredInputs": [
+        "publication-rights"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    },
+    {
+      "id": "profile-preferences",
+      "kind": "feature",
+      "visionId": "watch",
+      "groupId": "professional",
+      "scope": "global",
+      "label": {
+        "fr": "Gérer langue et préférences de manière transparente",
+        "en": "Manage language and preferences transparently"
+      },
+      "sourceAnchor": "UserProfilePanel",
+      "requiredInputs": [
+        "identity-readiness"
+      ],
+      "discoverableOnEveryCountry": true,
+      "availabilitySource": "authoritative-coverage-resolver",
+      "state": "not-a-proof-of-live-availability"
+    }
+  ],
+  "examples": {
+    "GAB": {
+      "country": "GAB",
+      "fxCurrencyHint": "XAF_REQUIRE_VERIFICATION",
+      "regionalExchangeHint": "BVMAC_CEMAC_NOT_BRVM",
+      "travelDestinationHint": "Gabon",
+      "departureHint": "USER_INPUT_REQUIRED",
+      "localMarketHint": "CITY_OR_STORE_REQUIRED"
+    },
+    "CIV": {
+      "country": "CIV",
+      "fxCurrencyHint": "XOF_REQUIRE_VERIFICATION",
+      "regionalExchangeHint": "BRVM_UEMOA",
+      "travelDestinationHint": "Côte d'Ivoire",
+      "departureHint": "USER_INPUT_REQUIRED",
+      "localMarketHint": "CITY_OR_STORE_REQUIRED"
+    }
+  },
+  "externalEvidence": {
+    "regionalMarkets": [
+      "https://www.bvm-ac.org/",
+      "https://www.brvm.org/fr/historique"
+    ]
+  },
+  "note": "This file organizes discoverability only. It does not assert that a product exists, operates in a country, has licensed live data, or offers transactions. Source registry and backend permissions are required."
+}
