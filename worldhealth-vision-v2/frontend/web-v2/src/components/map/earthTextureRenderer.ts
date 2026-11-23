@@ -46,9 +46,11 @@ void main() {
   // Physically inspired artistic day-side lighting. NOT a live satellite view.
   float diffuse = clamp(dot(normalize(vec3(-0.42, 0.43, 0.85)),
                             vec3(vSphere.x,vSphere.y,z)), 0.0, 1.0);
-  float light = 0.63 + 0.37 * diffuse;
+  float light = 0.76 + 0.24 * diffuse;
   float atmosphere = pow(1.0 - z, 5.0);
-  vec3 color = pow(earth, vec3(0.94)) * vec3(1.07,1.065,1.09) * light;
+  // A small lift from the overly dark first proof, without painting
+  // synthetic forest/desert colors or converting color into false data.
+  vec3 color = pow(earth, vec3(0.82)) * vec3(1.09,1.09,1.12) * light;
   color += vec3(0.02,0.21,0.31) * atmosphere;
   gl_FragColor = vec4(min(color, vec3(1.0)), 1.0);
 }`;
