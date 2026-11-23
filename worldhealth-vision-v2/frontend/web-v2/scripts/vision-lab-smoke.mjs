@@ -29,6 +29,8 @@ try{
       page.on("pageerror",e=>runtime.push(e.message));
       await page.goto(origin+"/vision-lab/index.html?concept="+concept+"&screen=home",{waitUntil:"domcontentloaded"});
       await page.locator(".home-hero").waitFor({state:"visible"});
+      await page.waitForFunction(() => document.querySelector(".earth-img")?.complete,
+        null,{timeout:8500}).catch(() => {});
       assert.equal(await page.locator("#app").getAttribute("data-concept"),concept);
       const chosen=page.locator('[data-concept-select="'+concept+'"]');
       assert.equal(await chosen.getAttribute("aria-pressed"),"true");
@@ -40,7 +42,7 @@ try{
       if(["iphone-390","desktop-1440"].includes(size.name)){
         await page.screenshot({path:"design-artifacts/"+concept+"-"+size.name+"-accueil.png"});
       }
-      await page.locator('[data-go="country"]').first().click();
+      await page.locator('.hero-actions [data-go="country"]').click();
       await page.locator("#screen-country").waitFor({state:"visible"});
       assert.equal(await page.locator("#screen-country h1").innerText(),"Gabon");
       const tabs=page.locator('.country-tabs-inner button');
@@ -63,7 +65,7 @@ try{
       await page.locator('[data-section="news"]').first().click();
       assert(await page.locator('[data-section-panel="news"]').isVisible());
       assert(!(await page.locator('[data-section-panel="overview"]').isVisible()));
-      await page.locator('.primary-nav [data-go="compare"]').click({force:true});
+      await page.locator('.context-side [data-go="compare"]').first().click();
       assert(await page.locator("#screen-compare").isVisible());
       await page.locator("#screen-compare [data-go=country]").first().click();
       assert(await page.locator('[data-section-panel="overview"]').isVisible());
