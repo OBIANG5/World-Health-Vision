@@ -510,3 +510,24 @@ body .wv3-service-menu button:focus-visible{outline:3px solid #0d9fbd;outline-of
  body .wv3-service-menu-content h2{font-size:19px;}
  body .wv3-service-menu-actions{grid-template-columns:1fr;}
 }
+
+/* News and Following are complementary, not the same capability. */
+.whv-page .wv3-news-follow-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  margin:4px 0 17px;padding:17px 21px;border:1px solid #d8e5ec;
+  border-radius:10px;background:#fff;
+}
+.whv-page .wv3-news-follow-bar strong{font-size:15px;color:#173d52;}
+.whv-page .wv3-news-follow-bar p{font-size:11px;color:#637e8c;line-height:1.55;margin:6px 0 0;}
+.whv-page .wv3-news-follow-bar button{
+  display:flex;align-items:center;gap:8px;min-height:42px;flex:0 0 auto;
+  border-radius:8px;border:1px solid #c8dfe7;padding:10px 13px;
+  color:#17677d;background:#f4f9fb;font-size:12px;font-weight:740;
+}
+.whv-page .wv3-news-follow-bar button[aria-pressed="true"]{
+  color:#0e778f;background:#e7f5f8;border-color:#9ccfdc;
+}
+@media(max-width:600px){
+ .whv-page .wv3-news-follow-bar{display:grid;padding:15px;}
+ .whv-page .wv3-news-follow-bar button{justify-content:center;}
+}
