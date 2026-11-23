@@ -7,12 +7,14 @@ on:
       - worldhealth-vision-v2/docs/design/**
       - worldhealth-vision-v2/frontend/web-v2/public/vision-lab/**
       - worldhealth-vision-v2/frontend/web-v2/scripts/vision-lab-smoke.mjs
+      - worldhealth-vision-v2/frontend/web-v2/scripts/design-country-hub-contract.test.mjs
       - .github/workflows/whv-v2-vision-design-review.yml
   pull_request:
     paths:
       - worldhealth-vision-v2/docs/design/**
       - worldhealth-vision-v2/frontend/web-v2/public/vision-lab/**
       - worldhealth-vision-v2/frontend/web-v2/scripts/vision-lab-smoke.mjs
+      - worldhealth-vision-v2/frontend/web-v2/scripts/design-country-hub-contract.test.mjs
       - .github/workflows/whv-v2-vision-design-review.yml
 permissions:
   contents: read
@@ -52,6 +54,9 @@ jobs:
           assert "process.env" not in h and "api.worldbank.org/v2/country" in h
           print("PASS standalone noindex art-direction experiment and explicit image attribution")
           PY
+      - name: Design-spec invariants — 11 Visions, every existing module, regional scope & honest availability
+        working-directory: worldhealth-vision-v2/frontend/web-v2
+        run: node --test scripts/design-country-hub-contract.test.mjs
       - name: Install frontend lockfile, build real software without modifying it
         working-directory: worldhealth-vision-v2/frontend/web-v2
         run: |
