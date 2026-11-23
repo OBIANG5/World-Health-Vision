@@ -42,7 +42,18 @@ try{
       if(["iphone-390","desktop-1440"].includes(size.name)){
         await page.screenshot({path:"design-artifacts/"+concept+"-"+size.name+"-accueil.png"});
       }
-      await page.locator('.hero-actions [data-go="country"]').click();
+      if(size.name==="iphone-390"){
+        await page.locator(".search-trigger").click();
+        const dialog=page.locator("#country-search");
+        await dialog.waitFor({state:"visible"});
+        await dialog.locator("input").fill("gabon");
+        assert(await dialog.locator('[data-go="country"]').isVisible(),
+          "Country search must offer a real, explicit prototype result");
+        await dialog.locator('[data-go="country"]').click();
+        assert.equal(await dialog.isVisible(),false,"Search must close on navigation");
+      }else{
+        await page.locator('.hero-actions [data-go="country"]').click();
+      }
       await page.locator("#screen-country").waitFor({state:"visible"});
       assert.equal(await page.locator("#screen-country h1").innerText(),"Gabon");
       const tabs=page.locator('.country-tabs-inner button');
