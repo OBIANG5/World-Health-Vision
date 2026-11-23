@@ -17,7 +17,9 @@ import { useLang } from "../../context/LanguageContext";
 import { useFxHistory } from "../../hooks/useFxHistory";
 import { useCountrySheet } from "../../hooks/useCountrySheet";
 import CountryLocalEvidencePanel from "./CountryLocalEvidencePanel";
-import CountryEditorialStory from "./CountryEditorialStory";
+import CountryGeographicHero from "./CountryGeographicHero";
+import CountryServiceDirectory from "./CountryServiceDirectory";
+import type { VisionAction, VisionId } from "../../product/visionProducts";
 import CountryNewsPanel from "./CountryNewsPanel";
 import { getWorldBankCountryMetadata, worldBankCatalogProvenance, type CountryCatalogSource } from "../../catalog/worldBankCountryCatalog";
 import { useFxRates } from "../../hooks/useFxRates";
@@ -51,6 +53,9 @@ type Props = {
   catalogSource: CountryCatalogSource;
   watched?: boolean;
   onToggleWatch?: () => void;
+  onOpenVision: (id: VisionId) => void;
+  onVisionAction: (action: VisionAction) => void;
+  initialSection?: CountrySection;
 };
 
 // ---------------------------------------------------------------------------
@@ -1248,13 +1253,13 @@ function ComparatorSection({
 export default function CountryDrawer({
   open, onClose, selectedCountryIso3, onCountryChange,
   countries, countriesLoading, countriesError, catalogSource,
-  watched = false, onToggleWatch,
+  watched = false, onToggleWatch, onOpenVision, onVisionAction, initialSection = "overview",
 }: Props) {
   const lang = useLang();
   const fr = lang === "fr";
   const [fullscreen, setFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState<DrawerTab>("overview");
-  const [activeSection, setActiveSection] = useState<CountrySection>("overview");
+  const [activeSection, setActiveSection] = useState<CountrySection>(initialSection);
   const countryBodyRef = useRef<HTMLDivElement>(null);
   function navigateToSection(section: CountrySection) {
     setActiveSection(section);
@@ -1288,15 +1293,10 @@ export default function CountryDrawer({
     } as Record<string, string>)[bankMetadata.incomeLevelCode] ?? bankMetadata.incomeLevelName
       : bankMetadata.incomeLevelName) : null;
 
-  useEffect(() => {
-    setActiveSection("overview");
-    setActiveTab("overview");
-    countryBodyRef.current?.scrollTo({ top: 0, behavior: "auto" });
-  }, [selectedCountryIso3]);
+  // The parent keys this page by country and requested section: changing
+  // countries remounts local navigation, rather than exposing stale tabs.
 
-  const flag = countryFlag(countryDetail?.iso2 ?? selectedCountry?.iso2);
   const displayName = countryDetail?.displayName ?? selectedCountry?.displayName ?? selectedCountryIso3;
-  const subtitle = [countryDetail?.regionName ?? selectedCountry?.regionName, countryDetail?.worldBankIncomeGroup].filter(Boolean).join(" • ");
 
   const allEconomicLenses = useMemo(() => economicSnapshot?.lenses ?? [], [economicSnapshot]);
   const allLenses = useMemo(() => [
@@ -1441,12 +1441,11 @@ export default function CountryDrawer({
       {/* The COUNTRY is primary. All domains are peer sections below its
           identity; news never precedes the actual country profile. */}
       <div className="country-drawer-body" ref={countryBodyRef}>
-        <CountryEditorialStory key={selectedCountryIso3}
-          iso3={selectedCountryIso3}
-          name={displayName} flag={flag} subtitle={subtitle}
-          capital={countryDetail?.capitalCity ?? selectedCountry?.capitalCity}
-          currencyCode={countryDetail?.currencyCode ?? selectedCountry?.currencyCode}
-          locale={lang} open={open}
+        <CountryGeographicHero key={selectedCountryIso3}
+          iso3={selectedCountryIso3} country={selectedCountry} language={lang}
+          onCompare={() => navigateToSection("compare")}
+          onNews={() => navigateToSection("news")}
+          onFollow={onToggleWatch} followed={watched}
         />
 
         <nav className="whv-country-section-nav"
@@ -1570,6 +1569,21 @@ export default function CountryDrawer({
                   : "No country is fabricated when neither World-Vision nor the external directory identifies the territory."}</p>
               </div>
             )}
+            <CountryServiceDirectory
+              key={selectedCountryIso3}
+              iso3={selectedCountryIso3} countryName={displayName} language={lang}
+              onOpenVision={onOpenVision}
+              onOpenNews={() => navigateToSection("news")}
+              onOpenFollow={() => { if (onToggleWatch) onToggleWatch(); }}
+              onOpenData={() => { setActiveTab("economy"); navigateToSection("data"); }}
+              onOpenCompare={() => navigateToSection("compare")}
+              onOpenSources={() => navigateToSection("sources")}
+              onOpenCurrency={() => {
+                setActiveTab("fx");
+                navigateToSection("services");
+              }}
+              onOpenTravel={() => onVisionAction("travel")}
+            />
             {economicSnapshot || relativeCostSnapshot ? <OverviewTab
               allLenses={allLenses} highlights={combinedHighlights}
               decisionSignals={decisionSignals} lang={lang}
@@ -1695,6 +1709,22 @@ export default function CountryDrawer({
           </section>}
 
           {activeSection === "services" && <section className="whv-country-services">
+            <CountryServiceDirectory key={selectedCountryIso3}
+              iso3={selectedCountryIso3} countryName={displayName} language={lang}
+              onOpenVision={onOpenVision}
+              onOpenNews={() => navigateToSection("news")}
+              onOpenFollow={() => { if (onToggleWatch) onToggleWatch(); }}
+              onOpenData={() => { setActiveTab("economy"); navigateToSection("data"); }}
+              onOpenCompare={() => navigateToSection("compare")}
+              onOpenSources={() => navigateToSection("sources")}
+              onOpenCurrency={() => setActiveTab("fx")}
+              onOpenTravel={() => onVisionAction("travel")}
+            />
+            <details className="wv3-legacy-tools">
+              <summary>{fr ? "Outils historiques du pays (devises et contexte)" : "Existing country tools (currency and context)"}</summary>
+              <p>{fr
+                ? "Les indicateurs généraux de vulnérabilité ne constituent pas un avis officiel de sécurité ou de voyage."
+                : "General vulnerability indicators are not official travel or safety advisories."}</p>
             <div className="whv-country-section-heading">
               <span className="whv-country-section-kicker">{fr ? "OUTILS ET SERVICES" : "TOOLS AND SERVICES"}</span>
               <h3>{fr ? "Services liés au pays" : "Country-related services"}</h3>
@@ -1726,6 +1756,7 @@ export default function CountryDrawer({
                   ? "Un indicateur partiel ne constitue pas un avis officiel de sécurité ou de voyage. Les données et périmètres doivent être confirmés."
                   : "An isolated indicator is not an official travel advisory. Data and geographic scope must be verified."}</p>
               </div>}
+            </details>
           </section>}
         </div>
       </div>
