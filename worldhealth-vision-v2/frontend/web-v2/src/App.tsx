@@ -43,6 +43,7 @@ import "./styles/world-electric.css";
 import "./styles/vision-hub.css";
 import "./styles/world-discovery.css";
 import "./styles/world-v3.css";
+import "./styles/world-v4.css";
 
 // ---------- Sélecteur de pays (popover) ----------
 
