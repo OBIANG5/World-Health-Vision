@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="color-scheme" content="light dark">
+<title>World-Vision · Laboratoire de conception — NON APPROUVÉ</title>
+<style>
+/*
+  World-Vision V3 EXPERIENCE LAB · CONCEPT ONLY, NOT REAL PRODUCT
+  This CSS is intentionally isolated from eye.css, world-electric.css, etc.
+  A/B/C compare composition + information architecture, NOT palette trends.
+*/
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,"Avenir Next","Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased;background:#eef2f5;color:#102c3e}button,input,a{font:inherit}button{cursor:pointer}a{color:inherit}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #4db9ed;outline-offset:3px}button:disabled{cursor:not-allowed;opacity:.6}p{margin:0}h1,h2,h3,h4{margin:0}a{text-underline-offset:3px}
+.labbar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:13px max(22px,calc((100vw - 1540px)/2));background:#0c1723;color:#e3f2f9;font-size:12px}
+.labbar .lab-label{font-weight:800;letter-spacing:.08em}.labbar .lab-label span{color:#7fbdcf;font-weight:500}.lab-controls{display:flex;gap:5px;background:#1c2b39;padding:5px;border-radius:11px}.lab-controls button{background:transparent;border:0;color:#acbec7;padding:9px 13px;border-radius:7px;font-size:11px;font-weight:800}.lab-controls button[aria-pressed=true]{background:#eefbff;color:#10364b}.lab-disclosure{color:#d6e6ee;font-size:11px;line-height:1.6}
+.lab-disclosure strong{color:#f2f9fc}
+#app{--navy:#061a33;--ocean:#064a86;--cyan:#35d8f1;--blue:#067ec3;--ink:#123047;--muted:#607787;--line:#e3e9ed;--paper:#f6f9fa;--white:#fff;--font-display:"Avenir Next",Inter,"Segoe UI",sans-serif;min-height:100dvh;background:var(--paper);color:var(--ink)}
+.sitebar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,4vw,74px);background:var(--white);border-bottom:1px solid var(--line);position:relative;z-index:5}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand-symbol{width:59px;height:42px;flex:none}.brand-wordmark strong{display:block;font-size:20px;font-weight:850;color:var(--navy);letter-spacing:-.05em}.brand-wordmark small{display:block;font-size:10px;font-weight:620;color:#416f86;margin-top:2px;letter-spacing:.01em}
+.primary-nav{display:flex;gap:28px;align-items:center}.primary-nav button,.utility button{border:0;background:none;color:#36576b;font-weight:690;font-size:12px;padding:10px 3px}.primary-nav button:hover,.primary-nav button[aria-current=page]{color:#006da9}.primary-nav button[aria-current=page]{border-bottom:2px solid #008fcd}.utility{display:flex;align-items:center;gap:14px}.utility .search-trigger{border:1px solid #c9dce7;background:#f6fafc;border-radius:100px;padding:10px 19px;color:#315c75}.utility .user-trigger{width:35px;height:35px;padding:0;border-radius:50%;border:1px solid #c8dfe8;background:#ecf5f8;font-size:15px}
+.icon{display:inline-flex;align-items:center;justify-content:center}.eyebrow{text-transform:uppercase;letter-spacing:.17em;font-weight:820;font-size:10px;color:var(--blue)}.muted{color:var(--muted)}.tiny{font-size:11px}.line{width:100%;height:1px;background:var(--line)}
+.content{max-width:1540px;margin:0 auto}.page{display:none}.page[data-visible=true]{display:block}.page-width{max-width:1300px;margin:0 auto;padding:0 48px}.btn-primary,.btn-outline,.text-action{border-radius:9px;min-height:48px;padding:12px 19px;font-weight:800;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:12px;text-decoration:none}.btn-primary{background:#006da9;color:#fff;border:1px solid #006da9;box-shadow:0 6px 17px #006da922}.btn-primary:hover{background:#005884}.btn-outline{background:#fff;border:1px solid #bfd5df;color:#144f6a}.btn-outline:hover{border-color:#2689b4;background:#f5fcff}.text-action{border:0;background:none;color:#006b9f;padding:10px 0;min-height:0}
+.vision-footer{max-width:1400px;margin:0 auto;padding:22px 45px 30px;display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap;font-size:11px;color:#6c8390;border-top:1px solid var(--line)}
+.vision-footer a{color:#346c86}
+/* HOME — the Earth is the main geographic interface, never a financial indicator. */
+.home-hero{position:relative;isolation:isolate;overflow:hidden;min-height:600px;background:linear-gradient(115deg,#061527 3%,#092b4a 58%,#0e5278 100%);color:#fff}
+.home-hero:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 75% 43%,#2c9ddb1d 0,#2c9ddb00 40%),radial-gradient(circle at 10% 22%,#1869a321 0,transparent 43%)}
+.home-hero .hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);min-height:600px;align-items:center;gap:20px;padding-top:46px;padding-bottom:55px}
+.hero-copy{max-width:565px;position:relative;z-index:2}.hero-kicker{font-size:11px;color:#78d7ef;font-weight:820;letter-spacing:.19em;text-transform:uppercase;margin-bottom:22px}
+.hero-title{font-family:var(--font-display);font-size:clamp(52px,5.7vw,86px);font-weight:800;letter-spacing:-.072em;line-height:.98;margin:0 0 23px;color:#fff}
+.hero-title em{font-style:normal;color:#67d4ee}.hero-subtitle{font-size:17px;line-height:1.6;color:#c3d7e4;max-width:465px;letter-spacing:-.016em}
+.hero-actions{display:flex;flex-wrap:wrap;gap:11px;margin-top:30px}
+.hero-actions .btn-primary{background:#5ed8f3;color:#072e45;border-color:#5ed8f3}.hero-actions .btn-primary:hover{background:#b2f0fb}
+.hero-actions .btn-outline{background:#ffffff10;border-color:#ffffff55;color:#fff}.hero-actions .btn-outline:hover{background:#ffffff24}
+.earth-stage{position:relative;height:550px;display:grid;place-items:center}
+.earth-halo{position:absolute;width:86%;aspect-ratio:1;max-width:550px;border-radius:50%;background:radial-gradient(circle,#24b1ec26 10%,#1a56951b 46%,transparent 69%);filter:blur(5px);transform:scale(1.15)}
+.earth-img{position:relative;z-index:1;width:min(100%,525px);aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 0 25px #5ca9df35) drop-shadow(0 15px 46px #00152899)}
+.eye-open-arc{position:absolute;z-index:2;width:min(105%,620px);height:auto;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:.95;filter:drop-shadow(0 0 13px #84dffa4a)}
+.earth-caption{position:absolute;bottom:0;right:22px;z-index:3;font-size:10px;color:#9ec4d4;letter-spacing:.02em}
+.earth-caption a{color:#c1ebf6}.earth-pin{position:absolute;z-index:3;top:43%;left:50%;border:1px solid #bce8fa80;background:#082f53e8;color:#eefcff;padding:7px 12px;border-radius:100px;font-size:11px;font-weight:700;box-shadow:0 0 0 5px #5dcbfb20}
+.earth-pin:before{content:"";width:6px;height:6px;background:#6ff3fc;border-radius:50%;display:inline-block;margin-right:7px}
+.halo-line{position:absolute;border:1px solid #81c9ed24;border-radius:50%;aspect-ratio:1;width:95%;pointer-events:none}
+.home-ribbon{background:#fff;border-bottom:1px solid #e5ebef;padding:17px 0}.ribbon-inner{display:flex;justify-content:space-between;align-items:center;gap:24px}.ribbon-inner span{font-size:12px;color:#426779}.ribbon-inner span strong{color:#133f5b}.ribbon-inner .ribbon-link{color:#006ca5;font-size:12px;font-weight:820;text-decoration:none}
+.section-intro{display:flex;align-items:end;justify-content:space-between;gap:20px;padding-top:68px;padding-bottom:27px}.section-intro h2{font-size:clamp(29px,3.2vw,43px);letter-spacing:-.055em;margin-top:7px;line-height:1.15}.section-intro p{max-width:500px;font-size:14px;line-height:1.55;color:#617d8d}
+.journeys{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px;padding-bottom:64px}
+.journey{border:0;text-align:left;background:#fff;border-radius:15px;min-height:220px;padding:27px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;box-shadow:0 7px 27px #082c4710;transition:transform .2s,border-color .2s;border:1px solid #e6edf1}
+.journey:hover{transform:translateY(-4px);border-color:#8bd3ee}.journey--featured{background:linear-gradient(130deg,#edf8fb,#f5fbfc);border-color:#d1e6ee}
+.journey .journey-index{font-size:11px;letter-spacing:.13em;font-weight:800;color:#2499bc}.journey h3{font-size:23px;letter-spacing:-.035em;color:#173a51}.journey p{font-size:12px;line-height:1.55;color:#627d8a;max-width:240px;margin-top:8px}.journey .arrow{align-self:flex-end;font-size:24px;color:#167da8}
+/* COUNTRY — a complete place, not a drawer or a news card. */
+.country-hero{background:#fff;position:relative;min-height:372px;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);overflow:hidden;border-bottom:1px solid #e1e9ed}
+.country-intro{padding:62px clamp(32px,5.1vw,80px);display:flex;flex-direction:column;justify-content:center;z-index:2;position:relative}
+.breadcrumbs{font-size:11px;color:#608093;font-weight:680;margin-bottom:27px}.breadcrumbs button{border:0;background:none;font:inherit;color:#197397;padding:0;text-decoration:underline;text-underline-offset:3px}
+.country-intro h1{font-size:clamp(50px,5.7vw,88px);line-height:.98;font-weight:820;letter-spacing:-.072em;color:#0d3149;margin:9px 0 14px}
+.country-intro p{font-size:17px;color:#466c80}.country-intro .eyebrow{color:#137fa8}
+.country-meta{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:31px}.country-meta span{font-size:12px;color:#386176}.country-meta strong{font-weight:850;color:#163b53}
+.country-photo{position:relative;overflow:hidden;background:#9cbccc}
+.country-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 52%}
+.country-photo:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#fff 0,#fff0 35%,#071d3300 60%,#071d3360 100%);z-index:1;pointer-events:none}
+.photo-credit{position:absolute;right:17px;bottom:12px;z-index:2;padding:7px 10px;border-radius:6px;background:#021d30b8;color:#fff;font-size:10px}.photo-credit a{color:#fff}
+.country-tabs{position:sticky;top:0;z-index:4;background:#ffffffed;backdrop-filter:blur(14px);border-bottom:1px solid #e3ecf0}
+.country-tabs-inner{max-width:1300px;margin:auto;padding:0 48px;display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}.country-tabs-inner button{border:0;background:none;padding:18px 23px;font-size:13px;color:#5c7886;font-weight:740;white-space:nowrap;border-bottom:3px solid transparent}.country-tabs-inner button[aria-selected=true]{color:#076da5;border-bottom-color:#09a3d9}.country-tabs-inner button:hover{color:#006d9c}
+.country-body{max-width:1300px;margin:auto;padding:48px 48px 90px;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,.75fr);gap:46px}
+.section-header{display:flex;align-items:start;justify-content:space-between;gap:20px;margin-bottom:27px}.section-header h2{font-size:clamp(27px,3vw,40px);line-height:1.12;letter-spacing:-.047em;margin-top:8px}.section-header p{font-size:13px;line-height:1.6;color:#68808e;max-width:370px}
+.facts-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid #dfe8ed;border-bottom:1px solid #dfe8ed;margin:22px 0 42px}
+.fact{padding:25px 22px 24px 0}.fact+.fact{border-left:1px solid #e1e8ed;padding-left:22px}.fact .fact-label{font-size:10px;letter-spacing:.10em;text-transform:uppercase;color:#79919e;font-weight:800;margin-bottom:9px}.fact strong{font-size:20px;color:#163b50;letter-spacing:-.035em}.fact small{font-size:11px;color:#6c8290;display:block;line-height:1.4;margin-top:6px}
+.profile-flow{display:grid;grid-template-columns:1.05fr .95fr;gap:20px}.flow-feature{background:#eaf4f7;padding:29px;border-radius:14px;min-height:228px;display:flex;flex-direction:column;align-items:flex-start}.flow-feature .eyebrow{margin-bottom:17px}.flow-feature h3{font-size:25px;letter-spacing:-.043em;max-width:310px}.flow-feature p{font-size:13px;line-height:1.6;color:#547384;max-width:340px;margin:10px 0 18px}
+.flow-stack{display:grid;gap:12px}.flow-tile{background:#fff;padding:20px 24px;border:1px solid #dfe9ed;border-radius:11px;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:14px;color:#103b54}
+.flow-tile:hover{border-color:#83c1dd}.flow-tile h4{font-size:15px;letter-spacing:-.015em}.flow-tile small{display:block;margin-top:5px;color:#667f8d;font-size:11px;line-height:1.4}.flow-tile .tile-arrow{font-size:21px;color:#1379ad}
+.context-side{border-left:1px solid #e4ebef;padding-left:31px}.context-side h3{font-size:18px;letter-spacing:-.03em;margin-bottom:15px}.context-side p{font-size:12px;color:#5e7a87;line-height:1.7;margin-bottom:20px}
+.source-note{border-top:1px solid #dee8eb;padding-top:16px;margin-top:12px}.source-note summary{cursor:pointer;color:#1a718f;font-size:12px;font-weight:750}.source-note p{margin:12px 0 0}.source-note a{font-size:11px;color:#0c729f}
+.context-link{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-top:1px solid #e1e9ed;gap:10px;text-decoration:none;font-size:12px;font-weight:800;color:#205d7a}
+.context-link:last-child{border-bottom:1px solid #e1e9ed}
+.context-link small{color:#7a8b97;font-size:10px;font-weight:550}
+.context-link button{border:none;background:none;color:#0b789e;font-weight:850}
+.inner-panel{display:none}.inner-panel[data-visible=true]{display:block}
+.status-line{background:#f1f6f8;padding:15px 18px;border-left:3px solid #62a9c5;font-size:12px;color:#507181;line-height:1.55;margin:22px 0}
+.structured-table{width:100%;border-collapse:collapse;font-size:12px;color:#294e63;text-align:left;margin:17px 0 22px}.structured-table th{color:#77909d;font-weight:750;text-transform:uppercase;letter-spacing:.065em;font-size:10px;padding:13px 8px;border-bottom:1px solid #dfe9ee}.structured-table td{padding:18px 8px;border-bottom:1px solid #e7eef1;line-height:1.5}.structured-table td:first-child{font-weight:760}
+.method-rail{margin-top:28px;display:flex;gap:13px;align-items:center;flex-wrap:wrap;color:#69808d;font-size:11px}
+.outline-stage{min-height:245px;background:linear-gradient(#fbfdfd,#f1f6f7);border:1px solid #e0e8ed;border-radius:14px;padding:27px;display:flex;flex-direction:column;justify-content:center}
+.outline-stage strong{font-size:16px;color:#1b4661;margin-bottom:10px}.outline-stage p{font-size:12px;color:#6c8190;line-height:1.65;max-width:480px}
+.outline-stage svg{max-width:100%;height:auto;margin:5px auto 12px;opacity:.7}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:100px;background:#edf5f8;color:#406d7e;font-size:10px;font-weight:750}
+.badge-muted{display:inline-flex;align-items:center;background:#f3f5f6;color:#617987;font-weight:750;font-size:10px;border-radius:100px;padding:6px 9px}
+.module-rows{display:grid;gap:12px}.module-row{padding:21px;border-top:1px solid #dae7ec;display:flex;align-items:center;justify-content:space-between;gap:15px}.module-row strong{font-size:14px}.module-row p{font-size:11px;color:#66808c;margin-top:6px;max-width:380px}
+.minor-link{border:0;background:none;color:#006d9d;font-size:11px;font-weight:800;text-decoration:underline}
+.no-results{font-size:12px;color:#777;padding:13px 0}
+/* OTHER PAGES share country context; not another brand */
+.work-header{padding:58px 48px 28px;max-width:1300px;margin:auto}.work-header .crumb{font-size:11px;color:#5a8090}.work-header h1{font-size:clamp(39px,4vw,62px);margin:14px 0;line-height:1;letter-spacing:-.059em}.work-header p{max-width:690px;color:#66818c;line-height:1.65;font-size:14px}
+.work-layout{max-width:1300px;margin:auto;padding:22px 48px 82px;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.72fr);gap:34px}
+.data-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}.data-cell{padding:25px;background:#fff;border:1px solid #e0e8ec;border-radius:13px;min-height:185px;display:flex;flex-direction:column;justify-content:space-between}
+.data-cell .eyebrow{letter-spacing:.09em}.data-cell h3{font-size:18px;letter-spacing:-.035em;margin-top:10px}.data-cell p{font-size:12px;line-height:1.58;color:#718590}
+.data-cell .status{font-size:11px;color:#1a7b9d;font-weight:800}
+.secondary-column{border-left:1px solid #dbe6eb;padding-left:30px}.secondary-column h3{font-size:20px;margin-bottom:15px}.secondary-column p{font-size:12px;line-height:1.7;color:#65818f;margin-bottom:20px}
+.expert-table{width:100%;border-collapse:collapse;background:#fff}.expert-table td,.expert-table th{text-align:left;padding:15px 18px;border-bottom:1px solid #e3edf1;font-size:12px}.expert-table th{color:#75919e;font-size:10px;letter-spacing:.1em;text-transform:uppercase}.expert-table td:first-child{font-weight:800}
+.comparison-bar{border:1px solid #d7e5eb;border-radius:13px;background:#fff;padding:22px;display:flex;gap:18px;justify-content:space-between;align-items:center;flex-wrap:wrap}.compare-country{min-width:135px}.compare-country strong{font-size:19px}.compare-country small{display:block;font-size:11px;color:#708892;margin-top:5px}
+.concept-note{font-size:11px;color:#718691;padding:15px 0 0;line-height:1.55}
+/* B: DOCUMENTARY; not just different colors — map becomes a bounded stage,
+   content moves into a high-contrast editorial document. */
+#app[data-concept=b]{--paper:#f7f8f5;--navy:#1b3342;--blue:#177b9e;--line:#dce6e6}
+#app[data-concept=b] .sitebar{height:86px;background:#f9faf7}
+#app[data-concept=b] .home-hero{min-height:535px;background:#f7f9f7;color:#153746;border-bottom:1px solid #dae8eb}
+#app[data-concept=b] .home-hero .hero-grid{min-height:535px;grid-template-columns:1.12fr .88fr}
+#app[data-concept=b] .hero-title{color:#153746;max-width:630px;font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.055em}
+#app[data-concept=b] .hero-title em{color:#056f91}
+#app[data-concept=b] .hero-kicker{color:#02779d}
+#app[data-concept=b] .hero-subtitle{color:#567685}
+#app[data-concept=b] .hero-actions .btn-primary{background:#0a5575;border-color:#0a5575;color:#fff}
+#app[data-concept=b] .hero-actions .btn-outline{background:#fff;color:#24586c;border-color:#bcd4de}
+#app[data-concept=b] .earth-stage{height:450px;border-radius:18px;background:radial-gradient(circle at 50% 48%,#0f3e60 0,#081e37 43%,#041325 100%);margin:25px 0}
+#app[data-concept=b] .earth-img{width:min(78%,385px)}
+#app[data-concept=b] .eye-open-arc{width:min(96%,470px)}
+#app[data-concept=b] .country-hero{min-height:360px;grid-template-columns:1.22fr .78fr;background:#f9faf7}
+#app[data-concept=b] .country-intro h1{font-family:Georgia,serif;font-weight:600;letter-spacing:-.06em;font-size:clamp(58px,6vw,100px)}
+#app[data-concept=b] .country-photo:before{background:linear-gradient(90deg,#f9faf7 0,transparent 18%,transparent 74%,#0b263245)}
+#app[data-concept=b] .country-body{grid-template-columns:minmax(0,1.8fr) minmax(250px,.66fr);gap:50px}
+#app[data-concept=b] .section-header h2,#app[data-concept=b] .work-header h1{font-family:Georgia,serif;font-weight:500;letter-spacing:-.04em}
+#app[data-concept=b] .flow-feature{background:#eef3f0}
+#app[data-concept=b] .journey{border-radius:7px;box-shadow:none;border-top:3px solid #d4e2e4}
+#app[data-concept=b] .journey--featured{border-top-color:#1e7898}
+/* C: WORKBENCH; a more analytical dense composition with an always-on
+   navigation rail and modular context, still no false indicators. */
+#app[data-concept=c]{--paper:#ecf2f6;--navy:#091a30;--blue:#1679ad;--line:#d7e3e9}
+#app[data-concept=c] .sitebar{background:#071d33;color:#fff;border-bottom:1px solid #20445c}
+#app[data-concept=c] .brand-wordmark strong{color:#fff}
+#app[data-concept=c] .brand-wordmark small{color:#a6c8dd}
+#app[data-concept=c] .primary-nav button{color:#b9d0de}
+#app[data-concept=c] .primary-nav button[aria-current=page]{color:#7cd6ef}
+#app[data-concept=c] .utility .search-trigger{background:#1a3a52;border-color:#365c70;color:#e1f5ff}
+#app[data-concept=c] .utility .user-trigger{background:#1a3a52;color:#fff;border-color:#365c70}
+#app[data-concept=c] .home-hero{min-height:530px;background:linear-gradient(115deg,#071c31,#0b3855)}
+#app[data-concept=c] .home-hero .hero-grid{min-height:530px;grid-template-columns:.9fr 1.1fr}
+#app[data-concept=c] .hero-title{font-size:clamp(50px,5vw,75px)}
+#app[data-concept=c] .earth-stage{height:500px}
+#app[data-concept=c] .earth-img{width:460px}
+#app[data-concept=c] .country-hero{background:#071d32;color:#fff;grid-template-columns:1.07fr .93fr;min-height:316px}
+#app[data-concept=c] .country-intro{padding:42px 65px}
+#app[data-concept=c] .country-intro h1{font-size:clamp(51px,5.3vw,77px);color:#fff}
+#app[data-concept=c] .country-intro p,#app[data-concept=c] .country-meta span{color:#a7c8d8}
+#app[data-concept=c] .country-meta strong{color:#fff}
+#app[data-concept=c] .country-tabs{background:#f8fbfd}
+#app[data-concept=c] .country-body{grid-template-columns:minmax(0,1.52fr) minmax(290px,.8fr);gap:23px}
+#app[data-concept=c] .context-side{border:0;background:#fff;border-radius:14px;padding:30px}
+#app[data-concept=c] .flow-feature{background:#e4f3f9}
+#app[data-concept=c] .facts-strip{margin-bottom:24px}
+#app[data-concept=c] .work-layout{grid-template-columns:minmax(0,1.65fr) minmax(290px,.8fr)}
+#app[data-concept=c] .secondary-column{background:#fff;border:0;border-radius:14px;padding:24px}
+#app[data-concept=c] .data-cell{border-radius:7px;min-height:160px}
+@media(max-width:1100px){
+ .primary-nav{gap:12px}.country-tabs-inner,.country-body,.work-layout,.work-header{padding-left:27px;padding-right:27px}
+ .page-width{padding-left:30px;padding-right:30px}
+ .country-body{gap:25px}.context-side{padding-left:24px}
+ .hero-title{font-size:63px}.earth-stage{height:460px}
+ .hero-grid{gap:0}
+}
+@media(max-width:760px){
+ .labbar{padding:12px 14px}.lab-label{font-size:11px}.lab-controls{width:100%;justify-content:space-between}.lab-controls button{flex:1;padding:9px 6px;font-size:10px}
+ .sitebar{height:64px;padding:0 18px}.brand-symbol{width:46px;height:33px}.brand-wordmark strong{font-size:16px}.brand-wordmark small{font-size:9px}
+ .primary-nav{display:none}.utility{gap:6px}.utility .search-trigger{font-size:0;width:38px;height:38px;display:grid;place-items:center;padding:0}.utility .search-trigger .icon{font-size:15px}.utility .user-trigger{width:35px}
+ .page-width{padding:0 20px}.home-hero{min-height:0}.home-hero .hero-grid{padding:0 20px 24px;min-height:0;display:flex;flex-direction:column-reverse;align-items:stretch;gap:0}
+ .hero-copy{max-width:none;margin:0}.hero-kicker{font-size:9px;margin-bottom:13px}.hero-title{font-size:clamp(39px,11vw,57px);margin-bottom:14px;line-height:1.02}
+ .hero-subtitle{font-size:13px;line-height:1.55}.hero-actions{margin-top:21px;gap:8px}.hero-actions .btn-primary,.hero-actions .btn-outline{padding:10px 13px;min-height:43px;font-size:11px;flex:1}
+ .earth-stage{height:310px;max-width:450px;width:100%;align-self:center;margin:0}.earth-img{width:min(78%,300px)}.eye-open-arc{width:min(104%,375px)}
+ .earth-caption{bottom:8px;right:3px;font-size:8px}.earth-pin{font-size:10px;top:39%;left:52%}
+ .home-ribbon{padding:14px 0}.ribbon-inner{gap:12px;flex-wrap:wrap}.ribbon-inner span,.ribbon-inner .ribbon-link{font-size:10px}
+ .section-intro{padding-top:35px;padding-bottom:21px;display:block}.section-intro h2{font-size:30px}.section-intro p{margin-top:11px;font-size:12px}
+ .journeys{grid-template-columns:1fr;padding-bottom:42px;gap:11px}.journey{min-height:146px;padding:19px}.journey h3{font-size:21px}.journey p{font-size:12px}.journey .arrow{font-size:20px}
+ .country-hero{grid-template-columns:1fr;min-height:0;display:flex;flex-direction:column-reverse}
+ .country-intro{padding:26px 22px 28px}.country-intro h1{font-size:58px;letter-spacing:-.055em}.country-intro .eyebrow{font-size:9px}.country-intro p{font-size:13px}
+ .country-photo{height:188px}.country-photo:before{background:linear-gradient(0deg,#061a2b26,#061a2b00)}
+ .photo-credit{font-size:8px;right:8px;bottom:8px}.breadcrumbs{margin-bottom:15px;font-size:10px}
+ .country-meta{margin-top:17px;gap:9px}.country-meta span{font-size:11px}
+ .country-tabs-inner{padding:0 12px;gap:4px}.country-tabs-inner button{padding:15px 12px;font-size:11px}
+ .country-body{padding:26px 21px 49px;grid-template-columns:1fr;gap:34px}
+ .section-header{display:block;margin-bottom:17px}.section-header h2{font-size:30px}.section-header p{font-size:12px;margin-top:10px}
+ .facts-strip{grid-template-columns:1fr 1fr 1fr;margin:17px 0 28px}.fact{padding:15px 10px 15px 0}.fact+.fact{padding-left:10px}.fact .fact-label{font-size:9px;line-height:1.3}.fact strong{font-size:14px;line-height:1.3}.fact small{font-size:9px}
+ .profile-flow{grid-template-columns:1fr;gap:12px}.flow-feature{min-height:190px;padding:21px}.flow-feature h3{font-size:23px}.flow-feature p{font-size:12px}
+ .flow-tile{padding:16px 19px}.flow-tile h4{font-size:14px}
+ .context-side{border:0;border-top:1px solid #dce7eb;padding:25px 0 0}
+ .work-header{padding:36px 21px 17px}.work-header h1{font-size:41px}.work-header p{font-size:12px}
+ .work-layout{grid-template-columns:1fr;padding:0 21px 54px;gap:25px}.data-grid{grid-template-columns:1fr 1fr;gap:8px}.data-cell{padding:17px;min-height:180px}
+ .data-cell h3{font-size:16px}.data-cell p{font-size:11px}.secondary-column{border:0;border-top:1px solid #d7e5ec;padding:25px 0 0}
+ .comparison-bar{padding:15px;gap:12px}.compare-country{min-width:110px}.compare-country strong{font-size:16px}
+ .vision-footer{padding:20px;gap:7px;font-size:10px}
+ #app[data-concept=b] .home-hero{min-height:0}#app[data-concept=b] .home-hero .hero-grid{min-height:0;display:flex;flex-direction:column-reverse}
+ #app[data-concept=b] .earth-stage{height:278px;margin:15px 0 19px}#app[data-concept=b] .earth-img{width:225px}
+ #app[data-concept=b] .hero-title{font-size:43px}
+ #app[data-concept=b] .country-intro h1{font-size:63px}
+ #app[data-concept=c] .home-hero .hero-grid{min-height:0;display:flex;flex-direction:column-reverse}
+ #app[data-concept=c] .earth-stage{height:290px}#app[data-concept=c] .earth-img{width:265px}
+ #app[data-concept=c] .country-intro{padding:24px 21px}#app[data-concept=c] .country-intro h1{font-size:53px}
+ #app[data-concept=c] .country-body{display:block}#app[data-concept=c] .context-side{padding:20px;margin-top:26px}
+}
+@media(max-width:380px){.facts-strip{grid-template-columns:1fr 1fr}.fact:nth-child(3){border-left:0;padding-left:0;border-top:1px solid #e3edf0;grid-column:span 2}.hero-title{font-size:39px}.earth-stage{height:275px}.lab-disclosure{font-size:10px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.journey{transition:none}}
+</style>
+</head>
+<body>
+<div class="labbar" role="region" aria-label="Laboratoire de comparaison artistique">
+  <div class="lab-label">WORLD-VISION <span>· DIRECTION ARTISTIQUE · ÉTUDE NON APPROUVÉE</span></div>
+  <div class="lab-controls" role="group" aria-label="Comparer trois compositions">
+    <button type="button" data-concept-select="a" aria-pressed="true">A · Atlas vivant</button>
+    <button type="button" data-concept-select="b" aria-pressed="false">B · Documentaire</button>
+    <button type="button" data-concept-select="c" aria-pressed="false">C · Atelier</button>
+  </div>
+  <div class="lab-disclosure"><strong>Prototype</strong> — images illustratives. Pas de globe interactif ni de données live dans cette étude.</div>
+</div>
+<div id="app" data-concept="a">
+<header class="sitebar">
+ <div class="brand" aria-label="World-Vision, voir le monde le comprendre">
+   <!-- CONCEPT ONLY: open eye arcs; not a substitute for the owner's official vector asset. -->
+   <svg class="brand-symbol" viewBox="0 0 90 64" aria-hidden="true">
+    <defs><radialGradient id="mark-ocean"><stop stop-color="#38c7e7"/><stop offset=".7" stop-color="#0765b6"/><stop offset="1" stop-color="#043c80"/></radialGradient></defs>
+    <path d="M3 30 Q45 -8 87 30" stroke="#0b719f" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <path d="M3 36 Q45 74 87 36" stroke="#0b719f" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <path d="M6 29 Q45 -3 84 29" stroke="#fdfefe" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <path d="M6 37 Q45 69 84 37" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <circle cx="45" cy="32" r="25" fill="url(#mark-ocean)" stroke="#d4faff" stroke-width="1.4"/>
+    <path d="M34 15l-8 15 8 6 6 15 12-3 1-15-9-9zm15 2 9 8-2 9 10 6 4-11-5-11" fill="#32905a" opacity=".85"/>
+   </svg>
+   <div class="brand-wordmark"><strong>World-Vision</strong><small>Voir le monde, le comprendre.</small></div>
+ </div>
+ <nav class="primary-nav" aria-label="Navigation conceptuelle">
+   <button type="button" data-go="home" aria-current="page">Explorer</button>
+   <button type="button" data-go="country">Pays & régions</button>
+   <button type="button" data-go="compare">Comparer</button>
+   <button type="button" data-go="markets">Marchés</button>
+ </nav>
+ <div class="utility"><button type="button" class="search-trigger" data-go="home" aria-label="Rechercher un pays"><span class="icon" aria-hidden="true">⌕</span> Rechercher</button><button class="user-trigger" type="button" title="Compte non connecté dans la maquette" aria-label="Compte : maquette non connectée" disabled>◯</button></div>
+</header>
+<main class="content">
+<!-- SAME HOME/COUNTRY CONTENT across A/B/C: composition alone changes -->
+<section class="page" id="screen-home" data-visible="true" aria-label="Accueil prototype">
+ <div class="home-hero">
+  <div class="hero-grid page-width">
+   <div class="hero-copy">
+    <div class="hero-kicker">Un monde à explorer, des faits à comprendre</div>
+    <h1 class="hero-title">Le monde.<br><em>Sous un autre regard.</em></h1>
+    <p class="hero-subtitle">Explorez un pays, confrontez les données et leurs sources, puis retrouvez les outils qui éclairent vos décisions.</p>
+    <div class="hero-actions"><button class="btn-primary" type="button" data-go="country">Découvrir le Gabon <span aria-hidden="true">↗</span></button><button class="btn-outline" type="button" data-go="compare">Comparer les pays <span aria-hidden="true">→</span></button></div>
+   </div>
+   <div class="earth-stage" role="img" aria-label="Photographie historique de la Terre vue d'Apollo 17, centrée sur l'Afrique. Image illustrative uniquement, pas un globe actif.">
+     <div class="earth-halo"></div><div class="halo-line"></div>
+     <img class="earth-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/1024px-The_Earth_seen_from_Apollo_17.jpg" alt="" decoding="async" loading="eager">
+     <svg class="eye-open-arc" viewBox="0 0 620 430" aria-hidden="true">
+       <path d="M8 213 Q310 -30 612 213" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+       <path d="M8 228 Q310 467 612 228" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+       <path d="M8 208 Q310 -26 612 208" fill="none" stroke="#79dfff" stroke-opacity=".77" stroke-width="1.8"/>
+       <path d="M8 232 Q310 463 612 232" fill="none" stroke="#79dfff" stroke-opacity=".77" stroke-width="1.8"/>
+     </svg>
+     <div class="earth-caption">Terre : NASA · Apollo 17 (1972), image illustrative <a href="https://www.nasa.gov/nasa-brand-center/images-and-media/" target="_blank" rel="noopener noreferrer">droits</a></div>
+   </div>
+  </div>
+ </div>
+ <div class="home-ribbon"><div class="page-width ribbon-inner"><span><strong>Une Terre. Plusieurs manières de comprendre.</strong> · Sources nationales, régionales et internationales, sans hiérarchie imposée.</span><a href="#" class="ribbon-link" data-go="country">Explorer le parcours →</a></div></div>
+ <div class="section-intro page-width"><div><span class="eyebrow">Votre point de départ</span><h2>Que souhaitez-vous explorer ?</h2></div><p>Chaque entrée mène à une vraie famille d'outils. Les fonctions non connectées restent clairement signalées.</p></div>
+ <div class="journeys page-width">
+   <button class="journey journey--featured" type="button" data-go="country"><span class="journey-index">01 · ATLAS</span><div><h3>Un pays, dans toutes ses dimensions</h3><p>Géographie, institutions, chiffres, méthodes, comparaisons et services réunis.</p></div><span class="arrow" aria-hidden="true">↗</span></button>
+   <button class="journey" type="button" data-go="markets"><span class="journey-index">02 · MARCHÉS</span><div><h3>Observer les marchés</h3><p>Recherche macro et scénarios documentés. Pas de cours fictifs.</p></div><span class="arrow" aria-hidden="true">↗</span></button>
+   <button class="journey" type="button" data-go="compare"><span class="journey-index">03 · COMPARER</span><div><h3>Comprendre les écarts</h3><p>Comparer des pays à partir de méthodes et périodes compatibles.</p></div><span class="arrow" aria-hidden="true">↗</span></button>
+ </div>
+</section>
+<section class="page" id="screen-country" data-visible="false" aria-label="Fiche pays conceptuelle">
+ <div class="country-hero">
+  <div class="country-intro">
+    <div class="breadcrumbs"><button type="button" data-go="home">Atlas</button> &nbsp;/&nbsp; Afrique &nbsp;/&nbsp; Gabon</div>
+    <span class="eyebrow">Fiche pays · Afrique centrale</span>
+    <h1>Gabon</h1>
+    <p>Découvrir le territoire, comprendre ses réalités.</p>
+    <div class="country-meta"><span><strong>GAB</strong> · Code pays</span><span>🇬🇦 &nbsp;Afrique centrale</span></div>
+  </div>
+  <div class="country-photo">
+   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Libreville_bord_de_mer.jpg/1280px-Libreville_bord_de_mer.jpg" alt="Vue du front de mer de Libreville, Gabon" loading="eager" decoding="async">
+   <span class="photo-credit">Libreville · <a target="_blank" rel="noopener noreferrer" href="https://commons.wikimedia.org/wiki/File:Libreville_bord_de_mer.jpg">Shirmy25 · CC BY-SA 4.0</a></span>
+  </div>
+ </div>
+ <div class="country-tabs"><nav class="country-tabs-inner" aria-label="Rubriques du pays">
+   <button type="button" data-section="overview" aria-selected="true">Vue d'ensemble</button><button type="button" data-section="data" aria-selected="false">Données</button><button type="button" data-section="compare" aria-selected="false">Comparer</button><button type="button" data-section="sources" aria-selected="false">Sources</button><button type="button" data-section="news" aria-selected="false">Actualités</button><button type="button" data-section="services" aria-selected="false">Services</button>
+ </nav></div>
+ <div class="country-body">
+  <div>
+   <article class="inner-panel" data-section-panel="overview" data-visible="true">
+     <div class="section-header"><div><span class="eyebrow">01 / Repères et territoire</span><h2>Comprendre le Gabon</h2></div><p>Un pays se découvre d’abord par son territoire, ses institutions et ses habitants. Les autres dimensions se consultent ensuite, à votre rythme.</p></div>
+     <div class="facts-strip">
+       <div class="fact"><p class="fact-label">Capitale</p><strong>Libreville</strong><small>Banque mondiale · Répertoire géographique</small></div>
+       <div class="fact"><p class="fact-label">Grande région</p><strong>Afrique subsaharienne</strong><small>Classement géographique Banque mondiale</small></div>
+       <div class="fact"><p class="fact-label">Groupe de revenu</p><strong>Intermédiaire supérieur</strong><small>Classification Banque mondiale</small></div>
+     </div>
+     <div class="profile-flow">
+       <div class="flow-feature"><span class="eyebrow">Explorer les données</span><h3>Des chiffres avec leur histoire, pas seulement des valeurs.</h3><p>Périodes, méthodes et organismes d'origine : chaque indicateur doit pouvoir s'expliquer.</p><button class="text-action" type="button" data-section="data">Accéder aux indicateurs <span>↗</span></button></div>
+       <div class="flow-stack">
+         <button class="flow-tile" type="button" data-section="compare"><span><h4>Comparer avec un autre pays</h4><small>Périodes, méthodes et sources communes</small></span><span class="tile-arrow" aria-hidden="true">↗</span></button>
+         <button class="flow-tile" type="button" data-section="sources"><span><h4>Consulter les sources</h4><small>Nationales, régionales, internationales</small></span><span class="tile-arrow" aria-hidden="true">↗</span></button>
+         <button class="flow-tile" type="button" data-section="services"><span><h4>Accéder aux outils du pays</h4><small>Devises, sécurité et services disponibles</small></span><span class="tile-arrow" aria-hidden="true">↗</span></button>
+       </div>
+     </div>
+   </article>
+   <article class="inner-panel" data-section-panel="data" data-visible="false">
+     <div class="section-header"><div><span class="eyebrow">02 / Statistiques</span><h2>Les données du Gabon</h2></div><p>Économie, santé, gouvernance, marchés et projections, sans confondre dernier millésime et temps réel.</p></div>
+     <div class="outline-stage"><strong>Un indicateur doit toujours expliquer d'où il vient.</strong><p>Cette maquette démontre la composition et les niveaux de lecture. Elle n'est pas connectée à Timeseries : aucun nombre fictif n'est affiché.</p><svg viewBox="0 0 520 86" aria-hidden="true"><path d="M8 75H512M8 40H512M8 8H512" stroke="#afcbd9" stroke-dasharray="4 6"/><path d="M8 60C60 56 83 32 133 35S223 65 280 43S376 29 421 17S480 37 512 12" fill="none" stroke="#267d9e" stroke-width="3" stroke-linecap="round" opacity=".55"/></svg></div>
+     <div class="module-rows"><div class="module-row"><div><strong>Économie</strong><p>Dernière observation, unité, organisme et révision</p></div><span class="badge-muted">Service à raccorder</span></div><div class="module-row"><div><strong>Santé et développement</strong><p>Séries comparables et limites de couverture</p></div><span class="badge-muted">Service à raccorder</span></div><div class="module-row"><div><strong>Finances et marchés</strong><p>Indicateurs et calendrier selon licences</p></div><span class="badge-muted">Service à raccorder</span></div></div>
+   </article>
+   <article class="inner-panel" data-section-panel="compare" data-visible="false"><div class="section-header"><div><span class="eyebrow">03 / Comparaison</span><h2>Mettre les pays en regard</h2></div><p>Une comparaison n'est valable que si les périmètres, périodes et définitions sont compatibles.</p></div><div class="comparison-bar"><div class="compare-country"><strong>🇬🇦 Gabon</strong><small>Libreville</small></div><span class="muted">versus</span><div class="compare-country"><strong>🇫🇷 France</strong><small>Paris</small></div><button class="btn-outline" type="button" disabled title="Prototype sans données connectées">Choisir une série</button></div><div class="status-line">Les métadonnées géographiques ne suffisent pas à générer une comparaison statistique. Aucune valeur n'est inventée.</div></article>
+   <article class="inner-panel" data-section-panel="sources" data-visible="false"><div class="section-header"><div><span class="eyebrow">04 / Preuves</span><h2>Qui produit l'information ?</h2></div><p>Des sources différentes peuvent décrire des territoires, périodes et méthodes différentes.</p></div><table class="structured-table"><thead><tr><th>Organisme</th><th>Portée</th><th>Statut dans la maquette</th></tr></thead><tbody><tr><td>Statistique nationale du Gabon</td><td>Nationale</td><td>Registre à consulter</td></tr><tr><td>BEAC</td><td>Régionale</td><td>Registre à consulter</td></tr><tr><td>Banque mondiale</td><td>Internationale</td><td>Métadonnées géographiques</td></tr></tbody></table><p class="tiny muted">Aucun statut de collecte ou de vérification n'est affirmé pour les deux premières lignes.</p></article>
+   <article class="inner-panel" data-section-panel="news" data-visible="false"><div class="section-header"><div><span class="eyebrow">05 / Actualités</span><h2>Actualités et dossiers</h2></div><p>Une rubrique du pays, pas la page d'accueil du pays.</p></div><div class="status-line">Aucun fil d'actualités nationales en direct n'est connecté à cette étude. Les dossiers documentaires historiques et les articles originaux doivent rester datés et consultables dans l'application réelle.</div></article>
+   <article class="inner-panel" data-section-panel="services" data-visible="false"><div class="section-header"><div><span class="eyebrow">06 / Services</span><h2>Outils liés au Gabon</h2></div><p>Comprendre un pays doit mener à des usages utiles et vérifiables.</p></div><div class="flow-stack"><button class="flow-tile" type="button" data-go="markets"><span><h4>Économie et marchés</h4><small>Analyses documentées · projets Trading distincts</small></span><span class="tile-arrow">↗</span></button><div class="flow-tile"><span><h4>Money-Vision</h4><small>Conversion et frais réels après vérification des sources</small></span><span class="badge-muted">Partiellement développé</span></div><div class="flow-tile"><span><h4>Voyage & sécurité</h4><small>Sources consulaires et fournisseurs non raccordés ici</small></span><span class="badge-muted">À connecter</span></div></div></article>
+  </div>
+  <aside class="context-side"><span class="eyebrow">Contexte du pays</span><h3>Une fiche. Plusieurs lectures.</h3><p>La carte, les chiffres, les méthodes et les outils doivent rester reliés au même pays. Les données manquantes ne signifient pas qu'il ne se passe rien.</p>
+   <a class="context-link" href="#" data-go="compare"><span>Comparer les territoires<br><small>Découvrir les différences de méthode</small></span><span>↗</span></a>
+   <a class="context-link" href="#" data-go="markets"><span>Passer aux marchés<br><small>Garder le contexte géographique</small></span><span>↗</span></a>
+   <details class="source-note"><summary>Provenance géographique et limites ↗</summary><p>Capitales, régions et groupes de revenus illustratifs issus des métadonnées World Bank Countries API. Snapshot étudié pour le logiciel U2, sans données statistiques live dans ce concept.</p><a href="https://api.worldbank.org/v2/country?format=json&per_page=400" target="_blank" rel="noopener noreferrer">Ouvrir la source originale ↗</a></details>
+   <p class="concept-note">Les chiffres et offres commerciales ne sont volontairement pas simulés. Les photos et le globe sont des images de référence, pas des implémentations de moteur cartographique.</p>
+  </aside>
+ </div>
+</section>
+<section class="page" id="screen-compare" data-visible="false" aria-label="Comparaison conceptuelle">
+ <div class="work-header"><p class="crumb">ATLAS / Gabon / Comparaison</p><span class="eyebrow">Sources & périodes</span><h1>Comparer sans simplifier.</h1><p>World-Vision doit rendre visible ce qui est comparable, ce qui ne l'est pas, et pourquoi une moyenne ne doit parfois pas être calculée.</p></div>
+ <div class="work-layout"><div><div class="comparison-bar"><div class="compare-country"><strong>🇬🇦 Gabon</strong><small>Repères disponibles</small></div><div class="compare-country"><strong>🇫🇷 France</strong><small>Repères disponibles</small></div><button class="btn-outline" type="button" data-go="country">Revenir au Gabon</button></div><div class="status-line">Aucune série statistique n'est raccordée à cette maquette. Les territoires sont illustrés, les périodes ne sont pas inventées.</div><div class="outline-stage"><strong>Visualiser une divergence, avec ses causes.</strong><p>La version finale doit montrer les données par source, la période et l'unité avant toute interprétation.</p></div></div><aside class="secondary-column"><span class="eyebrow">Méthode</span><h3>Une moyenne n'est pas toujours honnête.</h3><p>Même un chiffre plausible peut être incorrect s'il agrège des définitions et périmètres différents. Chaque organisme doit pouvoir être lu dans son contexte.</p><button type="button" class="btn-outline" data-go="country">Retourner à la fiche pays</button></aside></div>
+</section>
+<section class="page" id="screen-markets" data-visible="false" aria-label="Marchés conceptuels">
+ <div class="work-header"><p class="crumb">WORLD-VISION / UNIVERS / TRADING</p><span class="eyebrow">Un outil expert, une identité commune</span><h1>Les marchés, avec méthode.</h1><p>La recherche macro, les hypothèses, les publications et la gestion du risque doivent composer un atelier de décision humaine. Les fonctions Trading #120–#129 existent sur une branche distincte, non réunie à cette maquette.</p></div>
+ <div class="work-layout"><div><div class="section-header"><div><span class="eyebrow">Dossier macro</span><h2>Huit devises, plusieurs angles.</h2></div><p>Aucun cours ou signal de marché n'est produit ici.</p></div><table class="expert-table"><thead><tr><th>Devise</th><th>Contexte</th><th>Actualisation</th></tr></thead><tbody><tr><td>EUR · Euro</td><td>Politique monétaire et anticipations</td><td>Sources à ouvrir</td></tr><tr><td>USD · Dollar</td><td>Croissance et banque centrale</td><td>Sources à ouvrir</td></tr><tr><td>JPY · Yen</td><td>Régime macroéconomique</td><td>Sources à ouvrir</td></tr><tr><td>GBP · Livre</td><td>Scénarios et catalyseurs</td><td>Sources à ouvrir</td></tr></tbody></table><div class="status-line">Atelier de composition uniquement · flux de prix, calendrier sous licence, signaux et exécution NON connectés.</div></div><aside class="secondary-column"><span class="eyebrow">World-Vision Core</span><h3>Le contexte ne se perd pas.</h3><p>Depuis les marchés, revenir à la fiche d'un pays, à ses séries officielles et aux sources qui les produisent, sans changer de marque ni de compte.</p><button class="btn-outline" type="button" data-go="country">Retrouver le Gabon</button></aside></div>
+</section>
+</main>
+<footer class="vision-footer"><span>WORLD-VISION · Prototype de direction artistique · Non approuvé · 23.11.2026</span><span>Terre : NASA / Apollo 17 · Libreville : Shirmy25 CC BY-SA 4.0 · Données : aucun flux live</span><a href="https://www.nasa.gov/nasa-brand-center/images-and-media/" target="_blank" rel="noopener noreferrer">Conditions des images NASA</a></footer>
+</div>
+<script>
+(function(){
+  'use strict';
+  const app=document.getElementById('app');
+  const conceptButtons=Array.from(document.querySelectorAll('[data-concept-select]'));
+  const screens=['home','country','compare','markets'];
+  const topLinks=Array.from(document.querySelectorAll('.primary-nav [data-go]'));
+  const sectionButtons=Array.from(document.querySelectorAll('.country-tabs [data-section]'));
+  const panels=Array.from(document.querySelectorAll('[data-section-panel]'));
+  let screen='home';
+  function setConcept(value){
+    if(!['a','b','c'].includes(value))return;
+    app.dataset.concept=value;
+    conceptButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.conceptSelect===value)));
+    const q=new URL(location.href);q.searchParams.set('concept',value);history.replaceState(null,'',q);
+  }
+  function go(name){
+    if(!screens.includes(name))return;
+    screen=name;
+    document.querySelectorAll('.page').forEach(page=>page.dataset.visible=String(page.id==='screen-'+name));
+    topLinks.forEach(b=>b.setAttribute('aria-current',b.dataset.go===name?'page':'false'));
+    if(name==='country')setSection('overview',false);
+    window.scrollTo({top:0,behavior:'instant'});
+    const q=new URL(location.href);q.searchParams.set('screen',name);history.replaceState(null,'',q);
+  }
+  function setSection(name,scroll){
+    const names=['overview','data','compare','sources','news','services'];
+    if(!names.includes(name))return;
+    if(screen!=='country')go('country');
+    sectionButtons.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.section===name)));
+    panels.forEach(p=>p.dataset.visible=String(p.dataset.sectionPanel===name));
+    if(scroll!==false){
+      const tabs=document.querySelector('.country-tabs');const y=tabs.getBoundingClientRect().top+window.scrollY-4;
+      window.scrollTo({top:Math.max(0,y),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    }
+  }
+  document.addEventListener('click',function(e){
+    const btn=e.target.closest('[data-go],[data-section],[data-concept-select]');
+    if(!btn)return;
+    e.preventDefault();
+    if(btn.dataset.conceptSelect){setConcept(btn.dataset.conceptSelect);return;}
+    if(btn.dataset.section){setSection(btn.dataset.section,true);return;}
+    if(btn.dataset.go){go(btn.dataset.go);return;}
+  });
+  const u=new URL(location.href);
+  setConcept(u.searchParams.get('concept')||'a');
+  go(screens.includes(u.searchParams.get('screen'))?u.searchParams.get('screen'):'home');
+})();
+</script>
+</body>
+</html>
