@@ -31,12 +31,17 @@ function polygons(geometry: Geometry | null): number[][][][] {
  */
 function makeMapPaths(feature: Feature) {
   const polys = polygons(feature.geometry);
-  const positions = polys.flat(2);
-  if (!positions.length) return null;
-  const xs = positions.map(p => p[0]);
-  const ys = positions.map(p => p[1]);
-  const minX = Math.min(...xs), maxX = Math.max(...xs);
-  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  let points = 0;
+  // Never spread a high-resolution GeoJSON polygon into Math.min(...array).
+  // Some international borders exceed the JS argument-count limit.
+  for (const polygon of polys) for (const ring of polygon) for (const p of ring) {
+    if (!Number.isFinite(p[0]) || !Number.isFinite(p[1])) return null;
+    points++;
+    minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+    minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+  }
+  if (!points) return null;
   if (maxX - minX > 180 || !isFinite(maxX - minX) ||
     maxX === minX || maxY === minY) return null;
   // Preserve shape at higher latitudes without pretending to have relief.
