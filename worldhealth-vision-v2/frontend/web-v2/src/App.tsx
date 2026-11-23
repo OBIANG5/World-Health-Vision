@@ -42,7 +42,7 @@ import "./styles/world-editorial.css";
 import "./styles/world-electric.css";
 import "./styles/vision-hub.css";
 import "./styles/world-discovery.css";
-import "./styles/world-v3.css";
+// Import legacy country styles before the new Atlas design-system so that\n// lazy-loading CountryDrawer cannot overwrite contrast on the live page.\nimport "./styles/country.css";\nimport "./styles/country-editorial.css";\nimport "./styles/world-v3.css";
 import "./styles/world-v4.css";
 
 // ---------- Sélecteur de pays (popover) ----------
