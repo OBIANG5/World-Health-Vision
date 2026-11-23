@@ -10,6 +10,8 @@ import {directorBeatIssues,DIRECTOR_INTENTS} from "../../../../services/media-re
 import type {DirectorBeat,DirectorIntent} from "../../../../services/media-renderer/creative/director-beats.mjs";
 import {attentionCueIssues} from "../../../../services/media-renderer/creative/attention-cues.mjs";
 import type {SourceSoundCue} from "../../../../services/media-renderer/creative/attention-cues.mjs";
+import {wordCaptionIssues} from "../../../../services/media-renderer/creative/word-caption-contract.mjs";
+import type {WordCaption} from "../../../../services/media-renderer/creative/word-caption-contract.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
@@ -277,10 +279,17 @@ export default function CinematicProductionBoard() {
   const [filmReview,setFilmReview]=useState<{shotId:string;frame:number;requestId:number}|null>(null);
   const [directorBeats,setDirectorBeats]=useState<DirectorBeat[]>([]);
   const [soundCues,setSoundCues]=useState<SourceSoundCue[]>([]);
+  // These words come ONLY from the existing source-voice alignment CLI.
+  // No browser ASR, guessed timestamps or automatic script corrections.
+  const [wordCaptions,setWordCaptions]=useState<WordCaption[]>([]);
   const [newSfxFile,setNewSfxFile]=useState("");
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
+  const activeWordSpan=useMemo(()=>{
+    try{return reviewFrameRange({shots},selectedId,0).selectedShotSourceFrames;}
+    catch{return null;}
+  },[shots,selectedId]);
   const requiredNames=new Set([...shots.flatMap(s=>[s.mediaName,s.foregroundName]),voiceFile,musicFile,outroFile,...soundCues.map(cue=>cue.file)].filter(Boolean));
   const unresolvedAssets=[...requiredNames].filter(name=>!files.some(file=>file.name===name));
   const activeAsset=files.find(f=>f.name===active.mediaName);
@@ -357,9 +366,12 @@ export default function CinematicProductionBoard() {
   const duration=shotsDuration+(outroFile?90:0);
   const directorIssues=directorBeatIssues({shots,script,directorBeats},shotsDuration);
   const soundIssues=attentionCueIssues({soundCues},shotsDuration);
+  const wordIssues=wordCaptionIssues({script,voice:voiceFile?{file:voiceFile}:null,
+    captions:parsedCaptions.cues,wordCaptions},shotsDuration);
   const captionIssues=captionCueIssues(parsedCaptions.cues,shotsDuration);
   const captionValid=!parsedCaptions.error&&captionIssues.length===0;
-  const fullFilmCanRender=canExport&&captionValid&&soundIssues.length===0&&duration>0&&duration<=18000;
+  const fullFilmCanRender=canExport&&captionValid&&soundIssues.length===0&&
+    wordIssues.length===0&&duration>0&&duration<=18000;
 
   /**
    * Complete local timeline for editorial review — EXACT Remotion composition
@@ -403,7 +415,8 @@ export default function CinematicProductionBoard() {
         ...((shot.template==="geo_story"||shot.template==="country_focus")?{geo:buildGeo(shot)}:{})
       };
     }),
-    captions:parsedCaptions.cues,
+    captions:wordCaptions.length?[]:parsedCaptions.cues,
+    wordCaptions,
     soundCues:soundCues.map(cue=>({src:files.find(f=>f.name===cue.file)?.url??"",
       startFrame:cue.startFrame,durationFrames:cue.durationFrames,
       volume:cue.volume??0.25,label:cue.label})),
@@ -417,7 +430,7 @@ export default function CinematicProductionBoard() {
       ? {src:files.find(f=>f.name===outroFile)!.url,durationFrames:90}
       :null,
     visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
-  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues,soundCues]);
+  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues,soundCues,wordCaptions]);
   const importProject=async(e:ChangeEvent<HTMLInputElement>)=>{
     const file=e.currentTarget.files?.[0];
     e.currentTarget.value="";
@@ -441,6 +454,7 @@ export default function CinematicProductionBoard() {
       setFilmReview(null);
       setDirectorBeats(saved.directorBeats??[]);
       setSoundCues(saved.soundCues??[]);
+      setWordCaptions(saved.wordCaptions??[]);
       setFeedback("Projet repris : "+restored.length+" plan(s), "+(saved.captions?.length??0)+" sous-titre(s). "+
         (missing.length?"Réimporte les médias d'origine avant le rendu : "+missing.join(", "):"Médias correspondants déjà présents dans cette session."));
     }catch(error){setFeedback("Import refusé. Le montage en cours reste inchangé. "+
@@ -588,6 +602,10 @@ export default function CinematicProductionBoard() {
     }
   };
   const exportProject=()=>{
+    if(wordIssues.length){
+      setFeedback("Alignement vocal invalide : "+wordIssues[0].field+" — "+wordIssues[0].reason);
+      return;
+    }
     if(soundIssues.length){
       setFeedback("Corrige les SFX sourcés avant export : "+soundIssues[0].field+" — "+soundIssues[0].reason);
       return;
@@ -602,7 +620,8 @@ export default function CinematicProductionBoard() {
     const project={
       schema_version:"worldvision-creative-project-v1",id:loadedProjectId??mkSlug(projectName),
       title:projectName,script,fps:30,aspect_ratio:"9:16",
-      ...(parsedCaptions.cues.length?{captions:parsedCaptions.cues}:{}),
+      ...(wordCaptions.length?{wordCaptions}:{}),
+      ...(parsedCaptions.cues.length&&!wordCaptions.length?{captions:parsedCaptions.cues}:{}),
       ...(directorBeats.length?{directorBeats}:{}),
       ...(soundCues.length?{soundCues}:{}),
       style:{background:"#0b1721",ink:"#f6f8fa",accent},
@@ -665,7 +684,8 @@ export default function CinematicProductionBoard() {
         {unresolvedAssets.length>0&&<p className="wvc-hint" role="alert">Médias à rattacher avant le rendu : {unresolvedAssets.join(", ")}. Aucune substitution automatique.</p>}
         <div className="wvc-audio">
           <label htmlFor="wvc-voice">VOIX / NARRATION</label>
-          <select id="wvc-voice" value={voiceFile} onChange={e=>setVoiceFile(e.target.value)}>
+          <select id="wvc-voice" value={voiceFile} disabled={wordCaptions.length>0}
+            onChange={e=>setVoiceFile(e.target.value)}>
             <option value="">Aucune — la voix pourra être choisie plus tard</option>
             {voiceFile&&!files.some(f=>f.name===voiceFile)&&<option value={voiceFile} disabled>Fichier absent : {voiceFile}</option>}
             {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
@@ -689,14 +709,39 @@ export default function CinematicProductionBoard() {
             })}
           </div>
           <p className="wvc-hint">Écoute les deux prises du même texte au même volume. Aucune voix n'est générée automatiquement ; seule la prise principale est exportée dans le projet.</p>
+          {wordCaptions.length>0&&<div className="wvc-aligned-words" aria-label="Mots réels alignés et mise en relief">
+            <strong>MOTS ALIGNÉS AVEC LA PRISE VOCALE FOURNIE</strong>
+            <p className="wvc-hint">Importés depuis un projet avec alignement extérieur préalablement contrôlé.
+              Les temps et le texte sont verrouillés : choisis seulement les mots forts.
+              La source audio reste celle du projet ; une autre prise exige un nouvel alignement.</p>
+            <div className="wvc-word-cues">
+              {wordCaptions.map((word,index)=>({word,index}))
+                .filter(({word})=>activeWordSpan&&word.startFrame<=activeWordSpan[1]&&
+                  word.endFrame>activeWordSpan[0])
+                .map(({word,index})=><button key={index} type="button"
+                  aria-pressed={word.emphasis===true}
+                  title={word.text+" · "+(word.startFrame/30).toFixed(2)+"–"+(word.endFrame/30).toFixed(2)+" s"}
+                  onClick={()=>setWordCaptions(old=>old.map((current,i)=>i===index
+                    ?{...current,emphasis:current.emphasis!==true}:current))}>
+                  <span>{word.text}</span>
+                  <small>{(word.startFrame/30).toFixed(2)} s</small>
+                </button>)}
+            </div>
+            <p className="wvc-hint">Mots synchronisés : {wordCaptions.length}. Cliquer sur un mot change seulement sa mise en relief,
+              jamais son orthographe ni son horodatage. Réécouter la scène entière pour valider la musique et le rythme.</p>
+            {wordIssues.length>0&&<p className="wvc-director-error" role="alert">
+              Alignement invalide : {wordIssues[0].field} — {wordIssues[0].reason}
+            </p>}
+          </div>}
           <label htmlFor="wvc-captions">SOUS-TITRES MINUTÉS (.SRT) — PISTE GLOBALE</label>
-          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput} onChange={e=>{setImportedCaptionCues(null);setSrtInput(e.target.value);}} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
+          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput}
+            disabled={wordCaptions.length>0} onChange={e=>{setImportedCaptionCues(null);setSrtInput(e.target.value);}} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
           <label htmlFor="wvc-caption-position">POSITION INITIALE DES SOUS-TITRES</label>
-          <select id="wvc-caption-position" value={captionPosition} onChange={e=>{setImportedCaptionCues(null);setCaptionPosition(e.target.value as "upper"|"lower");}}>
+          <select id="wvc-caption-position" value={captionPosition} disabled={wordCaptions.length>0} onChange={e=>{setImportedCaptionCues(null);setCaptionPosition(e.target.value as "upper"|"lower");}}>
             <option value="upper">Haut — pour les scènes avec titres en bas</option>
             <option value="lower">Bas — pour les scènes avec titres en haut</option>
           </select>
-          <p className="wvc-hint" role="status">{parsedCaptions.error?"Erreur SRT : "+parsedCaptions.error:captionIssues.length?"Erreur : "+captionIssues[0].reason:parsedCaptions.cues.length+" sous-titres lus à 30 images/s · aucune synchronisation vocale automatique."} Un SRT doit correspondre à la prise A effectivement sélectionnée ; vérifier son alignement à l’écoute et la superposition à chaque changement de scène.</p>
+          <p className="wvc-hint" role="status">{wordCaptions.length?wordCaptions.length+" mots alignés issus de la voix choisie · pas de SRT concurrent.":parsedCaptions.error?"Erreur SRT : "+parsedCaptions.error:captionIssues.length?"Erreur : "+captionIssues[0].reason:parsedCaptions.cues.length+" sous-titres lus à 30 images/s · aucune synchronisation vocale automatique."} Un SRT doit correspondre à la prise A effectivement sélectionnée ; vérifier son alignement à l’écoute et la superposition à chaque changement de scène.</p>
           <label htmlFor="wvc-music">MUSIQUE / AMBIANCE</label>
           <select id="wvc-music" value={musicFile} onChange={e=>setMusicFile(e.target.value)}>
             <option value="">Aucune</option>
@@ -1253,7 +1298,7 @@ export default function CinematicProductionBoard() {
         <div className="wvc-export">
           <div className="wvc-export-top"><strong>MASTER VISÉ · 9:16 · 1080×1920 · 30 ips</strong><span>{(duration/30).toFixed(1)} secondes</span></div>
           <p>Une fois le JSON exporté, les médias peuvent être montés par le moteur Remotion de World‑Vision. Les effets professionnels avancés ou génératifs resteront accessibles par des outils spécialisés.</p>
-          <button type="button" disabled={!canExport||!captionValid||directorIssues.length>0||soundIssues.length>0} onClick={exportProject}>Exporter le projet de montage (.json)</button>
+          <button type="button" disabled={!canExport||!captionValid||directorIssues.length>0||soundIssues.length>0||wordIssues.length>0} onClick={exportProject}>Exporter le projet de montage (.json)</button>
           <a href={path} target="_blank" rel="noopener noreferrer">Voir le processus de rendu et les limites ↗</a>
           {feedback&&<div className="wvc-feedback" role="status">{feedback}</div>}
         </div>

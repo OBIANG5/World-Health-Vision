@@ -326,3 +326,31 @@
   background:#0c2332;border:1px solid rgba(142,183,205,.20)
 }
 @media(max-width:560px){.wvc-sfx-add button{width:100%}}
+
+/* Approved REAL spoken words, never caption text inferred from a rough SRT. */
+.wvc-aligned-words{
+  border:1px solid rgba(142,207,222,.25);border-radius:11px;
+  padding:14px;background:rgba(16,53,68,.55);display:flex;
+  flex-direction:column;gap:10px;
+}
+.wvc-aligned-words>strong{font-size:11px;color:#d9f4fd;letter-spacing:.07em}
+.wvc-aligned-words .wvc-hint{margin:0}
+.wvc-word-cues{display:flex;flex-wrap:wrap;gap:6px;max-height:235px;overflow:auto}
+.wvc-word-cues button{
+  border:1px solid rgba(145,190,210,.25);border-radius:7px;
+  background:#112c3c;color:#d6ecf4;padding:7px 9px;
+  display:flex;flex-direction:column;gap:3px;align-items:start;
+  font:inherit;font-size:12px;font-weight:700;cursor:pointer;
+  min-height:44px;max-width:100%;
+}
+.wvc-word-cues button[aria-pressed="true"]{
+  background:#d9f6fb;color:#082b3f;border-color:#75cce6;
+  box-shadow:inset 0 -2px 0 #1a647d;
+}
+.wvc-word-cues small{font-size:10px;font-weight:500;font-variant-numeric:tabular-nums;opacity:.75}
+.wvc-aligned-words .wvc-director-error{margin:0}
+.wvc-board textarea:disabled,.wvc-board select:disabled{opacity:.56;cursor:not-allowed}
+@media(max-width:430px){
+  .wvc-word-cues{max-height:190px}
+  .wvc-word-cues button{min-height:46px}
+}

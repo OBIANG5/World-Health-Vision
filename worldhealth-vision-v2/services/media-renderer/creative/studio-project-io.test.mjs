@@ -238,3 +238,41 @@ test("audio cue editing cannot silently import remote files, unknown fields, or 
   broken(cue=>cue.volume=.95);
   broken(cue=>cue.inject="replace-script");
 });
+
+test("approved word-aligned original voice reopens exactly and never becomes SRT",()=>{
+  const p=clone();
+  p.script="VOIR LE MONDE.";
+  p.voice={file:"approved-vivienne-take.wav",label:"Voix choisie ou enregistrée",volume:1};
+  p.wordCaptions=[
+    {text:"VOIR",startFrame:0,endFrame:12,emphasis:true},
+    {text:"LE",startFrame:12,endFrame:19,emphasis:false},
+    {text:"MONDE.",startFrame:19,endFrame:43,emphasis:true}
+  ];
+  const before=JSON.stringify(p);
+  const imported=parseStudioProject(before);
+  assert.deepEqual(imported.wordCaptions,p.wordCaptions);
+  assert.equal(imported.script,p.script);
+  assert.deepEqual(studioAssetNames(imported),["approved-vivienne-take.wav"]);
+  assert.equal(inspectProject(imported).ok,true,JSON.stringify(inspectProject(imported).errors));
+  assert.equal(JSON.stringify(p),before);
+});
+test("word-level import rejects stale script, made-up timestamps, conflicting SRT or missing voice",()=>{
+  const base=clone();
+  base.script="VOIR LE MONDE.";
+  base.voice={file:"approved-take.wav",label:"Voix choisie ou enregistrée",volume:1};
+  base.wordCaptions=[
+    {text:"VOIR",startFrame:0,endFrame:9,emphasis:true},
+    {text:"LE",startFrame:9,endFrame:14,emphasis:false},
+    {text:"MONDE.",startFrame:15,endFrame:41,emphasis:false}
+  ];
+  const rejects=edit=>{
+    const p=structuredClone(base);edit(p);
+    assert.throws(()=>parseStudioProject(JSON.stringify(p)),/Projet non importable/);
+  };
+  rejects(p=>{p.wordCaptions[2].text="monde";});
+  rejects(p=>{p.wordCaptions[2].startFrame=10;});
+  rejects(p=>{p.wordCaptions[0].unknownVoiceMagic="fromAi";});
+  rejects(p=>{p.captions=[{startFrame:1,endFrame:16,text:"VOICE CONFLICT",position:"upper"}];});
+  rejects(p=>{p.voice=null;});
+  rejects(p=>{p.script="UNE AUTRE VERSION NON ALIGNEE";});
+});

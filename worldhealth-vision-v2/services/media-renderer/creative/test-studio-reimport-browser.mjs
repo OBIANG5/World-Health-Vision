@@ -146,6 +146,77 @@ try{
  await page.waitForFunction(()=>Array.from(document.querySelectorAll('[role="status"]')).some(x=>x.textContent?.includes("Import refusé")),{timeout:15000});
  const title=await page.$eval("#wvc-project",el=>el.value);
  if(title!=="REPRISE TECHNIQUE 2026")throw Error("Invalid JSON overwrote user edit");
+ // Separate UI-only synthetic example for word-level captions. The WAV is
+ // an oscillator, NOT speech; this tests preservation/interaction, NOT alignment
+ // accuracy or real human-voice approval. No caption is fabricated from audio.
+ const wordSaved={
+   ...saved,id:"wv-aligned-ui-test",title:"ALIGNEMENT UI - SIMULATION CI",
+   script:"VOIR LE MONDE.",captions:undefined,directorBeats:undefined,soundCues:undefined,
+   shots:[{id:"plan-01",durationFrames:105,template:"kinetic",
+     title:"SIMULATION NON JOURNALISTIQUE",subtitle:"Aucun alignement acoustique vérifié",
+     eyebrow:"FIXTURE TECHNIQUE",motion:"locked",
+     transitionAfter:"cut",transitionFrames:0}],
+   voice:{file:"click-synthetic.wav",label:"Voix choisie ou enregistrée",volume:1},
+   wordCaptions:[
+     {text:"VOIR",startFrame:0,endFrame:8,emphasis:true},
+     {text:"LE",startFrame:8,endFrame:14,emphasis:false},
+     {text:"MONDE.",startFrame:14,endFrame:25,emphasis:false}
+   ]
+ };
+ const alignedPath=path.join(tmp,"word-aligned-ui.json");
+ fs.writeFileSync(alignedPath,JSON.stringify(wordSaved));
+ await (await page.$("#wvc-load-project")).uploadFile(alignedPath);
+ try{
+   await page.waitForFunction(()=>
+     document.querySelector("#wvc-project")?.value==="ALIGNEMENT UI - SIMULATION CI",
+     {timeout:12000});
+ }catch(error){
+   const feedback=await page.$eval(".wvc-feedback",el=>el.textContent||"");
+   throw Error("Aligned word project failed to reopen: "+feedback+" | "+String(error));
+ }
+ const checkWords=await page.evaluate(()=>({
+   title:document.querySelector("#wvc-project")?.value,
+   feedback:document.querySelector(".wvc-feedback")?.textContent,
+   count:document.querySelectorAll(".wvc-word-cues button").length,
+   voiceLocked:document.querySelector("#wvc-voice")?.disabled,
+   srtLocked:document.querySelector("#wvc-captions")?.disabled
+ }));
+ if(checkWords.title!=="ALIGNEMENT UI - SIMULATION CI"||checkWords.count!==3||
+   !checkWords.voiceLocked||!checkWords.srtLocked)
+   throw Error("Source-aligned captions were lost or editable voice/SRT leaked: "+JSON.stringify(checkWords));
+ await page.evaluate(()=>document.querySelector(".wvc-word-cues button")?.click());
+ await page.waitForFunction(()=>document.querySelector(".wvc-word-cues button")?.getAttribute("aria-pressed")==="false",
+   {timeout:12000});
+ const toggled=await page.$eval(".wvc-word-cues button",button=>button.getAttribute("aria-pressed"));
+ if(toggled!=="false")throw Error("Exact word highlight toggle was not applied.");
+ await page.evaluate(()=>{window.__wvExportedJson=null;});
+ await page.evaluate(()=>Array.from(document.querySelectorAll("button"))
+   .find(x=>x.textContent?.includes("Exporter le projet"))?.click());
+ await page.waitForFunction(()=>Boolean(window.__wvExportedJson),{timeout:15000});
+ const wordsExported=JSON.parse(await page.evaluate(()=>window.__wvExportedJson));
+ if(wordsExported.script!==wordSaved.script||wordsExported.voice?.file!==wordSaved.voice.file||
+    wordsExported.captions?.length||
+    wordsExported.wordCaptions?.length!==3||
+    wordsExported.wordCaptions[0].emphasis!==false||
+    wordsExported.wordCaptions[1].text!=="LE"||
+    JSON.stringify(wordsExported.wordCaptions.map(w=>[w.startFrame,w.endFrame]))!==
+      JSON.stringify(wordSaved.wordCaptions.map(w=>[w.startFrame,w.endFrame])))
+   throw Error("Word highlights altered approved script, original timings or chosen voice.");
+ // The actual shared Remotion film Player must instantiate (not a CSS preview).
+ await page.evaluate(()=>Array.from(document.querySelectorAll(".wvc-preview-switch button"))
+   .find(x=>x.textContent?.includes("Film entier"))?.click());
+ await page.waitForFunction(()=>Boolean(document.querySelector(
+   '[aria-label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"]'
+  )),{timeout:20000});
+ const hostileWordProject=path.join(tmp,"bad-word-alignment.json");
+ fs.writeFileSync(hostileWordProject,JSON.stringify({...wordSaved,title:"HIDDEN SOURCE OVERRIDE",
+   wordCaptions:[{...wordSaved.wordCaptions[0],text:"FAUX"},...wordSaved.wordCaptions.slice(1)]}));
+ await (await page.$("#wvc-load-project")).uploadFile(hostileWordProject);
+ await page.waitForFunction(()=>Array.from(document.querySelectorAll(".wvc-feedback"))
+   .some(x=>x.textContent?.includes("Import refusé")),{timeout:15000});
+ if((await page.$eval("#wvc-project",el=>el.value))!=="ALIGNEMENT UI - SIMULATION CI")
+   throw Error("Mismatched alignment overwrote the approved spoken-word project.");
+
  if(errors.length)throw Error("Browser errors: "+errors.join(" / "));
  const screenshot=path.join(output,"studio-reimport-mobile-390.png");
  await page.screenshot({path:screenshot,fullPage:true,type:"png"});
@@ -154,6 +225,9 @@ try{
   afterRebind:valid,roundtripExportVerified:true,
   mixedCaptionPositionsPreserved:true, directorBeatsPreserved:true,
   licensedSourceSoundCuesPreserved:true, contextualBeatPlayerOpened:true,
+  alignedWordImportExportVerified:true,sourceVoiceLocked:true,
+  wordHighlightEditedWithoutChangingSourceTiming:true,
+  invalidWordAlignmentRejected:true,
   invalidImportPreservedTitle:title,screenshot};
  fs.writeFileSync(path.join(output,"studio-reimport-browser.report.json"),JSON.stringify(report,null,2)+"\n");
  console.log(JSON.stringify(report));
