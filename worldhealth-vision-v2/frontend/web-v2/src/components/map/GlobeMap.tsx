@@ -430,7 +430,7 @@ function GlobeMap({selectedCountryIso3,onCountryClick,countriesMap}:Props){
   e.preventDefault();schedule();
  };
  const zoom=(step:number)=>{interaction.current=performance.now();pose.current.zoom=clamp(pose.current.zoom+step,.82,1.18);schedule();};
- return <div className="whv-globe-shell">
+ return <div className="whv-globe-shell" data-earth-renderer={textureStatus}>
   <canvas ref={canvas} className="whv-globe-canvas" role="application" tabIndex={0}
    aria-label="Globe terrestre interactif. Glisser pour tourner, toucher un pays pour ouvrir sa fiche, flèches pour tourner, plus et moins pour zoomer."
    onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
