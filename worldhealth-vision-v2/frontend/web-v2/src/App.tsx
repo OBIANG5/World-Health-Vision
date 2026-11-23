@@ -40,6 +40,7 @@ import "./styles/world-editorial.css";
 import "./styles/world-electric.css";
 import "./styles/vision-hub.css";
 import "./styles/world-discovery.css";
+import "./styles/world-v3.css";
 
 // ---------- Sélecteur de pays (popover) ----------
 
@@ -143,6 +144,7 @@ function AppContent() {
   const [toolsAnchor, setToolsAnchor] = useState({ top: 80, left: 16 });
   const [countryAnchor, setCountryAnchor] = useState({ top: 80, left: 16 });
   const [selectedCountryIso3, setSelectedCountryIso3] = useState(() => route.kind === "country" ? route.iso3 : "FRA");
+  const [requestedCountrySection, setRequestedCountrySection] = useState<"overview" | "compare" | "news">("overview");
   const { profile, hasProfile } = useUserProfile();
   const { countries, loading: countriesLoading, error: countriesError,
     source: catalogSource } = useCountryCatalog();
@@ -162,11 +164,12 @@ function AppContent() {
     [countries, activeIso3],
   );
 
-  const handleCountryClick = useCallback((iso3: string) => {
+  const handleCountryClick = useCallback((iso3: string, section: "overview" | "compare" | "news" = "overview") => {
     setRegionDrawerOpen(false);
     setShowCountrySelector(false);
     setShowToolsMenu(false);
     setSelectedCountryIso3(iso3);
+    setRequestedCountrySection(section);
     setDrawerOpen(false);
     navigate({ kind: "country", iso3 });
   }, [navigate]);
@@ -414,96 +417,53 @@ function AppContent() {
   }, [navigate]);
 
   const headerActions = (
-    <nav className="whv-nav" aria-label={lang === "fr" ? "Naviguer dans World-Vision" : "Navigate World-Vision"}>
-      <button type="button" className="whv-nav-btn whv-nav-btn--mobile-hub" aria-expanded={showToolsMenu && navDomain === "all"}
-        onClick={(event) => openNavDomain("all", event.currentTarget)}><><WorldIcon name="menu" size={17}/> Menu</></button>
+    <nav className="whv-nav wv3-topnav" aria-label={lang === "fr" ? "Navigation World-Vision" : "World-Vision navigation"}>
       {(showCountrySelector || showToolsMenu) && (
-        <div className="whv-menu-dismiss" onClick={() => {
-          setShowCountrySelector(false);
-          setShowToolsMenu(false);
-        }} />
+        <button className="whv-menu-dismiss" type="button" aria-label={lang === "fr" ? "Fermer les menus" : "Close menus"}
+          onClick={() => { setShowCountrySelector(false); setShowToolsMenu(false); }} />
       )}
-      <button type="button" className="whv-nav-btn whv-nav-btn--home"
-        onClick={() => {
-          setDrawerOpen(false); setRegionDrawerOpen(false); setShowToolsMenu(false);
-          setShowSourcesModal(false); setShowCountrySelector(false);
-          navigate({ kind: "home" });
-        }}>
-        {lang === "fr" ? "Accueil" : "Home"}
+      <button type="button" className="whv-nav-btn wv3-nav-desktop"
+        aria-current={route.kind === "home" || route.kind === "country" ? "page" : undefined}
+        onClick={() => { navigate({ kind: "home" }); setShowToolsMenu(false); }}>
+        {lang === "fr" ? "Explorer" : "Explore"}
       </button>
-      <button type="button" className="whv-nav-btn whv-vision-nav"
-        aria-expanded={showVisionHub} onClick={() => openVisionHub()}>
-        {lang === "fr" ? "Les Visions" : "All Visions"}
-      </button>
-      <button type="button" className="whv-nav-btn whv-global-search-trigger"
-        onClick={openWorldDiscovery}
-        title={lang === "fr" ? "Rechercher · / ou Ctrl+K" : "Search · / or Ctrl+K"}>
-        <WorldIcon name="search" size={16}/>{lang === "fr" ? "Rechercher" : "Search"}
-      </button>
-      <button type="button"
-        className={"whv-nav-btn whv-nav-btn--explore" + (showToolsMenu && navDomain === "explore" ? " active" : "")}
-        aria-expanded={showToolsMenu && navDomain === "explore"}
-        onClick={(event) => openNavDomain("explore", event.currentTarget)}>
-        {lang === "fr" ? "Pays & régions" : "Countries & regions"}
-        <span className="whv-nav-chevron" aria-hidden="true"><WorldIcon name="chevron" size={13}/></span>
-      </button>
-      <button type="button"
-        className={"whv-nav-btn whv-nav-btn--markets" + (showToolsMenu && navDomain === "markets" ? " active" : "")}
-        aria-expanded={showToolsMenu && navDomain === "markets"}
-        onClick={(event) => openNavDomain("markets", event.currentTarget)}>
-        {lang === "fr" ? "Économie & marchés" : "Economy & markets"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
-      </button>
-      <button type="button"
-        className={"whv-nav-btn whv-nav-btn--travel" + (showToolsMenu && navDomain === "travel" ? " active" : "")}
-        aria-expanded={showToolsMenu && navDomain === "travel"}
-        onClick={(event) => openNavDomain("travel", event.currentTarget)}>
-        {lang === "fr" ? "Voyager & vivre" : "Travel & living"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
-      </button>
-      <button type="button"
-        className={"whv-nav-btn whv-nav-btn--safety" + (showToolsMenu && navDomain === "safety" ? " active" : "")}
-        aria-expanded={showToolsMenu && navDomain === "safety"}
-        onClick={(event) => openNavDomain("safety", event.currentTarget)}>
-        {lang === "fr" ? "Sécurité" : "Safety"}
-        <span className="whv-nav-chevron" aria-hidden="true">⌄</span>
+      <button type="button" className="whv-nav-btn wv3-nav-desktop"
+        onClick={() => handleCountryClick(activeIso3, "compare")}>
+        {lang === "fr" ? "Comparer" : "Compare"}
       </button>
       <button type="button" ref={toolsButtonRef}
-        className={"whv-nav-btn whv-nav-btn--tools" + (showToolsMenu && navDomain === "all" ? " active" : "") + (anyToolOpen ? " has-active-tool" : "")}
+        className={"whv-nav-btn wv3-services-trigger" + (showToolsMenu ? " active" : "")}
         aria-expanded={showToolsMenu && navDomain === "all"}
         aria-controls="whv-tools-menu"
         onClick={(event) => openNavDomain("all", event.currentTarget)}>
-        {lang === "fr" ? "Tous les outils" : "All tools"}
+        <span className="wv3-nav-desktop">{lang === "fr" ? "Services" : "Services"}</span>
+        <span className="wv3-nav-compact"><WorldIcon name="menu" size={19}/></span>
+        <span className="wv3-nav-desktop"><WorldIcon name="chevron" size={13}/></span>
       </button>
-      <button type="button"
-        className={"whv-nav-btn whv-nav-btn--sources" + (showSourcesModal ? " active" : "")}
-        onClick={() => {
-          navigate(route.kind === "sources" ? { kind: "home" } : { kind: "sources" });
-          setShowSourcesModal(false); setShowCountrySelector(false);
-          setShowWatchlist(false); setRegionDrawerOpen(false); setShowToolsMenu(false);
-        }}>
-        {lang === "fr" ? "Sources" : "Sources"}
+      <button type="button" className="whv-nav-btn wv3-nav-desktop"
+        onClick={() => handleCountryClick(activeIso3, "news")}>
+        {lang === "fr" ? "Actualités" : "News"}
       </button>
-      <button type="button"
-        className={"whv-nav-btn whv-nav-btn--profile" + (showProfilePanel ? " active" : "")}
-        onClick={() => { handleToggleProfile(); setShowToolsMenu(false); }}
-        title={lang === "fr" ? "Mon profil" : "My profile"}>
-        {hasProfile && profile.displayName ? profile.displayName : (lang === "fr" ? "Profil" : "Profile")}
+      <button type="button" className="whv-nav-btn wv3-nav-desktop"
+        onClick={openFavorites}>
+        {lang === "fr" ? "Suivre" : "Follow"}
+        {watchlist.size > 0 ? ` · ${watchlist.size}` : ""}
       </button>
-      <button type="button" className="whv-nav-btn whv-nav-btn--lang"
+      <span className="wv3-nav-spacer"/>
+      <button type="button" className="whv-nav-btn wv3-nav-search"
+        onClick={openWorldDiscovery} aria-label={lang === "fr" ? "Rechercher un pays, un service ou une source" : "Find country, service or source"}>
+        <WorldIcon name="search" size={18}/>
+        <span className="wv3-nav-desktop">{lang === "fr" ? "Rechercher" : "Search"}</span>
+      </button>
+      <button type="button" className="whv-nav-btn wv3-nav-lang-desktop"
         onClick={toggleLang} title={lang === "fr" ? "Switch to English" : "Passer en français"}>
-        {t(lang, "langue")}
+        {lang.toUpperCase()}
       </button>
-      <span className={"whv-service-status " +
-          (isPreview || isOffline ? "whv-service-status--offline" : countriesLoading ? "whv-service-status--loading" : "whv-service-status--online")}
-        title={isPreview ? "Aperçu statique : données nationales versionnées, sans backend permanent" :
-          isOffline ? "Atlas : métadonnées Banque mondiale, services WHV non connectés" :
-          countriesLoading ? "Connexion..." : countries.length + " entrées du catalogue WHV"}>
-        <span className="whv-service-status-dot" />
-        {isPreview ? (lang === "fr" ? "Aperçu" : "Preview") : isOffline ? (lang === "fr" ? "Hors ligne" : "Offline") :
-          countriesLoading ? "…" : (lang === "fr" ? "Connecté" : "Connected")}
-      </span>
-
+      {hasProfile && <button type="button" className="whv-nav-btn wv3-nav-icon"
+        onClick={handleToggleProfile}
+        aria-label={lang === "fr" ? "Profil" : "Profile"}>
+        <WorldIcon name="user" size={18}/>
+      </button>}
       {showToolsMenu && createPortal(
         <div className="whv-tools-menu whv-domain-menu" id="whv-tools-menu" role="menu"
           data-domain={navDomain} aria-label={lang === "fr" ? "Navigation thématique" : "Thematic navigation"}
@@ -608,6 +568,21 @@ function AppContent() {
               </section>
             )}
           </div>
+          {navDomain === "all" && <section className="wv3-mega-visions" aria-label={lang === "fr" ? "Toutes les Visions World-Vision" : "All World-Vision products"}>
+            <h3>{lang === "fr" ? "Les Visions World-Vision" : "World-Vision products"}</h3>
+            <p>{lang === "fr" ? "Découvrez leur rôle, leur avancement et leurs limites avant d'utiliser un outil." :
+              "See each product's scope, maturity and limitations before using a tool."}</p>
+            <div className="wv3-mega-products">
+              {VISION_PRODUCTS.map(product => <button key={product.id} type="button"
+                onClick={() => openVisionHub(product.id)}>
+                <span><strong>{product.name}</strong><small>{product.tagline[lang]}</small></span>
+                <span className="wv3-mega-stage">{product.stage === "planned" ?
+                  (lang === "fr" ? "En préparation" : "Planned") :
+                  product.stage === "partial" ? (lang === "fr" ? "Partiel" : "Partial") :
+                  (lang === "fr" ? "À explorer" : "Explore")}</span>
+              </button>)}
+            </div>
+          </section>}
           <p className="whv-domain-footer">{lang === "fr"
             ? "World Health Vision · Voir le monde, le comprendre. Sources et limites consultables depuis le menu Sources."
             : "World Health Vision · See the world, understand it. Sources and limitations are available under Sources."}</p>
@@ -769,6 +744,7 @@ function AppContent() {
 
       <Suspense fallback={null}>
       {activeCountryDrawerOpen && <CountryDrawer
+        key={`${activeIso3}:${requestedCountrySection}`}
         open={activeCountryDrawerOpen}
         onClose={() => { setDrawerOpen(false); if (route.kind === "country") navigate({ kind: "home" }); }}
         selectedCountryIso3={activeIso3}
@@ -779,6 +755,9 @@ function AppContent() {
         catalogSource={catalogSource}
         watched={isWatched(activeIso3)}
         onToggleWatch={() => toggleWatch(activeIso3)}
+        initialSection={requestedCountrySection}
+        onOpenVision={openVisionHub}
+        onVisionAction={handleVisionAction}
       />}
 
       {regionDrawerOpen && <RegionDrawer
