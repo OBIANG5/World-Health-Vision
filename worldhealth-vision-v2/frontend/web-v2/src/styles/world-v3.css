@@ -425,3 +425,88 @@ body .whv-tools-menu .wv3-mega-stage{color:#5e7684;font-size:10px;white-space:no
  .whv-page .wv3-home-task-result h4{font-size:19px;}
  body .whv-tools-menu .wv3-mega-products{grid-template-columns:1fr;}
 }
+
+/* SINGLE GLOBAL SERVICE MENU — same information model as the country hub.
+   No four-group legacy mosaics, neon stickers, or redundant duplicate cards. */
+body .wv3-service-menu-portal {
+  width:min(780px,calc(100vw - 24px));
+  max-width:calc(100vw - 24px);
+  font-family:Inter,"Segoe UI Variable","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+body .wv3-service-menu {
+  width:100%;color:#183b50;background:#fff;border:1px solid #d8e5eb;
+  border-radius:13px;box-shadow:0 20px 65px #0b30422f;overflow:hidden;
+}
+body .wv3-service-menu-top {
+  display:flex;align-items:center;justify-content:space-between;gap:15px;
+  padding:17px 21px;background:#fff;border-bottom:1px solid #e1eaed;
+}
+body .wv3-service-menu-top > div{display:grid;gap:3px;}
+body .wv3-service-menu-top strong{font-size:16px;font-weight:820;color:#173850;letter-spacing:-.02em;}
+body .wv3-service-menu-top span{font-size:11px;color:#768995;}
+body .wv3-service-menu-top button {
+  border:1px solid #dce7eb;border-radius:7px;background:#f6fafb;
+  width:35px;height:35px;display:grid;place-items:center;color:#3e6778;
+}
+body .wv3-service-menu-layout {
+  display:grid;grid-template-columns:minmax(195px,.72fr) minmax(0,1.4fr);
+  max-height:min(67dvh,670px);overflow:auto;
+}
+body .wv3-service-menu-groups{
+  padding:12px;background:#f5f8fa;border-right:1px solid #e1eaed;
+  display:grid;gap:3px;align-content:start;
+}
+body .wv3-service-menu-groups button {
+  width:100%;display:flex;align-items:center;gap:11px;padding:13px 11px;
+  min-height:45px;border:0;border-radius:8px;background:transparent;
+  font-size:12px;font-weight:730;color:#395b6d;text-align:left;
+}
+body .wv3-service-menu-groups button span{flex:1;}
+body .wv3-service-menu-groups button.is-selected{background:#fff;color:#087b9b;box-shadow:0 2px 8px #102d3c0c;}
+body .wv3-service-menu-groups button:hover:not(.is-selected){background:#eaf2f5;}
+body .wv3-service-menu-content{padding:23px 24px;min-width:0;}
+body .wv3-service-menu-content h2{margin:6px 0;font-size:22px;letter-spacing:-.04em;color:#193a50;}
+body .wv3-service-menu-content > p{margin:0 0 19px;color:#6a8290;font-size:12px;line-height:1.5;}
+body .wv3-service-menu-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0 0 18px;}
+body .wv3-service-menu-actions button{
+  display:flex;align-items:center;gap:8px;padding:12px 11px;min-width:0;
+  border:1px solid #dfe9ed;border-radius:8px;background:#fff;color:#2d5b70;text-align:left;
+}
+body .wv3-service-menu-actions button:hover{border-color:#9fcfdc;background:#f7fbfc;}
+body .wv3-service-menu-actions button span{min-width:0;display:grid;gap:4px;flex:1;}
+body .wv3-service-menu-actions strong{font-size:11px;font-weight:780;color:#26495c;}
+body .wv3-service-menu-actions small{font-size:10px;color:#708895;line-height:1.35;}
+body .wv3-service-menu-product-list{border-top:1px solid #e4ebee;}
+body .wv3-service-menu-product-list button {
+  display:flex;align-items:center;gap:11px;width:100%;padding:12px 2px;
+  text-align:left;border:0;border-bottom:1px solid #e7edef;background:transparent;color:#375e72;
+}
+body .wv3-service-menu-product-list button:hover{background:#f7fafb;}
+body .wv3-service-menu-product-list button span:first-child{
+  min-width:0;flex:1;display:grid;gap:3px;
+}
+body .wv3-service-menu-product-list strong{font-size:12px;color:#173b4d;}
+body .wv3-service-menu-product-list small{font-size:10px;color:#7b9099;}
+body .wv3-service-menu-product-list button span:nth-child(2){
+  font-size:10px;white-space:nowrap;color:#6b8290;
+}
+body .wv3-service-menu .wv3-menu-status{font-size:11px;color:#748b96;line-height:1.5;margin:15px 0 0;}
+body .wv3-service-menu button:focus-visible{outline:3px solid #0d9fbd;outline-offset:2px;}
+@media(max-width:700px){
+ body .wv3-service-menu-portal{width:calc(100vw - 24px);}
+ body .wv3-service-menu-layout{
+   display:block;max-height:min(72dvh,680px);overflow:auto;
+ }
+ body .wv3-service-menu-groups{
+   display:flex;gap:3px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;
+   border-right:0;border-bottom:1px solid #e0e9ed;padding:7px;
+ }
+ body .wv3-service-menu-groups button {
+   width:auto;flex:0 0 auto;min-height:43px;padding:9px;
+   gap:7px;font-size:11px;
+ }
+ body .wv3-service-menu-groups button svg:last-child{display:none;}
+ body .wv3-service-menu-content{padding:16px 14px;}
+ body .wv3-service-menu-content h2{font-size:19px;}
+ body .wv3-service-menu-actions{grid-template-columns:1fr;}
+}
