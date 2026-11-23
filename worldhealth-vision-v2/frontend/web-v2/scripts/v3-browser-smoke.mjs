@@ -122,6 +122,29 @@ try {
     }
     assert((await page.locator(".whv-country-section-tab").first().evaluate(node =>
       getComputedStyle(node).display)) === "flex", "Country tabs must not inherit six-column legacy grid");
+    const contrast = await page.evaluate(() => {
+      const heading = document.querySelector(".whv-country-overview .whv-country-section-heading h3");
+      const facts = document.querySelector(".whv-country-profile-facts");
+      const value = facts?.querySelector(".country-meta-value");
+      const metric = facts?.querySelector(".country-meta-item");
+      return {
+        heading: heading ? getComputedStyle(heading).color : null,
+        value: value ? getComputedStyle(value).color : null,
+        metric: metric ? getComputedStyle(metric).backgroundColor : null,
+        sheet: facts ? getComputedStyle(facts).backgroundColor : null,
+      };
+    });
+    console.log("V4_OVERVIEW_CONTRAST",size.n,JSON.stringify(contrast));
+    const isBright = css => {
+      const values = css?.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
+      return values && Math.min(...values.slice(1).map(Number)) >= 165;
+    };
+    assert(isBright(contrast.heading) && isBright(contrast.value),
+      "Country data headings and actual source facts must have light text on the dark atlas, not old dark ink");
+    assert(!contrast.sheet?.includes("255, 255, 255"),
+      "Old large white country facts slab must not reappear inside dark country profile");
+    await page.locator(".whv-country-profile-facts").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `v3-artifacts/${size.n}-gabon-overview-facts.png`, animations:"disabled" });
 
     const cats = page.locator(".wv3-directory-categories button");
     assert.equal(await cats.count(), 6);
