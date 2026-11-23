@@ -928,7 +928,7 @@ body .wv3-service-menu-layout{
   .whv-page .wv5-home .wv5-search .wv3-search-shortcut{display:none!important;}
   .whv-page:has(.wv5-home) .eye-stage.globe-mode,
   .whv-page:has(.wv5-home) .eye-stage.globe-mode.drawer-open{
-    left:0!important;right:0!important;top:280px!important;
+    left:0!important;right:0!important;top:312px!important;
     width:100%!important;height:280px!important;
     border:0!important;border-radius:0!important;
   }
@@ -966,4 +966,10 @@ body .wv3-service-menu-layout{
   .whv-page .wv5-home .wv5-hero{padding-left:14px;padding-right:14px;}
   .whv-page .wv5-home .wv5-globe-caption{font-size:9px;}
   .whv-page .wv5-home .wv5-globe-caption a{font-size:9px;}
+}
+
+/* Reserve more vertical space for search at 320px. */
+@media(max-width:360px){
+ .whv-page:has(.wv5-home) .eye-stage.globe-mode,
+ .whv-page:has(.wv5-home) .eye-stage.globe-mode.drawer-open{top:314px!important;}
 }

@@ -56,6 +56,13 @@ try {
     const homepageSurface = await page.locator(".whv-header").evaluate(node => getComputedStyle(node).backgroundColor);
     assert(!homepageSurface.includes("255, 255, 255"),
       "Visual reset must not show the old white header against the Earth");
+    assert(await page.locator(".wv5-home").isVisible(), "World-Vision must show the Atlas-first home");
+    if (size.width <= 390) {
+      const searchBox = await page.locator(".wv5-search").boundingBox();
+      const earthBox = await page.locator(".eye-stage.globe-mode").boundingBox();
+      assert(searchBox && earthBox && searchBox.y + searchBox.height < earthBox.y + 8,
+        "The mobile country search must not be covered by the interactive Earth");
+    }
     await page.screenshot({ path: `v3-artifacts/${size.n}-home.png`, animations: "disabled" });
     // Regression: an interactive Globe must NEVER intercept the home shortcuts.
     // Exercise the real button on every size; do not bypass pointer hit-testing.

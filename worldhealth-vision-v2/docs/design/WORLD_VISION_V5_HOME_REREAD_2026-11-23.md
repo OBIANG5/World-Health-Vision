@@ -39,3 +39,9 @@ World-Vision est une plateforme internationale géographique de connaissance, co
 4. Prévisualisation Vercel séparée, READY et vérifiée sur SHA exact, avec SSO/noindex; production inchangée.
 5. Le test technique ne vaut jamais validation esthétique. Montrer au propriétaire un véritable rendu mobile et demander un retour avant de poursuivre sur la fiche pays et les workspaces.
 6. Restent à faire : carte multi-échelle sous licence, géographie de niveau régional, performance GPU/Safari, recherche géographique internationale et préférences persistantes, vraies notifications Watch, design system unique et revues WCAG.
+
+## Inspection réelle et correction visuelle V5/1.1
+- Premier build TypeScript/lint OK; le premier run browser a échoué au téléchargement npm de dépendances sans lien avec le frontend. La workflow V5 installe désormais Playwright 1.65.1 isolément, sans modifier le lockfile de production.
+- Screenshots Chromium du commit 93c9fb0 : sur 320/390, la recherche précède le globe, les services restent accessibles. Défauts constatés : fond rectangulaire du Canvas desktop, extrémités des arcs quasi jointes, recherche partiellement superposée à la scène mobile.
+- Nouvelle correction : vignette spatiale transparente sans rectangle, extrémités des arcs séparées verticalement, début de la scène déplacé après la recherche mobile. Smoke test ajouté pour garantir la barre de recherche entièrement accessible à 320/390.
+- Résultat de cette correction à vérifier sur le prochain HEAD. Ne pas confondre validation Chrome et approbation artistique du propriétaire.

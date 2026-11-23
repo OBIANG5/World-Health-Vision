@@ -119,9 +119,9 @@ function drawEye(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number){
   const left=cx-r*1.28,right=cx+r*1.28;
   const curve=(upper:boolean,offset=0)=>{
     const side=upper?-1:1;
-    ctx.beginPath();ctx.moveTo(left,cy+side*offset);
+    ctx.beginPath();ctx.moveTo(left,cy+side*(r*.105+offset));
     ctx.bezierCurveTo(cx-r*.78,cy+side*(r*1.50+offset),
-                      cx+r*.78,cy+side*(r*1.50+offset),right,cy+side*offset);
+                      cx+r*.78,cy+side*(r*1.50+offset),right,cy+side*(r*.105+offset));
   };
   ctx.save();ctx.lineCap="round";
   for(const upper of [true,false]){
@@ -154,9 +154,14 @@ function render(ctx:CanvasRenderingContext2D,w:number,h:number,pose:Pose,geo:Fea
  ctx.clearRect(0,0,w,h);
  const cx=w/2,cy=h*.51,r=Math.min(w*.36,h*.41)*pose.zoom;
  // Behind the eye: clean midnight space as on the reference artwork.
- const sky=ctx.createRadialGradient(cx,cy,r*.52,cx,cy,Math.max(w,h)*.79);
- sky.addColorStop(0,"#063981");sky.addColorStop(.56,"#031843");sky.addColorStop(1,"#000621");
- ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+ // Feather the space into the app; a solid rectangular background was
+ // visibly separating the interactive Earth from World-Vision on desktop.
+ const sky=ctx.createRadialGradient(cx,cy,r*.7,cx,cy,Math.max(w,h)*.67);
+ sky.addColorStop(0,"rgba(11,49,86,.63)");
+ sky.addColorStop(.64,"rgba(4,27,56,.22)");
+ sky.addColorStop(1,"rgba(3,13,32,0)");
+ ctx.fillStyle=sky;ctx.beginPath();
+ ctx.arc(cx,cy,Math.max(w,h)*.67,0,Math.PI*2);ctx.fill();
  for(let i=0;i<16;i++){
   const x=((i*7907+421)%997)/997*w,y=((i*541+153)%991)/991*h;
   const distance=Math.hypot(x-cx,y-cy);
