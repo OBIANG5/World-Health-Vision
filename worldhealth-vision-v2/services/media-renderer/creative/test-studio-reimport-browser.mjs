@@ -179,10 +179,12 @@ try{
    feedback:document.querySelector(".wvc-feedback")?.textContent,
    count:document.querySelectorAll(".wvc-word-cues button").length,
    voiceLocked:document.querySelector("#wvc-voice")?.disabled,
-   srtLocked:document.querySelector("#wvc-captions")?.disabled
+   srtLocked:!document.querySelector("#wvc-captions")||
+     document.querySelector("#wvc-captions")?.disabled,
+   competingSrtPositionHidden:!document.querySelector("#wvc-caption-position")
  }));
  if(checkWords.title!=="ALIGNEMENT UI - SIMULATION CI"||checkWords.count!==3||
-   !checkWords.voiceLocked||!checkWords.srtLocked)
+   !checkWords.voiceLocked||!checkWords.srtLocked||!checkWords.competingSrtPositionHidden)
    throw Error("Source-aligned captions were lost or editable voice/SRT leaked: "+JSON.stringify(checkWords));
  await page.evaluate(()=>document.querySelector(".wvc-word-cues button")?.click());
  await page.waitForFunction(()=>document.querySelector(".wvc-word-cues button")?.getAttribute("aria-pressed")==="false",
@@ -301,6 +303,38 @@ try{
  await page.waitForFunction(()=>Boolean(document.querySelector(
    '[aria-label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"]'
   )),{timeout:18000});
+ // A director must reach the real full-film Player in one tap, not by
+ // scrolling through thousands of pixels of editable PHOTO/SFX fields.
+ const quickNav=await page.evaluate(()=>({
+   visible:document.querySelector('.wvc-quick-nav')?.getBoundingClientRect().height>40,
+   position:getComputedStyle(document.querySelector('.wvc-quick-nav')).position,
+   buttons:Array.from(document.querySelectorAll('.wvc-quick-nav button')).map(b=>b.textContent?.trim()),
+   horizontalOverflow:document.documentElement.scrollWidth>window.innerWidth
+ }));
+ if(!quickNav.visible||quickNav.position!=='sticky'||
+   quickNav.horizontalOverflow||quickNav.buttons.length!==3)
+   throw Error('Professional mobile directing navigation is not usable: '+JSON.stringify(quickNav));
+ await page.click('.wvc-quick-nav button:last-child');
+ await page.waitForFunction(()=>{
+   const preview=document.querySelector('#wvc-preview');
+   return !!preview&&preview.getBoundingClientRect().top>=-20&&
+     preview.getBoundingClientRect().top<180&&
+     Array.from(document.querySelectorAll('.wvc-preview-switch button.selected'))
+       .some(b=>b.textContent?.includes('Film entier'));
+ },{timeout:12000});
+ await page.click('.wvc-quick-nav button:nth-child(2)');
+ await page.waitForFunction(()=>{
+   const edit=document.querySelector('#wvc-directing');
+   return !!edit&&edit.getBoundingClientRect().top>=-20&&
+     edit.getBoundingClientRect().top<180;
+ },{timeout:12000});
+ // Back to source in the same persistent app state, not a second mobile app.
+ await page.click('.wvc-quick-nav button:first-child');
+ await page.waitForFunction(()=>{
+   const source=document.querySelector('#wvc-sources');
+   return !!source&&source.getBoundingClientRect().top>=-20&&
+     source.getBoundingClientRect().top<180;
+ },{timeout:12000});
  // Progressive controls protect MOBILE creative speed, but never discard
  // source data or hide the one-click voice/PHOTO/SFX actions.
  const mobileLayout=await page.evaluate(()=>({
@@ -345,6 +379,7 @@ try{
   invalidWordAlignmentRejected:true,
   actualPhotoComparisonAndSfxReframedToApprovedSpokenWord:true,
   progressiveMobileDisclosureVerified:true,mobilePageHeightPixels:mobileLayout.height,
+  singleTapDirectorFilmNavigationVerified:true,duplicateSrtInputsHiddenWhenWordAligned:true,
   invalidImportPreservedTitle:title,screenshot};
  fs.writeFileSync(path.join(output,"studio-reimport-browser.report.json"),JSON.stringify(report,null,2)+"\n");
  console.log(JSON.stringify(report));

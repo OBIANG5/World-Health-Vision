@@ -439,3 +439,47 @@
   }
   .wvc-advanced-section>summary strong{font-size:12px}
 }
+
+/* Mobile directing workspace: one tap reaches source, narrative edit or the
+ * real Remotion Player; no additional preview/render pipeline. */
+.wvc-quick-nav{display:none}
+.wvc-subtitle-status{
+  display:flex;flex-direction:column;gap:5px;margin:6px 0 10px;
+  padding:12px;border-radius:10px;border:1px solid rgba(137,202,218,.28);
+  background:rgba(41,104,130,.18);font-size:12px;line-height:1.5;
+  color:#b9d6e4;
+}
+.wvc-subtitle-status strong{font-size:12px;color:#dff4fb}
+.wvc-board input[type="checkbox"]{
+  box-sizing:border-box;width:18px;height:18px;min-height:18px;
+  flex:0 0 18px;padding:0;margin:0 8px 0 0;
+  accent-color:#8fd8ea;cursor:pointer;
+}
+.wvc-board .wvc-inline-toggle{
+  flex-direction:row;align-items:center;gap:5px;
+  min-height:44px;line-height:1.45;letter-spacing:0;
+}
+@media(max-width:760px){
+  /* 'clip', unlike 'hidden', does not create a scrolling ancestor that
+     prevents position:sticky from following the viewport. */
+  .wvc-board{overflow:clip}
+  .wvc-quick-nav{
+    position:sticky;top:0;z-index:120;
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;padding:8px 12px;
+    background:#0c2030;border-bottom:1px solid rgba(140,201,228,.4);
+    box-shadow:0 5px 12px rgba(0,6,12,.32);
+  }
+  .wvc-quick-nav button{
+    min-height:45px;min-width:0;padding:9px 7px;
+    border-radius:9px;border:1px solid rgba(117,185,216,.45);
+    background:#153b50;color:#ddf3fc;
+    font:inherit;font-size:12px;font-weight:760;
+    cursor:pointer;white-space:normal;
+  }
+  .wvc-quick-nav button:last-child{background:#bce9f6;color:#092a3b}
+  .wvc-quick-nav button:focus-visible{outline:2px solid #e4f9ff;outline-offset:2px}
+  .wvc-inputs,.wvc-edit,.wvc-preview{
+    scroll-margin-top:70px;outline-offset:-3px;
+  }
+}

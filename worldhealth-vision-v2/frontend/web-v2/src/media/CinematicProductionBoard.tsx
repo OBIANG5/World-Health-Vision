@@ -707,6 +707,14 @@ export default function CinematicProductionBoard() {
     window.setTimeout(()=>URL.revokeObjectURL(url),1000);
     setFeedback("Projet JSON exporté. Conserve les fichiers médias dans un dossier assets/ portant les mêmes noms avant rendu.");
   };
+  const jumpToSection=(id:"wvc-sources"|"wvc-directing"|"wvc-preview")=>{
+    // The same Player is used for mobile review and actual Remotion render.
+    if(id==="wvc-preview")setPreviewMode("film");
+    const target=document.getElementById(id);
+    if(!target)return;
+    target.scrollIntoView({behavior:"smooth",block:"start"});
+    target.focus({preventScroll:true});
+  };
   return <section className="wvc-board" aria-label="Atelier de composition audiovisuelle">
     <header className="wvc-head">
       <div className="wvc-eyebrow">WORLD-VISION · CREATIVE WORKBENCH</div>
@@ -714,8 +722,13 @@ export default function CinematicProductionBoard() {
       <p>Apporte ton texte, tes photographies, tes vidéos et tes sons. Construis des plans à partir de vrais éléments, et prépare un montage exploitable par Remotion sans dépendre d'une voix imposée.</p>
       <div className="wvc-disclaimer">Espace de préparation <strong>local dans ce navigateur</strong> : les fichiers ne sont pas envoyés à GitHub ou au serveur. L'export JSON prépare un rendu par notre moteur ; il ne produit pas encore de MP4 depuis cet écran.</div>
     </header>
+    <nav className="wvc-quick-nav" aria-label="Accès direct aux trois étapes de réalisation">
+      <button type="button" onClick={()=>jumpToSection("wvc-sources")}>Sources</button>
+      <button type="button" onClick={()=>jumpToSection("wvc-directing")}>Réaliser</button>
+      <button type="button" onClick={()=>jumpToSection("wvc-preview")}>Voir le film</button>
+    </nav>
     <div className="wvc-workspace">
-      <div className="wvc-inputs">
+      <div className="wvc-inputs" id="wvc-sources" tabIndex={-1}>
         <label className="wvc-field-label" htmlFor="wvc-load-project">ROUVRIR UN PROJET WORLD-VISION (.JSON)</label>
         <input id="wvc-load-project" type="file" accept=".json,application/json" onChange={importProject}/>
         <p className="wvc-hint">Restaure les plans, la narration choisie et les sous-titres. Le JSON ne contient aucun fichier média : rattache les photos, vidéos et audios par leurs noms originaux.</p>
@@ -783,15 +796,21 @@ export default function CinematicProductionBoard() {
               Alignement invalide : {wordIssues[0].field} — {wordIssues[0].reason}
             </p>}
           </div>}
-          <label htmlFor="wvc-captions">SOUS-TITRES MINUTÉS (.SRT) — PISTE GLOBALE</label>
-          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput}
-            disabled={wordCaptions.length>0} onChange={e=>{setImportedCaptionCues(null);setSrtInput(e.target.value);}} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
-          <label htmlFor="wvc-caption-position">POSITION INITIALE DES SOUS-TITRES</label>
-          <select id="wvc-caption-position" value={captionPosition} disabled={wordCaptions.length>0} onChange={e=>{setImportedCaptionCues(null);setCaptionPosition(e.target.value as "upper"|"lower");}}>
-            <option value="upper">Haut — pour les scènes avec titres en bas</option>
-            <option value="lower">Bas — pour les scènes avec titres en haut</option>
-          </select>
-          <p className="wvc-hint" role="status">{wordCaptions.length?wordCaptions.length+" mots alignés issus de la voix choisie · pas de SRT concurrent.":parsedCaptions.error?"Erreur SRT : "+parsedCaptions.error:captionIssues.length?"Erreur : "+captionIssues[0].reason:parsedCaptions.cues.length+" sous-titres lus à 30 images/s · aucune synchronisation vocale automatique."} Un SRT doit correspondre à la prise A effectivement sélectionnée ; vérifier son alignement à l’écoute et la superposition à chaque changement de scène.</p>
+          {wordCaptions.length===0?<>
+            <label htmlFor="wvc-captions">SOUS-TITRES MINUTÉS (.SRT) — PISTE GLOBALE</label>
+            <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput}
+              onChange={e=>{setImportedCaptionCues(null);setSrtInput(e.target.value);}}
+              placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
+            <label htmlFor="wvc-caption-position">POSITION INITIALE DES SOUS-TITRES</label>
+            <select id="wvc-caption-position" value={captionPosition} onChange={e=>{setImportedCaptionCues(null);setCaptionPosition(e.target.value as "upper"|"lower");}}>
+              <option value="upper">Haut — pour les scènes avec titres en bas</option>
+              <option value="lower">Bas — pour les scènes avec titres en haut</option>
+            </select>
+            <p className="wvc-hint" role="status">{parsedCaptions.error?"Erreur SRT : "+parsedCaptions.error:captionIssues.length?"Erreur : "+captionIssues[0].reason:parsedCaptions.cues.length+" sous-titres lus à 30 images/s · aucune synchronisation vocale automatique."} Un SRT doit correspondre à la prise A effectivement sélectionnée ; vérifier son alignement à l’écoute et la superposition à chaque changement de scène.</p>
+          </>:<p className="wvc-subtitle-status" role="status">
+            <strong>{wordCaptions.length} mots alignés sur la voix choisie</strong>
+            Sous-titres synchronisés dans la timeline ; la piste SRT concurrente est désactivée pour préserver le texte et l'horodatage.
+          </p>}
           <label htmlFor="wvc-music">MUSIQUE / AMBIANCE</label>
           <select id="wvc-music" value={musicFile} onChange={e=>setMusicFile(e.target.value)}>
             <option value="">Aucune</option>
@@ -806,7 +825,7 @@ export default function CinematicProductionBoard() {
           </select>
         </div>
       </div>
-      <div className="wvc-edit">
+      <div className="wvc-edit" id="wvc-directing" tabIndex={-1}>
         <div className="wvc-edit-head"><div><span>LE CONDUCTEUR DE MONTAGE</span><h3>Plans et compositions</h3></div><button type="button" onClick={addShot}>+ Ajouter un plan</button></div>
         <div className="wvc-shots" role="list" aria-label="Ordre des plans">
           {shots.map((s,i)=><button type="button" role="listitem" key={s.id} className={"wvc-shot "+(s.id===selectedId?"selected":"")} onClick={()=>setSelectedId(s.id)}>
@@ -1008,7 +1027,7 @@ export default function CinematicProductionBoard() {
             <input value={active.foregroundCredit} maxLength={200} onChange={e=>updateShot({foregroundCredit:e.target.value})}/>
           </label>}
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
-          {shots[0]?.id===active.id&&<label className="wvc-wide">
+          {shots[0]?.id===active.id&&<label className="wvc-wide wvc-inline-toggle">
             <input type="checkbox" checked={active.titleFrameZero} onChange={e=>updateShot({titleFrameZero:e.target.checked})}/>
             Accroche immédiate : titre lisible dès la première image (TikTok et formats courts)
           </label>}
@@ -1419,7 +1438,7 @@ export default function CinematicProductionBoard() {
           {feedback&&<div className="wvc-feedback" role="status">{feedback}</div>}
         </div>
       </div>
-      <aside className="wvc-preview" id="wvc-preview">
+      <aside className="wvc-preview" id="wvc-preview" tabIndex={-1}>
         <div className="wvc-preview-title">APERÇU DE PRODUCTION · 9:16</div>
         <div className="wvc-preview-switch" aria-label="Choisir le mode de visionnage">
           <button type="button" className={previewMode==="shot"?"selected":""} onClick={()=>setPreviewMode("shot")}>
