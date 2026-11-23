@@ -1250,7 +1250,6 @@ export default function CountryDrawer({
 }: Props) {
   const lang = useLang();
   const fr = lang === "fr";
-  const [fullscreen, setFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState<DrawerTab>("overview");
   const [activeSection, setActiveSection] = useState<CountrySection>(initialSection);
   const countryBodyRef = useRef<HTMLDivElement>(null);
@@ -1263,7 +1262,7 @@ export default function CountryDrawer({
     if (body && nav) {
       const top = body.scrollTop + nav.getBoundingClientRect().top
         - body.getBoundingClientRect().top - 4;
-      const motion = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      const motion: ScrollBehavior = "auto"; // deterministic, no mid-transition country headings
       body.scrollTo({ top: Math.max(0, top), behavior: motion });
       // Six country sections stay peers. On 320–390px the tab rail is
       // horizontal: always bring the selected rubric into view without
@@ -1403,37 +1402,34 @@ export default function CountryDrawer({
   // ---------------------------------------------------------------------------
 
   return (
-    <aside className={`country-drawer ${open ? "open" : ""} ${fullscreen ? "fullscreen" : ""}`}>
+    <aside className={`country-drawer ${open ? "open" : ""}`}>
 
       {/* Lightweight utilities. Country identity lives in the editorial hero. */}
       <div className="country-drawer-header whv-country-drawer-toolbar">
         <div className="whv-country-toolbar-brand">
-          <strong>{fr ? "Explorer un pays" : "Explore a country"}</strong>
-          <span>Atlas <span aria-hidden="true">/</span> {selectedCountryIso3}</span>
+          <span className="wv4-country-breadcrumb">
+            <WorldIcon name="globe" size={15}/>
+            {fr ? "Atlas mondial" : "World atlas"}
+            <span aria-hidden="true">/</span>
+            <strong>{displayName}</strong>
+          </span>
         </div>
         <div className="country-drawer-actions">
-          {onToggleWatch && (
-            <button type="button" className={`drawer-btn${watched ? " active" : ""}`}
-              title={watched ? (fr ? "Retirer des favoris" : "Remove favorite") :
-                (fr ? "Ajouter aux favoris" : "Add favorite")}
-              aria-label={watched ? (fr ? "Retirer des favoris" : "Remove favorite") :
-                (fr ? "Ajouter aux favoris" : "Add favorite")}
-              aria-pressed={watched}
-              onClick={onToggleWatch}>{watched ? "★" : "☆"}</button>
-          )}
-          <button type="button" className="drawer-btn" title="CSV"
-            aria-label={fr ? "Exporter les données CSV" : "Export CSV data"}
-            disabled={!economicSnapshot} onClick={downloadCsv}>CSV</button>
-          <button type="button" className="drawer-btn" title="PDF"
-            aria-label={fr ? "Exporter la fiche PDF" : "Export PDF sheet"}
-            disabled={!countryDetail} onClick={() => { void downloadPdf(); }}>PDF</button>
-          <button type="button" className="drawer-btn" onClick={() => setFullscreen(!fullscreen)}
-            title={fullscreen ? (fr ? "Réduire la fiche" : "Collapse view") :
-              (fr ? "Agrandir la fiche" : "Expand view")}
-            aria-label={fullscreen ? (fr ? "Réduire la fiche" : "Collapse view") :
-              (fr ? "Agrandir la fiche" : "Expand view")}>
-            {fullscreen ? "↙" : "⤢"}
-          </button>
+          <details className="wv4-export-options">
+            <summary title={fr ? "Plus d’options et téléchargements" : "More options and exports"}
+              aria-label={fr ? "Options d’exportation" : "Export options"}>···</summary>
+            <div className="wv4-export-options-panel">
+              <strong>{fr ? "Télécharger" : "Download"}</strong>
+              <button type="button" disabled={!economicSnapshot} onClick={downloadCsv}>
+                {fr ? "Données CSV" : "CSV data"}
+              </button>
+              <button type="button" disabled={!countryDetail} onClick={() => { void downloadPdf(); }}>
+                {fr ? "Fiche PDF" : "PDF profile"}
+              </button>
+              <small>{fr ? "Seuls les documents disponibles peuvent être exportés." :
+                "Only available documents may be exported."}</small>
+            </div>
+          </details>
           <button type="button" className="drawer-btn close" onClick={onClose}
             title={t(lang, "fermer")} aria-label={t(lang, "fermer")}>×</button>
         </div>
