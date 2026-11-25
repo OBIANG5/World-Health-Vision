@@ -33,6 +33,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
   const pose=photoTrackPose(photo,local,shot.durationFrames);
   const src=resolveCreativeSource(shot.media.src);
   const accent=shot.accent??globalStyle.accent;
+  const titleNow=shot.titleFrameZero===true?1:pose.headingProgress;
   const imageTransform="translate3d("+pose.camera.panX+"px,"+
     pose.camera.panY+"px,0) scale("+pose.camera.scale+")";
   const objectPosition=Math.round((shot.focus?.x??.5)*100)+"% "+
@@ -59,7 +60,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
   }).format(number.value*pose.countProgress):"";
   const headlineSize=shot.title?fitTextOnNLines({
     text:shot.title,maxBoxWidth:850,maxLines:3,
-    fontFamily:globalStyle.editorialFont,fontWeight:810,maxFontSize:86
+    fontFamily:globalStyle.editorialFont,fontWeight:800,maxFontSize:/^[+\-]?\d[\d,. ]*%$/.test(shot.title.trim())?172:104
   }).fontSize:86;
   const subtitleSize=shot.subtitle?fitTextOnNLines({
     text:shot.subtitle,maxBoxWidth:845,maxLines:2,
@@ -122,23 +123,22 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       }}/>}
     {/* Editorial hierarchy; zones remain above platform's caption/nav bars. */}
     <div data-wv-photo-heading="true" style={{
-      position:"absolute",top:190,left:94,right:93,
-      borderLeft:"5px solid "+accent,paddingLeft:22,
-      opacity:pose.headingProgress*fading*headlineHandoffOpacity(frame,enterOverlapFrames),
-      transform:"translateY("+Math.round((1-pose.headingProgress)*28)+"px)"
+      position:"absolute",top:214,left:94,right:160,
+      opacity:titleNow*fading*(shot.titleFrameZero?1:headlineHandoffOpacity(frame,enterOverlapFrames)),
+      transform:"translateY("+Math.round((1-titleNow)*22)+"px)"
     }}>
       {shot.eyebrow&&<div dir="auto" style={{fontSize:30,fontWeight:760,
-        color:"#8ee8f8",letterSpacing:".095em",lineHeight:1.22,
+        color:"#f4f0e9",letterSpacing:".065em",lineHeight:1.22,
         textTransform:"uppercase",marginBottom:19}}>{shot.eyebrow}</div>}
       <div data-wv-title={shot.id} dir="auto" style={{
-        fontSize:headlineSize,fontWeight:825,lineHeight:1.06,
+        fontSize:headlineSize,fontWeight:800,lineHeight:1.04,
         letterSpacing:"-.045em",overflowWrap:"break-word",
         maxWidth:820,textShadow:"0 6px 30px rgba(0,0,0,.68)"
       }}>{shot.title}</div>
     </div>
     {/* Count and label are *supplied* and include a readable source label. */}
     {number&&<div data-wv-photo-metric="true" style={{
-      position:"absolute",right:94,top:1040,maxWidth:600,
+      position:"absolute",right:160,top:820,maxWidth:700,
       padding:"16px 25px",borderRadius:17,
       background:"rgba(2,17,32,.88)",
       border:"1px solid rgba(154,237,250,.57)",
@@ -165,21 +165,21 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       style={{
         // Preserve the photographic focal point above this compact data rail.
         // The chart is a later semantic re-hook, not a frame-zero decoration.
-        position:"absolute",top:1040,left:91,right:91,
-        borderRadius:20,padding:"14px 24px 12px",
-        background:"rgba(2,20,34,.91)",border:"1px solid rgba(124,223,243,.58)",
-        boxShadow:"0 18px 44px rgba(0,9,20,.45)",
+        position:"absolute",top:790,left:94,right:160,
+        borderRadius:8,padding:"20px 24px 20px",
+        background:"rgba(12,17,21,.94)",
+        boxShadow:"0 8px 26px rgba(0,0,0,.22)",
         pointerEvents:"none",opacity:chartPose.panelProgress*fading,
         transform:"translateY("+Math.round((1-chartPose.panelProgress)*26)+"px)"
       }}>
       <div dir="auto" style={{
-        color:"#e4fbff",fontSize:34,fontWeight:830,lineHeight:1.11,
+        color:"#faf7ef",fontSize:39,fontWeight:800,lineHeight:1.13,
         letterSpacing:"-.024em",marginBottom:10
       }}>{comparison.title}</div>
       {/* The zero-axis label MUST follow its actual signed-domain position.
           An asymmetric -10..20 range places zero at 1/3, NOT in the middle. */}
       <div data-wv-photo-comparison-axis="true" style={{
-        position:"relative",height:26,color:"#a9dbe8",fontSize:25,marginBottom:6
+        position:"relative",height:26,color:"#ddd9d2",fontSize:28,marginBottom:8
       }}>
         {comparison.domain.min!==0&&<span style={{
           position:"absolute",left:0,top:0
@@ -199,9 +199,9 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
         style={{marginBottom:8}}>
         <div style={{display:"flex",justifyContent:"space-between",
           alignItems:"baseline",gap:15,marginBottom:3}}>
-          <span dir="auto" style={{fontSize:28,fontWeight:710,
+          <span dir="auto" style={{fontSize:34,fontWeight:700,
             overflowWrap:"break-word",maxWidth:500}}>{bar.label}</span>
-          <strong style={{fontSize:35,fontWeight:870,letterSpacing:"-.03em",
+          <strong style={{fontSize:40,fontWeight:800,letterSpacing:"-.03em",
             fontVariantNumeric:"tabular-nums"}}>{formatComparison(bar.value)} {comparison.unit}</strong>
         </div>
         <div style={{position:"relative",width:"100%",height:14,
@@ -214,20 +214,19 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
           <div data-wv-photo-comparison-bar={i===0?"first":"second"} style={{
             position:"absolute",height:14,top:0,left:(bar.start*100)+"%",
             width:(bar.width*100)+"%",borderRadius:7,
-            background:bar.direction==="negative"?"#f2a489":accent,
-            boxShadow:"0 0 13px rgba(10,211,239,.23)"
+            background:bar.direction==="negative"?"#e8a68d":"#ece4d3"
           }}/>
         </div>
       </div>)}
       <div data-wv-photo-comparison-source="true" dir="auto" style={{
-        borderTop:"1px solid rgba(193,230,240,.24)",paddingTop:6,
-        fontSize:25,lineHeight:1.15,color:"#d0ebf0",overflowWrap:"break-word"
+        paddingTop:8,
+        fontSize:28,lineHeight:1.15,color:"#e1ddd5",overflowWrap:"break-word"
       }}>{comparison.source.publisher} · {comparison.source.dataset} · {comparison.source.asOf}</div>
     </div>}
     {shot.subtitle&&<div data-wv-photo-caption="true" dir="auto"
       style={{
-        position:"absolute",left:96,right:96,top:1355,maxHeight:200,
-        borderTop:"3px solid "+accent,paddingTop:23,overflow:"hidden",
+        position:"absolute",left:96,right:160,top:1190,maxHeight:134,
+        overflow:"hidden",
         fontSize:subtitleSize,fontWeight:510,lineHeight:1.31,
         textShadow:"0 6px 25px rgba(0,0,0,.67)",
         opacity:pose.subtitleProgress*fading,

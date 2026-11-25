@@ -52,3 +52,25 @@ test('legacy projects remain valid and unsafe cue arrays fail closed',()=>{
   assert.ok(reasons({...project(),wordCaptions:'not-an-array'}).includes('wordCaptions'));
   assert.ok(reasons({...project(),soundCues:new Array(81).fill({})}).includes('soundCues'));
 });
+
+test('same safe audio extension contract works in Chromium, Node and nested asset folders',()=>{
+  const p=project(),before=JSON.stringify(p);
+  p.soundCues[0].file='licensed/sfx/impact.WAV';
+  assert.deepEqual(attentionCueIssues(p,120),[]);
+  p.soundCues[0].file='sfx/voice.final.m4a';
+  assert.deepEqual(attentionCueIssues(p,120),[]);
+  p.soundCues[0].file='sfx/fake.wav?download=1';
+  assert.ok(reasons(p).includes('soundCues[0].file'));
+  p.soundCues[0].file='sfx/.wav';
+  assert.ok(reasons(p).includes('soundCues[0].file'));
+  p.soundCues[0].file='sfx/impact.mp3';
+  assert.deepEqual(attentionCueIssues(p,120),[]);
+  assert.ok(before.includes('sfx/reveal.wav'));
+});
+test('malformed audio filenames are rejected without Node path exceptions in the browser',()=>{
+  for(const file of [null,123,{},'', '/tmp/private.wav','../private.wav',
+    'sfx//impact.wav','sfx/../impact.wav','C:\\private.wav','https://example.test/impact.wav']){
+    const p=project();p.soundCues[0].file=file;
+    assert.ok(reasons(p).includes('soundCues[0].file'),String(file));
+  }
+});

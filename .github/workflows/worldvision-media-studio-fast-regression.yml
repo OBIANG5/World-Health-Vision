@@ -1,0 +1,96 @@
+name: World-Vision MEDIA — fast Studio project reopen and beat/audio regression
+
+# A fast editorial-product gate. The existing expensive 1080x1920
+# render/Chromium suite remains mandatory; this checks a real Studio roundtrip
+# BEFORE paying for dozens of synthetic technical renders on every edit.
+on:
+  pull_request:
+    paths:
+      - 'worldhealth-vision-v2/frontend/web-v2/src/media/**'
+      - 'worldhealth-vision-v2/services/media-renderer/creative/**'
+      - '.github/workflows/worldvision-media-studio-fast-regression.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: worldvision-media-studio-fast-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  studio-real-mobile-roundtrip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            worldhealth-vision-v2/frontend/web-v2/package-lock.json
+            worldhealth-vision-v2/services/media-renderer/package-lock.json
+      - name: Install only the existing Remotion and Studio dependency trees
+        run: |
+          npm install --no-audit --no-fund
+          npm ci --prefix ../../frontend/web-v2 --no-audit --no-fund
+      - name: Fail fast on unsafe media, drifted beat clock, or lossy JSON
+        run: |
+          node --test creative/director-beats.test.mjs creative/word-caption-contract.test.mjs creative/voice-beat-motion-sync.test.mjs creative/studio-project-io.test.mjs creative/validate-project.test.mjs creative/artistic-delivery-gate.test.mjs
+      - name: Verify real Studio and shared Remotion composition TypeScript
+        run: |
+          npm run typecheck
+          npm --prefix ../../frontend/web-v2 run build
+      - name: Start local Vite with a generated, clearly fictional image
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ../../frontend/web-v2/public/smoke output/creative
+          # This quick browser test only needs a synthetic image, not FFmpeg.
+          # Real MP4/FFprobe coverage remains in the full creative-render gate.
+          python3 - <<'PY'
+          from pathlib import Path
+          from struct import pack
+          from zlib import compress, crc32
+          w, h = 1280, 720
+          rows = bytearray()
+          for y in range(h):
+              rows.append(0)
+              for x in range(w):
+                  rows.extend((20 + 40*x//(w-1), 45 + 45*y//(h-1), 62 + 30*(x+y)//(w+h-2)))
+          def chunk(name, data):
+              return pack('>I', len(data)) + name + data + pack('>I', crc32(name + data) & 0xffffffff)
+          img = bytes((137,80,78,71,13,10,26,10)) + chunk(b'IHDR', pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0))
+          img += chunk(b'IDAT', compress(bytes(rows), 6)) + chunk(b'IEND', b'')
+          Path('../../frontend/web-v2/public/smoke/synthetic-landscape.png').write_bytes(img)
+          PY
+          test -s ../../frontend/web-v2/public/smoke/synthetic-landscape.png
+          npm --prefix ../../frontend/web-v2 run dev -- --host 127.0.0.1 --port 5173 --strictPort >/tmp/worldvision-studio-fast-vite.log 2>&1 &
+          echo $! >/tmp/worldvision-studio-fast-vite.pid
+      - name: Reopen and export the exact edited project at 390px in real Chromium
+        shell: bash
+        run: |
+          timeout --kill-after=10s 90s node creative/test-studio-reimport-browser.mjs || {
+            echo 'Studio browser smoke failed; local Vite diagnostics follow:'
+            tail -n 100 /tmp/worldvision-studio-fast-vite.log || true
+            exit 1
+          }
+          test -s output/creative/studio-reimport-browser.report.json
+          test -s output/creative/studio-reimport-mobile-390.png
+      - name: Inspect actual photo chart, captions and rejected logo in rendered mobile Player
+        run: timeout --kill-after=10s 60s node creative/test-artistic-player-browser.mjs
+      - name: Keep only synthetic browser evidence for the editor
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-fast-synthetic-regression
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/creative/studio-reimport-browser.report.json
+            worldhealth-vision-v2/services/media-renderer/output/creative/studio-reimport-mobile-390.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/artistic-mobile-*

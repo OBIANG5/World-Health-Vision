@@ -1,4 +1,5 @@
-import {Player} from "@remotion/player";
+import {Player, type PlayerRef} from "@remotion/player";
+import {useEffect, useRef} from "react";
 import {CreativeEdit, creativeDuration} from "../../../../services/media-renderer/src/CreativeEdit";
 import type {CreativeEditProps} from "../../../../services/media-renderer/src/CreativeEdit";
 
@@ -14,16 +15,32 @@ import type {CreativeEditProps} from "../../../../services/media-renderer/src/Cr
  * Always approve the actual exported MP4 before publishing.
  */
 export default function CreativeCompositionPreview({
-  props,previewId,label
+  props,previewId,label,initialFrame=0,reviewRequestId=0
 }:{
   props:CreativeEditProps;
   previewId:string;
   label:string;
+  /** Frame in the ORIGINAL complete film; the timeline and audio stay intact. */
+  initialFrame?:number;
+  /** Increment to repeat the same short review without rebuilding the Player. */
+  reviewRequestId?:number;
 }){
   const frames=Math.max(1,creativeDuration(props));
+  const frame=Math.max(0,Math.min(frames-1,Math.floor(initialFrame)));
+  const playerRef=useRef<PlayerRef>(null);
+  useEffect(()=>{
+    // The official Player keeps narration, soundtrack, captions and transitions
+    // on their original frame clock. Do not splice or mute neighbouring shots.
+    const player=playerRef.current;
+    if(!player)return;
+    player.pause();
+    player.seekTo(frame);
+  },[frame,reviewRequestId,previewId]);
   return <div className="wvc-composition-preview" aria-label={label}>
     <Player
+      ref={playerRef}
       key={previewId}
+      initialFrame={frame}
       component={CreativeEdit}
       durationInFrames={frames}
       compositionWidth={1080}

@@ -346,7 +346,6 @@ export function GeoStory({shot,globalStyle,enterOverlapFrames}:{
       position:"absolute",left:89,top:205,right:170,
       padding:"12px 18px 16px",
       background:"linear-gradient(90deg,rgba(2,14,28,.94),rgba(2,18,35,.80))",
-      borderLeft:"4px solid #61edff",
       borderRadius:8,
       boxShadow:"0 8px 27px rgba(0,7,21,.25)",
       opacity:easing(norm(local,6,26))*fadeOut

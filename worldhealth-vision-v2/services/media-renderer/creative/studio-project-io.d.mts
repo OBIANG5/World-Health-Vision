@@ -1,5 +1,8 @@
 import type {CreativeShot} from "../src/CreativeEdit";
 import type {CaptionCue} from "../src/caption-timeline.mjs";
+import type {DirectorBeat} from "./director-beats.mjs";
+import type {SourceSoundCue} from "./attention-cues.mjs";
+import type {WordCaption} from "./word-caption-contract.mjs";
 type SavedShot=Omit<CreativeShot,"media"|"foreground"> & {
   media?:{kind:"image"|"video";file:string;credit?:string;trimBefore?:number};
   foreground?:{file:string;credit?:string};
@@ -9,7 +12,7 @@ export type SavedStudioProject={
  style?:{background?:string;ink?:string;accent?:string};
  shots:SavedShot[];voice?:{file:string;label?:string;volume?:number}|null;
  music?:{file:string;label?:string;volume?:number}|null;
- outro?:{file:string;durationFrames:number}|null;captions?:CaptionCue[];
+ outro?:{file:string;durationFrames:number}|null;captions?:CaptionCue[];directorBeats?:DirectorBeat[];soundCues?:SourceSoundCue[];wordCaptions?:WordCaption[];
 };
 export const STUDIO_PROJECT_FORMAT:"worldvision-creative-project-v1";
 export function parseStudioProject(text:string):SavedStudioProject;

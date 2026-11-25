@@ -7,6 +7,9 @@
  */
 import {captionCueIssues} from "../src/caption-timeline.mjs";
 import {photoComparisonIssues} from "../src/photo-comparison-motion.mjs";
+import {directorBeatIssues} from "./director-beats.mjs";
+import {attentionCueIssues} from "./attention-cues.mjs";
+import {wordCaptionIssues} from "./word-caption-contract.mjs";
 
 export const STUDIO_PROJECT_FORMAT="worldvision-creative-project-v1";
 const SHOT_TYPES=new Set(["documentary","kinetic","evidence","number","clean_video","focus_reveal","document_focus","geo_story","country_focus","photo_story","data_story"]);
@@ -60,7 +63,7 @@ export function parseStudioProject(text){
   if(typeof text!=="string"||text.length>2_000_000)fail("taille supérieure à 2 Mo ou entrée non textuelle.");
   let p;
   try{p=JSON.parse(text);}catch{fail("JSON invalide.");}
-  only(p,["schema_version","id","title","script","fps","aspect_ratio","style","shots","voice","music","outro","captions"],"projet");
+  only(p,["schema_version","id","title","script","fps","aspect_ratio","style","shots","voice","music","outro","captions","directorBeats","soundCues","wordCaptions"],"projet");
   if(p.schema_version!==STUDIO_PROJECT_FORMAT||p.fps!==30||p.aspect_ratio!=="9:16")
     fail("format/30 fps/9:16 incompatibles.");
   if(!SLUG.test(p.id)||!readable(p.title)||p.title.length>160||
@@ -198,6 +201,33 @@ export function parseStudioProject(text){
   if(Array.isArray(p.captions)){
     for(const [i,cue] of p.captions.entries())only(cue,["startFrame","endFrame","text","position"],"captions["+i+"]");
   }
+  if(p.directorBeats!==undefined){
+    if(!Array.isArray(p.directorBeats))fail("directorBeats : attendu un tableau.");
+    const allowed=["id","shotId","startFrame","endFrame","intent",
+      "idea","spokenExcerpt","proofNote","visualDirection","audioDirection"];
+    for(const [index,beat] of p.directorBeats.entries())
+      only(beat,allowed,"directorBeats["+index+"]");
+    const directorProblems=directorBeatIssues(p,filmFrames);
+    if(directorProblems.length)fail(directorProblems[0].field+" : "+directorProblems[0].reason);
+  }
+  if(p.soundCues!==undefined){
+    if(!Array.isArray(p.soundCues))fail("soundCues : attendu un tableau.");
+    for(const [index,cue] of p.soundCues.entries()){
+      only(cue,["file","startFrame","durationFrames","volume","label"],"soundCues["+index+"]");
+      // Studio deliberately only binds simple user-imported filenames, while
+      // the standalone CLI renderer may also accept safe relative subfolders.
+      filename(cue.file,AUDIO,"soundCues["+index+"].file");
+    }
+    const audioIssues=attentionCueIssues({soundCues:p.soundCues},filmFrames);
+    if(audioIssues.length)fail(audioIssues[0].field+" : "+audioIssues[0].reason);
+  }
+  if(p.wordCaptions!==undefined){
+    if(!Array.isArray(p.wordCaptions))fail("wordCaptions : attendu un tableau.");
+    for(const [index,word] of p.wordCaptions.entries())
+      only(word,["text","startFrame","endFrame","emphasis"],"wordCaptions["+index+"]");
+    const wordProblems=wordCaptionIssues(p,filmFrames);
+    if(wordProblems.length)fail(wordProblems[0].field+" : "+wordProblems[0].reason);
+  }
   const problems=captionCueIssues(p.captions,filmFrames);
   if(problems.length)fail(problems[0].field+" : "+problems[0].reason);
   return p;
@@ -217,6 +247,7 @@ export function studioAssetNames(project){
     if(s.foreground?.file)all.push(s.foreground.file);
   }
   for(const a of [project.voice,project.music,project.outro])if(a?.file)all.push(a.file);
+  for(const cue of project.soundCues??[])if(cue.file)all.push(cue.file);
   return [...new Set(all)];
 }
 

@@ -5,6 +5,14 @@ import type {CaptionCue} from "../../../../services/media-renderer/src/caption-t
 import {parseStudioProject,studioShotToEditor,studioAssetNames,frameCaptionsToSrt} from "../../../../services/media-renderer/creative/studio-project-io.mjs";
 import type {PhotoMotion} from "../../../../services/media-renderer/src/photo-motion-tracks.mjs";
 import {photoComparisonIssues} from "../../../../services/media-renderer/src/photo-comparison-motion.mjs";
+import {reviewFrameRange} from "../../../../services/media-renderer/creative/review-range.mjs";
+import {directorBeatIssues,DIRECTOR_INTENTS} from "../../../../services/media-renderer/creative/director-beats.mjs";
+import type {DirectorBeat,DirectorIntent} from "../../../../services/media-renderer/creative/director-beats.mjs";
+import {attentionCueIssues} from "../../../../services/media-renderer/creative/attention-cues.mjs";
+import type {SourceSoundCue} from "../../../../services/media-renderer/creative/attention-cues.mjs";
+import {wordCaptionIssues} from "../../../../services/media-renderer/creative/word-caption-contract.mjs";
+import {alignBeatToSpokenWords,snapPhotoTrackToBeat,snapSoundCueToBeat} from "../../../../services/media-renderer/creative/voice-beat-motion-sync.mjs";
+import type {WordCaption} from "../../../../services/media-renderer/creative/word-caption-contract.mjs";
 import type {DataDirection} from "../../../../services/media-renderer/src/data-motion-engine.mjs";
 import atlasData from "world-atlas/countries-110m.json";
 
@@ -269,10 +277,21 @@ export default function CinematicProductionBoard() {
   const [feedback,setFeedback]=useState("");
   const [croppedPreview,setCroppedPreview]=useState(true);
   const [previewMode,setPreviewMode]=useState<PreviewMode>("source");
+  const [filmReview,setFilmReview]=useState<{shotId:string;frame:number;requestId:number}|null>(null);
+  const [directorBeats,setDirectorBeats]=useState<DirectorBeat[]>([]);
+  const [soundCues,setSoundCues]=useState<SourceSoundCue[]>([]);
+  // These words come ONLY from the existing source-voice alignment CLI.
+  // No browser ASR, guessed timestamps or automatic script corrections.
+  const [wordCaptions,setWordCaptions]=useState<WordCaption[]>([]);
+  const [newSfxFile,setNewSfxFile]=useState("");
   const createdUrls=useRef<string[]>([]);
   useEffect(()=>()=>{for(const url of createdUrls.current)URL.revokeObjectURL(url);},[]);
   const active=useMemo(()=>shots.find(s=>s.id===selectedId)??shots[0],[shots,selectedId]);
-  const requiredNames=new Set([...shots.flatMap(s=>[s.mediaName,s.foregroundName]),voiceFile,musicFile,outroFile].filter(Boolean));
+  const activeWordSpan=useMemo(()=>{
+    try{return reviewFrameRange({shots},selectedId,0).selectedShotSourceFrames;}
+    catch{return null;}
+  },[shots,selectedId]);
+  const requiredNames=new Set([...shots.flatMap(s=>[s.mediaName,s.foregroundName]),voiceFile,musicFile,outroFile,...soundCues.map(cue=>cue.file)].filter(Boolean));
   const unresolvedAssets=[...requiredNames].filter(name=>!files.some(file=>file.name===name));
   const activeAsset=files.find(f=>f.name===active.mediaName);
   const foregroundAsset=files.find(f=>f.name===active.foregroundName);
@@ -346,9 +365,14 @@ export default function CinematicProductionBoard() {
   const shotsDuration=shots.reduce((sum,s,i)=>
     sum+s.durationFrames-(i<shots.length-1&&s.transitionAfter!=="cut"?s.transitionFrames:0),0);
   const duration=shotsDuration+(outroFile?90:0);
+  const directorIssues=directorBeatIssues({shots,script,directorBeats},shotsDuration);
+  const soundIssues=attentionCueIssues({soundCues},shotsDuration);
+  const wordIssues=wordCaptionIssues({script,voice:voiceFile?{file:voiceFile}:null,
+    captions:parsedCaptions.cues,wordCaptions},shotsDuration);
   const captionIssues=captionCueIssues(parsedCaptions.cues,shotsDuration);
   const captionValid=!parsedCaptions.error&&captionIssues.length===0;
-  const fullFilmCanRender=canExport&&captionValid&&duration>0&&duration<=18000;
+  const fullFilmCanRender=canExport&&captionValid&&soundIssues.length===0&&
+    wordIssues.length===0&&duration>0&&duration<=18000;
 
   /**
    * Complete local timeline for editorial review — EXACT Remotion composition
@@ -392,7 +416,11 @@ export default function CinematicProductionBoard() {
         ...((shot.template==="geo_story"||shot.template==="country_focus")?{geo:buildGeo(shot)}:{})
       };
     }),
-    captions:parsedCaptions.cues,
+    captions:wordCaptions.length?[]:parsedCaptions.cues,
+    wordCaptions,
+    soundCues:soundCues.map(cue=>({src:files.find(f=>f.name===cue.file)?.url??"",
+      startFrame:cue.startFrame,durationFrames:cue.durationFrames,
+      volume:cue.volume??0.25,label:cue.label})),
     narration:voiceFile&&files.find(f=>f.name===voiceFile)
       ? {src:files.find(f=>f.name===voiceFile)!.url,volume:1,label:"Narration sélectionnée"}
       :null,
@@ -403,7 +431,7 @@ export default function CinematicProductionBoard() {
       ? {src:files.find(f=>f.name===outroFile)!.url,durationFrames:90}
       :null,
     visualStyle:{background:"#0b1721",ink:"#f6f8fa",accent}
-  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues]);
+  }),[shots,files,projectName,script,voiceFile,musicFile,outroFile,accent,parsedCaptions.cues,soundCues,wordCaptions]);
   const importProject=async(e:ChangeEvent<HTMLInputElement>)=>{
     const file=e.currentTarget.files?.[0];
     e.currentTarget.value="";
@@ -424,6 +452,10 @@ export default function CinematicProductionBoard() {
       setSrtInput(frameCaptionsToSrt(saved.captions??[]));
       setCaptionPosition(saved.captions?.[0]?.position??"upper");
       setPreviewMode("source");
+      setFilmReview(null);
+      setDirectorBeats(saved.directorBeats??[]);
+      setSoundCues(saved.soundCues??[]);
+      setWordCaptions(saved.wordCaptions??[]);
       setFeedback("Projet repris : "+restored.length+" plan(s), "+(saved.captions?.length??0)+" sous-titre(s). "+
         (missing.length?"Réimporte les médias d'origine avant le rendu : "+missing.join(", "):"Médias correspondants déjà présents dans cette session."));
     }catch(error){setFeedback("Import refusé. Le montage en cours reste inchangé. "+
@@ -458,6 +490,10 @@ export default function CinematicProductionBoard() {
   };
   const removeShot=()=>{
     if(shots.length===1)return;
+    if(directorBeats.some(beat=>beat.shotId===selectedId)){
+      setFeedback("Ce plan possède des décisions éditoriales : retire ou déplace explicitement ses séquences avant de le supprimer.");
+      return;
+    }
     const next=shots.filter(s=>s.id!==selectedId);
     setShots(next);setSelectedId(next[0].id);
   };
@@ -467,13 +503,177 @@ export default function CinematicProductionBoard() {
     const list=[...shots];[list[index],list[next]]=[list[next],list[index]];
     setShots(list);
   };
+  const updateSoundCue=(index:number,change:Partial<SourceSoundCue>)=>
+    setSoundCues(old=>old.map((cue,i)=>i===index?{...cue,...change}:cue));
+  const addSoundCue=()=>{
+    const f=files.find(file=>file.name===newSfxFile&&file.kind==="audio");
+    if(!f){
+      setFeedback("Choisis explicitement un véritable fichier audio importé et autorisé pour ajouter un SFX.");
+      return;
+    }
+    const start=reviewFrameRange({shots},selectedId,0).selectedShotSourceFrames[0];
+    if(start+4>shotsDuration){
+      setFeedback("Durée restante insuffisante pour un accent sonore d'au moins quatre images.");
+      return;
+    }
+    setSoundCues(old=>[...old,{file:f.name,startFrame:start,
+      durationFrames:Math.min(12,shotsDuration-start),volume:.25,label:""}]);
+    setFeedback("Accent ajouté au film : écoute et corrige son timing, niveau et droit d'utilisation avant publication.");
+  };
+  const updateDirectorBeat=(id:string,change:Partial<DirectorBeat>)=>
+    setDirectorBeats(old=>old.map(beat=>beat.id===id?{...beat,...change}:beat));
+  const addDirectorBeat=()=>{
+    try{
+      const [shotStart,shotLast]=reviewFrameRange({shots},selectedId,0).selectedShotSourceFrames;
+      const shotEnd=shotLast+1;
+      let cursor=shotStart;
+      let end=shotEnd;
+      for(const beat of [...directorBeats].sort((a,b)=>a.startFrame-b.startFrame)){
+        if(beat.endFrame<=cursor)continue;
+        if(beat.startFrame>cursor){
+          end=Math.min(shotEnd,beat.startFrame);
+          if(end-cursor>=6)break;
+        }
+        cursor=Math.max(cursor,beat.endFrame);
+        end=shotEnd;
+      }
+      if(end-cursor<6||cursor>=shotEnd){
+        setFeedback("Aucune place pour une nouvelle séquence sur ce plan : ajuste les timecodes existants.");
+        return;
+      }
+      const used=new Set(directorBeats.map(beat=>beat.id));
+      let next=directorBeats.length+1;
+      while(used.has("beat-"+String(next).padStart(2,"0")))next++;
+      const beat:DirectorBeat={
+        id:"beat-"+String(next).padStart(2,"0"),shotId:selectedId,
+        startFrame:cursor,endFrame:Math.min(cursor+90,end),
+        intent:"explain",idea:"",spokenExcerpt:"",proofNote:"",
+        visualDirection:"",audioDirection:""
+      };
+      setDirectorBeats(old=>[...old,beat].sort((a,b)=>a.startFrame-b.startFrame));
+      setFeedback("Nouvelle séquence ajoutée au timecode original ; décris son sens, sa preuve et son mouvement avant export.");
+    }catch(error){
+      setFeedback("Impossible de placer une séquence sur un montage invalide : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
+  /** Source-locked 30fps voice -> semantic beat. Never guesses an ASR result. */
+  const syncBeatToVoice=(beatId:string)=>{
+    try{
+      const result=alignBeatToSpokenWords({
+        shots,script,voice:voiceFile?{file:voiceFile}:null,
+        captions:parsedCaptions.cues,wordCaptions,directorBeats
+      },beatId);
+      setDirectorBeats(result.directorBeats);
+      setFeedback("Relance calée sur la vraie prise vocale à "+
+        (result.sourceStartFrame/30).toFixed(2)+" s. Aucun mot, média ni son modifié.");
+    }catch(error){
+      setFeedback("Synchronisation voix refusée : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
+  /** Move an existing, validated PHOTO layer; never fabricate a comparison. */
+  const syncPhotoToBeat=(beatId:string,layer:"comparison"|"metric"|"focus")=>{
+    try{
+      if(active.template!=="photo_story"||
+        (layer==="comparison"&&!active.photoUseComparison)||
+        (layer==="metric"&&!active.photoUseMetric)||
+        (layer==="focus"&&!active.photoUseFocus)||
+        !validPhoto(active))
+        throw Error("Choisir d'abord une piste PHOTO complète, activée et sourcée.");
+      const result=snapPhotoTrackToBeat({shots,script,directorBeats},beatId,
+        active.photoSettings[layer],layer);
+      updatePhotoTrack(layer,{
+        startFrame:result.track.startFrame,
+        endFrame:result.track.endFrame
+      });
+      setFeedback("Piste "+layer+" calée à "+(result.sourceStartFrame/30).toFixed(2)+
+        " s dans le vrai film. Chiffres, source, durée de révélation et autres pistes inchangés.");
+    }catch(error){
+      setFeedback("Révélation PHOTO refusée : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
+  const syncSfxToBeat=(cueIndex:number,beatId:string)=>{
+    if(!beatId)return;
+    try{
+      const result=snapSoundCueToBeat({shots,directorBeats,soundCues},beatId,cueIndex);
+      setSoundCues(result.soundCues);
+      setFeedback("Effet sonore existant calé à "+(result.sourceStartFrame/30).toFixed(2)+
+        " s, sans changer son fichier, sa durée ni son volume.");
+    }catch(error){
+      setFeedback("Synchronisation sonore refusée : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
+  const reviewDirectorBeat=(beat:DirectorBeat)=>{
+    if(!fullFilmCanRender){
+      setFeedback("Corrige les médias et la timeline avant de revoir cette séquence dans le film.");
+      return;
+    }
+    if(directorIssues.length){
+      setFeedback("Corrige le conducteur avant cette revue : "+directorIssues[0].reason);
+      return;
+    }
+    setFilmReview(previous=>({
+      shotId:beat.shotId,frame:Math.max(0,beat.startFrame-15),
+      requestId:(previous?.requestId??0)+1
+    }));
+    setPreviewMode("film");
+    setFeedback("Revue du "+beat.intent+" : "+(beat.startFrame/30).toFixed(2)+
+      " s sur l'horloge originale; voix et musique conservées si elles sont importées.");
+    window.requestAnimationFrame(()=>{
+      document.getElementById("wvc-preview")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+    });
+  };
+  const reviewSelectedShotInContext=()=>{
+    if(!fullFilmCanRender){
+      setFeedback("Impossible de revoir ce plan en contexte : renseigne les médias, le script et les sous-titres valides du film.");
+      return;
+    }
+    try{
+      // Re-use the already tested P0.1 frame clock. 15 source frames (0.5 s)
+      // before the shot let the editor hear the preceding narration/music.
+      const review=reviewFrameRange({shots},selectedId);
+      setFilmReview(previous=>({
+        shotId:selectedId,
+        frame:review.frameRange[0],
+        requestId:(previous?.requestId??0)+1
+      }));
+      setPreviewMode("film");
+      setFeedback("Lecture contextuelle prête : "+selectedId+" à "+(review.frameRange[0]/30).toFixed(2)+
+        " s sur la timeline originale, avec voix, musique et sous-titres uniquement s'ils sont fournis.");
+      window.requestAnimationFrame(()=>{
+        document.getElementById("wvc-preview")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+      });
+    }catch(error){
+      setFeedback("Le raccord ou la durée des plans empêche cette revue ciblée : "+
+        (error instanceof Error?error.message:String(error)));
+    }
+  };
   const exportProject=()=>{
+    if(wordIssues.length){
+      setFeedback("Alignement vocal invalide : "+wordIssues[0].field+" — "+wordIssues[0].reason);
+      return;
+    }
+    if(soundIssues.length){
+      setFeedback("Corrige les SFX sourcés avant export : "+soundIssues[0].field+" — "+soundIssues[0].reason);
+      return;
+    }
+    if(directorIssues.length){
+      setFeedback("Corrige la direction éditoriale avant export : "+
+        directorIssues[0].field+" — "+directorIssues[0].reason);
+      return;
+    }
     if(!canExport){setFeedback("Ajoute un script et les médias indispensables aux plans choisis.");return;}
     if(!captionValid){setFeedback("Corrige les sous-titres avant export : "+(parsedCaptions.error||captionIssues[0]?.reason));return;}
     const project={
       schema_version:"worldvision-creative-project-v1",id:loadedProjectId??mkSlug(projectName),
       title:projectName,script,fps:30,aspect_ratio:"9:16",
-      ...(parsedCaptions.cues.length?{captions:parsedCaptions.cues}:{}),
+      ...(wordCaptions.length?{wordCaptions}:{}),
+      ...(parsedCaptions.cues.length&&!wordCaptions.length?{captions:parsedCaptions.cues}:{}),
+      ...(directorBeats.length?{directorBeats}:{}),
+      ...(soundCues.length?{soundCues}:{}),
       style:{background:"#0b1721",ink:"#f6f8fa",accent},
       shots:shots.map(s=>({
         id:s.id,durationFrames:s.durationFrames,template:s.template,
@@ -507,6 +707,14 @@ export default function CinematicProductionBoard() {
     window.setTimeout(()=>URL.revokeObjectURL(url),1000);
     setFeedback("Projet JSON exporté. Conserve les fichiers médias dans un dossier assets/ portant les mêmes noms avant rendu.");
   };
+  const jumpToSection=(id:"wvc-sources"|"wvc-directing"|"wvc-preview")=>{
+    // The same Player is used for mobile review and actual Remotion render.
+    if(id==="wvc-preview")setPreviewMode("film");
+    const target=document.getElementById(id);
+    if(!target)return;
+    target.scrollIntoView({behavior:"smooth",block:"start"});
+    target.focus({preventScroll:true});
+  };
   return <section className="wvc-board" aria-label="Atelier de composition audiovisuelle">
     <header className="wvc-head">
       <div className="wvc-eyebrow">WORLD-VISION · CREATIVE WORKBENCH</div>
@@ -514,8 +722,13 @@ export default function CinematicProductionBoard() {
       <p>Apporte ton texte, tes photographies, tes vidéos et tes sons. Construis des plans à partir de vrais éléments, et prépare un montage exploitable par Remotion sans dépendre d'une voix imposée.</p>
       <div className="wvc-disclaimer">Espace de préparation <strong>local dans ce navigateur</strong> : les fichiers ne sont pas envoyés à GitHub ou au serveur. L'export JSON prépare un rendu par notre moteur ; il ne produit pas encore de MP4 depuis cet écran.</div>
     </header>
+    <nav className="wvc-quick-nav" aria-label="Accès direct aux trois étapes de réalisation">
+      <button type="button" onClick={()=>jumpToSection("wvc-sources")}>Sources</button>
+      <button type="button" onClick={()=>jumpToSection("wvc-directing")}>Réaliser</button>
+      <button type="button" onClick={()=>jumpToSection("wvc-preview")}>Voir le film</button>
+    </nav>
     <div className="wvc-workspace">
-      <div className="wvc-inputs">
+      <div className="wvc-inputs" id="wvc-sources" tabIndex={-1}>
         <label className="wvc-field-label" htmlFor="wvc-load-project">ROUVRIR UN PROJET WORLD-VISION (.JSON)</label>
         <input id="wvc-load-project" type="file" accept=".json,application/json" onChange={importProject}/>
         <p className="wvc-hint">Restaure les plans, la narration choisie et les sous-titres. Le JSON ne contient aucun fichier média : rattache les photos, vidéos et audios par leurs noms originaux.</p>
@@ -534,7 +747,8 @@ export default function CinematicProductionBoard() {
         {unresolvedAssets.length>0&&<p className="wvc-hint" role="alert">Médias à rattacher avant le rendu : {unresolvedAssets.join(", ")}. Aucune substitution automatique.</p>}
         <div className="wvc-audio">
           <label htmlFor="wvc-voice">VOIX / NARRATION</label>
-          <select id="wvc-voice" value={voiceFile} onChange={e=>setVoiceFile(e.target.value)}>
+          <select id="wvc-voice" value={voiceFile} disabled={wordCaptions.length>0}
+            onChange={e=>setVoiceFile(e.target.value)}>
             <option value="">Aucune — la voix pourra être choisie plus tard</option>
             {voiceFile&&!files.some(f=>f.name===voiceFile)&&<option value={voiceFile} disabled>Fichier absent : {voiceFile}</option>}
             {files.filter(f=>f.kind==="audio").map(f=><option key={f.name} value={f.name}>{f.name}</option>)}
@@ -558,14 +772,45 @@ export default function CinematicProductionBoard() {
             })}
           </div>
           <p className="wvc-hint">Écoute les deux prises du même texte au même volume. Aucune voix n'est générée automatiquement ; seule la prise principale est exportée dans le projet.</p>
-          <label htmlFor="wvc-captions">SOUS-TITRES MINUTÉS (.SRT) — PISTE GLOBALE</label>
-          <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput} onChange={e=>{setImportedCaptionCues(null);setSrtInput(e.target.value);}} placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
-          <label htmlFor="wvc-caption-position">POSITION INITIALE DES SOUS-TITRES</label>
-          <select id="wvc-caption-position" value={captionPosition} onChange={e=>{setImportedCaptionCues(null);setCaptionPosition(e.target.value as "upper"|"lower");}}>
-            <option value="upper">Haut — pour les scènes avec titres en bas</option>
-            <option value="lower">Bas — pour les scènes avec titres en haut</option>
-          </select>
-          <p className="wvc-hint" role="status">{parsedCaptions.error?"Erreur SRT : "+parsedCaptions.error:captionIssues.length?"Erreur : "+captionIssues[0].reason:parsedCaptions.cues.length+" sous-titres lus à 30 images/s · aucune synchronisation vocale automatique."} Un SRT doit correspondre à la prise A effectivement sélectionnée ; vérifier son alignement à l’écoute et la superposition à chaque changement de scène.</p>
+          {wordCaptions.length>0&&<div className="wvc-aligned-words" aria-label="Mots réels alignés et mise en relief">
+            <strong>MOTS ALIGNÉS AVEC LA PRISE VOCALE FOURNIE</strong>
+            <p className="wvc-hint">Importés depuis un projet avec alignement extérieur préalablement contrôlé.
+              Les temps et le texte sont verrouillés : choisis seulement les mots forts.
+              La source audio reste celle du projet ; une autre prise exige un nouvel alignement.</p>
+            <div className="wvc-word-cues">
+              {wordCaptions.map((word,index)=>({word,index}))
+                .filter(({word})=>activeWordSpan&&word.startFrame<=activeWordSpan[1]&&
+                  word.endFrame>activeWordSpan[0])
+                .map(({word,index})=><button key={index} type="button"
+                  aria-pressed={word.emphasis===true}
+                  title={word.text+" · "+(word.startFrame/30).toFixed(2)+"–"+(word.endFrame/30).toFixed(2)+" s"}
+                  onClick={()=>setWordCaptions(old=>old.map((current,i)=>i===index
+                    ?{...current,emphasis:current.emphasis!==true}:current))}>
+                  <span>{word.text}</span>
+                  <small>{(word.startFrame/30).toFixed(2)} s</small>
+                </button>)}
+            </div>
+            <p className="wvc-hint">Mots synchronisés : {wordCaptions.length}. Cliquer sur un mot change seulement sa mise en relief,
+              jamais son orthographe ni son horodatage. Réécouter la scène entière pour valider la musique et le rythme.</p>
+            {wordIssues.length>0&&<p className="wvc-director-error" role="alert">
+              Alignement invalide : {wordIssues[0].field} — {wordIssues[0].reason}
+            </p>}
+          </div>}
+          {wordCaptions.length===0?<>
+            <label htmlFor="wvc-captions">SOUS-TITRES MINUTÉS (.SRT) — PISTE GLOBALE</label>
+            <textarea id="wvc-captions" className="wvc-script" rows={5} value={srtInput}
+              onChange={e=>{setImportedCaptionCues(null);setSrtInput(e.target.value);}}
+              placeholder={"1\\n00:00:00,000 --> 00:00:02,200\\nPremière phrase de la vraie voix."}/>
+            <label htmlFor="wvc-caption-position">POSITION INITIALE DES SOUS-TITRES</label>
+            <select id="wvc-caption-position" value={captionPosition} onChange={e=>{setImportedCaptionCues(null);setCaptionPosition(e.target.value as "upper"|"lower");}}>
+              <option value="upper">Haut — pour les scènes avec titres en bas</option>
+              <option value="lower">Bas — pour les scènes avec titres en haut</option>
+            </select>
+            <p className="wvc-hint" role="status">{parsedCaptions.error?"Erreur SRT : "+parsedCaptions.error:captionIssues.length?"Erreur : "+captionIssues[0].reason:parsedCaptions.cues.length+" sous-titres lus à 30 images/s · aucune synchronisation vocale automatique."} Un SRT doit correspondre à la prise A effectivement sélectionnée ; vérifier son alignement à l’écoute et la superposition à chaque changement de scène.</p>
+          </>:<p className="wvc-subtitle-status" role="status">
+            <strong>{wordCaptions.length} mots alignés sur la voix choisie</strong>
+            Sous-titres synchronisés dans la timeline ; la piste SRT concurrente est désactivée pour préserver le texte et l'horodatage.
+          </p>}
           <label htmlFor="wvc-music">MUSIQUE / AMBIANCE</label>
           <select id="wvc-music" value={musicFile} onChange={e=>setMusicFile(e.target.value)}>
             <option value="">Aucune</option>
@@ -580,7 +825,7 @@ export default function CinematicProductionBoard() {
           </select>
         </div>
       </div>
-      <div className="wvc-edit">
+      <div className="wvc-edit" id="wvc-directing" tabIndex={-1}>
         <div className="wvc-edit-head"><div><span>LE CONDUCTEUR DE MONTAGE</span><h3>Plans et compositions</h3></div><button type="button" onClick={addShot}>+ Ajouter un plan</button></div>
         <div className="wvc-shots" role="list" aria-label="Ordre des plans">
           {shots.map((s,i)=><button type="button" role="listitem" key={s.id} className={"wvc-shot "+(s.id===selectedId?"selected":"")} onClick={()=>setSelectedId(s.id)}>
@@ -589,6 +834,169 @@ export default function CinematicProductionBoard() {
         </div>
         <div className="wvc-shot-form">
           <div className="wvc-control-row"><strong>PLAN : {active.id}</strong><div><button type="button" onClick={()=>move(-1)} aria-label="Monter le plan">↑</button><button type="button" onClick={()=>move(1)} aria-label="Descendre le plan">↓</button><button type="button" onClick={removeShot} disabled={shots.length===1}>Supprimer</button></div></div>
+          <div className="wvc-director-sheet" aria-label="Conducteur des hooks et re-hooks">
+            <div className="wvc-director-head">
+              <div><strong>DIRECTION DU RÉCIT · HOOKS ET RE-HOOKS</strong>
+                <small>Des idées vérifiables, à un timecode réel. Aucune phrase, donnée ou voix n'est créée par cet outil.</small>
+              </div>
+              <button type="button" onClick={addDirectorBeat}>+ Séquence</button>
+            </div>
+            {directorBeats.filter(beat=>beat.shotId===active.id).length===0&&
+              <p className="wvc-hint">Aucune séquence renseignée sur ce plan. Ajoute celles qui apportent une information nouvelle ; n'en invente pas pour remplir la vidéo.</p>}
+            {directorBeats.filter(beat=>beat.shotId===active.id).map(beat=>
+              <div className="wvc-director-beat" key={beat.id}>
+                <div className="wvc-director-row"><strong>{beat.id} · {(beat.startFrame/30).toFixed(2)}–{(beat.endFrame/30).toFixed(2)} s</strong>
+                  <div>
+                    {wordCaptions.length>0&&<button type="button" className="wvc-sync-action"
+                      disabled={!beat.spokenExcerpt.trim()||wordIssues.length>0}
+                      onClick={()=>syncBeatToVoice(beat.id)}
+                      title="Aligner l'intervalle de cette relance sur les mots exacts de la prise sélectionnée">
+                      Caler à la voix
+                    </button>}
+                    {active.template==="photo_story"&&active.photoUseComparison&&
+                      <button type="button" className="wvc-sync-action"
+                        disabled={!validPhoto(active)}
+                        onClick={()=>syncPhotoToBeat(beat.id,"comparison")}>
+                        Caler PHOTO×DATA
+                      </button>}
+                    {active.template==="photo_story"&&active.photoUseMetric&&
+                      <button type="button" className="wvc-sync-action"
+                        disabled={!validPhoto(active)}
+                        onClick={()=>syncPhotoToBeat(beat.id,"metric")}>
+                        Caler chiffre PHOTO
+                      </button>}
+                    {active.template==="photo_story"&&active.photoUseFocus&&
+                      <button type="button" className="wvc-sync-action"
+                        disabled={!validPhoto(active)}
+                        onClick={()=>syncPhotoToBeat(beat.id,"focus")}>
+                        Caler focus PHOTO
+                      </button>}
+                    <button type="button" disabled={!fullFilmCanRender||directorIssues.length>0}
+                      onClick={()=>reviewDirectorBeat(beat)}>▶ Écouter en contexte</button>
+                    <button type="button" onClick={()=>setDirectorBeats(old=>old.filter(item=>item.id!==beat.id))}>Retirer</button>
+                  </div>
+                </div>
+                <div className="wvc-beat-summary">
+                  <strong>{beat.idea.trim()||"Séquence à préciser"}</strong>
+                  <small>{beat.proofNote.trim()?"Preuve notée : "+beat.proofNote:"Source ou justification à compléter"}</small>
+                </div>
+                <details className="wvc-beat-edit">
+                  <summary>Modifier le récit, les preuves et les timecodes</summary>
+                  <div className="wvc-beat-edit-fields">
+                <label>RÔLE NARRATIF
+                  <select value={beat.intent} onChange={e=>updateDirectorBeat(beat.id,{intent:e.target.value as DirectorIntent})}>
+                    {DIRECTOR_INTENTS.map(intent=><option key={intent} value={intent}>{
+                      ({hook:"Accroche",explain:"Explication",rehook:"Relance de sens",
+                        reveal:"Révélation",impact:"Conséquence",payoff:"Résolution"} as Record<DirectorIntent,string>)[intent]
+                    }</option>)}
+                  </select>
+                </label>
+                <div className="wvc-two-col">
+                  <label>DÉBUT · SECONDES DU FILM
+                    <input type="number" min="0" step=".033333" value={(beat.startFrame/30).toFixed(3)}
+                      onChange={e=>updateDirectorBeat(beat.id,{startFrame:Math.round(Number(e.target.value)*30)})}/>
+                  </label>
+                  <label>FIN · SECONDES DU FILM
+                    <input type="number" min="0" step=".033333" value={(beat.endFrame/30).toFixed(3)}
+                      onChange={e=>updateDirectorBeat(beat.id,{endFrame:Math.round(Number(e.target.value)*30)})}/>
+                  </label>
+                </div>
+                <label>CE QUE LE SPECTATEUR APPREND
+                  <textarea maxLength={280} rows={2} value={beat.idea}
+                    onChange={e=>updateDirectorBeat(beat.id,{idea:e.target.value})}
+                    placeholder="Un fait, un contraste ou une conséquence réellement nouvelle"/>
+                </label>
+                <label>PHRASE EXACTE DU SCRIPT · LAISSER VIDE SI SILENCE
+                  <textarea maxLength={420} rows={2} value={beat.spokenExcerpt}
+                    onChange={e=>updateDirectorBeat(beat.id,{spokenExcerpt:e.target.value})}
+                    placeholder="Copier un passage mot pour mot du texte approuvé (pas de synchronisation devinée)"/>
+                </label>
+                <label>PREUVE / SOURCE / DATE (À CONTRÔLER AVANT PUBLICATION)
+                  <textarea maxLength={320} rows={2} value={beat.proofNote}
+                    onChange={e=>updateDirectorBeat(beat.id,{proofNote:e.target.value})}
+                    placeholder="Source primaire, document, vrai rush, attribution ou représentation explicitée"/>
+                </label>
+                <label>MOUVEMENT DIRECTEUR · COMPOSITION DU PLAN EXISTANT
+                  <textarea maxLength={400} rows={2} value={beat.visualDirection}
+                    onChange={e=>updateDirectorBeat(beat.id,{visualDirection:e.target.value})}
+                    placeholder="Quel élément bouge, quand et pourquoi ? Photo + données + texte sans surcharge."/>
+                </label>
+                <label>INTENTION SONORE · NOTE, PAS UN SFX AUTOMATIQUE
+                  <input maxLength={240} value={beat.audioDirection}
+                    onChange={e=>updateDirectorBeat(beat.id,{audioDirection:e.target.value})}
+                    placeholder="Entrée voix, respiration, accent bref autorisé, baisse de musique"/>
+                </label>
+                  </div>
+                </details>
+              </div>)}
+            {directorIssues.length>0&&<p className="wvc-director-error" role="alert">
+              Direction incomplète : {directorIssues[0].field} — {directorIssues[0].reason}
+            </p>}
+          </div>
+          <div className="wvc-sfx-sheet" aria-label="Accents sonores réels sur l'horloge du film">
+            <strong>ACCENTS SONORES · FILM ORIGINAL</strong>
+            <p className="wvc-hint">Les notes sonores ci-dessus ne jouent rien. Ici, chaque fichier doit être importé et autorisé.
+              Les cues sont rendus par Remotion au même timecode dans le Player et le MP4.</p>
+            <div className="wvc-sfx-add">
+              <label>FICHIER SOURCE SFX
+                <select value={newSfxFile} onChange={e=>setNewSfxFile(e.target.value)}>
+                  <option value="">Choisir un fichier audio importé</option>
+                  {files.filter(file=>file.kind==="audio").map(file=>
+                    <option key={file.name} value={file.name}>{file.name}</option>)}
+                </select>
+              </label>
+              <button type="button" disabled={!newSfxFile} onClick={addSoundCue}>
+                + Accenter ce plan
+              </button>
+            </div>
+            {soundCues.length===0&&<p className="wvc-hint">Aucun accent audio ajouté : les voix et la musique restent gérées séparément.</p>}
+            {soundCues.map((cue,index)=>
+              <div className="wvc-sfx-cue" key={index}>
+                <div className="wvc-director-row">
+                  <strong>SFX {index+1} · {cue.file}</strong>
+                  <button type="button" onClick={()=>setSoundCues(old=>old.filter((_,i)=>i!==index))}>Retirer</button>
+                </div>
+                <div className="wvc-two-col">
+                  <label>DÉBUT · SECONDES FILM
+                    <input type="number" min="0" step=".033333" value={(cue.startFrame/30).toFixed(3)}
+                      onChange={e=>updateSoundCue(index,{startFrame:Math.round(Number(e.target.value)*30)})}/>
+                  </label>
+                  <label>DURÉE · SECONDES
+                    <input type="number" min=".1333" step=".033333" value={(cue.durationFrames/30).toFixed(3)}
+                      onChange={e=>updateSoundCue(index,{durationFrames:Math.round(Number(e.target.value)*30)})}/>
+                  </label>
+                </div>
+                <div className="wvc-two-col">
+                  <label>GAIN MAX · 0 À 0,8
+                    <input type="number" min="0" max=".8" step=".05" value={cue.volume??.25}
+                      onChange={e=>updateSoundCue(index,{volume:Number(e.target.value)})}/>
+                  </label>
+                  <label>LIBELLÉ / PROVENANCE
+                    <input maxLength={90} value={cue.label??""}
+                      onChange={e=>updateSoundCue(index,{label:e.target.value})}/>
+                  </label>
+                </div>
+                {directorBeats.length>0&&<label className="wvc-sfx-beat-link">
+                  CALER CET EFFET SONORE SUR UN MOMENT DU RÉCIT
+                  <select value="" onChange={e=>syncSfxToBeat(index,e.target.value)}>
+                    <option value="">Choisir une relance existante…</option>
+                    {directorBeats.map(beat=><option key={beat.id} value={beat.id}>
+                      {beat.id} · {beat.intent} · {(beat.startFrame/30).toFixed(2)} s
+                    </option>)}
+                  </select>
+                </label>}
+              </div>)}
+            {soundIssues.length>0&&<p role="alert" className="wvc-director-error">
+              SFX invalide : {soundIssues[0].field} — {soundIssues[0].reason}
+            </p>}
+          </div>
+          <div className="wvc-context-review">
+            <button type="button" disabled={!fullFilmCanRender} onClick={reviewSelectedShotInContext}>
+              ▶ Revoir ce plan avec son contexte
+            </button>
+            <small>Aller directement au raccord précédent dans le vrai film Remotion : même voix, musique,
+              sous-titres et plans voisins. Aucun rendu complet supplémentaire.</small>
+          </div>
           <div className="wvc-two-col">
             <label>TYPE DE COMPOSITION<select value={active.template} onChange={e=>updateShot({template:e.target.value as Template,geoShowCamera:e.target.value==="geo_story"?active.geoShowCamera:false,geoShowRoute:e.target.value==="geo_story"?active.geoShowRoute:false,geoShowCountry:e.target.value==="country_focus"?true:active.geoShowCountry,durationFrames:e.target.value==="focus_reveal"?Math.max(active.durationFrames,90):e.target.value==="document_focus"?Math.max(active.durationFrames,115):(e.target.value==="geo_story"||e.target.value==="country_focus"||e.target.value==="photo_story"||e.target.value==="data_story")?Math.max(active.durationFrames,150):active.durationFrames})}>{templates.map(t=><option key={t} value={t}>{TEMPLATE_LABELS[t]}</option>)}</select></label>
             <label>DURÉE DU PLAN (SECONDES)<input type="number" min=".5" max="120" step=".1" value={active.durationFrames/30} onChange={e=>{const v=Number(e.target.value);if(Number.isFinite(v)&&v>=.5&&v<=120)updateShot({durationFrames:Math.round(v*30)});}}/></label>
@@ -619,12 +1027,17 @@ export default function CinematicProductionBoard() {
             <input value={active.foregroundCredit} maxLength={200} onChange={e=>updateShot({foregroundCredit:e.target.value})}/>
           </label>}
           <label className="wvc-wide">TITRE À L'ÉCRAN<input value={active.title} maxLength={150} onChange={e=>updateShot({title:e.target.value})} placeholder="Court, lisible, sans surcharge"/></label>
-          {shots[0]?.id===active.id&&<label className="wvc-wide">
+          {shots[0]?.id===active.id&&<label className="wvc-wide wvc-inline-toggle">
             <input type="checkbox" checked={active.titleFrameZero} onChange={e=>updateShot({titleFrameZero:e.target.checked})}/>
             Accroche immédiate : titre lisible dès la première image (TikTok et formats courts)
           </label>}
           <label className="wvc-wide">TEXTE SECONDAIRE<input value={active.subtitle} onChange={e=>updateShot({subtitle:e.target.value})} placeholder="Une seule idée claire"/></label>
-          {active.template==="photo_story"&&<div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
+          {active.template==="photo_story"&&<details className="wvc-advanced-section" data-wv-advanced="photo_story">
+            <summary>
+              <strong>PHOTO — Caméra, comparaison et preuves</strong>
+              <small>{active.photoUseComparison?"PHOTO×DATA sourcé activé":active.photoUseMetric?"Chiffre sourcé activé":active.photoUseFocus?"Focus photo activé":"Caméra et mouvements indépendants"}</small>
+            </summary>
+            <div className="wvc-focus-control" aria-label="PHOTO : direction de six pistes indépendantes">
             <div className="wvc-focus-heading">
               <strong>PHOTO MOTION — UNE IMAGE, PLUSIEURS ANIMATIONS SIMULTANÉES</strong>
               <span>Source réelle obligatoire. Les pistes ont des temps indépendants : caméra, détourage externe, révélation du même original, focus manuel, chiffre sourcé et typographie. Aucun objet ou fait généré.</span>
@@ -746,8 +1159,14 @@ export default function CinematicProductionBoard() {
               <span className="wvc-hint">Les valeurs restent exactes pendant toute l'animation : seule la longueur des barres se dévoile. Les négatifs partent vers la gauche du zéro, les positifs vers la droite. La date, les catégories et l'échelle ne sont jamais inventées.</span>
             </div>}
             <p className="wvc-hint">Ces réglages sont des pistes de montage, pas une preuve des faits. Le masque et le focus utilisent les pixels de l'image importée. Vérifie cadrage et sujet après mouvement ; seuls les assets aux droits connus peuvent être diffusés.</p>
-          </div>}
-          {active.template==="data_story"&&<div className="wvc-focus-control" aria-label="Data Motion — graphiques et sources éditoriales">
+            </div>
+          </details>}
+          {active.template==="data_story"&&<details className="wvc-advanced-section" data-wv-advanced="data_story">
+            <summary>
+              <strong>DATA — Chiffres, graphiques et provenance</strong>
+              <small>{validData(active)?"Série contrôlée sur la timeline":"Données et provenance à compléter"}</small>
+            </summary>
+            <div className="wvc-focus-control" aria-label="Data Motion — graphiques et sources éditoriales">
             <div className="wvc-focus-heading">
               <strong>DATA MOTION — GRAPHIQUES ANIMÉS ET SOURCE VÉRIFIABLE</strong>
               <span>Le chiffre, son échelle, sa date et sa provenance viennent uniquement de tes données. Le moteur n'invente ni cours de Bourse, ni classement, ni série financière.</span>
@@ -816,8 +1235,14 @@ export default function CinematicProductionBoard() {
             <p className="wvc-hint">{validData(active)
               ?"Format, données, échelle et source cohérents pour une prévisualisation technique. Vérifie toujours les faits."
               :"À compléter : données (3–16 lignes suivant le graphique), source, date, bornes et unités cohérentes."}</p>
-          </div>}
-          {active.template==="geo_story"&&<div className="wvc-focus-control" aria-label="Direction du plan géographique">
+            </div>
+          </details>}
+          {active.template==="geo_story"&&<details className="wvc-advanced-section" data-wv-advanced="geo_story">
+            <summary>
+              <strong>GEO — Carte, caméra et informations</strong>
+              <small>{validGeo(active)?"Repères géographiques configurés":"Coordonnées à compléter"}</small>
+            </summary>
+            <div className="wvc-focus-control" aria-label="Direction du plan géographique">
             <div className="wvc-focus-heading">
               <strong>CARTE DU MONDE — DIRECTION GÉOGRAPHIQUE</strong>
               <span>Frontières Natural Earth réelles. Toutes les positions, routes et données doivent être choisies et vérifiées manuellement. Pas de chiffres ou de géocodage inventés.</span>
@@ -913,8 +1338,14 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updateShot({geoMetricUnit:e.target.value})}/></label>
             </div>}
             <p className="wvc-hint">Une photographie ou un extrait vidéo importé dans « Média source » apparaît dans la même composition que le globe, l'arc, les chiffres et les titres. Aucun élément n'est censé illustrer une actualité sans provenance vérifiée.</p>
-          </div>}
-          {active.template==="country_focus"&&<div className="wvc-focus-control" aria-label="Direction d'un pays / Motion GEO-2">
+            </div>
+          </details>}
+          {active.template==="country_focus"&&<details className="wvc-advanced-section" data-wv-advanced="country_focus">
+            <summary>
+              <strong>PAYS — Carte détaillée et données</strong>
+              <small>{active.geoCountryId?"Pays sélectionné et source à contrôler":"Sélectionner une géométrie réelle"}</small>
+            </summary>
+            <div className="wvc-focus-control" aria-label="Direction d'un pays / Motion GEO-2">
             <div className="wvc-focus-heading">
               <strong>GEO-2 · PAYS EN DÉTAIL — CARTE ET MÉDIAS MULTICOUCHES</strong>
               <span>Choisir une vraie géométrie Natural Earth 1:10m. Le contexte vient du 1:50m. La caméra, la silhouette, le média, la donnée et le texte sont animés indépendamment.</span>
@@ -943,7 +1374,8 @@ export default function CinematicProductionBoard() {
                 onChange={e=>updateShot({geoMetricUnit:e.target.value})}/></label>
             </div>}
             <p className="wvc-hint">Un marqueur doit appartenir au pays sélectionné selon la géométrie de l'atlas. Le validateur serveur refuse les positions extérieures. Photo/vidéo et éventuel détourage transparent se choisissent dans les champs « Média source » et « Détourage » au-dessus. Aucun chiffre, droit d'image ou événement n'est vérifié automatiquement.</p>
-          </div>}
+            </div>
+          </details>}
           {active.template==="document_focus"&&<div className="wvc-focus-control" aria-label="Sélection de la zone du document à inspecter">
             <div className="wvc-focus-heading">
               <strong>ZONE DU DOCUMENT À METTRE EN LUMIÈRE</strong>
@@ -1001,18 +1433,18 @@ export default function CinematicProductionBoard() {
         <div className="wvc-export">
           <div className="wvc-export-top"><strong>MASTER VISÉ · 9:16 · 1080×1920 · 30 ips</strong><span>{(duration/30).toFixed(1)} secondes</span></div>
           <p>Une fois le JSON exporté, les médias peuvent être montés par le moteur Remotion de World‑Vision. Les effets professionnels avancés ou génératifs resteront accessibles par des outils spécialisés.</p>
-          <button type="button" disabled={!canExport||!captionValid} onClick={exportProject}>Exporter le projet de montage (.json)</button>
+          <button type="button" disabled={!canExport||!captionValid||directorIssues.length>0||soundIssues.length>0||wordIssues.length>0} onClick={exportProject}>Exporter le projet de montage (.json)</button>
           <a href={path} target="_blank" rel="noopener noreferrer">Voir le processus de rendu et les limites ↗</a>
           {feedback&&<div className="wvc-feedback" role="status">{feedback}</div>}
         </div>
       </div>
-      <aside className="wvc-preview">
+      <aside className="wvc-preview" id="wvc-preview" tabIndex={-1}>
         <div className="wvc-preview-title">APERÇU DE PRODUCTION · 9:16</div>
         <div className="wvc-preview-switch" aria-label="Choisir le mode de visionnage">
           <button type="button" className={previewMode==="shot"?"selected":""} onClick={()=>setPreviewMode("shot")}>
             <span aria-hidden="true">▶</span> Plan animé
           </button>
-          <button type="button" className={previewMode==="film"?"selected":""} onClick={()=>setPreviewMode("film")}>
+          <button type="button" className={previewMode==="film"?"selected":""} onClick={()=>{setFilmReview(null);setPreviewMode("film");}}>
             <span aria-hidden="true">▶</span> Film entier
           </button>
           <button type="button" className={previewMode==="source"?"selected":""} onClick={()=>setPreviewMode("source")}>
@@ -1029,7 +1461,15 @@ export default function CinematicProductionBoard() {
             </Suspense> : <div className="wvc-player-loading">{active.template==="geo_story"?"Valide le titre, le centre géographique et les éventuels points, trajets ou chiffres avant de prévisualiser.":"Ajoute un visuel et un titre conforme à ce plan avant de visionner sa véritable animation."}</div>
           ) : previewMode==="film" ? (
             fullFilmCanRender ? <Suspense fallback={<div className="wvc-player-loading">Préparation de la timeline Remotion complète…</div>}>
-              <RealCreativePreview props={fullFilmProps} previewId="film-complet" label="Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"/>
+              <RealCreativePreview
+                props={fullFilmProps}
+                previewId="film-complet"
+                initialFrame={filmReview?.frame??0}
+                reviewRequestId={filmReview?.requestId??0}
+                label={filmReview
+                  ?"Révision ciblée du plan "+filmReview.shotId+" dans le film original, avec piste vocale et musique importées"
+                  :"Visionnage du reportage intégral avec ses transitions et les pistes audio sélectionnées"}
+              />
             </Suspense> : <div className="wvc-player-loading">Le film complet exige un script, des plans valides et leurs médias. Maximum 10 minutes dans ce profil.</div>
           ) : <>
           {active.template==="document_focus"&&activeAsset?.kind==="image"

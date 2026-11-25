@@ -76,7 +76,6 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
     <div data-wv-data-heading="true" style={{
       position:"absolute",top:169,left:94,right:90,
       opacity:headlineOpacity,transform:"translateY("+Math.round(17*(1-beat.intro))+"px)",
-      borderLeft:"5px solid "+accent,paddingLeft:19
     }}>
       <div style={{fontSize:25,fontWeight:780,color:"#a4f6fb",
         letterSpacing:".09em",marginBottom:12}}>{shot.eyebrow||chartModeLabel}</div>
@@ -171,7 +170,7 @@ export function DataMotion({shot,globalStyle,enterOverlapFrames}:{
     {/* D/E: interpretation and provenance are independent tracks. */}
     {summaryText&&<div data-wv-data-caption="true" dir="auto" style={{
       position:"absolute",top:1305,left:100,right:100,
-      borderTop:"3px solid "+accent,paddingTop:16,maxHeight:91,
+      maxHeight:91,
       fontSize:summarySize,lineHeight:1.27,fontWeight:510,
       opacity:beat.notes*fadeOut,overflow:"hidden"
     }}>{summaryText}</div>}

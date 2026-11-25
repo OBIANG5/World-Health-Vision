@@ -4,6 +4,7 @@ import {TransitionSeries, linearTiming} from "@remotion/transitions";
 import {fade} from "@remotion/transitions/fade";
 import {slide} from "@remotion/transitions/slide";
 import {fitTextOnNLines} from "@remotion/layout-utils";
+import {loadFont as loadDMSans} from "@remotion/google-fonts/DMSans";
 import {GeoStory} from "./GeoStory";
 import {CountryFocus} from "./CountryFocus";
 import {PhotoMultilayer} from "./PhotoMultilayer";
@@ -80,7 +81,7 @@ export type CreativeEditProps = {
 const clamp={extrapolateLeft:"clamp",extrapolateRight:"clamp"} as const;
 const DEFAULT_BG="#0b1721";
 const DEFAULT_ACCENT="#8bbecf";
-const DEFAULT_FONT="'Helvetica Neue',Arial,sans-serif";
+const editorialTypeface=()=>loadDMSans("normal",{weights:["400","500","600","700","800"],subsets:["latin"]}).fontFamily;
 const reveal=(f:number,delay:number,duration:number)=>interpolate(f,[delay,delay+duration],[0,1],clamp);
 
 /**
@@ -146,7 +147,6 @@ function FocusReveal({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;gl
   const shadowOpacity=interpolate(expand,[0,1],[.6,0]);
   const titleSpring=spring({frame:frame-enterOverlapFrames-29,fps,config:{mass:1,damping:25,stiffness:96}});
   const textIn=Math.max(0,Math.min(1,titleSpring));
-  const lineIn=ease(beat(31,57));
   const overlineIn=ease(beat(32,50));
   const textMask=Math.max(0,Math.min(1,titleSpring));
   // Use the existing layout engine's font metrics rather than brittle
@@ -195,10 +195,7 @@ function FocusReveal({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;gl
       display:"flex",flexDirection:"column",alignItems:"flex-start",
       opacity:textFadeOut(frame,shot.durationFrames,shot.transitionAfter==="cut"?0:(shot.transitionFrames??0))
     }}>
-      <div style={{
-        background:shot.accent??globalStyle.accent,width:Math.round(lineIn*90),height:5,
-        marginBottom:29,opacity:lineIn
-      }}/>
+
       {shot.title&&<div data-wv-title={shot.id} dir="auto" style={{
         fontSize:titleSize,fontWeight:815,letterSpacing:"-.047em",lineHeight:1.07,
         whiteSpace:"pre-line",overflowWrap:"break-word",
@@ -301,9 +298,7 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
       position:"absolute",top:242,left:88,right:165,
       opacity:ease(beat(6,19))*holdOut
     }}>
-      <div style={{
-        height:4,width:78,background:accent,marginBottom:24
-      }}/>
+
       {shot.eyebrow&&<div dir="auto" style={{
         fontSize:23,fontWeight:760,letterSpacing:".09em",
         lineHeight:1.25,color:"#c4e5f2",overflowWrap:"anywhere"
@@ -353,7 +348,6 @@ function DocumentFocus({shot,globalStyle,enterOverlapFrames}:{
     <div data-wv-document-caption={shot.id} style={{
       position:"absolute",left:89,right:162,bottom:mobileSafe?352:470,
       padding:"30px 0 18px",
-      borderTop:"2px solid rgba(140,207,229,.6)",
       background:"linear-gradient(180deg,rgba(4,16,27,.97),rgba(4,16,27,.96))",
       boxShadow:"0 0 28px 11px rgba(4,16,27,.65)",
       opacity:titleIn
@@ -378,7 +372,6 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
   const accent=shot.accent??globalStyle.accent;
   const kinetic=shot.template==="kinetic";
   const numeric=shot.template==="number";
-  const evidence=shot.template==="evidence";
   const clean=shot.template==="clean_video";
   const move=spring({frame:frame-enterOverlapFrames,fps,config:{mass:1,damping:24,stiffness:90}});
   if(shot.template==="focus_reveal")return <FocusReveal shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
@@ -398,7 +391,7 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
     ? fitTextOnNLines({
         text:shot.title,maxBoxWidth:865,maxLines:3,
         fontFamily:globalStyle.editorialFont,fontWeight:790,
-        maxFontSize:numeric?166:kinetic?104:76,
+        maxFontSize:numeric?172:kinetic?116:84,
       }).fontSize
     : 76;
   const bodySize=shot.subtitle
@@ -430,7 +423,7 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
       }}>
         <div style={{maxWidth:888}}>
           {shot.eyebrow&&<div style={{
-            color:accent,textTransform:"uppercase",fontSize:25,fontWeight:700,
+            color:"#f1eee8",textTransform:"uppercase",fontSize:30,fontWeight:700,
             letterSpacing:"0.17em",lineHeight:1.25,marginBottom:25,
             opacity:immediateHeadline?1:reveal(frame,enterOverlapFrames+5,15)
           }}>{shot.eyebrow}</div>}
@@ -441,8 +434,8 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
                 <div data-wv-title={shot.id} style={{
                   fontSize:textSize,
                   lineHeight:numeric?.94:kinetic?1.04:1.09,
-                  fontWeight:numeric?850:790,
-                  letterSpacing:numeric?"-0.065em":"-0.04em",
+                  fontWeight:800,
+                  letterSpacing:numeric?"-0.055em":"-0.035em",
                   whiteSpace:"pre-line",overflowWrap:"break-word",
                   opacity,transform:"translateY("+startTextY+"px)",
                   textShadow:glow,
@@ -455,11 +448,7 @@ function CinematicShot({shot,globalStyle,enterOverlapFrames}:{shot:CreativeShot;
             transform:"translateY("+Math.round((1-subtitleFade)*23)+"px)",
             textShadow:glow,
           }}>{shot.subtitle}</div>}
-          {evidence&&<div style={{
-            position:"absolute",left:64,top:"30%",height:"39%",width:5,
-            background:accent,transform:"scaleY("+reveal(frame,4,20)+")",
-            transformOrigin:"top",
-          }}/>}
+
           {shot.footnote&&<div style={{
             marginTop:34,color:"#d5e2e8",fontSize:22,lineHeight:1.35,
             opacity:reveal(frame,23,20)
@@ -484,14 +473,16 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
     background:props.visualStyle?.background??DEFAULT_BG,
     ink:props.visualStyle?.ink??"#f6f8fa",
     accent:props.visualStyle?.accent??DEFAULT_ACCENT,
-    editorialFont:props.visualStyle?.editorialFont??DEFAULT_FONT
+    editorialFont:props.visualStyle?.editorialFont??editorialTypeface()
   };
   const timelineFrames=creativeDuration({...props,brandOutro:null});
   const children:React.ReactNode[]=[];
   const mobileEvidenceRanges:Array<{startFrame:number;endFrame:number}>=[];
+  const photoRanges:Array<{startFrame:number;endFrame:number}>=[];
   let sourceCursor=0;
   props.shots.forEach((shot,index)=>{
     const enterOverlapFrames=index>0?(transitionOf(props.shots[index-1])?.frames??0):0;
+    if(shot.template==="photo_story")photoRanges.push({startFrame:sourceCursor,endFrame:sourceCursor+shot.durationFrames});
     if(shot.template==="document_focus"&&shot.evidencePresentation==="mobile-safe"){
       mobileEvidenceRanges.push({
         startFrame:sourceCursor+enterOverlapFrames,
@@ -508,15 +499,14 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
       if(t)children.push(<TransitionSeries.Transition key={"transition-"+shot.id} presentation={t.presentation} timing={linearTiming({durationInFrames:t.frames})}/>);
     }
   });
-  return <AbsoluteFill style={{background:base.background}}>
+  return <AbsoluteFill data-wv-brand-state={props.showOfficialBrand?"blocked_legacy_asset":"not_requested"} style={{background:base.background}}>
     <TransitionSeries>{children}</TransitionSeries>
-    {props.showOfficialBrand&&<div data-wv-official-brand="true" style={{
-      position:"absolute",right:72,top:84,width:240,zIndex:70,pointerEvents:"none"
-    }}><Img src={staticFile("brand/world-vision-official.png")} style={{width:"100%",height:"auto",objectFit:"contain"}}/></div>}
+    {/* Rejected legacy paper logo must never be shown. No invented replacement.
+        A verified current transparent media brand master is required. */}
     {props.wordCaptions&&props.wordCaptions.length>0
       ? <AttentionTypography words={props.wordCaptions} accent={base.accent}
-          mobileEvidenceRanges={mobileEvidenceRanges}/>
-      : props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions} mobileEvidenceRanges={mobileEvidenceRanges}/>}
+          mobileEvidenceRanges={mobileEvidenceRanges} photoRanges={photoRanges}/>
+      : props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions} mobileEvidenceRanges={mobileEvidenceRanges} photoRanges={photoRanges}/>}
     {props.narration&&<Sequence durationInFrames={timelineFrames} name="Voix choisie / fournie">
       <Audio src={resolveCreativeSource(props.narration.src)} volume={props.narration.volume??1}/>
     </Sequence>}

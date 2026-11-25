@@ -2,7 +2,7 @@
   margin:30px 0 40px;overflow:hidden;border-radius:22px;
   border:1px solid rgba(158,188,209,.25);color:#f0f6fa;
   background:#0c1823;box-shadow:0 14px 58px rgba(4,12,22,.12);
-  font-family:inherit;
+  font-family:"DM Sans",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 .wvc-head{padding:34px clamp(22px,3.5vw,48px);background:linear-gradient(118deg,#142b3d,#0c1823 76%);border-bottom:1px solid rgba(158,188,209,.18)}
 .wvc-eyebrow,.wvc-field-label,.wvc-preview-title{font-size:11px;font-weight:790;letter-spacing:.13em;color:#92bdcf}
@@ -241,4 +241,245 @@
 .wvc-document-source small{
   position:absolute;left:8.52%;bottom:10.4%;right:13%;
   color:#bed7e4;line-height:1.35;font-size:11px;font-weight:700
+}
+
+/* Edit-first review: audition a precise story beat inside the real film. */
+.wvc-context-review{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  padding:13px 14px;border:1px solid rgba(151,208,225,.24);
+  border-radius:11px;background:linear-gradient(115deg,rgba(69,148,180,.13),rgba(18,48,66,.20));
+}
+.wvc-context-review button{
+  flex:1 1 205px;min-height:42px;padding:10px 13px;
+  color:#092638;background:#c6edfb;border:1px solid #b5e0ef;
+  font:inherit;font-size:12px;font-weight:770;border-radius:8px;cursor:pointer;
+}
+.wvc-context-review button:hover:not(:disabled){background:#edfaff}
+.wvc-context-review button:disabled{opacity:.47;cursor:not-allowed}
+.wvc-context-review small{
+  flex:1 1 230px;color:#a9c9d7;font-size:11px;line-height:1.45;
+}
+#wvc-preview{scroll-margin-block-start:18px}
+
+/* Director beats: semantic information, proof and a true original-film clock. */
+.wvc-director-sheet{
+  display:flex;flex-direction:column;gap:12px;padding:15px;
+  border:1px solid rgba(144,204,227,.26);border-radius:12px;
+  background:linear-gradient(155deg,rgba(19,63,82,.30),rgba(11,27,39,.65));
+}
+.wvc-director-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.wvc-director-head>div{display:flex;flex-direction:column;gap:5px}
+.wvc-director-head strong{color:#e0f4fc;font-size:11px;letter-spacing:.075em}
+.wvc-director-head small{color:#9ebfcf;font-size:11px;line-height:1.5}
+.wvc-director-head button,.wvc-director-row button{
+  min-height:39px;border-radius:8px;padding:9px 11px;white-space:nowrap;
+  border:1px solid #54758a;background:#1a4257;color:#e4f4fc;
+  font:inherit;font-size:11px;font-weight:750;cursor:pointer;
+}
+.wvc-director-head button:hover,.wvc-director-row button:hover:not(:disabled){background:#28536a}
+.wvc-director-row button:disabled{opacity:.45;cursor:not-allowed}
+.wvc-director-beat{
+  display:flex;flex-direction:column;gap:12px;padding:14px;border-radius:9px;
+  border:1px solid rgba(153,193,214,.18);background:rgba(3,19,29,.44)
+}
+.wvc-director-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.wvc-director-row strong{font-size:11px;color:#c8e8f6;font-variant-numeric:tabular-nums}
+.wvc-director-row>div{display:flex;flex-wrap:wrap;gap:6px}
+.wvc-director-beat label{
+  display:flex;flex-direction:column;gap:7px;color:#accad8;
+  font-size:11px;font-weight:730;letter-spacing:.025em;
+}
+.wvc-director-beat textarea{min-height:63px;font-size:12px}
+.wvc-director-beat input{font-size:12px}
+.wvc-director-error{
+  border-left:3px solid #f0aa8c;color:#ffdfca;
+  padding:9px 12px;margin:0;background:rgba(187,73,48,.10);
+  font-size:11px;line-height:1.5;
+}
+@media(max-width:560px){
+ .wvc-director-head{align-items:flex-start;flex-direction:column}
+ .wvc-director-head button{width:100%}
+ .wvc-director-row>div{width:100%}
+ .wvc-director-row button{flex:1}
+}
+
+/* Original-clock licensed audio cues. This is a REAL Remotion track. */
+.wvc-sfx-sheet{
+  display:flex;flex-direction:column;gap:11px;padding:15px;border-radius:12px;
+  border:1px solid rgba(150,198,214,.26);background:rgba(8,36,51,.45)
+}
+.wvc-sfx-sheet>strong{font-size:11px;letter-spacing:.07em;color:#d5f2fe}
+.wvc-sfx-sheet>.wvc-hint{margin:0}
+.wvc-sfx-add{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.wvc-sfx-add label,.wvc-sfx-cue label{
+  display:flex;flex-direction:column;gap:7px;flex:1 1 190px;
+  font-size:11px;font-weight:730;color:#abc9d8
+}
+.wvc-sfx-add button,.wvc-sfx-cue button{
+  min-height:41px;padding:8px 11px;background:#17425b;color:#dbf1fb;
+  border:1px solid #547f95;border-radius:8px;font:inherit;
+  font-size:11px;font-weight:760;cursor:pointer
+}
+.wvc-sfx-add button:disabled{opacity:.45;cursor:not-allowed}
+.wvc-sfx-cue{
+  display:flex;flex-direction:column;gap:11px;padding:12px 13px;border-radius:10px;
+  background:#0c2332;border:1px solid rgba(142,183,205,.20)
+}
+@media(max-width:560px){.wvc-sfx-add button{width:100%}}
+
+/* Approved REAL spoken words, never caption text inferred from a rough SRT. */
+.wvc-aligned-words{
+  border:1px solid rgba(142,207,222,.25);border-radius:11px;
+  padding:14px;background:rgba(16,53,68,.55);display:flex;
+  flex-direction:column;gap:10px;
+}
+.wvc-aligned-words>strong{font-size:11px;color:#d9f4fd;letter-spacing:.07em}
+.wvc-aligned-words .wvc-hint{margin:0}
+.wvc-word-cues{display:flex;flex-wrap:wrap;gap:6px;max-height:235px;overflow:auto}
+.wvc-word-cues button{
+  border:1px solid rgba(145,190,210,.25);border-radius:7px;
+  background:#112c3c;color:#d6ecf4;padding:7px 9px;
+  display:flex;flex-direction:column;gap:3px;align-items:start;
+  font:inherit;font-size:12px;font-weight:700;cursor:pointer;
+  min-height:44px;max-width:100%;
+}
+.wvc-word-cues button[aria-pressed="true"]{
+  background:#d9f6fb;color:#082b3f;border-color:#75cce6;
+  box-shadow:inset 0 -2px 0 #1a647d;
+}
+.wvc-word-cues small{font-size:10px;font-weight:500;font-variant-numeric:tabular-nums;opacity:.75}
+.wvc-aligned-words .wvc-director-error{margin:0}
+.wvc-board textarea:disabled,.wvc-board select:disabled{opacity:.56;cursor:not-allowed}
+@media(max-width:430px){
+  .wvc-word-cues{max-height:190px}
+  .wvc-word-cues button{min-height:46px}
+}
+
+/* One-click alignment: actual authored voice -> existing PHOTO/DATA/SFX motion.
+ * The action is visually subordinate to source/proof and the film player. */
+.wvc-director-row .wvc-sync-action{
+  border-color:rgba(125,204,221,.6);
+  color:#c4eff9;
+  background:#183a4b;
+}
+.wvc-director-row .wvc-sync-action:hover:not(:disabled){background:#27576c}
+.wvc-sfx-cue .wvc-sfx-beat-link{
+  margin-top:4px;
+  color:#abcad9;
+}
+.wvc-sfx-beat-link select{
+  min-height:42px;
+  font-size:12px;
+  width:100%;
+}
+@media(max-width:560px){
+  .wvc-director-row>div{align-items:stretch}
+  .wvc-director-row .wvc-sync-action{flex:1 1 42%;white-space:normal}
+}
+
+/* Progressive disclosure: story and playback stay visible, expert parameters
+ * remain fully editable on demand. Native details/summary for keyboard/mobile. */
+.wvc-advanced-section{
+  border:1px solid rgba(147,201,220,.27);
+  border-radius:12px;background:#102b3b;
+  margin:13px 0;overflow:hidden;
+}
+.wvc-advanced-section>summary,
+.wvc-beat-edit>summary{
+  display:flex;align-items:center;flex-wrap:wrap;
+  gap:7px 14px;list-style:none;min-height:52px;cursor:pointer;
+  padding:13px 16px;color:#d7f0fa;font-size:12px;
+  font-weight:760;line-height:1.35;
+}
+.wvc-advanced-section>summary::-webkit-details-marker,
+.wvc-beat-edit>summary::-webkit-details-marker{display:none}
+.wvc-advanced-section>summary::after,
+.wvc-beat-edit>summary::after{
+  content:"+";margin-left:auto;flex-shrink:0;
+  font-size:21px;font-weight:400;color:#92c9dc;
+}
+.wvc-advanced-section[open]>summary::after,
+.wvc-beat-edit[open]>summary::after{content:"−"}
+.wvc-advanced-section>summary:focus-visible,
+.wvc-beat-edit>summary:focus-visible{
+  outline:2px solid #9dd7ef;outline-offset:-3px;border-radius:8px;
+}
+.wvc-advanced-section>summary small{
+  color:#9ec9d8;font-size:11px;font-weight:500;flex:1 1 170px;
+}
+.wvc-advanced-section>.wvc-focus-control{
+  margin:0;border:0;border-top:1px solid rgba(147,201,220,.22);
+  border-radius:0;
+}
+.wvc-beat-summary{
+  display:flex;flex-direction:column;gap:5px;
+  padding:9px 10px;border-radius:8px;
+  background:rgba(63,115,143,.12);
+}
+.wvc-beat-summary strong{
+  color:#d3edf7;font-size:12px;font-weight:720;
+  line-height:1.45;overflow-wrap:anywhere;
+}
+.wvc-beat-summary small{
+  color:#9fc6d7;font-size:11px;line-height:1.45;
+  overflow-wrap:anywhere;
+}
+.wvc-beat-edit{
+  border:1px solid rgba(133,191,216,.23);
+  background:rgba(5,32,47,.34);border-radius:9px;
+}
+.wvc-beat-edit>summary{font-size:11px;padding:10px 12px;min-height:46px}
+.wvc-beat-edit-fields{
+  display:flex;flex-direction:column;gap:11px;
+  padding:12px;border-top:1px solid rgba(133,191,216,.18);
+}
+@media(max-width:560px){
+  .wvc-advanced-section>summary,.wvc-beat-edit>summary{
+    min-height:49px;padding:12px;
+  }
+  .wvc-advanced-section>summary strong{font-size:12px}
+}
+
+/* Mobile directing workspace: one tap reaches source, narrative edit or the
+ * real Remotion Player; no additional preview/render pipeline. */
+.wvc-quick-nav{display:none}
+.wvc-subtitle-status{
+  display:flex;flex-direction:column;gap:5px;margin:6px 0 10px;
+  padding:12px;border-radius:10px;border:1px solid rgba(137,202,218,.28);
+  background:rgba(41,104,130,.18);font-size:12px;line-height:1.5;
+  color:#b9d6e4;
+}
+.wvc-subtitle-status strong{font-size:12px;color:#dff4fb}
+.wvc-board input[type="checkbox"]{
+  box-sizing:border-box;width:18px;height:18px;min-height:18px;
+  flex:0 0 18px;padding:0;margin:0 8px 0 0;
+  accent-color:#8fd8ea;cursor:pointer;
+}
+.wvc-board .wvc-inline-toggle{
+  flex-direction:row;align-items:center;gap:5px;
+  min-height:44px;line-height:1.45;letter-spacing:0;
+}
+@media(max-width:760px){
+  /* 'clip', unlike 'hidden', does not create a scrolling ancestor that
+     prevents position:sticky from following the viewport. */
+  .wvc-board{overflow:clip}
+  .wvc-quick-nav{
+    position:sticky;top:0;z-index:120;
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:7px;padding:8px 12px;
+    background:#0c2030;border-bottom:1px solid rgba(140,201,228,.4);
+    box-shadow:0 5px 12px rgba(0,6,12,.32);
+  }
+  .wvc-quick-nav button{
+    min-height:45px;min-width:0;padding:9px 7px;
+    border-radius:9px;border:1px solid rgba(117,185,216,.45);
+    background:#153b50;color:#ddf3fc;
+    font:inherit;font-size:12px;font-weight:760;
+    cursor:pointer;white-space:normal;
+  }
+  .wvc-quick-nav button:last-child{background:#bce9f6;color:#092a3b}
+  .wvc-quick-nav button:focus-visible{outline:2px solid #e4f9ff;outline-offset:2px}
+  .wvc-inputs,.wvc-edit,.wvc-preview{
+    scroll-margin-top:70px;outline-offset:-3px;
+  }
 }

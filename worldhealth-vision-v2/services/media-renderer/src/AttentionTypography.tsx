@@ -62,11 +62,13 @@ export const AttentionTypography:React.FC<{
   words:TimedWord[];
   accent?:string;
   mobileEvidenceRanges?:Array<{startFrame:number;endFrame:number}>;
-}>=({words,accent="#08eeea",mobileEvidenceRanges=[]})=>{
+  photoRanges?:Array<{startFrame:number;endFrame:number}>;
+}>=({words,mobileEvidenceRanges=[],photoRanges=[]})=>{
   const frame=useCurrentFrame();
   const {fps}=useVideoConfig();
-  const {impact,body}=getFonts();
+  const {body}=getFonts();
   const evidenceRail=mobileEvidenceRanges.some(r=>frame>=r.startFrame&&frame<r.endFrame);
+  const photoRail=!evidenceRail&&photoRanges.some(r=>frame>=r.startFrame&&frame<r.endFrame);
   const pages=useMemo(()=>{
     const captions=words.map((word,i)=>({
       text:(i===0?"":" ")+word.text,
@@ -83,17 +85,18 @@ export const AttentionTypography:React.FC<{
   const now=frame*1000/fps;
   const page=pages.find(p=>now>=p.startMs&&now<p.startMs+p.durationMs);
   if(!page)return null;
+  const photoSize=photoRail?fitTextOnNLines({text:page.text,maxBoxWidth:740,maxLines:2,fontFamily:body,fontWeight:700,maxFontSize:58}).fontSize:70;
   const enter=Math.max(0,Math.min(1,(now-page.startMs)/155));
   const pageY=interpolate(enter,[0,1],[28,0],clamp);
   const highlighted=new Set(words.filter(w=>w.emphasis).map(w=>w.startFrame*1000/fps));
   return <AbsoluteFill data-wv-kinetic-caption-layer="true"
-    data-wv-evidence-caption-rail={evidenceRail?"true":"false"} style={{
+    data-wv-evidence-caption-rail={evidenceRail?"true":"false"} data-wv-photo-caption-rail={photoRail?"true":"false"} style={{
     pointerEvents:"none",justifyContent:evidenceRail?"flex-start":"flex-end",alignItems:"center",
-    padding:evidenceRail?"335px 92px 0":"0 92px 450px",zIndex:55
+    padding:evidenceRail?"335px 92px 0":photoRail?"0 160px 320px 96px":"0 92px 450px",zIndex:55
   }}>
     <div data-wv-kinetic-page={page.text} style={{
-      maxWidth:evidenceRail?825:890,width:"100%",textAlign:"center",
-      fontFamily:body,fontWeight:700,fontSize:evidenceRail?49:70,lineHeight:1.23,
+      maxWidth:evidenceRail?825:photoRail?820:890,width:"100%",textAlign:"center",
+      fontFamily:body,fontWeight:700,fontSize:evidenceRail?49:photoSize,lineHeight:1.18,
       letterSpacing:"-.035em",color:"#fff",whiteSpace:"normal",
       textShadow:"0 6px 18px rgba(0,0,0,.68)",
       transform:"translateY("+pageY+"px)",opacity:enter,
@@ -102,20 +105,16 @@ export const AttentionTypography:React.FC<{
         const active=now>=token.fromMs&&now<token.toMs;
         const important=highlighted.has(token.fromMs);
         const activeProgress=Math.min(1,Math.max(0,(now-token.fromMs)/125));
-        const scale=active?interpolate(activeProgress,[0,1],[1.15,1],clamp):1;
+        const scale=active?interpolate(activeProgress,[0,1],[1.04,1],clamp):1;
         return <span key={token.fromMs+"-"+index}
           data-wv-active-word={active?"true":"false"}
           data-wv-strong-word={important?"true":"false"}
           style={{
             display:"inline-block",whiteSpace:"pre",verticalAlign:"baseline",
-            fontFamily:active&&important?impact:body,
-            fontStyle:active&&important?"italic":"normal",
-            fontWeight:active&&important?900:700,
-            color:active&&important?"#001822":"#fff",
-            background:active&&important?accent:"transparent",
-            borderRadius:active&&important?3:0,
-            boxShadow:active&&important?"0 9px 28px rgba(0,0,0,.45)":"none",
-            padding:active&&important?"0 10px":"0 2px",
+            fontFamily:body,
+            fontWeight:700,
+            color:active&&important?"#ffe1a6":"#fff",
+            padding:"0 2px",
             transform:"scale("+scale+")",
           }}>{token.text}</span>;
       })}

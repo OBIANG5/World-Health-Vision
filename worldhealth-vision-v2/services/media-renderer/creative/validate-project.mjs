@@ -10,6 +10,7 @@ import {feature} from "topojson-client";
 import {geoContains} from "d3-geo";
 import {captionCueIssues} from "../src/caption-timeline.mjs";
 import {attentionCueIssues} from "./attention-cues.mjs";
+import {directorBeatIssues} from "./director-beats.mjs";
 import {photoComparisonIssues} from "../src/photo-comparison-motion.mjs";
 
 // Keep spotlight IDs bound to the exact Natural Earth atlas used by Remotion.
@@ -381,6 +382,7 @@ export function inspectProject(project) {
   const narratedFrames=durationFrames(project)-(project.outro?.durationFrames??0);
   errors.push(...captionCueIssues(project.captions,narratedFrames));
   errors.push(...attentionCueIssues(project,narratedFrames));
+  errors.push(...directorBeatIssues(project,narratedFrames));
   // The kinetic track replaces the standard captions visually, not the script.
   // Avoid silently dropping author-approved ordinary SRT cues.
   if(Array.isArray(project.wordCaptions)&&project.wordCaptions.length>0&&

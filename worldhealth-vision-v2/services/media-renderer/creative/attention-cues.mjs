@@ -5,7 +5,15 @@
  * Word beats annotate the ORIGINAL spoken text; soundtrack/SFX are separate
  * time-aligned licensed local assets. No API, voice or new effects engine.
  */
-import path from 'node:path';
+// Identical in Node and Chromium: AUDIO validation must run in the Studio
+// before a project is imported, not only on the server during H264 export.
+// Only the basename's final suffix counts; the path itself is checked below.
+const audioExtension=(value)=>{
+  if(typeof value!=='string')return '';
+  const basename=value.slice(value.lastIndexOf('/')+1);
+  const dot=basename.lastIndexOf('.');
+  return dot>0?basename.slice(dot).toLowerCase():'';
+};
 
 const error=(field,reason)=>({field,reason});
 const AUDIO_FILES=new Set(['.wav','.mp3','.m4a','.aac','.flac']);
@@ -56,7 +64,7 @@ export function attentionCueIssues(project,totalFrames){
         cue.startFrame<0||cue.durationFrames<4||cue.durationFrames>450||
         cue.startFrame+cue.durationFrames>totalFrames)
         issues.push(error(field+'.time','SFX must occupy 4-450 frames inside the original film.'));
-      if(!localFile(cue.file)||!AUDIO_FILES.has(path.extname(cue.file??'').toLowerCase()))
+      if(!localFile(cue.file)||!AUDIO_FILES.has(audioExtension(cue.file)))
         issues.push(error(field+'.file','A licensed local audio file under the supplied asset directory is required.'));
       if(cue.volume!==undefined&&(!Number.isFinite(cue.volume)||cue.volume<0||cue.volume>.8))
         issues.push(error(field+'.volume','SFX gain must be between 0 and 0.8, leaving headroom for narration.'));

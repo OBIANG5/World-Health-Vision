@@ -9,9 +9,10 @@ import type {CaptionCue} from "./caption-timeline.mjs";
  * duplicate on a dissolve. Frame numbering is for the assembled timeline.
  * This is an accessibility/editorial overlay, NOT auto-ASR or fact checking.
  */
-export function CaptionTrack({cues,mobileEvidenceRanges=[]}:{
+export function CaptionTrack({cues,mobileEvidenceRanges=[],photoRanges=[]}:{
   cues:CaptionCue[];
   mobileEvidenceRanges?:Array<{startFrame:number;endFrame:number}>;
+  photoRanges?:Array<{startFrame:number;endFrame:number}>;
 }){
   const frame=useCurrentFrame();
   // One consistent approved World-Vision caption typeface on BOTH the real
@@ -25,15 +26,16 @@ export function CaptionTrack({cues,mobileEvidenceRanges=[]}:{
   // When the source document is being read, never mask its source pixels:
   // display the exact same authored caption in a separate top rail.
   const mobileEvidence=mobileEvidenceRanges.some(r=>frame>=r.startFrame&&frame<r.endFrame);
-  const upper=mobileEvidence||cue.position==="upper";
-  const captionSize=mobileEvidence?fitTextOnNLines({
-    text:cue.text,maxBoxWidth:780,maxLines:3,
+  const photoRail=!mobileEvidence&&photoRanges.some(r=>frame>=r.startFrame&&frame<r.endFrame);
+  const upper=mobileEvidence||(!photoRail&&cue.position==="upper");
+  const captionSize=mobileEvidence||photoRail?fitTextOnNLines({
+    text:cue.text,maxBoxWidth:photoRail?740:780,maxLines:photoRail?2:3,
     fontFamily:dmSans,fontWeight:700,maxFontSize:44,
   }).fontSize:51;
   return <AbsoluteFill data-wv-caption-layer="true"
     data-wv-evidence-caption-rail={mobileEvidence?"true":"false"} style={{
     pointerEvents:"none",alignItems:"center",justifyContent:upper?"flex-start":"flex-end",
-    padding:mobileEvidence?"327px 92px 0":upper?"340px 67px 0":"0 67px 375px",zIndex:50
+    padding:mobileEvidence?"327px 92px 0":photoRail?"0 160px 320px 96px":upper?"340px 67px 0":"0 67px 375px",zIndex:50
   }}>
     <div data-wv-caption={cue.text} data-wv-caption-position={upper?"upper":"lower"} style={{
       maxWidth:mobileEvidence?844:940,padding:mobileEvidence?"13px 19px":"17px 25px",borderRadius:16,

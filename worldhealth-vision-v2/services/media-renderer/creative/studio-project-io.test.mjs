@@ -172,3 +172,107 @@ test("P0.6: Studio rejects unsafe or impossible documentary zoom instead of losi
   invalid(s=>{s.evidencePresentation="mobile-safe";s.documentZoomMax="2.0";});
   invalid(s=>{s.evidencePresentation="mobile-safe";s.template="kinetic";});
 });
+
+test("director HookBeatSheet is losslessly reopened within the SAME Studio project",()=>{
+  const p=clone();
+  p.directorBeats=[
+    {id:"hook-001",shotId:"plan-01",startFrame:0,endFrame:45,intent:"hook",
+      idea:"Pourquoi cette image compte",spokenExcerpt:"Ce texte n'est qu'un exemple de montage.",
+      proofNote:"Source d'essai, ne pas publier",visualDirection:"Révéler progressivement la preuve d'origine",
+      audioDirection:"Laisser la phrase respirer"},
+    {id:"reveal-002",shotId:"plan-02",startFrame:84,endFrame:135,intent:"rehook",
+      idea:"Deuxième idée nouvelle",spokenExcerpt:"Le vrai script sera fourni dans la conversation.",
+      proofNote:"Contexte et attribution à renseigner",visualDirection:"Déplacer le centre d'attention vers le fait vérifié",
+      audioDirection:"Accent discret seulement si licencié"}
+  ];
+  const json=JSON.stringify(p);
+  const loaded=parseStudioProject(json);
+  assert.deepEqual(loaded.directorBeats,p.directorBeats);
+  assert.equal(inspectProject(loaded).ok,true,JSON.stringify(inspectProject(loaded).errors));
+  assert.equal(loaded.script,p.script);
+  assert.deepEqual(loaded.shots,p.shots);
+  assert.deepEqual(studioAssetNames(loaded),[]);
+});
+test("director sheet fails closed on unknown effects, stale script, illegal overlap and deleted shot",()=>{
+  const p=clone();
+  const beat={id:"hook-001",shotId:"plan-01",startFrame:0,endFrame:50,
+    intent:"hook",idea:"New angle",spokenExcerpt:"Ce texte",
+    proofNote:"Source to inspect",visualDirection:"Focus on actual evidence",audioDirection:""};
+  p.directorBeats=[beat];
+  assert.deepEqual(parseStudioProject(JSON.stringify(p)).directorBeats,[beat]);
+  const rejects=mutate=>{
+    const x=structuredClone(p);mutate(x);
+    assert.throws(()=>parseStudioProject(JSON.stringify(x)),/Projet non importable/);
+  };
+  rejects(x=>x.directorBeats[0].spokenExcerpt="Phrase extérieure au script");
+  rejects(x=>x.directorBeats[0].secretEffect="replace_voice");
+  rejects(x=>x.directorBeats[0].startFrame=72);
+  rejects(x=>x.directorBeats[0].shotId="unknown");
+  rejects(x=>x.directorBeats[0].intent="clickbait");
+  rejects(x=>x.directorBeats=[beat,{...beat,id:"hook-002",startFrame:35,endFrame:55}]);
+  rejects(x=>x.directorBeats[0].visualDirection="");
+});
+
+test("licensed source SFX reopens and remains a real separate Remotion-ready asset",()=>{
+  const p=clone();
+  p.soundCues=[{file:"impact-licensed.wav",startFrame:15,durationFrames:12,volume:.25,
+    label:"Original sound rights checked by producer"}];
+  const original=JSON.stringify(p);
+  const loaded=parseStudioProject(original);
+  assert.deepEqual(loaded.soundCues,p.soundCues);
+  assert.deepEqual(studioAssetNames(loaded),["impact-licensed.wav"]);
+  assert.equal(inspectProject(loaded).ok,true,JSON.stringify(inspectProject(loaded).errors));
+  assert.equal(JSON.stringify(p),original);
+});
+test("audio cue editing cannot silently import remote files, unknown fields, or unbounded gain",()=>{
+  const p=clone();
+  p.soundCues=[{file:"impact-licensed.wav",startFrame:15,durationFrames:12,volume:.25,label:"Verified"}];
+  const broken=mutation=>{
+    const next=structuredClone(p);mutation(next.soundCues[0]);
+    assert.throws(()=>parseStudioProject(JSON.stringify(next)),/Projet non importable/);
+  };
+  broken(cue=>cue.file="../secret.wav");
+  broken(cue=>cue.file="https://example.com/voice.wav");
+  broken(cue=>cue.durationFrames=500);
+  broken(cue=>cue.startFrame=150);
+  broken(cue=>cue.volume=.95);
+  broken(cue=>cue.inject="replace-script");
+});
+
+test("approved word-aligned original voice reopens exactly and never becomes SRT",()=>{
+  const p=clone();
+  p.script="VOIR LE MONDE.";
+  p.voice={file:"approved-vivienne-take.wav",label:"Voix choisie ou enregistrée",volume:1};
+  p.wordCaptions=[
+    {text:"VOIR",startFrame:0,endFrame:12,emphasis:true},
+    {text:"LE",startFrame:12,endFrame:19,emphasis:false},
+    {text:"MONDE.",startFrame:19,endFrame:43,emphasis:true}
+  ];
+  const before=JSON.stringify(p);
+  const imported=parseStudioProject(before);
+  assert.deepEqual(imported.wordCaptions,p.wordCaptions);
+  assert.equal(imported.script,p.script);
+  assert.deepEqual(studioAssetNames(imported),["approved-vivienne-take.wav"]);
+  assert.equal(inspectProject(imported).ok,true,JSON.stringify(inspectProject(imported).errors));
+  assert.equal(JSON.stringify(p),before);
+});
+test("word-level import rejects stale script, made-up timestamps, conflicting SRT or missing voice",()=>{
+  const base=clone();
+  base.script="VOIR LE MONDE.";
+  base.voice={file:"approved-take.wav",label:"Voix choisie ou enregistrée",volume:1};
+  base.wordCaptions=[
+    {text:"VOIR",startFrame:0,endFrame:9,emphasis:true},
+    {text:"LE",startFrame:9,endFrame:14,emphasis:false},
+    {text:"MONDE.",startFrame:15,endFrame:41,emphasis:false}
+  ];
+  const rejects=edit=>{
+    const p=structuredClone(base);edit(p);
+    assert.throws(()=>parseStudioProject(JSON.stringify(p)),/Projet non importable/);
+  };
+  rejects(p=>{p.wordCaptions[2].text="monde";});
+  rejects(p=>{p.wordCaptions[2].startFrame=10;});
+  rejects(p=>{p.wordCaptions[0].unknownVoiceMagic="fromAi";});
+  rejects(p=>{p.captions=[{startFrame:1,endFrame:16,text:"VOICE CONFLICT",position:"upper"}];});
+  rejects(p=>{p.voice=null;});
+  rejects(p=>{p.script="UNE AUTRE VERSION NON ALIGNEE";});
+});

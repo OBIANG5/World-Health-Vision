@@ -18,6 +18,7 @@ import {renderMedia,renderStill,selectComposition} from "@remotion/renderer";
 import {FORMAT,inspectProject,resolveLocalFile} from "./validate-project.mjs";
 import {reviewFrameRange} from "./review-range.mjs";
 import {verifyOwnerReviewVoice} from "./owner-review-voice-gate.mjs";
+import {artisticSampleFrames,artisticDeliveryStatus} from "./artistic-delivery-gate.mjs";
 
 const rendererRoot=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 function args(argv){
@@ -75,7 +76,10 @@ async function run(argv){
   const project=shotId?{
     ...fullProject,
     shots:fullProject.shots.filter(s=>s.id===shotId).map(s=>({...s,transitionAfter:"cut",transitionFrames:0})),
-    voice:null,music:null,outro:null
+    // An isolated --shot preview is an intentionally different technical
+    // timeline; original-clock director beats belong to the FULL project only.
+    // The source JSON and --review-shot retain every authored beat unchanged.
+    voice:null,music:null,outro:null,directorBeats:[]
   }:fullProject;
   const inspection=inspectProject(project);
   if(!inspection.ok){
@@ -203,7 +207,7 @@ async function run(argv){
     // Stills are absolute SOURCE frames when reviewing a film segment.
     const first=review?review.frameRange[0]:0;
     const last=review?review.frameRange[1]:inspection.frames-1;
-    const frames=[first,Math.floor((first+last)*0.5),last];
+    const frames=ownerVoiceReview&&!review&&!shotId?artisticSampleFrames(project):[first,Math.floor((first+last)*0.5),last];
     const stills=[];
     for(const [i,frame] of [...new Set(frames)].entries()){
       const name="frame-"+String(i+1).padStart(2,"0")+"-at-"+frame+".png";
@@ -225,8 +229,9 @@ async function run(argv){
       // classified as a TECHNICAL TEST, never a voice-approved presentation.
       owner_review_voice_gate:ownerVoiceReview,
       intended_audience:ownerVoiceReview
-        ?"owner_audiovisual_review_not_publication"
+        ?"internal_artistic_candidate_pending_review"
         :"internal_technical_qa_only",
+      artistic_delivery:artisticDeliveryStatus(fullProject,ownerVoiceReview),
       output_path:output,output_sha256:sha,
       duration_frames:outputFrames,canvas:{width:1080,height:1920,fps:30},
       track_voice:project.voice?.label??(project.voice?"externally_supplied":"no_narration"),

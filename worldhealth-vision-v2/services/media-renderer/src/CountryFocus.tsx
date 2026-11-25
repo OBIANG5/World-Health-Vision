@@ -39,7 +39,6 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
     Sélectionner un pays existant dans le référentiel 1:10m
   </AbsoluteFill>;
 
-  const accent=shot.accent??"#5eeeff";
   const intro=ease(between(local,0,22));
   const move=ease(between(local,15,115));
   const outline=ease(between(local,24,90));
@@ -138,7 +137,6 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
     </svg>
     {/* Brand stays subtle: no invented breaking-news or VERIFIED badge. */}
     <div style={{position:"absolute",top:154,left:92,right:91,
-      borderLeft:"5px solid "+accent,paddingLeft:19,
       opacity:titleIn*holdFade*headlineHandoffOpacity(frame,enterOverlapFrames)}}>
       {shot.eyebrow&&<div dir="auto" style={{
         fontSize:24,fontWeight:780,textTransform:"uppercase",
@@ -204,8 +202,6 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
     {shot.subtitle&&<div data-wv-country-caption="true" dir="auto" style={{
       position:"absolute",top:hasMedia?1340:1295,left:96,right:96,
       maxHeight:175,overflow:"hidden",
-      borderTop:"3px solid rgba(75,215,241,.72)",
-      paddingTop:20,
       fontSize:subtitleSize,fontWeight:490,lineHeight:1.31,
       color:"#d9f0f6",textShadow:"0 5px 18px rgba(0,0,0,.45)",
       opacity:subtitleIn*holdFade
