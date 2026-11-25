@@ -8,8 +8,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
-  owner-review:
+  owner-review-revised:
     runs-on: ubuntu-latest
     timeout-minutes: 18
     defaults:
@@ -20,26 +21,27 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install existing renderer and audition tools
-        run: |
-          npm install --no-audit --no-fund
-          python -m pip install edge-tts requests pillow
-          command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y ffmpeg)
-      - name: New exact Vivienne C5.2 take and original credited visuals
-        run: python episodes/pce-2026-11-25/prepare.py
-      - name: Real word to photo comparison and sound synchronization
-        run: node episodes/pce-2026-11-25/sync.mjs
-      - name: Render actual private World-Vision editorial master
-        run: |
-          node creative/render-project.mjs --project output/pce-2026-11-25/project.json --assets output/pce-2026-11-25/assets --output output/pce-2026-11-25/world-vision-pce.mp4 --owner-review-voice-manifest output/pce-2026-11-25/voice-manifest.json
-          ffprobe -v error -show_streams -show_format -of json output/pce-2026-11-25/world-vision-pce.mp4 > output/pce-2026-11-25/ffprobe.json
-      - name: Save actual owner review movie and provenance
-        uses: actions/upload-artifact@v4
+      - name: Recover exact original source assets, voice and word boundaries from completed V1
+        uses: actions/download-artifact@v4
         with:
           name: worldvision-pce-actual-owner-review
+          run-id: 45667257921
+          github-token: ${{ github.token }}
+          path: worldhealth-vision-v2/services/media-renderer
+      - name: Install existing rendering dependencies
+        run: npm install --no-audit --no-fund
+      - name: Refine composition without regenerating the voice or modifying facts
+        run: |
+          npm run typecheck
+          node episodes/pce-2026-11-25/revise.mjs
+      - name: Render refined actual World-Vision master
+        run: |
+          node creative/render-project.mjs --project output/pce-2026-11-25/project.json --assets output/pce-2026-11-25/assets --output output/pce-2026-11-25/world-vision-pce-v2.mp4 --owner-review-voice-manifest output/pce-2026-11-25/voice-manifest.json
+          rm -rf output/pce-2026-11-25/world-vision-pce.mp4*
+      - name: Save refined master and provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-pce-owner-review-v2
           path: |
             worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/
             worldhealth-vision-v2/services/media-renderer/episodes/pce-2026-11-25/SOURCES.md

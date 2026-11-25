@@ -489,9 +489,11 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
   const timelineFrames=creativeDuration({...props,brandOutro:null});
   const children:React.ReactNode[]=[];
   const mobileEvidenceRanges:Array<{startFrame:number;endFrame:number}>=[];
+  const photoRanges:Array<{startFrame:number;endFrame:number}>=[];
   let sourceCursor=0;
   props.shots.forEach((shot,index)=>{
     const enterOverlapFrames=index>0?(transitionOf(props.shots[index-1])?.frames??0):0;
+    if(shot.template==="photo_story")photoRanges.push({startFrame:sourceCursor,endFrame:sourceCursor+shot.durationFrames});
     if(shot.template==="document_focus"&&shot.evidencePresentation==="mobile-safe"){
       mobileEvidenceRanges.push({
         startFrame:sourceCursor+enterOverlapFrames,
@@ -511,11 +513,11 @@ export const CreativeEdit:React.FC<CreativeEditProps> = props => {
   return <AbsoluteFill style={{background:base.background}}>
     <TransitionSeries>{children}</TransitionSeries>
     {props.showOfficialBrand&&<div data-wv-official-brand="true" style={{
-      position:"absolute",right:72,top:84,width:240,zIndex:70,pointerEvents:"none"
+      position:"absolute",right:76,top:84,width:166,zIndex:70,pointerEvents:"none",borderRadius:12,overflow:"hidden"
     }}><Img src={staticFile("brand/world-vision-official.png")} style={{width:"100%",height:"auto",objectFit:"contain"}}/></div>}
     {props.wordCaptions&&props.wordCaptions.length>0
       ? <AttentionTypography words={props.wordCaptions} accent={base.accent}
-          mobileEvidenceRanges={mobileEvidenceRanges}/>
+          mobileEvidenceRanges={mobileEvidenceRanges} photoRanges={photoRanges}/>
       : props.captions&&props.captions.length>0&&<CaptionTrack cues={props.captions} mobileEvidenceRanges={mobileEvidenceRanges}/>}
     {props.narration&&<Sequence durationInFrames={timelineFrames} name="Voix choisie / fournie">
       <Audio src={resolveCreativeSource(props.narration.src)} volume={props.narration.volume??1}/>

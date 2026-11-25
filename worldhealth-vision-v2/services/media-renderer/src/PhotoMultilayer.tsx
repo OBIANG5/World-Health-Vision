@@ -59,7 +59,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
   }).format(number.value*pose.countProgress):"";
   const headlineSize=shot.title?fitTextOnNLines({
     text:shot.title,maxBoxWidth:850,maxLines:3,
-    fontFamily:globalStyle.editorialFont,fontWeight:810,maxFontSize:86
+    fontFamily:globalStyle.editorialFont,fontWeight:810,maxFontSize:/^[+\-]?\d[\d,. ]*%$/.test(shot.title.trim())?172:96
   }).fontSize:86;
   const subtitleSize=shot.subtitle?fitTextOnNLines({
     text:shot.subtitle,maxBoxWidth:845,maxLines:2,
@@ -138,7 +138,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
     </div>
     {/* Count and label are *supplied* and include a readable source label. */}
     {number&&<div data-wv-photo-metric="true" style={{
-      position:"absolute",right:94,top:1040,maxWidth:600,
+      position:"absolute",right:94,top:824,maxWidth:600,
       padding:"16px 25px",borderRadius:17,
       background:"rgba(2,17,32,.88)",
       border:"1px solid rgba(154,237,250,.57)",
@@ -165,7 +165,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
       style={{
         // Preserve the photographic focal point above this compact data rail.
         // The chart is a later semantic re-hook, not a frame-zero decoration.
-        position:"absolute",top:1040,left:91,right:91,
+        position:"absolute",top:824,left:91,right:91,
         borderRadius:20,padding:"14px 24px 12px",
         background:"rgba(2,20,34,.91)",border:"1px solid rgba(124,223,243,.58)",
         boxShadow:"0 18px 44px rgba(0,9,20,.45)",
@@ -226,7 +226,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
     </div>}
     {shot.subtitle&&<div data-wv-photo-caption="true" dir="auto"
       style={{
-        position:"absolute",left:96,right:96,top:1355,maxHeight:200,
+        position:"absolute",left:96,right:96,top:1168,maxHeight:130,
         borderTop:"3px solid "+accent,paddingTop:23,overflow:"hidden",
         fontSize:subtitleSize,fontWeight:510,lineHeight:1.31,
         textShadow:"0 6px 25px rgba(0,0,0,.67)",

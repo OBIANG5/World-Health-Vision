@@ -62,11 +62,13 @@ export const AttentionTypography:React.FC<{
   words:TimedWord[];
   accent?:string;
   mobileEvidenceRanges?:Array<{startFrame:number;endFrame:number}>;
-}>=({words,accent="#08eeea",mobileEvidenceRanges=[]})=>{
+  photoRanges?:Array<{startFrame:number;endFrame:number}>;
+}>=({words,accent="#08eeea",mobileEvidenceRanges=[],photoRanges=[]})=>{
   const frame=useCurrentFrame();
   const {fps}=useVideoConfig();
   const {impact,body}=getFonts();
   const evidenceRail=mobileEvidenceRanges.some(r=>frame>=r.startFrame&&frame<r.endFrame);
+  const photoRail=!evidenceRail&&photoRanges.some(r=>frame>=r.startFrame&&frame<r.endFrame);
   const pages=useMemo(()=>{
     const captions=words.map((word,i)=>({
       text:(i===0?"":" ")+word.text,
@@ -83,17 +85,18 @@ export const AttentionTypography:React.FC<{
   const now=frame*1000/fps;
   const page=pages.find(p=>now>=p.startMs&&now<p.startMs+p.durationMs);
   if(!page)return null;
+  const photoSize=photoRail?fitTextOnNLines({text:page.text,maxBoxWidth:760,maxLines:2,fontFamily:body,fontWeight:700,maxFontSize:62}).fontSize:70;
   const enter=Math.max(0,Math.min(1,(now-page.startMs)/155));
   const pageY=interpolate(enter,[0,1],[28,0],clamp);
   const highlighted=new Set(words.filter(w=>w.emphasis).map(w=>w.startFrame*1000/fps));
   return <AbsoluteFill data-wv-kinetic-caption-layer="true"
-    data-wv-evidence-caption-rail={evidenceRail?"true":"false"} style={{
+    data-wv-evidence-caption-rail={evidenceRail?"true":"false"} data-wv-photo-caption-rail={photoRail?"true":"false"} style={{
     pointerEvents:"none",justifyContent:evidenceRail?"flex-start":"flex-end",alignItems:"center",
-    padding:evidenceRail?"335px 92px 0":"0 92px 450px",zIndex:55
+    padding:evidenceRail?"335px 92px 0":photoRail?"0 100px 300px":"0 92px 450px",zIndex:55
   }}>
     <div data-wv-kinetic-page={page.text} style={{
-      maxWidth:evidenceRail?825:890,width:"100%",textAlign:"center",
-      fontFamily:body,fontWeight:700,fontSize:evidenceRail?49:70,lineHeight:1.23,
+      maxWidth:evidenceRail?825:photoRail?840:890,width:"100%",textAlign:"center",
+      fontFamily:body,fontWeight:700,fontSize:evidenceRail?49:photoSize,lineHeight:1.18,
       letterSpacing:"-.035em",color:"#fff",whiteSpace:"normal",
       textShadow:"0 6px 18px rgba(0,0,0,.68)",
       transform:"translateY("+pageY+"px)",opacity:enter,
