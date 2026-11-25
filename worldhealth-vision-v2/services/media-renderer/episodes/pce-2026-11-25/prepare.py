@@ -17,7 +17,7 @@ profile="fr-FR-VivienneMultilingualNeural"
 url="https://bea.gov/news/2026/personal-income-and-outlays-october-2026"
 photos=[
 ("shop.jpg","https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/20250219-USDA-FNS-UNK-0006_(54498997849).jpg/1280px-20250219-USDA-FNS-UNK-0006_(54498997849).jpg","USDA · archives 2025"),
-("market.jpg","https://media.defense.gov/2011/Feb/02/2000288683/2000/2000/0/110202-F-4408M-006.JPG","US Air Force · archives 2011"),
+("market.jpg","https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ea/WIC%2C_Seattle%2C_Washington_%2820241113-USDA-FNS-UNK-0075%29.jpg/1920px-WIC%2C_Seattle%2C_Washington_%2820241113-USDA-FNS-UNK-0075%29.jpg","USDA · archives 2024"),
 ("fed.jpg","https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/FOMC_01302024_vetted_9681_(53499605577).jpg/1280px-FOMC_01302024_vetted_9681_(53499605577).jpg","Federal Reserve · archives 2024")
 ]
 for name,source,credit in photos:
