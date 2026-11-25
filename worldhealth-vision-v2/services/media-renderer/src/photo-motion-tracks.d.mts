@@ -1,4 +1,6 @@
 export type PhotoMotion = {
+  /** Opt-in private editorial layout; no default style migration. */
+  editorialLayout?:"hero"|"split"|"target";
   camera:{zoomFrom:number;zoomTo:number;panX:number;panY:number;startFrame:number;endFrame:number};
   subject?:{dx:number;dy:number;scale:number;startFrame:number;endFrame:number};
   mask?:{axis:"horizontal"|"vertical";startFrame:number;endFrame:number};

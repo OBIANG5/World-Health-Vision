@@ -144,6 +144,8 @@ export function inspectProject(project) {
         const within=(v,min,max)=>typeof v==="number"&&Number.isFinite(v)&&v>=min&&v<=max;
         const timing=(q,min=25)=>q&&boundedInteger(q.startFrame,0,scene.durationFrames-20)&&
           boundedInteger(q.endFrame,1,scene.durationFrames)&&q.endFrame-q.startFrame>=min;
+        if(ph.editorialLayout!==undefined&&(!["hero","split","target"].includes(ph.editorialLayout)||!ph.comparison||ph.comparison?.domain?.min!==0||ph.subject||ph.mask||ph.focus||ph.metric))
+          bad(errors,p+".photo.editorialLayout","Editorial comparison layouts need a sourced nonnegative pair and no incompatible overlay tracks.");
         const c=ph.camera;
         if(!c||!timing(c,35)||!within(c.zoomFrom,1.03,1.18)||
           !within(c.zoomTo,c.zoomFrom??2,1.20)||

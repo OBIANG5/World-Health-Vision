@@ -1,0 +1,52 @@
+name: World-Vision — PCE V3 private artistic candidate
+on:
+  push:
+    branches: [feature/worldvision-report-pce-v3-2026-11-25]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/**'
+      - '.github/workflows/worldvision-report-pce-v3-2026-11-25.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  render-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Recover original source archive without synthesizing voice
+        uses: actions/download-artifact@v4
+        with:
+          name: worldvision-pce-actual-owner-review
+          run-id: 45667257921
+          github-token: ${{ github.token }}
+          path: worldhealth-vision-v2/services/media-renderer
+      - run: npm install --no-audit --no-fund
+      - name: Validate source and prepare three distinct editorial layouts
+        run: |
+          npm run typecheck
+          node episodes/pce-2026-11-25/revise-v3.mjs
+      - name: Render actual private artistic candidate
+        run: |
+          node creative/render-project.mjs --project output/pce-2026-11-25/project-v3.json --assets output/pce-2026-11-25/assets --output output/pce-2026-11-25/world-vision-pce-v3-candidate.mp4 --owner-review-voice-manifest output/pce-2026-11-25/voice-manifest.json
+          ffprobe -v error -show_streams -show_format -of json output/pce-2026-11-25/world-vision-pce-v3-candidate.mp4 > output/pce-2026-11-25/v3-ffprobe.json
+          ffmpeg -v error -y -i output/pce-2026-11-25/world-vision-pce-v3-candidate.mp4 -vf "fps=1/2,scale=270:480,tile=4x4" -frames:v 1 output/pce-2026-11-25/v3-contact.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-pce-v3-private-candidate
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/world-vision-pce-v3-candidate.mp4*
+            worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/project-v3.json
+            worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/v3-*.json
+            worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/v3-contact.png
+            worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/voice-manifest.json
+            worldhealth-vision-v2/services/media-renderer/episodes/pce-2026-11-25/SOURCES.md
+          if-no-files-found: error
+          retention-days: 7

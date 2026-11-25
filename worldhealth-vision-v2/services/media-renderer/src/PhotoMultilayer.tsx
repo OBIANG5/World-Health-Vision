@@ -1,3 +1,4 @@
+import {EditorialComparison} from "./EditorialComparison";
 import {AbsoluteFill,Img,useCurrentFrame} from "remotion";
 import {fitTextOnNLines} from "@remotion/layout-utils";
 import type {CreativeEditProps,CreativeShot} from "./CreativeEdit";
@@ -30,6 +31,7 @@ export function PhotoMultilayer({shot,globalStyle,enterOverlapFrames}:{
     Source image et réglages de mouvement obligatoires
   </AbsoluteFill>;
 
+  if(photo.editorialLayout&&photo.comparison)return <EditorialComparison shot={shot} globalStyle={globalStyle} enterOverlapFrames={enterOverlapFrames}/>;
   const pose=photoTrackPose(photo,local,shot.durationFrames);
   const src=resolveCreativeSource(shot.media.src);
   const accent=shot.accent??globalStyle.accent;
