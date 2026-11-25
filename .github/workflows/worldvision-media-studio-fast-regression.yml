@@ -40,7 +40,7 @@ jobs:
           npm ci --prefix ../../frontend/web-v2 --no-audit --no-fund
       - name: Fail fast on unsafe media, drifted beat clock, or lossy JSON
         run: |
-          node --test creative/director-beats.test.mjs creative/word-caption-contract.test.mjs creative/voice-beat-motion-sync.test.mjs creative/studio-project-io.test.mjs creative/validate-project.test.mjs
+          node --test creative/director-beats.test.mjs creative/word-caption-contract.test.mjs creative/voice-beat-motion-sync.test.mjs creative/studio-project-io.test.mjs creative/validate-project.test.mjs creative/artistic-delivery-gate.test.mjs
       - name: Verify real Studio and shared Remotion composition TypeScript
         run: |
           npm run typecheck

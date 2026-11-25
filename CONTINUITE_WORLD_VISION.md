@@ -1,3 +1,11 @@
+# REPRISE PRIORITAIRE MÉDIA — 25/11/2026 : REJET ARTISTIQUE V2, CORRECTION À LA RACINE
+
+**Cette section prime sur les checkpoints précédents.** Le propriétaire a rejeté le reportage PCE V2 : traits bleus décoratifs, police de départ et logo inacceptable. Les tests techniques verts ne valent pas approbation artistique. Le fichier dit officiel est l'ancien œil bleu sur papier beige, interdit désormais en livraison. Le master média exact à arcs blancs ouverts/globe réaliste n'est pas retrouvé avec certitude. Ne jamais inventer un autre logo.
+
+PR #147 même branche produit. Commit style `985fd850e2141a7c18bf8a50280008833e6f0d6b` : sept composants partagés, suppression des rails décoratifs identifiés, typographie éditoriale DM Sans, chiffres/PHOTO et captions séparés, retrait de l'ancien logo. Ce commit de continuité ajoute `artistic-delivery-gate.mjs` et tests, rapport candidat bloqué, plan de captures de chaque scène/transition/re-hook/outro, sans prétendre à une revue artistique automatisée. CI à vérifier sur le nouveau HEAD. Documentation de référence : `worldhealth-vision-v2/docs/media/MEDIA_ARTISTIC_REJECTION_CANON_2026-11-25.md`. Ne pas déclarer nouvelle V3 livrée tant que le logo manque, que le vrai rendu n'a pas été examiné et que le mix n'a pas été écouté. Prochaine action : vérification réelle des frames PCE, contrôle de collisions et master logo exact, montage V3 sans refaire voix/données. Ne pas revenir au COP31. Aucune fusion, publication ou mise en production.
+
+---
+
 # POINT DE REPRISE MÉDIA — 23/11/2026 · MOBILE P0 DIRECTOR NAV VALIDÉ
 
 **État de référence PR #147 (DRAFT, base #138)** : `OBIANG5/World-Health-Vision`, branche `feature/worldvision-media-product-contextual-beat-review-2026-11-21`. **Dernier commit de CODE `bea4d080f5ae59675b3a4a6ef8c047e35592c083`** (un commit documentation suit). Aucune fusion, publication, voix journalistique générée ou déploiement effectué. Cette entrée PRIME les anciennes passations. Objet exclusif : **studio audiovisuel World-Vision**, pas l'Atlas logiciel, pas ABAA, ni le test COP31 #142 (en pause).
