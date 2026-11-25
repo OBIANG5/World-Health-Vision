@@ -1,0 +1,47 @@
+name: World-Vision — actual PCE editorial film 25 November 2026
+on:
+  push:
+    branches: [feature/worldvision-report-pce-2026-11-25]
+    paths:
+      - 'worldhealth-vision-v2/services/media-renderer/episodes/pce-2026-11-25/**'
+      - '.github/workflows/worldvision-report-pce-2026-11-25.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  owner-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    defaults:
+      run:
+        working-directory: worldhealth-vision-v2/services/media-renderer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install existing renderer and audition tools
+        run: |
+          npm install --no-audit --no-fund
+          python -m pip install edge-tts requests pillow
+          command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y ffmpeg)
+      - name: New exact Vivienne C5.2 take and original credited visuals
+        run: python episodes/pce-2026-11-25/prepare.py
+      - name: Real word to photo comparison and sound synchronization
+        run: node episodes/pce-2026-11-25/sync.mjs
+      - name: Render actual private World-Vision editorial master
+        run: |
+          node creative/render-project.mjs --project output/pce-2026-11-25/project.json --assets output/pce-2026-11-25/assets --output output/pce-2026-11-25/world-vision-pce.mp4 --owner-review-voice-manifest output/pce-2026-11-25/voice-manifest.json
+          ffprobe -v error -show_streams -show_format -of json output/pce-2026-11-25/world-vision-pce.mp4 > output/pce-2026-11-25/ffprobe.json
+      - name: Save actual owner review movie and provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldvision-pce-actual-owner-review
+          path: |
+            worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/
+            worldhealth-vision-v2/services/media-renderer/episodes/pce-2026-11-25/SOURCES.md
+          if-no-files-found: error
+          retention-days: 7
