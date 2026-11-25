@@ -17,18 +17,18 @@ split.photo.editorialLayout='split';split.title='Payer plus. Acheter autant.';sp
 target.photo.editorialLayout='target';target.title='La Fed sous pression';target.subtitle='Hausse des taux anticipée, pas décidée.';
 target.eyebrow='POLITIQUE MONÉTAIRE';
 for(const s of [hook,split,target]){
-  s.titleFrameZero=true;
+  if(s===hook)s.titleFrameZero=true; else delete s.titleFrameZero;
   const c=s.photo.comparison;
   if(c.domain.min!==0||[c.first,c.second].some(v=>v.value<0))throw Error('Unexpected nonpositive scale');
   // Preserve the actual word-synced V1 timing, not a regenerated cue.
 }
 impact.title='Des crédits\nplus chers ?';impact.subtitle='';impact.eyebrow='MÉNAGES ET ENTREPRISES';delete impact.titleTreatment;
-impact.titleFrameZero=true;
+delete impact.titleFrameZero;
 const spokenEnd=p.wordCaptions.at(-1).endFrame;
 const closingStart=Math.max(spokenEnd+8,originalFrames-55),tail=originalFrames-closingStart;
 if(tail<45)throw Error('Insufficient silent tail');
 impact.durationFrames-=tail;
-p.shots.push({id:'neutral-end',template:'kinetic',durationFrames:tail,title:'WORLD-VISION',subtitle:'Voir le monde, le comprendre',motion:'locked',transitionAfter:'cut',transitionFrames:0,titleFrameZero:true});
+p.shots.push({id:'neutral-end',template:'kinetic',durationFrames:tail,title:'WORLD-VISION',subtitle:'Voir le monde, le comprendre',motion:'locked',transitionAfter:'cut',transitionFrames:0});
 // A wordmark is a text-only internal closing card, NOT a substitute official logo.
 delete p.brandMark; p.style={background:'#15191b',ink:'#f5f2eb',accent:'#cc734d'};
 p.music.volume=Math.min(p.music.volume,.12);
