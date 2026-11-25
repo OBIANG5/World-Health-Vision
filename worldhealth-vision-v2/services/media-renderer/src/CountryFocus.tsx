@@ -39,7 +39,6 @@ export function CountryFocus({shot,globalStyle,enterOverlapFrames}:{
     Sélectionner un pays existant dans le référentiel 1:10m
   </AbsoluteFill>;
 
-  const accent=shot.accent??"#5eeeff";
   const intro=ease(between(local,0,22));
   const move=ease(between(local,15,115));
   const outline=ease(between(local,24,90));
