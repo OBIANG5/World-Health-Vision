@@ -17,7 +17,7 @@ declare global{
   interface Window{
     __wvSmokeSeek?:(frame:number)=>void;
     __wvSmokeReady?:boolean;
-    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo"|"data-line"|"data-ranking"|"data-heatmap"|"editorial";
+    __wvSmokeMode?:"shot"|"film"|"clip"|"document"|"geo"|"country"|"photo"|"photo-review"|"data-line"|"data-ranking"|"data-heatmap"|"editorial";
     __wvSmokeFrames?:number;
     __wvSmokeHasVoice?:boolean;
   }
@@ -43,6 +43,7 @@ const isDocument=mode==="document";
 const isGeo=mode==="geo";
 const isCountry=mode==="country";
 const isPhoto=mode==="photo";
+const isPhotoReview=mode==="photo-review";
 const isEditorial=mode==="editorial";
 const isData=mode==="data-line"||mode==="data-ranking"||mode==="data-heatmap";
 function Smoke(){
@@ -137,6 +138,19 @@ function Smoke(){
         metric:{label:"VALEUR DE TEST",value:42,unit:" TEST",precision:0}
       }}:{})
     };
+    const reviewShot:CreativeShot={
+      id:"artistic-review-fixture",durationFrames:180,template:"photo_story",
+      title:"3,8 %",titleFrameZero:true,eyebrow:"EXEMPLE FICTIF",
+      subtitle:"Deux valeurs de démonstration, aucun fait réel.",
+      media:{kind:"image",src:assets.photo},transitionAfter:"cut",transitionFrames:0,
+      photo:{
+        camera:{zoomFrom:1.04,zoomTo:1.12,panX:12,panY:-8,startFrame:0,endFrame:150},
+        comparison:{title:"Comparaison fictive",first:{label:"Septembre",value:3.7},
+          second:{label:"Octobre",value:3.8},domain:{min:0,max:5},unit:"%",
+          precision:1,locale:"fr-FR",source:{publisher:"SIMULATION CI",dataset:"Deux valeurs fictives",asOf:"2026-11-25"},
+          startFrame:18,endFrame:75}
+      }
+    };
     const continuation:CreativeShot={
       id:"contexte-synthetique",durationFrames:70,template:"kinetic",
       title:"LE RÉCIT CONTINUE.",
@@ -163,7 +177,9 @@ function Smoke(){
       version:1,
       title:isEditorial&&editorial?editorial.title:"WORLD-VISION — ESSAI NON JOURNALISTIQUE",
       script:isEditorial&&editorial?editorial.script:"Ceci est un texte de test. Aucune information d'actualité n'est générée.",
-      shots:isEditorial?editorialShots:isFilm?[opener,continuation]:[opener],
+      shots:isPhotoReview?[reviewShot]:isEditorial?editorialShots:isFilm?[opener,continuation]:[opener],
+      showOfficialBrand:isPhotoReview,
+      wordCaptions:isPhotoReview?[{text:"Des",startFrame:58,endFrame:72},{text:"chiffres",startFrame:72,endFrame:92,emphasis:true},{text:"fictifs",startFrame:92,endFrame:121},{text:"seulement.",startFrame:121,endFrame:153}]:undefined,
       narration:isEditorial&&assets.filmTone&&editorial?.voice?{
         src:assets.filmTone,label:editorial.voice.label,volume:editorial.voice.volume??1
       }:assets.voice?{src:assets.voice,label:"Synthetic CI tone, NOT a human voice",volume:.3}:null,
@@ -177,7 +193,7 @@ function Smoke(){
     if(!props)return;
     window.__wvSmokeSeek=(n:number)=>playerRef.current?.seekTo(n);
     window.__wvSmokeReady=true;
-    window.__wvSmokeMode=isEditorial?"editorial":isData?mode as "data-line"|"data-ranking"|"data-heatmap":isFilm?"film":isClip?"clip":isDocument?"document":isPhoto?"photo":isCountry?"country":isGeo?"geo":"shot";
+    window.__wvSmokeMode=isEditorial?"editorial":isData?mode as "data-line"|"data-ranking"|"data-heatmap":isFilm?"film":isClip?"clip":isDocument?"document":isPhotoReview?"photo-review":isPhoto?"photo":isCountry?"country":isGeo?"geo":"shot";
     window.__wvSmokeFrames=creativeDuration(props);
     window.__wvSmokeHasVoice=Boolean(props.narration);
     return ()=>{

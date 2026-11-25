@@ -81,6 +81,8 @@ jobs:
           }
           test -s output/creative/studio-reimport-browser.report.json
           test -s output/creative/studio-reimport-mobile-390.png
+      - name: Inspect actual photo chart, captions and rejected logo in rendered mobile Player
+        run: timeout --kill-after=10s 60s node creative/test-artistic-player-browser.mjs
       - name: Keep only synthetic browser evidence for the editor
         if: always()
         uses: actions/upload-artifact@v4
@@ -91,3 +93,4 @@ jobs:
           path: |
             worldhealth-vision-v2/services/media-renderer/output/creative/studio-reimport-browser.report.json
             worldhealth-vision-v2/services/media-renderer/output/creative/studio-reimport-mobile-390.png
+            worldhealth-vision-v2/services/media-renderer/output/creative/artistic-mobile-*
