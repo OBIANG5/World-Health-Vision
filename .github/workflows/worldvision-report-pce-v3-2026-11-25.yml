@@ -36,16 +36,15 @@ jobs:
       - name: Render actual private artistic candidate
         run: |
           node creative/render-project.mjs --project output/pce-2026-11-25/project-v3.json --assets output/pce-2026-11-25/assets --output output/pce-2026-11-25/world-vision-pce-v3-candidate.mp4 --owner-review-voice-manifest output/pce-2026-11-25/voice-manifest.json
-          ffprobe -v error -show_streams -show_format -of json output/pce-2026-11-25/world-vision-pce-v3-candidate.mp4 > output/pce-2026-11-25/v3-ffprobe.json
-          ffmpeg -v error -y -i output/pce-2026-11-25/world-vision-pce-v3-candidate.mp4 -vf "fps=1/2,scale=270:480,tile=4x4" -frames:v 1 output/pce-2026-11-25/v3-contact.png
-      - uses: actions/upload-artifact@v4
+      - name: Save actual master and stills before optional offline QA
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
         with:
           name: worldvision-pce-v3-private-candidate
           path: |
             worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/world-vision-pce-v3-candidate.mp4*
             worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/project-v3.json
             worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/v3-*.json
-            worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/v3-contact.png
             worldhealth-vision-v2/services/media-renderer/output/pce-2026-11-25/voice-manifest.json
             worldhealth-vision-v2/services/media-renderer/episodes/pce-2026-11-25/SOURCES.md
           if-no-files-found: error
